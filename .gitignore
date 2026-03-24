@@ -1,0 +1,91 @@
+# ============================================
+# XeroCode AI Office — .gitignore
+# ============================================
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.venv/
+venv/
+env/
+*.egg-info/
+*.egg
+.eggs/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Node.js
+node_modules/
+dist/
+build/
+.next/
+.nuxt/
+*.tsbuildinfo
+
+# Secrets & Environment
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+*.p12
+*.secret
+*.credentials
+secrets/
+
+# Database
+*.db
+*.sqlite3
+*.sql.bak
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.settings/
+
+# Claude Code (contains API keys in command history)
+.claude/
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Uploads & Generated
+uploads/
+/var/www/
+*.log
+
+# Temporary
+tmp/
+temp/
+.tmp/
+*.tmp
+
+# Coverage & Testing
+htmlcov/
+.coverage
+.coverage.*
+.pytest_cache/
+.mypy_cache/
+
+# Build artifacts
+*.whl
+*.tar.gz
+*.zip
+
+# Xray / VPN configs (sensitive)
+xray/
+*.json.bak

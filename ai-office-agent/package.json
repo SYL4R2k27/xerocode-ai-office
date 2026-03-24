@@ -1,0 +1,30 @@
+{
+  "name": "ai-office-agent",
+  "version": "0.1.0",
+  "description": "Local agent for AI Office — connect your computer to AI models",
+  "bin": {
+    "ai-office-agent": "./bin/cli.js"
+  },
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "dev": "ts-node src/index.ts",
+    "start": "node dist/index.js"
+  },
+  "dependencies": {
+    "ws": "^8.18.0",
+    "commander": "^12.1.0",
+    "chalk": "^4.1.2"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.0",
+    "@types/ws": "^8.5.0",
+    "@types/node": "^20.0.0",
+    "ts-node": "^10.9.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": ["ai", "office", "agent", "orchestration", "local"],
+  "license": "MIT"
+}

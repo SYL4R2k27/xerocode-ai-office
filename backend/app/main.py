@@ -1,0 +1,73 @@
+from __future__ import annotations
+
+from contextlib import asynccontextmanager
+
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
+from app.api.routes import admin, agents, audit, auth, autoprompt, custom_pools, files, goals, messages, orchestration, organization, payments, tasks, templates
+from app.api.websocket import setup_websocket
+from app.core.config import settings
+from app.core.database import Base, engine
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup: create tables (dev only, use Alembic in production)
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+    yield
+    # Shutdown
+    await engine.dispose()
+
+
+app = FastAPI(
+    title=settings.app_name,
+    description="AI Office — multi-model orchestration platform. "
+    "Connect your AI models, give a task, watch them collaborate.",
+    version="0.1.0",
+    lifespan=lifespan,
+)
+
+# CORS — allow frontend
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[o.strip() for o in settings.allowed_origins.split(",") if o.strip()],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# REST Routes
+app.include_router(auth.router, prefix="/api")
+app.include_router(files.router, prefix="/api")
+app.include_router(goals.router, prefix="/api")
+app.include_router(tasks.router, prefix="/api")
+app.include_router(agents.router, prefix="/api")
+app.include_router(messages.router, prefix="/api")
+app.include_router(orchestration.router, prefix="/api")
+app.include_router(admin.router, prefix="/api")
+app.include_router(payments.router, prefix="/api")
+app.include_router(custom_pools.router, prefix="/api")
+app.include_router(organization.router, prefix="/api")
+app.include_router(templates.router, prefix="/api")
+app.include_router(audit.router, prefix="/api")
+app.include_router(autoprompt.router, prefix="/api")
+
+# WebSocket
+setup_websocket(app)
+
+
+@app.get("/")
+async def root():
+    return {
+        "name": settings.app_name,
+        "version": "0.1.0",
+        "status": "running",
+        "docs": "/docs",
+    }
+
+
+@app.get("/health")
+async def health():
+    return {"status": "ok"}
