@@ -393,31 +393,42 @@ class Supervisor:
     ) -> dict:
         """
         Выполнение задач. Агенты работают над своими задачами.
-        Учитывает зависимости (DAG).
+        Учитывает зависимости (DAG). Многопроходное исполнение.
         """
         completed = 0
         failed = 0
         agent_map = {a.id: a for a in agents}
 
-        for task in tasks:
-            # Check dependencies
-            if task.depends_on:
-                deps_done = await self._check_dependencies(task.depends_on)
-                if not deps_done:
-                    continue
-
-            # Check loop guard
-            can_continue, reason = await self.loop_guard.check(
-                goal.id, max_exchanges=goal.max_exchanges
-            )
-            if not can_continue:
-                logger.warning(f"Stopping execution: {reason}")
+        # Многопроходное исполнение — повторяем пока есть задачи
+        max_passes = 5
+        for pass_num in range(max_passes):
+            remaining = [t for t in tasks if t.status in ("pending", "assigned")]
+            if not remaining:
                 break
 
-            # Find assigned agent
-            agent = agent_map.get(task.assigned_agent_id)
-            if not agent:
-                agent = agents[0]  # fallback
+            progress_made = False
+            for task in remaining:
+                # Check dependencies
+                if task.depends_on:
+                    deps_done = await self._check_dependencies(task.depends_on)
+                    if not deps_done:
+                        continue
+
+                # Check loop guard
+                can_continue, reason = await self.loop_guard.check(
+                    goal.id, max_exchanges=goal.max_exchanges
+                )
+                if not can_continue:
+                    logger.warning(f"Stopping execution: {reason}")
+                    return {"completed": completed, "failed": failed, "remaining": len(remaining)}
+
+                # Find assigned agent
+                agent = agent_map.get(task.assigned_agent_id)
+                if not agent:
+                    # Назначить по навыкам
+                    agent = self._match_agent_for_task(task, agents)
+
+                progress_made = True
 
             # Execute
             task.status = "in_progress"
@@ -498,8 +509,8 @@ class Supervisor:
                 response = await self.bus.send_to_agent(
                     goal=goal, agent=agent, prompt=exec_prompt,
                     economy_mode=goal.economy_mode,
-                    tools=tools if not is_image_model else None,
-                    executor=executor if not is_image_model else None,
+                    tools=tools,
+                    executor=executor,
                 )
 
                 task.status = "done"
@@ -523,10 +534,14 @@ class Supervisor:
 
             await self.db.commit()
 
+            # Если нет прогресса в этом проходе — выходим
+            if not progress_made:
+                break
+
         return {
             "completed": completed,
             "failed": failed,
-            "remaining": len(tasks) - completed - failed,
+            "remaining": len([t for t in tasks if t.status in ("pending", "assigned")]),
         }
 
     async def process_user_input(
@@ -600,6 +615,19 @@ class Supervisor:
                 if manager_skills & set(s.lower() for s in agent.skills):
                     return agent
         return agents[0]
+
+    def _match_agent_for_task(self, task: Task, agents: list[Agent]) -> Agent:
+        """Назначить агента для задачи по типу."""
+        # Для image/design задач — ищем image-модель
+        if task.task_type in ("design", "image", "image processing"):
+            for a in agents:
+                if "image" in (a.model_name or "").lower():
+                    return a
+                if a.skills and any(s in a.skills for s in ["image", "design"]):
+                    return a
+        # По навыкам
+        matched = self._match_agent_by_skill(task.task_type or "general", agents)
+        return matched or agents[0]
 
     def _match_agent_by_skill(self, task_type: str, agents: list[Agent]) -> Agent | None:
         """Найти агента с подходящим скиллом."""

@@ -123,6 +123,41 @@ async def goal_status(goal_id: uuid.UUID, db: AsyncSession = Depends(get_db), _u
     }
 
 
+@router.post("/stop/{goal_id}")
+async def stop_goal(goal_id: uuid.UUID, db: AsyncSession = Depends(get_db), _user: User = Depends(get_current_user)):
+    """
+    ⏹️ Остановить выполнение цели. Все задачи in_progress → pending, агенты → idle.
+    """
+    from app.models.goal import Goal
+    goal = await db.get(Goal, goal_id)
+    if not goal:
+        raise HTTPException(status_code=404, detail="Goal not found")
+
+    goal.status = "paused"
+
+    # Сбросить все задачи in_progress
+    tasks_result = await db.execute(
+        select(Task).where(Task.goal_id == goal_id, Task.status.in_(["in_progress", "assigned"]))
+    )
+    for task in tasks_result.scalars():
+        task.status = "pending"
+
+    # Сбросить статус агентов
+    agents_result = await db.execute(select(Agent).where(Agent.status.in_(["thinking", "working", "error"])))
+    for agent in agents_result.scalars():
+        agent.status = "idle"
+
+    await db.commit()
+
+    # WebSocket уведомление
+    await ws_manager.broadcast(str(goal_id), {
+        "type": "system_warning",
+        "data": {"message": "Выполнение остановлено пользователем"},
+    })
+
+    return {"status": "stopped", "message": "Цель остановлена. Задачи сброшены в pending."}
+
+
 @router.post("/resume/{goal_id}")
 async def resume_goal(goal_id: uuid.UUID, db: AsyncSession = Depends(get_db), _user: User = Depends(get_current_user)):
     """

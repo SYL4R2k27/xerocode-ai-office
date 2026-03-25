@@ -1,20 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import {
-  ChevronDown,
-  ChevronUp,
-  ArrowRight,
-  Menu,
-  X,
-  Zap,
-  Sparkles,
-  Check,
-  Crown,
-  Building2,
-  Rocket,
-  Plus,
-  Minus,
-} from "lucide-react";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -23,910 +8,1023 @@ interface LandingPageProps {
   onLogin: () => void;
 }
 
+type PageId = "menu" | "features" | "pricing" | "faq" | "about";
+
 /* ------------------------------------------------------------------ */
-/*  Animated section wrapper                                           */
+/*  useTypewriter hook                                                 */
 /* ------------------------------------------------------------------ */
-function Section({
-  children,
-  id,
-  className = "",
-}: {
-  children: React.ReactNode;
-  id?: string;
-  className?: string;
-}) {
+function useTypewriter(text: string, speed: number = 30, active: boolean = true) {
+  const [displayed, setDisplayed] = useState("");
+  const [isDone, setIsDone] = useState(false);
+
+  useEffect(() => {
+    if (!active) {
+      setDisplayed(text);
+      setIsDone(true);
+      return;
+    }
+    setDisplayed("");
+    setIsDone(false);
+    let i = 0;
+    const interval = setInterval(() => {
+      i++;
+      setDisplayed(text.slice(0, i));
+      if (i >= text.length) {
+        clearInterval(interval);
+        setIsDone(true);
+      }
+    }, speed);
+    return () => clearInterval(interval);
+  }, [text, speed, active]);
+
+  return { displayed, isDone };
+}
+
+/* ------------------------------------------------------------------ */
+/*  TypingIndicator                                                    */
+/* ------------------------------------------------------------------ */
+function TypingIndicator() {
   return (
-    <motion.section
-      id={id}
-      className={className}
-      initial={{ opacity: 0, y: 30 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-50px" }}
-      transition={{ duration: 0.6, ease: "easeOut" }}
-    >
-      {children}
-    </motion.section>
+    <div className="flex gap-1.5 items-center px-4 py-3">
+      <div
+        className="w-2 h-2 rounded-full animate-bounce"
+        style={{ backgroundColor: "#9B8EC4", animationDelay: "0ms" }}
+      />
+      <div
+        className="w-2 h-2 rounded-full animate-bounce"
+        style={{ backgroundColor: "#9B8EC4", animationDelay: "150ms" }}
+      />
+      <div
+        className="w-2 h-2 rounded-full animate-bounce"
+        style={{ backgroundColor: "#9B8EC4", animationDelay: "300ms" }}
+      />
+    </div>
   );
 }
 
 /* ------------------------------------------------------------------ */
-/*  CSS keyframes & global styles (injected once)                      */
+/*  BotMessage                                                         */
 /* ------------------------------------------------------------------ */
-const globalStylesId = "xc-landing-styles";
-function injectGlobalStyles() {
-  if (document.getElementById(globalStylesId)) return;
-  const style = document.createElement("style");
-  style.id = globalStylesId;
-  style.textContent = `
-    @keyframes xc-drift-1 { 0%,100%{transform:translate(0,0) scale(1)} 33%{transform:translate(80px,-60px) scale(1.1)} 66%{transform:translate(-40px,40px) scale(0.95)} }
-    @keyframes xc-drift-2 { 0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(-100px,80px) scale(1.05)} }
-    @keyframes xc-drift-3 { 0%,100%{transform:translate(0,0)} 25%{transform:translate(60px,60px)} 75%{transform:translate(-80px,-30px)} }
-    @keyframes xc-drift-4 { 0%,100%{transform:translate(0,0) scale(1)} 40%{transform:translate(50px,-80px) scale(1.08)} 80%{transform:translate(-60px,30px) scale(0.97)} }
-    @keyframes xc-drift-5 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(-70px,-50px)} }
-    @keyframes xc-drift-6 { 0%,100%{transform:translate(0,0) scale(1)} 30%{transform:translate(90px,40px) scale(1.05)} 70%{transform:translate(-50px,-60px) scale(0.96)} }
-    @keyframes xc-drift-7 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(40px,70px)} }
-    @keyframes xc-drift-8 { 0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(-60px,50px) scale(1.1)} }
-    @keyframes xc-bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(10px)} }
-    @keyframes xc-pulse { 0%,100%{opacity:0.6} 50%{opacity:1} }
-    @keyframes xc-marquee { 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }
-    @keyframes xc-node-pulse { 0%,100%{r:6} 50%{r:8} }
-    @keyframes xc-line-dash { 0%{stroke-dashoffset:20} 100%{stroke-dashoffset:0} }
+function BotMessage({
+  text,
+  speed = 10,
+  onDone,
+  children,
+  skipAnimation,
+}: {
+  text: string;
+  speed?: number;
+  onDone?: () => void;
+  children?: React.ReactNode;
+  skipAnimation?: boolean;
+}) {
+  const { displayed, isDone } = useTypewriter(text, speed, !skipAnimation);
 
-    .xc-landing { background: #0A0A0F; color: #F5F5F7; font-family: Inter, system-ui, -apple-system, sans-serif; overflow-x: hidden; }
-    .xc-landing * { box-sizing: border-box; margin: 0; padding: 0; }
-    .xc-landing a { color: inherit; text-decoration: none; }
+  useEffect(() => {
+    if (isDone && onDone) onDone();
+  }, [isDone, onDone]);
 
-    .xc-gradient-text {
-      background: linear-gradient(135deg, #F5F5F7 0%, #7C3AED 50%, #4F7CFF 100%);
-      -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
-    }
-    .xc-card {
-      background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06);
-      border-radius: 16px; padding: 28px; transition: all 0.3s ease;
-    }
-    .xc-card:hover {
-      background: rgba(255,255,255,0.06); border-color: rgba(124,58,237,0.3);
-      box-shadow: 0 0 30px rgba(124,58,237,0.08); transform: translateY(-2px);
-    }
-    .xc-btn-primary {
-      display: inline-flex; align-items: center; gap: 8px;
-      background: linear-gradient(135deg, #7C3AED, #4F7CFF); color: #fff;
-      border: none; border-radius: 12px; padding: 14px 28px; font-size: 16px; font-weight: 600;
-      cursor: pointer; transition: all 0.3s ease;
-    }
-    .xc-btn-primary:hover { opacity: 0.9; transform: translateY(-1px); box-shadow: 0 4px 20px rgba(124,58,237,0.4); }
-    .xc-btn-ghost {
-      display: inline-flex; align-items: center; gap: 8px;
-      background: transparent; color: rgba(255,255,255,0.7);
-      border: 1px solid rgba(255,255,255,0.15); border-radius: 12px;
-      padding: 14px 28px; font-size: 16px; font-weight: 500;
-      cursor: pointer; transition: all 0.3s ease;
-    }
-    .xc-btn-ghost:hover { border-color: rgba(255,255,255,0.3); color: #fff; background: rgba(255,255,255,0.05); }
-
-    .xc-section-label {
-      font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 2px;
-      color: #7C3AED; margin-bottom: 16px;
-    }
-    .xc-section-title {
-      font-size: clamp(32px, 5vw, 48px); font-weight: 700; line-height: 1.15;
-      color: #F5F5F7; margin-bottom: 20px;
-    }
-    .xc-section-subtitle {
-      font-size: 18px; color: rgba(255,255,255,0.5); max-width: 600px; line-height: 1.6;
-    }
-
-    @media (max-width: 768px) {
-      .xc-hide-mobile { display: none !important; }
-      .xc-show-mobile { display: flex !important; }
-    }
-    @media (min-width: 769px) {
-      .xc-show-mobile { display: none !important; }
-    }
-  `;
-  document.head.appendChild(style);
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+      className="flex gap-3 items-start max-w-[90%]"
+    >
+      <div
+        className="w-8 h-8 rounded-full flex items-center justify-center text-[16px] shrink-0 mt-1"
+        style={{ backgroundColor: "rgba(155,126,196,0.2)" }}
+      >
+        <span role="img" aria-label="bot">&#x1F916;</span>
+      </div>
+      <div className="flex flex-col gap-2 min-w-0">
+        <div
+          className="rounded-2xl rounded-tl-md px-4 py-3 text-[14px] leading-relaxed"
+          style={{
+            backgroundColor: "rgba(255,255,255,0.05)",
+            border: "1px solid rgba(255,255,255,0.08)",
+            color: "#F5F5F7",
+          }}
+        >
+          <span style={{ whiteSpace: "pre-wrap" }}>{displayed}</span>
+          {!isDone && (
+            <span className="inline-block w-[2px] h-[16px] ml-0.5 animate-pulse" style={{ backgroundColor: "#9B8EC4", verticalAlign: "text-bottom" }} />
+          )}
+        </div>
+        {isDone && children && (
+          <motion.div
+            initial={{ opacity: 0, y: 5 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            {children}
+          </motion.div>
+        )}
+      </div>
+    </motion.div>
+  );
 }
 
 /* ------------------------------------------------------------------ */
-/*  Main Component                                                     */
+/*  UserMessage                                                        */
 /* ------------------------------------------------------------------ */
-export function LandingPage({ onLogin }: LandingPageProps) {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
-  const [openFaq, setOpenFaq] = useState<number | null>(null);
+function UserMessage({ text, speed = 20 }: { text: string; speed?: number }) {
+  const { displayed, isDone } = useTypewriter(text, speed);
 
-  useEffect(() => {
-    injectGlobalStyles();
-    const handler = () => setScrolled(window.scrollY > 50);
-    window.addEventListener("scroll", handler, { passive: true });
-    return () => window.removeEventListener("scroll", handler);
-  }, []);
-
-  const scrollTo = (id: string) => {
-    setMobileMenuOpen(false);
-    document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
-  };
-
-  /* ---------------------------------------------------------------- */
-  /*  NAVIGATION                                                       */
-  /* ---------------------------------------------------------------- */
-  const nav = (
-    <motion.nav
-      initial={{ y: -20, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.5 }}
-      style={{
-        position: "fixed", top: 0, left: 0, right: 0, zIndex: 100,
-        padding: "0 24px", height: 64,
-        display: "flex", alignItems: "center", justifyContent: "space-between",
-        background: scrolled ? "rgba(10,10,15,0.85)" : "transparent",
-        backdropFilter: scrolled ? "blur(20px)" : "none",
-        borderBottom: scrolled ? "1px solid rgba(255,255,255,0.06)" : "1px solid transparent",
-        transition: "all 0.3s ease",
-      }}
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+      className="flex justify-end"
     >
-      <div style={{ fontWeight: 700, fontSize: 20, cursor: "pointer" }} onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
-        <span className="xc-gradient-text">XeroCode</span>
+      <div
+        className="rounded-2xl rounded-tr-md px-4 py-3 text-[14px] leading-relaxed max-w-[80%]"
+        style={{
+          background: "linear-gradient(135deg, #6B46C1, #553C9A)",
+          color: "#F5F5F7",
+        }}
+      >
+        {displayed}
+        {!isDone && (
+          <span className="inline-block w-[2px] h-[16px] ml-0.5 animate-pulse" style={{ backgroundColor: "#fff", verticalAlign: "text-bottom" }} />
+        )}
       </div>
+    </motion.div>
+  );
+}
 
-      <div className="xc-hide-mobile" style={{ display: "flex", gap: 32, alignItems: "center" }}>
-        {[
-          { label: "Возможности", id: "features" },
-          { label: "Тарифы", id: "pricing" },
-          { label: "FAQ", id: "faq" },
-        ].map((l) => (
-          <span key={l.id} onClick={() => scrollTo(l.id)} style={{ cursor: "pointer", fontSize: 14, color: "rgba(255,255,255,0.6)", transition: "color 0.2s" }}
-            onMouseEnter={(e) => (e.currentTarget.style.color = "#fff")}
-            onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.6)")}
-          >{l.label}</span>
+/* ------------------------------------------------------------------ */
+/*  NavigationButtons                                                  */
+/* ------------------------------------------------------------------ */
+const NAV_ITEMS: { id: PageId | "login"; label: string; emoji: string; userText: string }[] = [
+  { id: "login", label: "Войти в сервис", emoji: "\u{1F680}", userText: "" },
+  { id: "features", label: "Что мы можем", emoji: "\u{1F4A1}", userText: "Расскажи, что вы умеете?" },
+  { id: "pricing", label: "Тарифы и подписки", emoji: "\u{1F4B0}", userText: "Какие у вас тарифы?" },
+  { id: "faq", label: "Частые вопросы", emoji: "\u{2753}", userText: "У меня есть вопросы" },
+  { id: "about", label: "О нас", emoji: "\u{1F465}", userText: "Расскажи о себе" },
+];
+
+function NavigationButtons({
+  onSelect,
+  onLogin,
+}: {
+  onSelect: (id: PageId, userText: string) => void;
+  onLogin: () => void;
+}) {
+  return (
+    <div className="flex flex-col gap-2 mt-1">
+      {NAV_ITEMS.map((item, idx) => (
+        <motion.button
+          key={item.id}
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: idx * 0.1, duration: 0.3 }}
+          onClick={() => {
+            if (item.id === "login") {
+              onLogin();
+            } else {
+              onSelect(item.id as PageId, item.userText);
+            }
+          }}
+          className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-[14px] font-medium text-left transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
+          style={{
+            backgroundColor: "rgba(155,126,196,0.1)",
+            border: "1px solid rgba(155,126,196,0.2)",
+            color: "#D4C6F0",
+          }}
+          whileHover={{ backgroundColor: "rgba(155,126,196,0.2)" }}
+        >
+          <span className="text-[16px]">{item.emoji}</span>
+          {item.label}
+        </motion.button>
+      ))}
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  FeaturesContent                                                    */
+/* ------------------------------------------------------------------ */
+const FEATURES = [
+  { emoji: "\u{1F9E0}", title: "Мульти-агентная оркестрация", desc: "3 режима: Менеджер, Обсуждение, Авто" },
+  { emoji: "\u{1F50C}", title: "9 провайдеров", desc: "OpenAI, Claude, Gemini, Grok, Groq, Stability, Ollama, OpenRouter, Custom" },
+  { emoji: "\u{1F916}", title: "60+ моделей", desc: "GPT-5, Claude Opus, Grok 4, Nano Banana Pro и другие" },
+  { emoji: "\u{26A1}", title: "Tool-calling", desc: "Модели пишут код, создают файлы, запускают команды" },
+  { emoji: "\u{1F3A8}", title: "Генерация изображений", desc: "Nano Banana Pro, Stable Diffusion, FLUX" },
+  { emoji: "\u{1F3E2}", title: "Корпоративный режим", desc: "Дашборд, Kanban, команды до 20 человек" },
+  { emoji: "\u{1F512}", title: "Безопасность", desc: "Шифрование, JWT, rate limiting, HTTPS" },
+  { emoji: "\u{1F30D}", title: "Работа из РФ", desc: "Без VPN, через защищённый прокси" },
+];
+
+function FeaturesContent({ onLogin }: { onLogin: () => void }) {
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        {FEATURES.map((f, i) => (
+          <motion.div
+            key={i}
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: i * 0.07, duration: 0.3 }}
+            className="rounded-xl p-3.5"
+            style={{
+              backgroundColor: "rgba(255,255,255,0.04)",
+              border: "1px solid rgba(255,255,255,0.06)",
+            }}
+          >
+            <div className="flex items-start gap-2.5">
+              <span className="text-[20px] shrink-0">{f.emoji}</span>
+              <div>
+                <div className="text-[13px] font-semibold" style={{ color: "#F5F5F7" }}>{f.title}</div>
+                <div className="text-[12px] mt-0.5" style={{ color: "#A1A1A6" }}>{f.desc}</div>
+              </div>
+            </div>
+          </motion.div>
         ))}
       </div>
 
-      <div className="xc-hide-mobile">
-        <button onClick={onLogin} className="xc-btn-ghost" style={{ padding: "8px 20px", fontSize: 14 }}>Войти</button>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.7 }}
+        className="text-[13px] mt-2"
+        style={{ color: "#A1A1A6" }}
+      >
+        Хотите попробовать? Регистрация занимает 30 секунд.
+      </motion.div>
+
+      <motion.button
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.85 }}
+        onClick={onLogin}
+        className="self-start px-5 py-2.5 rounded-xl text-[14px] font-semibold transition-all hover:scale-[1.03] active:scale-[0.98] cursor-pointer"
+        style={{
+          background: "linear-gradient(135deg, #6B46C1, #553C9A)",
+          color: "#fff",
+          border: "none",
+        }}
+      >
+        Начать бесплатно
+      </motion.button>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  PricingContent                                                     */
+/* ------------------------------------------------------------------ */
+interface PlanData {
+  name: string;
+  price: string;
+  badge?: string;
+  badgeColor?: string;
+  trial: boolean;
+  keyFeatures: string[];
+  allFeatures: { text: string; included: boolean }[];
+}
+
+const PLANS: PlanData[] = [
+  {
+    name: "START",
+    price: "500\u20BD разово",
+    trial: true,
+    keyFeatures: ["50 задач", "3 агента", "BYOK (свои ключи)"],
+    allFeatures: [
+      { text: "50 задач", included: true },
+      { text: "3 агента одновременно", included: true },
+      { text: "BYOK (свои API-ключи)", included: true },
+      { text: "3 дня бесплатного триала", included: true },
+      { text: "Базовые модели", included: true },
+      { text: "Email-поддержка", included: true },
+      { text: "Бесплатный пул моделей", included: false },
+      { text: "Средние и премиум модели", included: false },
+      { text: "Корпоративные функции", included: false },
+      { text: "Приоритетная поддержка", included: false },
+    ],
+  },
+  {
+    name: "PRO",
+    price: "1 990\u20BD/мес",
+    trial: true,
+    keyFeatures: ["500 задач", "10 агентов", "Бесплатный пул"],
+    allFeatures: [
+      { text: "500 задач в месяц", included: true },
+      { text: "10 агентов одновременно", included: true },
+      { text: "Бесплатный пул моделей", included: true },
+      { text: "3 дня бесплатного триала", included: true },
+      { text: "BYOK + пул моделей", included: true },
+      { text: "Расширенная аналитика", included: true },
+      { text: "Приоритетная поддержка", included: true },
+      { text: "Средние модели (Claude Sonnet, GPT-4o)", included: false },
+      { text: "Премиум модели", included: false },
+      { text: "Корпоративные функции", included: false },
+    ],
+  },
+  {
+    name: "PRO PLUS",
+    price: "5 490\u20BD/мес",
+    badge: "Популярный",
+    badgeColor: "#6B46C1",
+    trial: true,
+    keyFeatures: ["2000 задач", "Средние модели", "Все из PRO"],
+    allFeatures: [
+      { text: "2000 задач в месяц", included: true },
+      { text: "15 агентов одновременно", included: true },
+      { text: "Средние модели (Claude Sonnet, GPT-4o)", included: true },
+      { text: "3 дня бесплатного триала", included: true },
+      { text: "BYOK + пул моделей", included: true },
+      { text: "Расширенная аналитика", included: true },
+      { text: "Приоритетная поддержка", included: true },
+      { text: "Tool-calling", included: true },
+      { text: "Генерация изображений", included: true },
+      { text: "Премиум модели (Claude Opus, GPT-5)", included: false },
+      { text: "Корпоративные функции", included: false },
+    ],
+  },
+  {
+    name: "ULTIMA",
+    price: "34 990\u20BD/мес",
+    badge: "Безлимит",
+    badgeColor: "#D4A054",
+    trial: false,
+    keyFeatures: ["Безлимит задач", "Все модели", "Все премиум"],
+    allFeatures: [
+      { text: "Безлимитные задачи", included: true },
+      { text: "Неограниченные агенты", included: true },
+      { text: "Все модели (включая премиум)", included: true },
+      { text: "Claude Opus, GPT-5, Grok 4", included: true },
+      { text: "BYOK + полный пул", included: true },
+      { text: "Расширенная аналитика", included: true },
+      { text: "Приоритетная поддержка 24/7", included: true },
+      { text: "Tool-calling без ограничений", included: true },
+      { text: "Генерация изображений без лимитов", included: true },
+      { text: "Ранний доступ к новым моделям", included: true },
+    ],
+  },
+  {
+    name: "CORPORATE",
+    price: "от 89 990\u20BD/мес",
+    trial: false,
+    keyFeatures: ["3-20 профилей", "Kanban, Дашборд", "SSO, аудит"],
+    allFeatures: [
+      { text: "3-20 профилей в команде", included: true },
+      { text: "Все из ULTIMA для каждого", included: true },
+      { text: "Kanban-доска задач", included: true },
+      { text: "Корпоративный дашборд", included: true },
+      { text: "Управление командой", included: true },
+      { text: "SSO-интеграция", included: true },
+      { text: "Аудит действий", included: true },
+      { text: "Выделенный менеджер", included: true },
+      { text: "SLA 99.9%", included: true },
+      { text: "Индивидуальные интеграции", included: true },
+    ],
+  },
+];
+
+function PlanCard({ plan }: { plan: PlanData }) {
+  const [expanded, setExpanded] = useState(false);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 15 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="rounded-xl overflow-hidden"
+      style={{
+        backgroundColor: "rgba(255,255,255,0.04)",
+        border: plan.badge ? `1px solid ${plan.badgeColor}40` : "1px solid rgba(255,255,255,0.06)",
+      }}
+    >
+      <div className="p-4">
+        <div className="flex items-center gap-2 mb-2">
+          <span className="text-[15px] font-bold" style={{ color: "#F5F5F7" }}>{plan.name}</span>
+          {plan.badge && (
+            <span
+              className="text-[10px] font-semibold px-2 py-0.5 rounded-full"
+              style={{ backgroundColor: `${plan.badgeColor}30`, color: plan.badgeColor }}
+            >
+              {plan.badge}
+            </span>
+          )}
+        </div>
+        <div className="text-[18px] font-bold mb-3" style={{ color: "#D4C6F0" }}>{plan.price}</div>
+        {plan.trial && (
+          <div className="text-[11px] mb-2 px-2 py-1 rounded-md inline-block" style={{ backgroundColor: "rgba(90,191,173,0.15)", color: "#5ABFAD" }}>
+            3 дня бесплатного триала
+          </div>
+        )}
+        <ul className="flex flex-col gap-1.5 mt-2">
+          {plan.keyFeatures.map((f, i) => (
+            <li key={i} className="flex items-center gap-2 text-[12px]" style={{ color: "#A1A1A6" }}>
+              <span style={{ color: "#5ABFAD" }}>{"\u2713"}</span> {f}
+            </li>
+          ))}
+        </ul>
+        <button
+          onClick={() => setExpanded(!expanded)}
+          className="mt-3 text-[12px] font-medium flex items-center gap-1 cursor-pointer transition-colors"
+          style={{ color: "#9B8EC4", background: "none", border: "none" }}
+        >
+          {expanded ? "Свернуть \u25B2" : "Подробнее \u25BC"}
+        </button>
       </div>
 
-      <button className="xc-show-mobile" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-        style={{ background: "none", border: "none", color: "#fff", cursor: "pointer", display: "flex", alignItems: "center" }}>
-        {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-      </button>
-
       <AnimatePresence>
-        {mobileMenuOpen && (
+        {expanded && (
           <motion.div
-            initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
-            style={{
-              position: "absolute", top: 64, left: 0, right: 0, background: "rgba(10,10,15,0.95)",
-              backdropFilter: "blur(20px)", padding: 24, display: "flex", flexDirection: "column", gap: 20,
-              borderBottom: "1px solid rgba(255,255,255,0.06)",
-            }}
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.25 }}
+            className="overflow-hidden"
           >
-            {["features", "pricing", "faq"].map((id) => (
-              <span key={id} onClick={() => scrollTo(id)} style={{ cursor: "pointer", fontSize: 16, color: "rgba(255,255,255,0.7)" }}>
-                {id === "features" ? "Возможности" : id === "pricing" ? "Тарифы" : "FAQ"}
-              </span>
-            ))}
-            <button onClick={() => { setMobileMenuOpen(false); onLogin(); }} className="xc-btn-ghost" style={{ padding: "10px 20px", fontSize: 14, width: "fit-content" }}>Войти</button>
+            <div
+              className="px-4 pb-4 pt-2 flex flex-col gap-1.5"
+              style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}
+            >
+              {plan.allFeatures.map((f, i) => (
+                <div key={i} className="flex items-center gap-2 text-[12px]" style={{ color: f.included ? "#A1A1A6" : "#48484A" }}>
+                  <span style={{ color: f.included ? "#5ABFAD" : "#48484A" }}>{f.included ? "\u2705" : "\u274C"}</span>
+                  {f.text}
+                </div>
+              ))}
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
-    </motion.nav>
+    </motion.div>
   );
+}
 
-  /* ---------------------------------------------------------------- */
-  /*  HERO                                                             */
-  /* ---------------------------------------------------------------- */
-  const meshOrbs = [
-    { color: "#7C3AED", size: 600, top: "10%", left: "20%", animation: "xc-drift-1 25s ease-in-out infinite", opacity: 0.12 },
-    { color: "#4F7CFF", size: 500, top: "30%", left: "60%", animation: "xc-drift-2 30s ease-in-out infinite", opacity: 0.1 },
-    { color: "#06B6D4", size: 450, top: "60%", left: "10%", animation: "xc-drift-3 35s ease-in-out infinite", opacity: 0.08 },
-    { color: "#7C3AED", size: 350, top: "50%", left: "70%", animation: "xc-drift-4 22s ease-in-out infinite", opacity: 0.1 },
-    { color: "#4F7CFF", size: 550, top: "5%", left: "75%", animation: "xc-drift-5 28s ease-in-out infinite", opacity: 0.07 },
-    { color: "#8B5CF6", size: 400, top: "70%", left: "50%", animation: "xc-drift-6 32s ease-in-out infinite", opacity: 0.09 },
-    { color: "#06B6D4", size: 300, top: "20%", left: "40%", animation: "xc-drift-7 40s ease-in-out infinite", opacity: 0.11 },
-    { color: "#9333EA", size: 480, top: "80%", left: "30%", animation: "xc-drift-8 26s ease-in-out infinite", opacity: 0.08 },
-  ];
-
-  const hero = (
-    <section style={{ position: "relative", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
-      {/* Mesh background */}
-      <div style={{ position: "absolute", inset: 0, overflow: "hidden" }}>
-        {meshOrbs.map((orb, i) => (
-          <div key={i} style={{
-            position: "absolute", top: orb.top, left: orb.left,
-            width: orb.size, height: orb.size, borderRadius: "50%",
-            background: `radial-gradient(circle, ${orb.color} 0%, transparent 70%)`,
-            opacity: orb.opacity, filter: "blur(80px)", animation: orb.animation,
-          }} />
-        ))}
-      </div>
-
-      {/* Content */}
-      <div style={{ position: "relative", zIndex: 2, textAlign: "center", padding: "0 24px", maxWidth: 800 }}>
-        <motion.h1
-          initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
-          className="xc-gradient-text"
-          style={{ fontSize: "clamp(48px, 8vw, 80px)", fontWeight: 800, lineHeight: 1.05, marginBottom: 20 }}
-        >
-          XeroCode
-        </motion.h1>
-
-        <motion.p
-          initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
-          style={{ fontSize: "clamp(22px, 3vw, 32px)", fontWeight: 600, color: "rgba(255,255,255,0.85)", marginBottom: 20 }}
-        >
-          Ваша команда ИИ-агентов
-        </motion.p>
-
-        <motion.p
-          initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.4, ease: "easeOut" }}
-          style={{ fontSize: "clamp(15px, 2vw, 18px)", color: "rgba(255,255,255,0.5)", lineHeight: 1.7, maxWidth: 580, margin: "0 auto 36px" }}
-        >
-          Объединяйте любые ИИ-модели в одну команду. Ставьте задачи — агенты распределят работу и доставят результат.
-        </motion.p>
-
+function PricingContent() {
+  return (
+    <div className="flex flex-col gap-3">
+      {PLANS.map((p, i) => (
         <motion.div
-          initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.6, ease: "easeOut" }}
-          style={{ display: "flex", gap: 16, justifyContent: "center", flexWrap: "wrap" }}
+          key={p.name}
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: i * 0.08 }}
         >
-          <button className="xc-btn-primary" onClick={onLogin}>Начать бесплатно <ArrowRight size={18} /></button>
-          <button className="xc-btn-ghost" onClick={() => scrollTo("problem")}>Узнать больше <ChevronDown size={18} /></button>
+          <PlanCard plan={p} />
         </motion.div>
-      </div>
-
-      {/* Bouncing chevron */}
-      <motion.div
-        initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.5 }}
-        style={{ position: "absolute", bottom: 32, left: "50%", transform: "translateX(-50%)", animation: "xc-bounce 2s ease-in-out infinite", cursor: "pointer" }}
-        onClick={() => scrollTo("providers")}
-      >
-        <ChevronDown size={28} color="rgba(255,255,255,0.3)" />
-      </motion.div>
-    </section>
+      ))}
+    </div>
   );
+}
 
-  /* ---------------------------------------------------------------- */
-  /*  PROVIDERS                                                        */
-  /* ---------------------------------------------------------------- */
-  const providers = [
-    { name: "OpenAI", abbr: "OA" },
-    { name: "Anthropic", abbr: "AN" },
-    { name: "Google", abbr: "GO" },
-    { name: "Groq", abbr: "GQ" },
-    { name: "xAI", abbr: "xA" },
-    { name: "Ollama", abbr: "OL" },
-    { name: "OpenRouter", abbr: "OR" },
-  ];
+/* ------------------------------------------------------------------ */
+/*  FAQContent                                                         */
+/* ------------------------------------------------------------------ */
+const FAQ_ITEMS = [
+  { q: "Что такое XeroCode?", a: "Платформа-хаб для объединения ИИ-моделей в команду. Вы ставите задачу, а несколько моделей работают над ней параллельно, каждая в своей роли." },
+  { q: "Какие модели поддерживаются?", a: "60+ моделей от 9 провайдеров: OpenAI (GPT-5, GPT-4o), Anthropic (Claude Opus, Sonnet), Google (Gemini), xAI (Grok 4), Groq, Stability AI, Ollama (локальные), OpenRouter и кастомные эндпоинты." },
+  { q: "Нужен ли VPN для работы из России?", a: "Нет, все API работают через наш защищённый прокси-сервер. Подключение стабильное и быстрое без дополнительных настроек." },
+  { q: "Как подключить свои модели?", a: "В настройках выберите провайдера, введите API-ключ. Модель появится в списке доступных агентов за несколько секунд." },
+  { q: "Можно ли попробовать бесплатно?", a: "Да, тарифы START, PRO и PRO PLUS включают 3 дня бесплатного триала. Карта не требуется." },
+  { q: "Что такое оркестрация?", a: "Платформа распределяет задачи между моделями по их сильным сторонам. Например, Claude анализирует текст, GPT пишет код, а Stable Diffusion создаёт изображения." },
+  { q: "Как модели общаются между собой?", a: "Через Communication Bus \u2014 платформа передаёт контекст и результаты между агентами, организуя совместную работу." },
+  { q: "Что входит в корпоративный тариф?", a: "Дашборд, Kanban, управление командой до 20 человек, аудит действий, SSO-интеграция и выделенный менеджер." },
+  { q: "Как оплатить?", a: "Банковская карта, СБП, МИР. Для юридических лиц \u2014 счёт + акт." },
+  { q: "Безопасно ли хранить API-ключи?", a: "Да, ключи шифруются AES-256 (Fernet), хранятся только на нашем сервере. Никто, кроме вас, не имеет к ним доступа." },
+];
 
-  const providersSection = (
-    <Section id="providers" className="">
-      <div style={{ padding: "80px 24px", textAlign: "center" }}>
-        <p style={{ fontSize: 13, fontWeight: 600, textTransform: "uppercase", letterSpacing: 2, color: "rgba(255,255,255,0.35)", marginBottom: 32 }}>
-          Совместимо с лучшими ИИ-моделями
-        </p>
-        <div style={{ overflow: "hidden", position: "relative", maxWidth: 900, margin: "0 auto" }}>
-          <div style={{ display: "flex", gap: 16, animation: "xc-marquee 30s linear infinite", width: "max-content" }}>
-            {[...providers, ...providers].map((p, i) => (
-              <div key={i} style={{
-                display: "flex", alignItems: "center", gap: 10, padding: "10px 20px",
-                background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)",
-                borderRadius: 40, fontSize: 14, color: "rgba(255,255,255,0.5)",
-                whiteSpace: "nowrap", transition: "all 0.3s",
-              }}
-                onMouseEnter={(e) => { e.currentTarget.style.color = "#fff"; e.currentTarget.style.borderColor = "rgba(124,58,237,0.3)"; }}
-                onMouseLeave={(e) => { e.currentTarget.style.color = "rgba(255,255,255,0.5)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.06)"; }}
-              >
-                <span style={{
-                  width: 28, height: 28, borderRadius: 8,
-                  background: "linear-gradient(135deg, rgba(124,58,237,0.2), rgba(79,124,255,0.2))",
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.7)",
-                }}>{p.abbr}</span>
-                {p.name}
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    </Section>
-  );
+function FAQContent() {
+  const [openIdx, setOpenIdx] = useState<number | null>(null);
 
-  /* ---------------------------------------------------------------- */
-  /*  PROBLEM                                                          */
-  /* ---------------------------------------------------------------- */
-  const problems = [
-    { icon: "🔀", title: "Переключение между чатами", desc: "ChatGPT для текста, Claude для кода, Midjourney для картинок. Каждый в своём окне.", accent: "#EF4444" },
-    { icon: "🚫", title: "Нет командной работы", desc: "Модели не видят результаты друг друга. Вы — ручной передатчик данных.", accent: "#F59E0B" },
-    { icon: "💸", title: "Дублирование расходов", desc: "Платите за 5 подписок. Используете 20% возможностей каждой.", accent: "#EF4444" },
-  ];
-
-  const problemSection = (
-    <Section id="problem">
-      <div style={{ padding: "100px 24px", maxWidth: 1100, margin: "0 auto" }}>
-        <p className="xc-section-label">Проблема</p>
-        <h2 className="xc-section-title" style={{ maxWidth: 700 }}>
-          Десятки ИИ-моделей. Ни одна не работает в команде.
-        </h2>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 20, marginTop: 48 }}>
-          {problems.map((p, i) => (
-            <motion.div key={i}
-              initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }} transition={{ delay: i * 0.15, duration: 0.5 }}
-              className="xc-card" style={{ borderColor: `${p.accent}22`, borderLeftWidth: 3, borderLeftColor: `${p.accent}66` }}
-            >
-              <div style={{ fontSize: 32, marginBottom: 16 }}>{p.icon}</div>
-              <h3 style={{ fontSize: 18, fontWeight: 600, marginBottom: 10, color: "#F5F5F7" }}>{p.title}</h3>
-              <p style={{ fontSize: 15, color: "rgba(255,255,255,0.5)", lineHeight: 1.6 }}>{p.desc}</p>
-            </motion.div>
-          ))}
-        </div>
-      </div>
-    </Section>
-  );
-
-  /* ---------------------------------------------------------------- */
-  /*  HOW IT WORKS                                                     */
-  /* ---------------------------------------------------------------- */
-  const steps = [
-    { icon: "🔌", title: "Подключите модели", desc: "Добавьте API-ключи OpenAI, Claude, Gemini или используйте наши готовые пулы." },
-    { icon: "🎯", title: "Поставьте цель", desc: "Опишите задачу. Выберите режим: Менеджер, Обсуждение или Авто." },
-    { icon: "✨", title: "Получите результат", desc: "Модели разбивают задачу, пишут код, генерируют дизайн, проверяют друг друга." },
-  ];
-
-  const howItWorks = (
-    <Section id="how-it-works">
-      <div style={{ padding: "100px 24px", maxWidth: 1100, margin: "0 auto", textAlign: "center" }}>
-        <p className="xc-section-label">Процесс</p>
-        <h2 className="xc-section-title">Как это работает</h2>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 32, marginTop: 56, position: "relative" }}>
-          {/* Connecting line (desktop only) */}
-          <div className="xc-hide-mobile" style={{
-            position: "absolute", top: 52, left: "20%", right: "20%", height: 2,
-            background: "repeating-linear-gradient(90deg, rgba(124,58,237,0.3) 0px, rgba(124,58,237,0.3) 6px, transparent 6px, transparent 12px)",
-          }} />
-          {steps.map((s, i) => (
-            <motion.div key={i}
-              initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }} transition={{ delay: i * 0.2, duration: 0.5 }}
-              style={{ display: "flex", flexDirection: "column", alignItems: "center", position: "relative", zIndex: 1 }}
-            >
-              <div style={{
-                width: 56, height: 56, borderRadius: 16,
-                background: "linear-gradient(135deg, #7C3AED, #4F7CFF)",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                fontSize: 20, fontWeight: 800, color: "#fff", marginBottom: 24,
-                boxShadow: "0 4px 20px rgba(124,58,237,0.3)",
-              }}>{i + 1}</div>
-              <div style={{ fontSize: 32, marginBottom: 12 }}>{s.icon}</div>
-              <h3 style={{ fontSize: 20, fontWeight: 600, marginBottom: 10, color: "#F5F5F7" }}>{s.title}</h3>
-              <p style={{ fontSize: 15, color: "rgba(255,255,255,0.5)", lineHeight: 1.6, maxWidth: 300 }}>{s.desc}</p>
-            </motion.div>
-          ))}
-        </div>
-      </div>
-    </Section>
-  );
-
-  /* ---------------------------------------------------------------- */
-  /*  FEATURES BENTO GRID                                              */
-  /* ---------------------------------------------------------------- */
-  const featureCards = [
-    { title: "Мульти-агентная оркестрация", desc: "Несколько моделей работают одновременно: планировщик раздаёт задачи, исполнители выполняют, ревьюер проверяет.", large: true, hasAnimation: true },
-    { title: "60+ моделей", desc: "GPT-4o, Claude 3.5, Gemini Pro, Llama 3, Mistral и десятки других.", icon: <Sparkles size={24} /> },
-    { title: "Tool-calling", desc: "Агенты используют инструменты: браузер, файлы, API, базы данных.", icon: <Zap size={24} /> },
-    { title: "Генерация изображений", desc: "DALL-E, Stable Diffusion, Midjourney-подобные модели в одном интерфейсе.", icon: "🎨" },
-    { title: "Без VPN из РФ", desc: "Прямой доступ ко всем моделям через российские серверы. Никаких блокировок.", icon: "🌐" },
-    { title: "Корпоративный режим", desc: "Kanban-доска, командные чаты, ревью, аудит действий, SSO.", icon: <Building2 size={24} /> },
-    { title: "Конструктор пулов", desc: "Создавайте свои наборы моделей под задачу. Автоматическая ротация, фолбэки, приоритеты.", large: true, icon: <Rocket size={24} /> },
-  ];
-
-  const featuresSection = (
-    <Section id="features">
-      <div style={{ padding: "100px 24px", maxWidth: 1100, margin: "0 auto" }}>
-        <div style={{ textAlign: "center", marginBottom: 56 }}>
-          <p className="xc-section-label">Платформа</p>
-          <h2 className="xc-section-title">Возможности</h2>
-        </div>
-        <div style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(3, 1fr)",
-          gap: 16,
-        }}>
-          {featureCards.map((f, i) => (
-            <motion.div key={i}
-              initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }} transition={{ delay: i * 0.08, duration: 0.5 }}
-              className="xc-card"
-              style={{
-                gridColumn: f.large ? "span 2" : "span 1",
-                minHeight: f.large ? 200 : 160,
-                display: "flex", flexDirection: "column", justifyContent: "space-between",
-                position: "relative", overflow: "hidden",
-              }}
-            >
-              {/* Animated node diagram for orchestration card */}
-              {f.hasAnimation && (
-                <svg style={{ position: "absolute", top: 16, right: 16, opacity: 0.3 }} width="120" height="80" viewBox="0 0 120 80">
-                  <line x1="30" y1="40" x2="60" y2="20" stroke="#7C3AED" strokeWidth="1.5" strokeDasharray="4 4" style={{ animation: "xc-line-dash 2s linear infinite" }} />
-                  <line x1="30" y1="40" x2="60" y2="60" stroke="#4F7CFF" strokeWidth="1.5" strokeDasharray="4 4" style={{ animation: "xc-line-dash 2s linear infinite 0.5s" }} />
-                  <line x1="60" y1="20" x2="95" y2="40" stroke="#7C3AED" strokeWidth="1.5" strokeDasharray="4 4" style={{ animation: "xc-line-dash 2s linear infinite 1s" }} />
-                  <line x1="60" y1="60" x2="95" y2="40" stroke="#4F7CFF" strokeWidth="1.5" strokeDasharray="4 4" style={{ animation: "xc-line-dash 2s linear infinite 1.5s" }} />
-                  <circle cx="30" cy="40" r="6" fill="#7C3AED" style={{ animation: "xc-node-pulse 2s ease-in-out infinite" }} />
-                  <circle cx="60" cy="20" r="5" fill="#4F7CFF" style={{ animation: "xc-node-pulse 2s ease-in-out infinite 0.3s" }} />
-                  <circle cx="60" cy="60" r="5" fill="#4F7CFF" style={{ animation: "xc-node-pulse 2s ease-in-out infinite 0.6s" }} />
-                  <circle cx="95" cy="40" r="6" fill="#7C3AED" style={{ animation: "xc-node-pulse 2s ease-in-out infinite 0.9s" }} />
-                </svg>
-              )}
-              <div>
-                <div style={{ fontSize: 28, marginBottom: 14, color: "#7C3AED" }}>
-                  {typeof f.icon === "string" ? f.icon : f.icon || null}
-                </div>
-                <h3 style={{ fontSize: 18, fontWeight: 600, marginBottom: 10, color: "#F5F5F7" }}>{f.title}</h3>
-                <p style={{ fontSize: 14, color: "rgba(255,255,255,0.45)", lineHeight: 1.6 }}>{f.desc}</p>
-              </div>
-            </motion.div>
-          ))}
-        </div>
-        {/* Responsive override for mobile */}
-        <style>{`
-          @media (max-width: 768px) {
-            #features [style*="grid-template-columns"] { grid-template-columns: 1fr !important; }
-            #features [style*="grid-column: span 2"] { grid-column: span 1 !important; }
-          }
-        `}</style>
-      </div>
-    </Section>
-  );
-
-  /* ---------------------------------------------------------------- */
-  /*  PRODUCT DEMO                                                     */
-  /* ---------------------------------------------------------------- */
-  const demoSection = (
-    <Section id="demo">
-      <div style={{ padding: "100px 24px", maxWidth: 1100, margin: "0 auto", textAlign: "center" }}>
-        <p className="xc-section-label">Интерфейс</p>
-        <h2 className="xc-section-title">Платформа в действии</h2>
-
+  return (
+    <div className="flex flex-col gap-2">
+      {FAQ_ITEMS.map((item, i) => (
         <motion.div
-          initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }} transition={{ duration: 0.8 }}
+          key={i}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: i * 0.05 }}
+          className="rounded-xl overflow-hidden"
           style={{
-            marginTop: 48, borderRadius: 20, overflow: "hidden",
-            border: "1px solid rgba(124,58,237,0.2)",
-            background: "rgba(255,255,255,0.02)",
-            boxShadow: "0 0 60px rgba(124,58,237,0.08)",
-            animation: "xc-bounce 6s ease-in-out infinite",
+            backgroundColor: "rgba(255,255,255,0.04)",
+            border: "1px solid rgba(255,255,255,0.06)",
           }}
         >
-          <div style={{ display: "grid", gridTemplateColumns: "200px 1fr 220px", minHeight: 380 }}>
-            {/* Left sidebar */}
-            <div style={{ borderRight: "1px solid rgba(255,255,255,0.06)", padding: 20 }}>
-              <div style={{ fontSize: 12, color: "rgba(255,255,255,0.35)", marginBottom: 16, textTransform: "uppercase", letterSpacing: 1 }}>Модели</div>
-              {["GPT-4o", "Claude 3.5", "Gemini Pro", "Llama 3", "DALL-E 3"].map((m, i) => (
-                <div key={i} style={{
-                  padding: "8px 12px", borderRadius: 8, marginBottom: 6, fontSize: 13,
-                  color: i === 0 ? "#fff" : "rgba(255,255,255,0.4)",
-                  background: i === 0 ? "rgba(124,58,237,0.15)" : "transparent",
-                }}>
-                  <span style={{
-                    display: "inline-block", width: 6, height: 6, borderRadius: 3,
-                    background: i < 3 ? "#22C55E" : "rgba(255,255,255,0.2)", marginRight: 8,
-                  }} />
-                  {m}
-                </div>
-              ))}
-            </div>
-
-            {/* Center chat */}
-            <div style={{ padding: 24, display: "flex", flexDirection: "column", gap: 16, justifyContent: "center" }}>
-              <div style={{ display: "flex", gap: 12 }}>
-                <div style={{
-                  width: 32, height: 32, borderRadius: 10, flexShrink: 0,
-                  background: "linear-gradient(135deg, #7C3AED, #4F7CFF)",
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  fontSize: 12, fontWeight: 700, color: "#fff",
-                }}>ME</div>
-                <div style={{
-                  background: "rgba(255,255,255,0.04)", borderRadius: "4px 14px 14px 14px",
-                  padding: "12px 16px", fontSize: 14, color: "rgba(255,255,255,0.7)", maxWidth: 400, textAlign: "left",
-                }}>Создай лендинг для SaaS продукта с секциями hero, pricing и FAQ</div>
-              </div>
-              <div style={{ display: "flex", gap: 12, justifyContent: "flex-end" }}>
-                <div style={{
-                  background: "rgba(124,58,237,0.1)", borderRadius: "14px 4px 14px 14px",
-                  padding: "12px 16px", fontSize: 14, color: "rgba(255,255,255,0.7)", maxWidth: 400, textAlign: "left",
-                  border: "1px solid rgba(124,58,237,0.15)",
-                }}>
-                  <span style={{ fontSize: 11, color: "#7C3AED", fontWeight: 600, display: "block", marginBottom: 6 }}>GPT-4o → Менеджер</span>
-                  Разбиваю задачу на подзадачи. Claude напишет код, DALL-E сгенерирует изображения...
-                </div>
-                <div style={{
-                  width: 32, height: 32, borderRadius: 10, flexShrink: 0,
-                  background: "rgba(124,58,237,0.2)",
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  fontSize: 14,
-                }}>🤖</div>
-              </div>
-              <div style={{ display: "flex", gap: 12, justifyContent: "flex-end" }}>
-                <div style={{
-                  background: "rgba(79,124,255,0.08)", borderRadius: "14px 4px 14px 14px",
-                  padding: "12px 16px", fontSize: 14, color: "rgba(255,255,255,0.7)", maxWidth: 400, textAlign: "left",
-                  border: "1px solid rgba(79,124,255,0.12)",
-                }}>
-                  <span style={{ fontSize: 11, color: "#4F7CFF", fontWeight: 600, display: "block", marginBottom: 6 }}>Claude 3.5 → Кодер</span>
-                  Hero-секция готова. Использую Next.js + Tailwind. Передаю DALL-E запрос на hero-image...
-                </div>
-                <div style={{
-                  width: 32, height: 32, borderRadius: 10, flexShrink: 0,
-                  background: "rgba(79,124,255,0.2)",
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  fontSize: 14,
-                }}>🧠</div>
-              </div>
-            </div>
-
-            {/* Right panel */}
-            <div style={{ borderLeft: "1px solid rgba(255,255,255,0.06)", padding: 20 }}>
-              <div style={{ fontSize: 12, color: "rgba(255,255,255,0.35)", marginBottom: 16, textTransform: "uppercase", letterSpacing: 1 }}>Задачи</div>
-              {[
-                { label: "Планирование", status: "done" },
-                { label: "Hero секция", status: "done" },
-                { label: "Pricing блок", status: "active" },
-                { label: "FAQ компонент", status: "pending" },
-                { label: "Hero-изображение", status: "pending" },
-              ].map((t, i) => (
-                <div key={i} style={{
-                  display: "flex", alignItems: "center", gap: 8, padding: "8px 0", fontSize: 13,
-                  color: t.status === "done" ? "rgba(255,255,255,0.35)" : t.status === "active" ? "#fff" : "rgba(255,255,255,0.4)",
-                }}>
-                  <div style={{
-                    width: 16, height: 16, borderRadius: 4, flexShrink: 0,
-                    background: t.status === "done" ? "#22C55E" : t.status === "active" ? "linear-gradient(135deg, #7C3AED, #4F7CFF)" : "rgba(255,255,255,0.1)",
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                  }}>
-                    {t.status === "done" && <Check size={10} color="#fff" />}
-                    {t.status === "active" && <div style={{ width: 4, height: 4, borderRadius: 2, background: "#fff", animation: "xc-pulse 1.5s ease-in-out infinite" }} />}
-                  </div>
-                  <span style={{ textDecoration: t.status === "done" ? "line-through" : "none" }}>{t.label}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </motion.div>
-
-        <p style={{ marginTop: 24, fontSize: 16, color: "rgba(255,255,255,0.4)" }}>
-          Код, дизайн, ресёрч — в одном окне
-        </p>
-
-        {/* Mobile responsive override */}
-        <style>{`
-          @media (max-width: 768px) {
-            #demo [style*="grid-template-columns: 200px"] {
-              grid-template-columns: 1fr !important;
-            }
-            #demo [style*="border-right"] { border-right: none !important; border-bottom: 1px solid rgba(255,255,255,0.06); }
-            #demo [style*="border-left"] { border-left: none !important; border-top: 1px solid rgba(255,255,255,0.06); }
-          }
-        `}</style>
-      </div>
-    </Section>
-  );
-
-  /* ---------------------------------------------------------------- */
-  /*  FOR WHO                                                          */
-  /* ---------------------------------------------------------------- */
-  const audiences = [
-    { icon: "👨‍💻", title: "Разработчики", desc: "Мультиплицируйте продуктивность. GPT планирует, Claude кодит, Llama тестирует." },
-    { icon: "🎨", title: "Дизайнеры", desc: "Генерация макетов и автоматическая вёрстка по ним. Всё в одном потоке." },
-    { icon: "📝", title: "Контент", desc: "Ресёрч + тексты + изображения. Одна цель — готовый контент-пак." },
-    { icon: "🏢", title: "Компании", desc: "Командный дашборд, Kanban, ревью, аудит. До 20 сотрудников." },
-  ];
-
-  const forWhoSection = (
-    <Section id="for-who">
-      <div style={{ padding: "100px 24px", maxWidth: 1100, margin: "0 auto", textAlign: "center" }}>
-        <p className="xc-section-label">Аудитория</p>
-        <h2 className="xc-section-title">Для кого</h2>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 20, marginTop: 48 }}>
-          {audiences.map((a, i) => (
-            <motion.div key={i}
-              initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }} transition={{ delay: i * 0.12, duration: 0.5 }}
-              className="xc-card" style={{ textAlign: "center", padding: 32 }}
-            >
-              <div style={{
-                width: 64, height: 64, borderRadius: 20, margin: "0 auto 20px",
-                background: "linear-gradient(135deg, rgba(124,58,237,0.15), rgba(79,124,255,0.15))",
-                display: "flex", alignItems: "center", justifyContent: "center", fontSize: 28,
-              }}>{a.icon}</div>
-              <h3 style={{ fontSize: 18, fontWeight: 600, marginBottom: 10, color: "#F5F5F7" }}>{a.title}</h3>
-              <p style={{ fontSize: 14, color: "rgba(255,255,255,0.45)", lineHeight: 1.6 }}>{a.desc}</p>
-            </motion.div>
-          ))}
-        </div>
-      </div>
-    </Section>
-  );
-
-  /* ---------------------------------------------------------------- */
-  /*  PRICING                                                          */
-  /* ---------------------------------------------------------------- */
-  const plans = [
-    {
-      name: "Start", price: "500₽", period: "единоразово", icon: <Zap size={20} />,
-      features: ["3 дня бесплатно", "50 задач", "3 агента", "BYOK (свои ключи)"],
-      badge: "Триал 3 дня", highlighted: false, glow: false,
-    },
-    {
-      name: "Pro", price: "1 990₽", period: "/мес", icon: <Sparkles size={20} />,
-      features: ["3 дня бесплатно", "500 задач", "10 агентов", "Бесплатный пул моделей"],
-      badge: "Триал 3 дня", highlighted: false, glow: false,
-    },
-    {
-      name: "Pro Plus", price: "5 490₽", period: "/мес", icon: <Rocket size={20} />,
-      features: ["3 дня бесплатно", "2 000 задач", "Средние модели", "Генерация изображений"],
-      badge: "Популярный", highlighted: true, glow: false,
-    },
-    {
-      name: "Ultima", price: "34 990₽", period: "/мес", icon: <Crown size={20} />,
-      features: ["Безлимит задач", "Все премиум-модели", "Docker Sandbox", "Nano Banana Pro"],
-      badge: "Безлимит", highlighted: false, glow: true,
-    },
-    {
-      name: "Corporate", price: "от 89 990₽", period: "/мес", icon: <Building2 size={20} />,
-      features: ["3-20 профилей", "Kanban + ревью", "SSO, Audit, Webhook", "Счёт + НДС"],
-      badge: null, highlighted: false, glow: false,
-    },
-  ];
-
-  const pricingSection = (
-    <Section id="pricing">
-      <div style={{ padding: "100px 24px", maxWidth: 1200, margin: "0 auto", textAlign: "center" }}>
-        <p className="xc-section-label">Стоимость</p>
-        <h2 className="xc-section-title">Тарифы</h2>
-        <p className="xc-section-subtitle" style={{ margin: "0 auto 56px" }}>
-          Прозрачная стоимость без скрытых платежей
-        </p>
-        <div style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(210px, 1fr))",
-          gap: 16, alignItems: "stretch",
-        }}>
-          {plans.map((plan, i) => (
-            <motion.div key={i}
-              initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }} transition={{ delay: i * 0.1, duration: 0.5 }}
+          <button
+            onClick={() => setOpenIdx(openIdx === i ? null : i)}
+            className="w-full flex items-center justify-between px-4 py-3 text-left cursor-pointer"
+            style={{ background: "none", border: "none", color: "#F5F5F7" }}
+          >
+            <span className="text-[13px] font-medium">{item.q}</span>
+            <span
+              className="text-[12px] shrink-0 ml-2 transition-transform"
               style={{
-                background: "rgba(255,255,255,0.03)",
-                border: plan.highlighted
-                  ? "2px solid transparent"
-                  : plan.glow
-                    ? "1px solid rgba(124,58,237,0.4)"
-                    : "1px solid rgba(255,255,255,0.06)",
-                borderRadius: 20,
-                padding: plan.highlighted ? "36px 24px" : "32px 24px",
-                display: "flex", flexDirection: "column",
-                position: "relative", overflow: "hidden",
-                transform: plan.highlighted ? "scale(1.03)" : "none",
-                ...(plan.highlighted ? {
-                  backgroundImage: "linear-gradient(rgba(255,255,255,0.03), rgba(255,255,255,0.03)), linear-gradient(135deg, #7C3AED, #4F7CFF)",
-                  backgroundOrigin: "border-box",
-                  backgroundClip: "padding-box, border-box",
-                } : {}),
-                ...(plan.glow ? {
-                  boxShadow: "0 0 40px rgba(124,58,237,0.15)",
-                } : {}),
-                transition: "all 0.3s ease",
+                color: "#9B8EC4",
+                transform: openIdx === i ? "rotate(180deg)" : "rotate(0deg)",
               }}
-              onMouseEnter={(e) => { e.currentTarget.style.transform = plan.highlighted ? "scale(1.05)" : "translateY(-4px)"; }}
-              onMouseLeave={(e) => { e.currentTarget.style.transform = plan.highlighted ? "scale(1.03)" : "none"; }}
             >
-              {plan.badge && (
-                <div style={{
-                  position: "absolute", top: 16, right: 16, padding: "4px 12px",
-                  borderRadius: 20, fontSize: 11, fontWeight: 600,
-                  background: plan.highlighted ? "linear-gradient(135deg, #7C3AED, #4F7CFF)" : "rgba(124,58,237,0.15)",
-                  color: plan.highlighted ? "#fff" : "#7C3AED",
-                }}>{plan.badge}</div>
-              )}
-              <div style={{ color: "#7C3AED", marginBottom: 16 }}>{plan.icon}</div>
-              <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 8, color: "#F5F5F7" }}>{plan.name}</h3>
-              <div style={{ marginBottom: 24 }}>
-                <span style={{ fontSize: 28, fontWeight: 800, color: "#F5F5F7" }}>{plan.price}</span>
-                <span style={{ fontSize: 14, color: "rgba(255,255,255,0.35)", marginLeft: 4 }}>{plan.period}</span>
-              </div>
-              <div style={{ flex: 1 }}>
-                {plan.features.map((f, fi) => (
-                  <div key={fi} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12, fontSize: 14, color: "rgba(255,255,255,0.6)" }}>
-                    <Check size={14} color="#7C3AED" />
-                    {f}
-                  </div>
-                ))}
-              </div>
-              <button
-                onClick={onLogin}
-                style={{
-                  marginTop: 24, width: "100%", padding: "12px 20px",
-                  borderRadius: 12, border: "none", fontSize: 14, fontWeight: 600, cursor: "pointer",
-                  background: plan.highlighted ? "linear-gradient(135deg, #7C3AED, #4F7CFF)" : "rgba(255,255,255,0.06)",
-                  color: plan.highlighted ? "#fff" : "rgba(255,255,255,0.7)",
-                  transition: "all 0.3s",
-                }}
-                onMouseEnter={(e) => {
-                  if (!plan.highlighted) {
-                    e.currentTarget.style.background = "rgba(255,255,255,0.1)";
-                    e.currentTarget.style.color = "#fff";
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (!plan.highlighted) {
-                    e.currentTarget.style.background = "rgba(255,255,255,0.06)";
-                    e.currentTarget.style.color = "rgba(255,255,255,0.7)";
-                  }
-                }}
+              {"\u25BC"}
+            </span>
+          </button>
+          <AnimatePresence>
+            {openIdx === i && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="overflow-hidden"
               >
-                Выбрать
-              </button>
-            </motion.div>
+                <div
+                  className="px-4 pb-3 text-[12px] leading-relaxed"
+                  style={{ color: "#A1A1A6", borderTop: "1px solid rgba(255,255,255,0.04)" }}
+                >
+                  {item.a}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.div>
+      ))}
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  AboutContent                                                       */
+/* ------------------------------------------------------------------ */
+function AboutContent() {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="flex flex-col gap-5"
+    >
+      <div
+        className="rounded-xl p-4"
+        style={{ backgroundColor: "rgba(155,126,196,0.08)", border: "1px solid rgba(155,126,196,0.15)" }}
+      >
+        <div className="text-[13px] font-semibold mb-2" style={{ color: "#D4C6F0" }}>
+          {"\u{1F3AF}"} Миссия
+        </div>
+        <div className="text-[13px] leading-relaxed" style={{ color: "#A1A1A6" }}>
+          Мы создаём будущее, где ИИ работает не поодиночке, а командой.
+        </div>
+      </div>
+
+      <div
+        className="rounded-xl p-4"
+        style={{ backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }}
+      >
+        <div className="text-[13px] font-semibold mb-2" style={{ color: "#D4C6F0" }}>
+          {"\u{1F4BB}"} Что мы делаем
+        </div>
+        <div className="text-[13px] leading-relaxed" style={{ color: "#A1A1A6" }}>
+          XeroCode \u2014 платформа для командной работы ИИ-агентов. Мы объединяем 60+ моделей от 9 провайдеров в единую экосистему. Платформа сама распределяет задачи, организует взаимодействие между моделями и выдаёт результат. Работает из России без VPN.
+        </div>
+      </div>
+
+      <div
+        className="rounded-xl p-4"
+        style={{ backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }}
+      >
+        <div className="text-[13px] font-semibold mb-2" style={{ color: "#D4C6F0" }}>
+          {"\u{1F6E0}\uFE0F"} Технологии
+        </div>
+        <div className="flex flex-wrap gap-2 mt-1">
+          {["Python", "React", "PostgreSQL", "WebSocket", "FastAPI", "TypeScript"].map((t) => (
+            <span
+              key={t}
+              className="px-2.5 py-1 rounded-lg text-[11px] font-medium"
+              style={{ backgroundColor: "rgba(94,158,214,0.12)", color: "#5E9ED6" }}
+            >
+              {t}
+            </span>
           ))}
         </div>
       </div>
-    </Section>
-  );
 
-  /* ---------------------------------------------------------------- */
-  /*  FAQ                                                              */
-  /* ---------------------------------------------------------------- */
-  const faqItems = [
-    { q: "Что такое XeroCode?", a: "XeroCode — платформа для работы с мульти-агентными ИИ-командами. Вы подключаете любые модели и они работают вместе над вашими задачами, распределяя работу автоматически." },
-    { q: "Какие модели поддерживаются?", a: "Более 60 моделей: GPT-4o, Claude 3.5 Sonnet, Gemini Pro, Llama 3, Mistral, DALL-E 3, Stable Diffusion и многие другие. Список постоянно пополняется." },
-    { q: "Нужен ли VPN для работы из России?", a: "Нет, VPN не нужен. Все модели доступны напрямую через наши серверы. Работайте из любой точки России без ограничений." },
-    { q: "Как подключить свои модели?", a: "Добавьте API-ключи в настройках аккаунта. Поддерживаются OpenAI, Anthropic, Google, Groq и другие провайдеры. Можно также использовать наш встроенный пул моделей." },
-    { q: "Можно ли попробовать бесплатно?", a: "Да! Тарифы Start, Pro и Pro Plus включают 3 дня бесплатного триала. Регистрируйтесь, подключайте модели и тестируйте без оплаты." },
-    { q: "Что входит в корпоративный тариф?", a: "Корпоративный тариф включает 3-20 профилей сотрудников, Kanban-доску, систему ревью, аудит действий, SSO/LDAP интеграцию и персонального менеджера." },
-  ];
-
-  const faqSection = (
-    <Section id="faq">
-      <div style={{ padding: "100px 24px", maxWidth: 720, margin: "0 auto" }}>
-        <div style={{ textAlign: "center", marginBottom: 56 }}>
-          <p className="xc-section-label">Поддержка</p>
-          <h2 className="xc-section-title">Частые вопросы</h2>
+      <div
+        className="rounded-xl p-4"
+        style={{ backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }}
+      >
+        <div className="text-[13px] font-semibold mb-2" style={{ color: "#D4C6F0" }}>
+          {"\u{1F4E7}"} Контакты
         </div>
-        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-          {faqItems.map((item, i) => (
-            <motion.div key={i}
-              initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }} transition={{ delay: i * 0.08, duration: 0.4 }}
-            >
-              <button
-                onClick={() => setOpenFaq(openFaq === i ? null : i)}
-                style={{
-                  width: "100%", textAlign: "left", display: "flex", alignItems: "center",
-                  justifyContent: "space-between", gap: 16,
-                  background: openFaq === i ? "rgba(255,255,255,0.04)" : "rgba(255,255,255,0.02)",
-                  border: "1px solid rgba(255,255,255,0.06)", borderRadius: openFaq === i ? "14px 14px 0 0" : 14,
-                  padding: "18px 24px", cursor: "pointer", color: "#F5F5F7",
-                  fontSize: 16, fontWeight: 500, transition: "all 0.2s",
-                }}
-              >
-                {item.q}
-                <motion.div animate={{ rotate: openFaq === i ? 180 : 0 }} transition={{ duration: 0.2 }}>
-                  <ChevronDown size={18} color="rgba(255,255,255,0.4)" />
-                </motion.div>
-              </button>
-              <AnimatePresence>
-                {openFaq === i && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.25 }}
-                    style={{ overflow: "hidden" }}
-                  >
-                    <div style={{
-                      padding: "16px 24px 20px",
-                      background: "rgba(255,255,255,0.02)",
-                      borderLeft: "1px solid rgba(255,255,255,0.06)",
-                      borderRight: "1px solid rgba(255,255,255,0.06)",
-                      borderBottom: "1px solid rgba(255,255,255,0.06)",
-                      borderRadius: "0 0 14px 14px",
-                      fontSize: 15, color: "rgba(255,255,255,0.5)", lineHeight: 1.7,
-                    }}>
-                      {item.a}
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </motion.div>
+        <div className="text-[13px] leading-relaxed" style={{ color: "#A1A1A6" }}>
+          <div>xerocode.space</div>
+          <div className="mt-1">support@xerocode.space</div>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  AppMockupBackground                                                */
+/* ------------------------------------------------------------------ */
+function AppMockupBackground() {
+  return (
+    <div className="absolute inset-0 overflow-hidden" style={{ filter: "blur(8px)", opacity: 0.15 }}>
+      {/* Sidebar mockup */}
+      <div className="absolute left-0 top-0 bottom-0 w-[240px]" style={{ backgroundColor: "#242426" }}>
+        <div className="p-4 flex flex-col gap-3">
+          <div className="w-[80px] h-[12px] rounded" style={{ backgroundColor: "#9B8EC4" }} />
+          <div className="w-[140px] h-[8px] rounded mt-4" style={{ backgroundColor: "#38383A" }} />
+          <div className="w-[120px] h-[8px] rounded" style={{ backgroundColor: "#38383A" }} />
+          <div className="w-[160px] h-[8px] rounded" style={{ backgroundColor: "#38383A" }} />
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="mt-3 p-3 rounded-lg" style={{ backgroundColor: "#2C2C2E" }}>
+              <div className="w-[100px] h-[8px] rounded" style={{ backgroundColor: "#48484A" }} />
+              <div className="w-[60px] h-[6px] rounded mt-2" style={{ backgroundColor: "#38383A" }} />
+            </div>
           ))}
         </div>
       </div>
-    </Section>
-  );
 
-  /* ---------------------------------------------------------------- */
-  /*  FINAL CTA + FOOTER                                               */
-  /* ---------------------------------------------------------------- */
-  const ctaAndFooter = (
-    <>
-      <Section id="cta">
-        <div style={{ padding: "80px 24px", maxWidth: 700, margin: "0 auto", textAlign: "center" }}>
-          <motion.div
-            initial={{ opacity: 0, scale: 0.97 }} whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }} transition={{ duration: 0.6 }}
+      {/* Main chat area mockup */}
+      <div className="absolute left-[240px] right-[280px] top-0 bottom-0" style={{ backgroundColor: "#1C1C1E" }}>
+        <div className="p-6 flex flex-col gap-4">
+          <div className="h-[48px] rounded-xl flex items-center px-4" style={{ backgroundColor: "#242426" }}>
+            <div className="w-[200px] h-[10px] rounded" style={{ backgroundColor: "#38383A" }} />
+          </div>
+          {/* Chat bubbles */}
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className={`flex ${i % 2 === 0 ? "justify-end" : ""}`}>
+              <div
+                className="rounded-xl p-3 max-w-[60%]"
+                style={{
+                  backgroundColor: i % 2 === 0 ? "#2A3A50" : "#2C2C2E",
+                }}
+              >
+                <div className="w-[180px] h-[8px] rounded" style={{ backgroundColor: "#48484A" }} />
+                <div className="w-[120px] h-[8px] rounded mt-2" style={{ backgroundColor: "#38383A" }} />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Right panel mockup */}
+      <div className="absolute right-0 top-0 bottom-0 w-[280px]" style={{ backgroundColor: "#242426" }}>
+        <div className="p-4 flex flex-col gap-3">
+          <div className="w-[100px] h-[10px] rounded" style={{ backgroundColor: "#48484A" }} />
+          <div className="mt-2 h-[120px] rounded-xl" style={{ backgroundColor: "#2C2C2E" }} />
+          <div className="h-[80px] rounded-xl" style={{ backgroundColor: "#2C2C2E" }} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  StickyHeader                                                       */
+/* ------------------------------------------------------------------ */
+function StickyHeader({ onLogin, scrolled }: { onLogin: () => void; scrolled: boolean }) {
+  return (
+    <motion.header
+      className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-3 transition-all duration-300"
+      style={{
+        backgroundColor: scrolled ? "rgba(28,28,30,0.85)" : "transparent",
+        backdropFilter: scrolled ? "blur(12px)" : "none",
+        borderBottom: scrolled ? "1px solid rgba(255,255,255,0.06)" : "1px solid transparent",
+      }}
+    >
+      <div
+        className="text-[18px] font-bold"
+        style={{
+          background: "linear-gradient(135deg, #9B8EC4, #6B46C1)",
+          WebkitBackgroundClip: "text",
+          WebkitTextFillColor: "transparent",
+        }}
+      >
+        XeroCode
+      </div>
+      <button
+        onClick={onLogin}
+        className="px-4 py-1.5 rounded-lg text-[13px] font-medium transition-all hover:scale-[1.03] active:scale-[0.97] cursor-pointer"
+        style={{
+          backgroundColor: "rgba(155,126,196,0.15)",
+          border: "1px solid rgba(155,126,196,0.25)",
+          color: "#D4C6F0",
+        }}
+      >
+        Войти
+      </button>
+    </motion.header>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  Footer                                                             */
+/* ------------------------------------------------------------------ */
+function Footer() {
+  return (
+    <div
+      className="text-center py-6 mt-6 text-[11px] leading-relaxed"
+      style={{ color: "#6E6E73", borderTop: "1px solid rgba(255,255,255,0.04)" }}
+    >
+      <div>&copy; 2026 XeroCode &mdash; Vladimir Tirskikh</div>
+      <div className="mt-0.5">ИНН 503015361714 &middot; Владимир Тирских</div>
+      <div className="mt-0.5">xerocode.space</div>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  Chat state machine                                                 */
+/* ------------------------------------------------------------------ */
+type ChatPhase =
+  | "brand-typing"
+  | "bot-greeting"
+  | "menu"
+  | "user-typing"
+  | "bot-typing"
+  | "page-content";
+
+interface ChatMessage {
+  type: "bot" | "user" | "brand" | "typing";
+  text: string;
+  pageId?: PageId;
+  done?: boolean;
+}
+
+/* ------------------------------------------------------------------ */
+/*  LandingPage (main export)                                          */
+/* ------------------------------------------------------------------ */
+export function LandingPage({ onLogin }: LandingPageProps) {
+  const [phase, setPhase] = useState<ChatPhase>("brand-typing");
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [currentPage, setCurrentPage] = useState<PageId>("menu");
+  const [showNav, setShowNav] = useState(false);
+  const [showContent, setShowContent] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const chatRef = useRef<HTMLDivElement>(null);
+
+  // Scroll tracking for header
+  useEffect(() => {
+    const handleScroll = () => {
+      const container = chatRef.current?.parentElement;
+      if (container) {
+        setScrolled(container.scrollTop > 20);
+      }
+    };
+    const container = chatRef.current?.parentElement;
+    container?.addEventListener("scroll", handleScroll);
+    return () => container?.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  // Auto-scroll to bottom
+  useEffect(() => {
+    if (chatRef.current) {
+      const container = chatRef.current.parentElement;
+      if (container) {
+        requestAnimationFrame(() => {
+          container.scrollTo({ top: container.scrollHeight, behavior: "smooth" });
+        });
+      }
+    }
+  }, [messages, phase, showNav, showContent]);
+
+  // Initial sequence: brand typing
+  const brandText = "XeroCode";
+  const { displayed: brandDisplayed, isDone: brandDone } = useTypewriter(brandText, 80, phase === "brand-typing");
+
+  useEffect(() => {
+    if (brandDone && phase === "brand-typing") {
+      const timer = setTimeout(() => setPhase("bot-greeting"), 500);
+      return () => clearTimeout(timer);
+    }
+  }, [brandDone, phase]);
+
+  // Bot greeting
+  const greetingText = "Привет! Я XeroCode \u2014 платформа для командной работы ИИ-агентов.\n\nКуда хотите перейти?";
+  const handleGreetingDone = useCallback(() => {
+    setShowNav(true);
+    setPhase("menu");
+  }, []);
+
+  // When user clicks a nav button
+  const handleNavSelect = useCallback((pageId: PageId, userText: string) => {
+    setShowNav(false);
+    setShowContent(false);
+    setCurrentPage(pageId);
+    setPhase("user-typing");
+
+    // Add user message
+    setMessages((prev) => [...prev, { type: "user", text: userText }]);
+
+    // After user message "types", show bot typing
+    setTimeout(() => {
+      setPhase("bot-typing");
+      // Add bot response after typing indicator
+      setTimeout(() => {
+        setPhase("page-content");
+        setMessages((prev) => [...prev, { type: "bot", text: getBotResponse(pageId), pageId }]);
+      }, 800);
+    }, userText.length * 20 + 400);
+  }, []);
+
+  // Back to menu
+  const handleBack = useCallback(() => {
+    setShowNav(false);
+    setShowContent(false);
+    setPhase("user-typing");
+    setMessages((prev) => [...prev, { type: "user", text: "Назад к меню" }]);
+
+    setTimeout(() => {
+      setPhase("bot-typing");
+      setTimeout(() => {
+        setPhase("menu");
+        setCurrentPage("menu");
+        setMessages((prev) => [...prev, { type: "bot", text: "Куда хотите перейти?" }]);
+        setTimeout(() => setShowNav(true), 300);
+      }, 600);
+    }, 600);
+  }, []);
+
+  function getBotResponse(pageId: PageId): string {
+    switch (pageId) {
+      case "features":
+        return "XeroCode объединяет любые ИИ-модели в одну команду. Вот что мы умеем:";
+      case "pricing":
+        return "Вот наши тарифы. У START, PRO и PRO PLUS есть 3 дня бесплатного триала.";
+      case "faq":
+        return "Отвечу на популярные вопросы:";
+      case "about":
+        return "Расскажу о нас:";
+      default:
+        return "";
+    }
+  }
+
+  function renderPageContent(pageId: PageId) {
+    switch (pageId) {
+      case "features":
+        return <FeaturesContent onLogin={onLogin} />;
+      case "pricing":
+        return <PricingContent />;
+      case "faq":
+        return <FAQContent />;
+      case "about":
+        return <AboutContent />;
+      default:
+        return null;
+    }
+  }
+
+  return (
+    <div className="relative h-screen w-screen overflow-hidden" style={{ backgroundColor: "#0A0A0B" }}>
+      {/* Background layer */}
+      <AppMockupBackground />
+
+      {/* Dark overlay */}
+      <div className="absolute inset-0" style={{ backgroundColor: "rgba(0,0,0,0.70)" }} />
+
+      {/* Sticky header */}
+      <StickyHeader onLogin={onLogin} scrolled={scrolled} />
+
+      {/* Main scrollable area */}
+      <div className="relative z-10 h-full overflow-y-auto pt-16 pb-8 px-4">
+        {/* Chat container */}
+        <div className="mx-auto w-full max-w-[700px]">
+          <div
+            className="rounded-2xl overflow-hidden"
             style={{
-              padding: "56px 40px", borderRadius: 24,
-              background: "rgba(255,255,255,0.02)",
-              border: "1px solid transparent",
-              backgroundImage: "linear-gradient(rgba(10,10,15,1), rgba(10,10,15,1)), linear-gradient(135deg, #7C3AED, #4F7CFF)",
-              backgroundOrigin: "border-box",
-              backgroundClip: "padding-box, border-box",
+              backgroundColor: "rgba(255,255,255,0.03)",
+              backdropFilter: "blur(20px)",
+              WebkitBackdropFilter: "blur(20px)",
+              border: "1px solid rgba(255,255,255,0.08)",
+              boxShadow: "0 8px 32px rgba(0,0,0,0.3)",
             }}
           >
-            <h2 style={{ fontSize: "clamp(24px, 4vw, 36px)", fontWeight: 700, marginBottom: 16, color: "#F5F5F7" }}>
-              Начните работать с ИИ-командой сегодня
-            </h2>
-            <p style={{ fontSize: 16, color: "rgba(255,255,255,0.45)", marginBottom: 32, lineHeight: 1.6 }}>
-              Подключите моделей, поставьте цель и получите результат
-            </p>
-            <button className="xc-btn-primary" onClick={onLogin} style={{ padding: "16px 36px", fontSize: 17 }}>
-              Начать бесплатно <ArrowRight size={20} />
-            </button>
-          </motion.div>
-        </div>
-      </Section>
+            {/* Chat header */}
+            <div
+              className="px-5 py-3 flex items-center gap-2"
+              style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}
+            >
+              <div
+                className="w-2.5 h-2.5 rounded-full"
+                style={{ backgroundColor: "#5ABFAD" }}
+              />
+              <span className="text-[13px] font-medium" style={{ color: "#A1A1A6" }}>
+                XeroCode AI
+              </span>
+            </div>
 
-      <footer style={{
-        padding: "40px 24px", borderTop: "1px solid rgba(255,255,255,0.06)",
-        maxWidth: 1100, margin: "0 auto",
-      }}>
-        <div style={{
-          display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: 16,
-          fontSize: 13, color: "rgba(255,255,255,0.35)",
-        }}>
-          <div>© 2026 XeroCode — Vladimir Tirskikh</div>
-          <div>ИНН 503015361714 · Владимир Тирских</div>
-          <div style={{ display: "flex", gap: 20, alignItems: "center" }}>
-            <span style={{ cursor: "pointer" }} onClick={() => scrollTo("pricing")}
-              onMouseEnter={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.7)")}
-              onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.35)")}
-            >Тарифы</span>
-            <span style={{ cursor: "pointer" }} onClick={() => scrollTo("faq")}
-              onMouseEnter={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.7)")}
-              onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.35)")}
-            >FAQ</span>
-            <span style={{ cursor: "pointer" }} onClick={onLogin}
-              onMouseEnter={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.7)")}
-              onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.35)")}
-            >Войти</span>
-            <span>xerocode.space</span>
+            {/* Messages */}
+            <div className="p-5 flex flex-col gap-4 min-h-[400px]" ref={chatRef}>
+              {/* Brand name typing */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="text-center py-6"
+              >
+                <div
+                  className="text-[48px] sm:text-[56px] font-bold leading-tight"
+                  style={{
+                    background: "linear-gradient(135deg, #D4C6F0, #9B8EC4, #6B46C1)",
+                    WebkitBackgroundClip: "text",
+                    WebkitTextFillColor: "transparent",
+                  }}
+                >
+                  {phase === "brand-typing" ? (
+                    <>
+                      {brandDisplayed}
+                      <span
+                        className="inline-block w-[3px] h-[48px] ml-1 animate-pulse"
+                        style={{
+                          backgroundColor: "#9B8EC4",
+                          verticalAlign: "text-bottom",
+                          WebkitBackgroundClip: "unset",
+                          WebkitTextFillColor: "unset",
+                        }}
+                      />
+                    </>
+                  ) : (
+                    brandText
+                  )}
+                </div>
+                <div className="text-[13px] mt-2" style={{ color: "#6E6E73" }}>
+                  AI-первая платформа для командной работы
+                </div>
+              </motion.div>
+
+              {/* Bot greeting */}
+              {phase !== "brand-typing" && (
+                <BotMessage
+                  text={greetingText}
+                  speed={15}
+                  onDone={handleGreetingDone}
+                  skipAnimation={phase !== "bot-greeting"}
+                >
+                  {showNav && (
+                    <NavigationButtons onSelect={handleNavSelect} onLogin={onLogin} />
+                  )}
+                </BotMessage>
+              )}
+
+              {/* Conversation messages */}
+              {messages.map((msg, idx) => {
+                if (msg.type === "user") {
+                  return <UserMessage key={idx} text={msg.text} speed={20} />;
+                }
+                if (msg.type === "bot") {
+                  const isLast = idx === messages.length - 1;
+                  return (
+                    <BotMessage
+                      key={idx}
+                      text={msg.text}
+                      speed={12}
+                      skipAnimation={!isLast || phase !== "page-content"}
+                      onDone={isLast && msg.pageId ? () => setShowContent(true) : undefined}
+                    >
+                      {/* Page content appears after typing */}
+                      {showContent && msg.pageId && isLast && (
+                        <div className="mt-3">
+                          {renderPageContent(msg.pageId)}
+                          <motion.button
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ delay: 0.3 }}
+                            onClick={handleBack}
+                            className="mt-4 flex items-center gap-1.5 px-4 py-2 rounded-xl text-[13px] font-medium cursor-pointer transition-all hover:scale-[1.02] active:scale-[0.98]"
+                            style={{
+                              backgroundColor: "rgba(255,255,255,0.05)",
+                              border: "1px solid rgba(255,255,255,0.08)",
+                              color: "#A1A1A6",
+                            }}
+                          >
+                            {"\u2190"} Назад к меню
+                          </motion.button>
+                        </div>
+                      )}
+                      {/* Navigation for menu-type bot messages (after "back") */}
+                      {showNav && msg.text === "Куда хотите перейти?" && isLast && (
+                        <NavigationButtons onSelect={handleNavSelect} onLogin={onLogin} />
+                      )}
+                    </BotMessage>
+                  );
+                }
+                return null;
+              })}
+
+              {/* Typing indicator */}
+              {phase === "bot-typing" && (
+                <div className="flex gap-3 items-start">
+                  <div
+                    className="w-8 h-8 rounded-full flex items-center justify-center text-[16px] shrink-0"
+                    style={{ backgroundColor: "rgba(155,126,196,0.2)" }}
+                  >
+                    <span role="img" aria-label="bot">&#x1F916;</span>
+                  </div>
+                  <TypingIndicator />
+                </div>
+              )}
+            </div>
+
+            {/* Footer */}
+            <Footer />
           </div>
         </div>
-      </footer>
-    </>
-  );
-
-  /* ---------------------------------------------------------------- */
-  /*  RENDER                                                           */
-  /* ---------------------------------------------------------------- */
-  return (
-    <div className="xc-landing">
-      {nav}
-      {hero}
-      {providersSection}
-      {problemSection}
-      {howItWorks}
-      {featuresSection}
-      {demoSection}
-      {forWhoSection}
-      {pricingSection}
-      {faqSection}
-      {ctaAndFooter}
+      </div>
     </div>
   );
 }

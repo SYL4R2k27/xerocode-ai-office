@@ -89,3 +89,15 @@ htmlcov/
 # Xray / VPN configs (sensitive)
 xray/
 *.json.bak
+
+# Claude settings (содержит историю команд с ключами)
+.claude/settings.local.json
+
+# Sensitive files
+info GPT .md
+scripts/update-xray-config.py
+
+# Build artifacts
+ai-space-package/
+Enhance Office View Design/package-lock.json
+ai-office-agent/package-lock.json
