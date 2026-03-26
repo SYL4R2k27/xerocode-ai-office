@@ -1,7 +1,7 @@
 # Роадмап XeroCode AI Office
 
-## Статус: 14 из 20 этапов завершены (70%)
-## Незадеплоено: 28 файлов (+6243 строк кода) ожидают коммита
+## Статус: 15 из 20 этапов завершены (75%)
+## Последний деплой: 2026-03-26 — 32 711 строк кода (23 550 frontend + 9 161 backend)
 
 ---
 
@@ -509,12 +509,24 @@ negative_prompt, seed_control, aspect_ratio, resolution, svg_output
 ## ФАЗА 4: ЗАПУСК (следующая)
 ## ═══════════════════════════════════════
 
-### 🔵 Этап 15: Деплой
-- Закоммитить 28 файлов
-- Пушнуть на GitHub (SYL4R2k27/xerocode-ai-office)
-- vite build → обновить dist/ на сервере
-- Перезапуск FastAPI (systemctl restart)
-- Smoke-тест в браузере + мобильный вид
+### ✅ Этап 15: Деплой (2026-03-26)
+
+**Процесс деплоя:**
+```
+Локально: vite build → dist/ (3140 модулей, 480 KB gzip)
+rsync dist/ → vladimir@server:/var/www/ai-office/     ← Nginx раздаёт
+rsync backend/app/ → vladimir@server:~/ai-office/backend/app/  ← без .env, .venv, БД
+sudo systemctl restart ai-office → gunicorn 5 workers
+```
+
+**Верификация:**
+- Frontend: https://xerocode.space → 200 OK
+- API auth: 401 "Not authenticated" (правильно без токена)
+- API pools: 14 пулов возвращаются
+- API capabilities: 50+ моделей, 22 типа capabilities
+- Gunicorn: 5 worker-процессов, active
+- MD5 хеши: 100% файлов сервер = локальная версия
+- Git: коммит d105ae9 на GitHub (origin/main)
 
 ### 🔵 Этап 16: E2E тестирование
 - Полный флоу: регистрация → модель → цель → оркестрация → результат
@@ -597,3 +609,174 @@ negative_prompt, seed_control, aspect_ratio, resolution, svg_output
 **Frontend:** React 19, TypeScript, Vite 6, Tailwind CSS 4, 50+ shadcn/radix компонентов, react-resizable-panels, motion 12, react-markdown, 7 панелей, мобильный UI
 
 **Инфра:** Yandex Cloud, Nginx, Xray-core (EU proxy), HyNet VDS, GitHub, SQLite → PostgreSQL
+
+---
+
+## ═══════════════════════════════════════
+## ПОЛНАЯ ИНВЕНТАРИЗАЦИЯ ПРОЕКТА
+## ═══════════════════════════════════════
+
+### Масштаб кода
+
+| Категория | Строк кода |
+|-----------|-----------|
+| Frontend (TSX/TS) | 23 550 |
+| Backend (Python) | 9 161 |
+| **Итого** | **32 711** |
+
+### Frontend: 75 компонентов
+
+**7 профильных панелей (chat/):**
+| Компонент | Строк | Для кого | Акцент |
+|-----------|-------|----------|--------|
+| CodePanel.tsx | 412 | Программисты | #3b82f6 синий |
+| DesignPanel.tsx | 699 | Дизайнеры | #a855f7 фиолетовый |
+| ResearchPanel.tsx | 280 | Ресёрчеры | #2dd4bf бирюзовый |
+| TextPanel.tsx | 340 | Копирайтеры | #f59e0b янтарный |
+| DataPanel.tsx | 470 | Аналитики | #10b981 изумрудный |
+| ManagementPanel.tsx | 412 | Менеджеры | #f43f5e розовый |
+| EducationPanel.tsx | 328 | Обучение | #8b5cf6 фиолетовый |
+
+**6 мобильных компонентов (mobile/):**
+| Компонент | Строк | Описание |
+|-----------|-------|----------|
+| MobileLayout.tsx | 343 | Детекция <768px, роутинг, safe area |
+| MobileChatView.tsx | 728 | Пузыри, long-press, reply, автоскролл |
+| MobileModelsView.tsx | 214 | Карточки агентов, свайп-удаление |
+| MobileTaskView.tsx | 239 | Вертикальный таймлайн, прогресс |
+| MobileProfileView.tsx | 244 | Аватар, бейдж, прогресс, меню |
+| BottomTabBar.tsx | 130 | 5 табов, центральная "+", backdrop blur |
+
+**Чат (chat/):**
+- ChatArea.tsx — контейнер чата, скролл, сообщения
+- ChatInput.tsx — ввод, 7 категорий, панели, сериализация
+- ChatMessage.tsx — markdown, код, аватар провайдера
+- CodeBlock.tsx — подсветка Prism, копирование
+- AgentStatusBar.tsx — статус агента (думает/работает)
+- ApprovalCard.tsx — карточка подтверждения действия
+
+**Sidebar (sidebar/):**
+- GoalSelector.tsx — список целей, создание новой
+- ModelList.tsx — список моделей с провайдерами
+- TaskProgress.tsx — прогресс задач
+- CostMeter.tsx — расходы на API
+
+**Модалки (modals/):**
+- ModelSetup.tsx — добавление модели (провайдер, ключ, endpoint)
+- ProfileSettings.tsx — настройки профиля
+- PricingPage.tsx — тарифы Free/Pro/Pro+/Ultima
+- OnboardingWizard.tsx — пошаговый онбординг
+- PoolBuilder.tsx — конструктор кастомных пулов
+
+**Shared:**
+- ImageViewer.tsx — fullscreen, zoom, скачивание
+- LoadingSkeleton.tsx — скелетоны загрузки
+- Logo.tsx — логотип XeroCode
+- StatusDot.tsx — индикатор статуса
+- ProviderBadge.tsx — бейдж провайдера
+
+**Layout:**
+- Sidebar.tsx — левая панель
+- ContextPanel.tsx — правая панель (задачи, статус)
+
+**Landing/Auth/Legal:**
+- LandingPage.tsx — лендинг с анимациями
+- AuthPage.tsx — вход + регистрация
+- TermsPage.tsx — пользовательское соглашение
+- PrivacyPage.tsx — политика конфиденциальности
+
+**Corporate (для корпоративных клиентов):**
+- CorporateLayout.tsx, Dashboard.tsx, KanbanBoard.tsx
+- TeamPage.tsx, BackgroundPicker.tsx
+
+**Hooks:**
+- useWebSocket.ts — подключение к /ws/{goal_id}
+- useKeyboardShortcuts.ts — Ctrl+B/J/N, Escape
+- useSwipe.ts — свайп-жесты для мобильных
+
+**Store:**
+- useStore.ts — Zustand: цели, агенты, сообщения, задачи
+- useAuthStore.ts — JWT токен, пользователь, подписка
+
+**50+ UI компонентов (shadcn/radix):**
+- button, card, dialog, tabs, slider, input, select, badge, tooltip, accordion, sheet, drawer, popover, и т.д.
+
+### Backend: 69 файлов Python
+
+**8 адаптеров (adapters/):**
+| Адаптер | API | Модели |
+|---------|-----|--------|
+| openai_adapter.py | /v1/chat/completions | GPT-5.4, GPT-5, GPT-4o, o3, o4-mini, DALL-E 3 |
+| anthropic_adapter.py | /v1/messages | Claude Opus 4.6, Sonnet 4.6, Haiku 4.5 |
+| groq_adapter.py | Groq Cloud | Llama 3.3 70B, Llama 3.1 8B |
+| gemini_adapter.py | Google AI | Gemini 2.5 Flash/Pro, Nano Banana 1/2/Pro |
+| stability_adapter.py | /v2beta/* | SD 3.5 L/M/T, Ultra, Core + edit/upscale/video/3D |
+| ollama_adapter.py | localhost:11434 | Любая локальная модель |
+| openrouter_adapter.py | OpenRouter | 200+ моделей через единый API |
+| custom_adapter.py | Любой URL | OpenAI-совместимый endpoint |
+
+**Core (core/):**
+| Модуль | Описание |
+|--------|----------|
+| model_capabilities.py | 50+ моделей, 22 типа capabilities, API |
+| model_pools.py | 14 пулов, роли, подбор моделей |
+| subscription.py | 6 тарифов, лимиты, POOL_ACCESS |
+| model_router.py | Маршрутизация по capabilities |
+| model_registry.py | Реестр провайдеров |
+| config.py | Настройки (Pydantic Settings) |
+| auth.py | JWT encode/decode, middleware |
+| encryption.py | AES шифрование API-ключей |
+| rate_limiter.py | Лимиты запросов |
+| security_logger.py | Аудит безопасности |
+| database.py | SQLAlchemy engine + session |
+
+**Services (services/):**
+| Сервис | Описание |
+|--------|----------|
+| supervisor.py | Мозг: 3 режима, парсинг панелей, оркестрация |
+| tools.py | 9 tools: write/read/run/list/search + generate/edit/transform/video |
+| code_executor.py | Sandbox /tmp, timeout 30s, автоочистка |
+| communication_bus.py | Маршрутизация между агентами |
+| loop_guard.py | Защита от зацикливания (10 раундов) |
+| cost_tracker.py | Отслеживание расходов API |
+| task_parser.py | Декомпозиция цели на задачи |
+| auth.py | Регистрация, логин, JWT |
+
+**API Routes (api/routes/) — 13 эндпоинтов:**
+- auth.py — register, login, me
+- goals.py — CRUD целей
+- tasks.py — CRUD задач
+- agents.py — CRUD агентов + pools + capabilities
+- messages.py — история сообщений
+- orchestration.py — запуск/остановка оркестрации
+- files.py — загрузка файлов
+- admin.py — админ-панель
+- payments.py — платежи (заготовка)
+- custom_pools.py — кастомные пулы
+- organization.py — корпоративные аккаунты
+- templates.py — шаблоны задач
+- audit.py — лог аудита
+
+**WebSocket:**
+- websocket.py — /ws/{goal_id}, 13 типов событий
+
+**Models (7 ORM моделей):**
+- User, Goal, Task, Agent, Message, AuditLog, Organization, CustomPool, TaskTemplate, Memory
+
+### Инфраструктура сервера
+
+```
+xerocode.space (Yandex Cloud, Ubuntu 22.04)
+├── Nginx (HTTPS, Let's Encrypt, rate limiting, security headers)
+│   ├── /           → /var/www/ai-office/ (статика)
+│   ├── /api/       → 127.0.0.1:8000 (proxy)
+│   └── /ws/        → 127.0.0.1:8000 (WebSocket upgrade)
+├── Gunicorn + Uvicorn (5 workers, port 8000)
+│   └── FastAPI app
+├── Xray-core (VLESS+REALITY) → EU proxy
+│   └── SOCKS5 localhost:10808 → HyNet VDS (Нидерланды)
+├── Fail2ban (защита SSH + Nginx)
+├── UFW (файрвол: 22, 80, 443)
+├── Certbot (автообновление SSL)
+└── Systemd: ai-office.service (автозапуск)
+```
