@@ -71,10 +71,9 @@ export function ModelList({ agents, onAddModel, onRemoveAgent, isAdmin }: ModelL
                     {agent.name}
                   </span>
                   <StatusDot status={agent.status} size={6} />
-                  <ProviderBadge provider={agent.provider} />
                 </div>
                 <span className="text-[10px] truncate block" style={{ color: "var(--text-tertiary)" }}>
-                  {agent.model_name}
+                  {(agent.model_name || "").replace(/^[^/]+\//, "")}
                 </span>
               </div>
 

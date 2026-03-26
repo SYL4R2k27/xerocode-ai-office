@@ -8,6 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.auth import get_current_user
 from app.core.database import get_db
+from app.models.goal import Goal
 from app.models.task import Task
 from app.models.user import User
 from app.schemas.organization import TaskReview
@@ -31,10 +32,12 @@ async def list_tasks(
     goal_id: uuid.UUID | None = None,
     status: str | None = None,
     db: AsyncSession = Depends(get_db),
-    _user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
 ):
     """Список задач. Фильтр по цели и статусу."""
-    query = select(Task).order_by(Task.priority.desc(), Task.created_at)
+    query = select(Task).join(Goal, Task.goal_id == Goal.id).order_by(Task.priority.desc(), Task.created_at)
+    if not current_user.is_admin:
+        query = query.where(Goal.user_id == str(current_user.id))
     if goal_id:
         query = query.where(Task.goal_id == goal_id)
     if status:
@@ -44,8 +47,11 @@ async def list_tasks(
 
 
 @router.get("/{task_id}", response_model=TaskResponse)
-async def get_task(task_id: uuid.UUID, db: AsyncSession = Depends(get_db), _user: User = Depends(get_current_user)):
-    result = await db.execute(select(Task).where(Task.id == task_id))
+async def get_task(task_id: uuid.UUID, db: AsyncSession = Depends(get_db), current_user: User = Depends(get_current_user)):
+    query = select(Task).join(Goal, Task.goal_id == Goal.id).where(Task.id == task_id)
+    if not current_user.is_admin:
+        query = query.where(Goal.user_id == str(current_user.id))
+    result = await db.execute(query)
     task = result.scalar_one_or_none()
     if not task:
         raise HTTPException(status_code=404, detail="Task not found")
@@ -60,7 +66,10 @@ async def update_task(
     current_user: User = Depends(get_current_user),
 ):
     """Обновить задачу — статус, результат, назначение агента."""
-    result = await db.execute(select(Task).where(Task.id == task_id))
+    query = select(Task).join(Goal, Task.goal_id == Goal.id).where(Task.id == task_id)
+    if not current_user.is_admin:
+        query = query.where(Goal.user_id == str(current_user.id))
+    result = await db.execute(query)
     task = result.scalar_one_or_none()
     if not task:
         raise HTTPException(status_code=404, detail="Task not found")
@@ -74,8 +83,11 @@ async def update_task(
 
 
 @router.delete("/{task_id}", status_code=204)
-async def delete_task(task_id: uuid.UUID, db: AsyncSession = Depends(get_db), _user: User = Depends(get_current_user)):
-    result = await db.execute(select(Task).where(Task.id == task_id))
+async def delete_task(task_id: uuid.UUID, db: AsyncSession = Depends(get_db), current_user: User = Depends(get_current_user)):
+    query = select(Task).join(Goal, Task.goal_id == Goal.id).where(Task.id == task_id)
+    if not current_user.is_admin:
+        query = query.where(Goal.user_id == str(current_user.id))
+    result = await db.execute(query)
     task = result.scalar_one_or_none()
     if not task:
         raise HTTPException(status_code=404, detail="Task not found")
@@ -91,7 +103,10 @@ async def review_task(
     current_user: User = Depends(get_current_user),
 ):
     """Submit a review for a task: approve, reject, or comment."""
-    result = await db.execute(select(Task).where(Task.id == task_id))
+    query = select(Task).join(Goal, Task.goal_id == Goal.id).where(Task.id == task_id)
+    if not current_user.is_admin:
+        query = query.where(Goal.user_id == str(current_user.id))
+    result = await db.execute(query)
     task = result.scalar_one_or_none()
     if not task:
         raise HTTPException(status_code=404, detail="Task not found")

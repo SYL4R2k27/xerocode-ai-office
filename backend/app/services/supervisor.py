@@ -44,40 +44,101 @@ class Supervisor:
         """Подключить WebSocket."""
         self.bus.set_ws_callback(callback)
 
-    async def _generate_and_save_image(self, executor: CodeExecutor, prompt: str, model: str = "google/gemini-2.5-flash-image") -> list[str]:
-        """Генерировать изображения через OpenRouter + modalities. Вернуть список URL файлов."""
+    async def _generate_and_save_image(self, executor: CodeExecutor, prompt: str, model: str = "auto") -> list[str]:
+        """Генерировать изображения. Пробует: Stability AI → Together AI → OpenRouter."""
         import httpx
         import base64 as b64mod
         import re as re_mod
         from pathlib import Path as PathCls
         from app.core.config import settings
 
+        upload_dir = PathCls("/var/www/ai-office/uploads")
+        upload_dir.mkdir(parents=True, exist_ok=True)
+        proxy = getattr(settings, 'api_proxy', None) or None
+        full_prompt = f"photorealistic high-quality image: {prompt}"
+
+        # ===== METHOD 1: Stability AI (SD 3.5) =====
+        stability_key = getattr(settings, 'stability_api_key', None)
+        if stability_key:
+            try:
+                logger.info("Image gen: trying Stability AI (SD 3.5)")
+                client_kwargs = {"timeout": 60.0}
+                if proxy:
+                    client_kwargs["proxy"] = proxy
+                async with httpx.AsyncClient(**client_kwargs) as client:
+                    import io
+                    form_data = {
+                        "prompt": (None, full_prompt),
+                        "model": (None, "sd3.5-large"),
+                        "output_format": (None, "jpeg"),
+                        "aspect_ratio": (None, "16:9"),
+                    }
+                    resp = await client.post(
+                        "https://api.stability.ai/v2beta/stable-image/generate/sd3",
+                        headers={"Authorization": f"Bearer {stability_key}", "Accept": "application/json"},
+                        files=form_data,
+                    )
+                    resp.raise_for_status()
+                    data = resp.json()
+                    if "image" in data:
+                        img_bytes = b64mod.b64decode(data["image"])
+                        filename = f"{uuid.uuid4().hex[:12]}_sd35.jpg"
+                        (upload_dir / filename).write_bytes(img_bytes)
+                        logger.info(f"SD 3.5 image saved: {filename} ({len(img_bytes)//1024}KB)")
+                        return [f"/uploads/{filename}"]
+            except Exception as e:
+                logger.warning(f"Stability AI failed: {e}")
+
+        # ===== METHOD 2: Together AI (FLUX) =====
+        together_key = getattr(settings, 'together_api_key', None)
+        if together_key:
+            try:
+                logger.info("Image gen: trying Together AI (FLUX)")
+                client_kwargs = {"timeout": 60.0}
+                if proxy:
+                    client_kwargs["proxy"] = proxy
+                async with httpx.AsyncClient(**client_kwargs) as client:
+                    resp = await client.post(
+                        "https://api.together.xyz/v1/images/generations",
+                        headers={"Authorization": f"Bearer {together_key}", "Content-Type": "application/json"},
+                        json={"model": "black-forest-labs/FLUX.1-schnell-Free", "prompt": full_prompt, "n": 1, "width": 1024, "height": 768},
+                    )
+                    resp.raise_for_status()
+                    data = resp.json()
+                    saved = []
+                    for i, img in enumerate(data.get("data", [])):
+                        if "b64_json" in img:
+                            img_bytes = b64mod.b64decode(img["b64_json"])
+                            filename = f"{uuid.uuid4().hex[:12]}_flux_{i}.png"
+                            (upload_dir / filename).write_bytes(img_bytes)
+                            saved.append(f"/uploads/{filename}")
+                        elif "url" in img:
+                            saved.append(img["url"])
+                    if saved:
+                        logger.info(f"FLUX images saved: {saved}")
+                        return saved
+            except Exception as e:
+                logger.warning(f"Together AI failed: {e}")
+
+        # ===== METHOD 3: OpenRouter (Nano Banana / Gemini Image) =====
         openrouter_key = getattr(settings, 'openrouter_api_key', None)
         if not openrouter_key:
-            logger.error("No OpenRouter API key for image generation")
+            logger.error("No image generation API keys available")
             return []
 
         saved_urls = []
         try:
-            full_prompt = f"Generate a photorealistic high-quality image: {prompt}"
-            proxy = getattr(settings, 'api_proxy', None) or None
+            logger.info("Image gen: trying OpenRouter (Nano Banana)")
             client_kwargs = {"timeout": 120.0}
             if proxy:
                 client_kwargs["proxy"] = proxy
 
+            or_model = model if model != "auto" else "google/gemini-2.5-flash-image"
             async with httpx.AsyncClient(**client_kwargs) as client:
                 resp = await client.post(
                     "https://openrouter.ai/api/v1/chat/completions",
-                    headers={
-                        "Authorization": f"Bearer {openrouter_key}",
-                        "Content-Type": "application/json",
-                    },
-                    json={
-                        "model": model,
-                        "messages": [{"role": "user", "content": full_prompt}],
-                        "modalities": ["text", "image"],
-                        "max_tokens": 4096,
-                    },
+                    headers={"Authorization": f"Bearer {openrouter_key}", "Content-Type": "application/json"},
+                    json={"model": or_model, "messages": [{"role": "user", "content": full_prompt}], "modalities": ["text", "image"], "max_tokens": 4096},
                 )
                 resp.raise_for_status()
                 data = resp.json()
@@ -392,14 +453,14 @@ class Supervisor:
         self, goal: Goal, agents: list[Agent], tasks: list[Task]
     ) -> dict:
         """
-        Выполнение задач. Агенты работают над своими задачами.
-        Учитывает зависимости (DAG). Многопроходное исполнение.
+        Выполнение задач с учётом зависимостей (DAG).
+        Многопроходное: повторяет пока есть незавершённые задачи.
+        Auto-recovery: при ошибке переназначает другому агенту.
         """
         completed = 0
         failed = 0
         agent_map = {a.id: a for a in agents}
 
-        # Многопроходное исполнение — повторяем пока есть задачи
         max_passes = 5
         for pass_num in range(max_passes):
             remaining = [t for t in tasks if t.status in ("pending", "assigned")]
@@ -407,14 +468,15 @@ class Supervisor:
                 break
 
             progress_made = False
+
             for task in remaining:
-                # Check dependencies
+                # 1. Проверить зависимости
                 if task.depends_on:
                     deps_done = await self._check_dependencies(task.depends_on)
                     if not deps_done:
                         continue
 
-                # Check loop guard
+                # 2. Проверить LoopGuard
                 can_continue, reason = await self.loop_guard.check(
                     goal.id, max_exchanges=goal.max_exchanges
                 )
@@ -422,119 +484,138 @@ class Supervisor:
                     logger.warning(f"Stopping execution: {reason}")
                     return {"completed": completed, "failed": failed, "remaining": len(remaining)}
 
-                # Find assigned agent
+                # 3. Найти агента
+                is_design_task = task.task_type in ("design", "image", "image processing")
                 agent = agent_map.get(task.assigned_agent_id)
                 if not agent:
-                    # Назначить по навыкам
-                    agent = self._match_agent_for_task(task, agents)
+                    agent = self._find_best_agent_for_task(task, agents)
+                elif not is_design_task and self._is_image_model(agent):
+                    agent = self._find_best_agent_for_task(task, agents)
 
+                # 4. Сбросить статус агента
+                agent.status = "idle"
+                task.status = "in_progress"
+                await self.db.commit()
                 progress_made = True
 
-            # Execute
-            task.status = "in_progress"
-            await self.db.commit()
+                # 5. Подготовить tools и промпт
+                tools = get_tools_for_task(task.task_type)
+                executor = CodeExecutor(str(goal.id))
 
-            # Tools ALWAYS available — модели должны активно их использовать
-            tools = get_tools_for_task(task.task_type)
-            executor = CodeExecutor(str(goal.id))
-
-            tool_instruction = (
-                "\n\nYou have access to tools. USE THEM actively:\n"
-                "- write_file: create/write files\n"
-                "- read_file: read existing files\n"
-                "- run_command: execute shell commands\n"
-                "- list_files: list directory contents\n"
-                "- search_code: search in code\n"
-            )
-            if task.task_type in ("design", "image", "image processing"):
-                tool_instruction += (
-                    "- generate_image: GENERATE images (YOU MUST USE THIS for any visual/design task)\n"
-                    "\nThis is a DESIGN task. You MUST call generate_image with a detailed English prompt.\n"
-                    "Do NOT just describe the image — GENERATE it.\n"
+                tool_instruction = (
+                    "\n\nYou have access to tools. USE THEM:\n"
+                    "- write_file, read_file, run_command, list_files, search_code\n"
                 )
-
-            exec_prompt = (
-                f"Execute this task:\n\n"
-                f"TASK: {task.title}\n"
-                f"{'DESCRIPTION: ' + task.description if task.description else ''}\n"
-                f"TYPE: {task.task_type}\n\n"
-                f"Provide the complete result. Be thorough but concise."
-                f"{tool_instruction}"
-            )
-
-            try:
-                # Image-модели: вызываем generate_image напрямую
-                is_image_model = "image" in (agent.model_name or "").lower()
-                is_design_task = task.task_type in ("design", "image", "image processing")
-
-                if is_image_model and is_design_task and executor:
-                    # Генерируем изображения через OpenRouter + modalities
-                    img_prompt = f"{goal.title}. {task.title}. {task.description or ''}"
-                    img_model = agent.model_name if "image" in (agent.model_name or "").lower() else "google/gemini-2.5-flash-image"
-                    img_urls = await self._generate_and_save_image(executor, img_prompt, model=img_model)
-
-                    for idx, img_url in enumerate(img_urls):
-                        # Создать сообщение для КАЖДОГО изображения
-                        label = f"Вариант {idx + 1}" if len(img_urls) > 1 else "Изображение сгенерировано"
-                        content_text = f"{label}\n\n![generated]({img_url})"
-                        img_msg = Message(
-                            goal_id=goal.id,
-                            sender_type="agent",
-                            sender_agent_id=str(agent.id),
-                            sender_name=agent.name,
-                            content=content_text,
-                            message_type="image",
-                        )
-                        self.db.add(img_msg)
-                        await self.db.flush()
-                        await self.ws_manager.broadcast(str(goal.id), {
-                            "type": "new_message",
-                            "data": {
-                                "id": str(img_msg.id),
-                                "sender_type": "agent",
-                                "sender_name": agent.name,
-                                "content": content_text,
-                                "message_type": "image",
-                            },
-                        })
-
-                    # Также вызвать модель для текстового описания (без tools)
-                    exec_prompt = (
-                        f"You generated an image for this task. Now describe what was created:\n\n"
-                        f"TASK: {task.title}\n"
-                        f"{'DESCRIPTION: ' + task.description if task.description else ''}\n\n"
-                        f"Describe the design decisions, colors, composition. Be concise."
+                if is_design_task:
+                    tool_instruction += (
+                        "- generate_image: GENERATE images. YOU MUST USE THIS.\n"
+                        "\nThis is a DESIGN task. Call generate_image with a detailed English prompt.\n"
                     )
 
-                response = await self.bus.send_to_agent(
-                    goal=goal, agent=agent, prompt=exec_prompt,
-                    economy_mode=goal.economy_mode,
-                    tools=tools,
-                    executor=executor,
+                exec_prompt = (
+                    f"Execute this task:\n\n"
+                    f"TASK: {task.title}\n"
+                    f"{'DESCRIPTION: ' + task.description if task.description else ''}\n"
+                    f"TYPE: {task.task_type}\n\n"
+                    f"Provide the complete result."
+                    f"{tool_instruction}"
                 )
 
-                task.status = "done"
-                task.result = response.content
-                completed += 1
+                # 6. Исполнение
+                try:
+                    is_image_model = self._is_image_model(agent)
 
-                # System notification
-                done_msg = Message(
-                    goal_id=goal.id,
-                    sender_type="system",
-                    sender_name="System",
-                    content=f"✅ Task completed: {task.title} (by {agent.name})",
-                    message_type="status_update",
-                )
-                self.db.add(done_msg)
+                    # Image-модели: генерация напрямую
+                    if is_image_model and is_design_task:
+                        img_prompt = f"{goal.title}. {task.title}. {task.description or ''}"
+                        img_model = agent.model_name
+                        img_urls = await self._generate_and_save_image(executor, img_prompt, model=img_model)
 
-            except Exception as e:
-                task.status = "failed"
-                failed += 1
-                logger.error(f"Task '{task.title}' failed: {e}")
+                        for idx, img_url in enumerate(img_urls):
+                            label = f"Вариант {idx + 1}" if len(img_urls) > 1 else "Изображение сгенерировано"
+                            content_text = f"{label}\n\n![generated]({img_url})"
+                            img_msg = Message(
+                                goal_id=goal.id, sender_type="agent",
+                                sender_agent_id=str(agent.id), sender_name=agent.name,
+                                content=content_text, message_type="image",
+                            )
+                            self.db.add(img_msg)
+                            await self.db.flush()
+                            await self.bus._notify(goal.id, "new_message", {
+                                "id": str(img_msg.id), "sender_type": "agent",
+                                "sender_name": agent.name, "content": content_text,
+                                "message_type": "image",
+                            })
 
-            await self.db.commit()
+                        # Описание
+                        exec_prompt = (
+                            f"You generated an image. Describe the result briefly:\n"
+                            f"TASK: {task.title}"
+                        )
 
-            # Если нет прогресса в этом проходе — выходим
+                    # Вызов модели
+                    response = await self.bus.send_to_agent(
+                        goal=goal, agent=agent, prompt=exec_prompt,
+                        economy_mode=goal.economy_mode,
+                        tools=tools if not is_image_model else None,
+                        executor=executor if not is_image_model else None,
+                    )
+
+                    task.status = "done"
+                    task.result = response.content
+                    completed += 1
+
+                    done_msg = Message(
+                        goal_id=goal.id, sender_type="system", sender_name="System",
+                        content=f"✅ Задача выполнена: {task.title} ({agent.name})",
+                        message_type="status_update",
+                    )
+                    self.db.add(done_msg)
+
+                except Exception as e:
+                    logger.error(f"Task '{task.title}' failed ({agent.name}): {e}")
+                    agent.status = "error"
+
+                    # Auto-recovery: переназначить другому агенту
+                    other_agents = [a for a in agents if a.id != agent.id and a.status != "error"]
+                    recovered = False
+
+                    if other_agents:
+                        backup = other_agents[0]
+                        logger.info(f"Auto-recovery: {task.title} → {backup.name}")
+                        try:
+                            task.assigned_agent_id = backup.id
+                            recovery_msg = Message(
+                                goal_id=goal.id, sender_type="system", sender_name="System",
+                                content=f"⚡ {agent.name} ошибка → {backup.name} подхватил: {task.title}",
+                                message_type="system",
+                            )
+                            self.db.add(recovery_msg)
+                            await self.db.commit()
+
+                            response = await self.bus.send_to_agent(
+                                goal=goal, agent=backup, prompt=exec_prompt,
+                                economy_mode=goal.economy_mode, tools=tools, executor=executor,
+                            )
+                            task.status = "done"
+                            task.result = response.content
+                            completed += 1
+                            recovered = True
+                        except Exception as e2:
+                            logger.error(f"Recovery failed: {e2}")
+
+                    if not recovered:
+                        task.status = "failed"
+                        failed += 1
+                        err_msg = Message(
+                            goal_id=goal.id, sender_type="system", sender_name="System",
+                            content=f"❌ Задача провалена: {task.title}",
+                            message_type="system",
+                        )
+                        self.db.add(err_msg)
+
+                await self.db.commit()
+
             if not progress_made:
                 break
 
@@ -615,6 +696,37 @@ class Supervisor:
                 if manager_skills & set(s.lower() for s in agent.skills):
                     return agent
         return agents[0]
+
+    def _is_image_model(self, agent: Agent) -> bool:
+        """Check if agent is an image-only model (не поддерживает обычный chat)."""
+        model = (agent.model_name or "").lower()
+        return "image" in model or "imagen" in model
+
+    def _find_best_agent_for_task(self, task: Task, agents: list[Agent]) -> Agent:
+        """Find best agent for task — image models ONLY get image tasks."""
+        is_image_task = task.task_type in ("design", "image", "image processing")
+
+        if is_image_task:
+            # Сначала ищем image-модель
+            for a in agents:
+                if self._is_image_model(a):
+                    return a
+            # Fallback на модель с навыком design
+            for a in agents:
+                if a.skills and any(s in a.skills for s in ["image", "design"]):
+                    return a
+
+        # Для НЕ-image задач — исключаем image-модели
+        non_image = [a for a in agents if not self._is_image_model(a)]
+        if not non_image:
+            non_image = agents  # если все image — fallback
+
+        # По навыкам
+        matched = self._match_agent_by_skill(task.task_type or "general", non_image)
+        if matched:
+            return matched
+
+        return non_image[0]
 
     def _match_agent_for_task(self, task: Task, agents: list[Agent]) -> Agent:
         """Назначить агента для задачи по типу."""

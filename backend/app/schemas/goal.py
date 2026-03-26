@@ -1,13 +1,24 @@
 from __future__ import annotations
 
+import re
 import uuid
 from datetime import datetime
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
+
+
+def _sanitize(text: str) -> str:
+    """Strip HTML/script tags from user input."""
+    return re.sub(r"<[^>]+>", "", text).strip()
 
 
 class GoalCreate(BaseModel):
     title: str = Field(..., max_length=500, examples=["Сделать лендинг для кофейни"])
+
+    @field_validator("title")
+    @classmethod
+    def sanitize_title(cls, v: str) -> str:
+        return _sanitize(v)
     description: str | None = None
     distribution_mode: str = Field(
         default="manager",

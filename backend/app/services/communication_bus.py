@@ -128,18 +128,35 @@ class CommunicationBus:
             await self._notify(goal.id, "cost_limit", {"reason": cost_reason})
             return limit_msg
 
-        # Get adapter — decrypt API key before use
+        # Smart routing — try multiple providers
         from app.core.encryption import decrypt_api_key
+        from app.core.model_router import resolve_model_route
 
-        adapter = get_adapter(
-            provider=agent.provider,
-            api_key=decrypt_api_key(agent.api_key_encrypted) if agent.api_key_encrypted else None,
-            base_url=agent.base_url,
-        )
+        api_key = decrypt_api_key(agent.api_key_encrypted) if agent.api_key_encrypted else ""
+        model_routes = resolve_model_route(agent.model_name, agent.provider, api_key, agent.base_url)
 
         # Build context
         messages = list(chat_history or [])
         messages.append({"role": "user", "content": prompt})
+
+        # Attach uploaded images as base64 (for vision-capable models)
+        import base64 as b64mod
+        from pathlib import Path as PathLib
+        upload_dir = PathLib(f"/tmp/ai-office/{goal.id}/uploads")
+        if upload_dir.exists():
+            image_exts = {".jpg", ".jpeg", ".png", ".gif", ".webp"}
+            for img_file in upload_dir.iterdir():
+                if img_file.suffix.lower() in image_exts and img_file.stat().st_size < 5_000_000:
+                    b64data = b64mod.b64encode(img_file.read_bytes()).decode()
+                    ext = img_file.suffix.lower().lstrip(".")
+                    mime = "image/jpeg" if ext in ("jpg", "jpeg") else f"image/{ext}"
+                    messages.append({
+                        "role": "user",
+                        "content": [
+                            {"type": "text", "text": f"Прикреплённый файл: {img_file.name}"},
+                            {"type": "image_url", "image_url": {"url": f"data:{mime};base64,{b64data}"}}
+                        ]
+                    })
 
         # System prompt
         system = self._build_system_prompt(agent, goal)
@@ -158,55 +175,33 @@ class CommunicationBus:
         })
 
         try:
-            # Call the model (with OpenRouter fallback on 403)
-            try:
-                response = await adapter.call(
-                    messages=messages,
-                    model=agent.model_name,
-                    system_prompt=system,
-                    temperature=temperature,
-                    max_tokens=max_tokens,
-                    tools=tools,
-                )
-            except httpx.HTTPStatusError as e:
-                if e.response.status_code not in (403, 451):
-                    raise
+            # Smart routing — try providers in order until one works
+            response = None
+            last_error = None
+            used_route = None
 
-                from app.core.config import settings
-                from app.core.model_registry import get_openrouter_model_id
+            for route in model_routes:
+                try:
+                    adapter = get_adapter(route.provider, route.api_key, route.base_url)
+                    response = await adapter.call(
+                        messages=messages,
+                        model=route.model_id,
+                        system_prompt=system,
+                        temperature=temperature,
+                        max_tokens=max_tokens,
+                        tools=tools,
+                    )
+                    used_route = route
+                    if route != model_routes[0]:
+                        logger.info(f"[{agent.name}] Fallback to {route.provider}/{route.model_id}")
+                    break
+                except Exception as e:
+                    last_error = e
+                    logger.warning(f"[{agent.name}] {route.provider}/{route.model_id} failed: {e}")
+                    continue
 
-                if not settings.openrouter_fallback_enabled or not settings.openrouter_api_key:
-                    raise
-
-                or_model = get_openrouter_model_id(agent.provider, agent.model_name)
-                if not or_model:
-                    raise
-
-                logger.warning(
-                    f"[{agent.name}] Direct call got {e.response.status_code}, "
-                    f"falling back to OpenRouter ({or_model})"
-                )
-
-                # Log fallback as system message
-                fallback_msg = Message(
-                    goal_id=goal.id,
-                    sender_type="system",
-                    sender_name="System",
-                    content=f"Routing {agent.name} through OpenRouter (direct access blocked)",
-                    message_type="system",
-                )
-                self.db.add(fallback_msg)
-                await self.db.flush()
-
-                adapter = OpenRouterAdapter(api_key=settings.openrouter_api_key)
-                response = await adapter.call(
-                    messages=messages,
-                    model=or_model,
-                    system_prompt=system,
-                    temperature=temperature,
-                    max_tokens=max_tokens,
-                    tools=tools,
-                )
+            if response is None:
+                raise last_error or Exception(f"All routes failed for {agent.name}")
 
             # ===== TOOL EXECUTION LOOP =====
             max_tool_rounds = 10

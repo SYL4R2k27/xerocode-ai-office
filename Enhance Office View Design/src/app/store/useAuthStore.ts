@@ -53,11 +53,11 @@ export function useAuthStore() {
   }, []);
 
   /** Зарегистрироваться. */
-  const register = useCallback(async (email: string, password: string, name: string) => {
+  const register = useCallback(async (email: string, password: string, name: string, inviteCode?: string) => {
     setLoading(true);
     setError(null);
     try {
-      const res = await api.auth.register(email, password, name);
+      const res = await api.auth.register(email, password, name, inviteCode);
       setToken(res.access_token);
       setTokenState(res.access_token);
       const me = await api.auth.me();
@@ -83,5 +83,27 @@ export function useAuthStore() {
     loadUser();
   }, [loadUser]);
 
-  return { user, token, loading, error, login, register, logout, loadUser };
+  /** Проверить доступ к функции по подписке. */
+  const canUse = useCallback((feature: string): boolean => {
+    if (!user) return false;
+    const limits = (user as any).limits;
+    if (!limits) return true; // Нет данных — разрешаем (для обратной совместимости)
+    if (limits.plan === "admin") return true;
+
+    switch (feature) {
+      case "pools": return !!limits.can_use_pools;
+      case "premium": return !!limits.can_use_premium;
+      case "images": return !!limits.can_use_images;
+      case "custom_pools": return !!limits.can_use_custom_pools;
+      default: return true;
+    }
+  }, [user]);
+
+  /** Получить лимиты пользователя. */
+  const getLimits = useCallback(() => {
+    if (!user) return null;
+    return (user as any).limits || null;
+  }, [user]);
+
+  return { user, token, loading, error, login, register, logout, loadUser, canUse, getLimits };
 }

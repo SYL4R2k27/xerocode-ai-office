@@ -20,6 +20,7 @@ router = APIRouter(prefix="/goals", tags=["Goals"])
 async def create_goal(data: GoalCreate, db: AsyncSession = Depends(get_db), current_user: User = Depends(get_current_user)):
     """Создать новую цель. Начало всего — пользователь ставит задачу команде."""
     goal = Goal(**data.model_dump())
+    goal.user_id = str(current_user.id)
     db.add(goal)
     await db.flush()  # get goal.id before creating memory
 
@@ -36,10 +37,12 @@ async def create_goal(data: GoalCreate, db: AsyncSession = Depends(get_db), curr
 async def list_goals(
     status: str | None = None,
     db: AsyncSession = Depends(get_db),
-    _user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
 ):
     """Список всех целей."""
     query = select(Goal).order_by(Goal.created_at.desc())
+    if not current_user.is_admin:
+        query = query.where(Goal.user_id == str(current_user.id))
     if status:
         query = query.where(Goal.status == status)
     result = await db.execute(query)
@@ -47,9 +50,12 @@ async def list_goals(
 
 
 @router.get("/{goal_id}", response_model=GoalResponse)
-async def get_goal(goal_id: uuid.UUID, db: AsyncSession = Depends(get_db), _user: User = Depends(get_current_user)):
+async def get_goal(goal_id: uuid.UUID, db: AsyncSession = Depends(get_db), current_user: User = Depends(get_current_user)):
     """Получить цель по ID."""
-    result = await db.execute(select(Goal).where(Goal.id == goal_id))
+    query = select(Goal).where(Goal.id == goal_id)
+    if not current_user.is_admin:
+        query = query.where(Goal.user_id == str(current_user.id))
+    result = await db.execute(query)
     goal = result.scalar_one_or_none()
     if not goal:
         raise HTTPException(status_code=404, detail="Goal not found")
@@ -68,6 +74,8 @@ async def update_goal(
     goal = result.scalar_one_or_none()
     if not goal:
         raise HTTPException(status_code=404, detail="Goal not found")
+    if not current_user.is_admin and goal.user_id != str(current_user.id):
+        raise HTTPException(status_code=403, detail="Access denied")
 
     for field, value in data.model_dump(exclude_unset=True).items():
         setattr(goal, field, value)
@@ -84,5 +92,7 @@ async def delete_goal(goal_id: uuid.UUID, db: AsyncSession = Depends(get_db), cu
     goal = result.scalar_one_or_none()
     if not goal:
         raise HTTPException(status_code=404, detail="Goal not found")
+    if not current_user.is_admin and goal.user_id != str(current_user.id):
+        raise HTTPException(status_code=403, detail="Access denied")
     await db.delete(goal)
     await db.commit()

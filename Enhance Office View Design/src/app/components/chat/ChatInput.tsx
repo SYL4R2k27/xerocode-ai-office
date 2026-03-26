@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback } from "react";
-import { Send, Zap, Edit3, Lightbulb, ChevronDown, Wand2, Code, Palette, Search, FileText, MoreHorizontal, Paperclip, X, Image, Code2, Archive, File, Loader2 } from "lucide-react";
+import { Send, Zap, Edit3, Lightbulb, ChevronDown, Wand2, Code, Palette, Search, FileText, MoreHorizontal, Paperclip, X, Image, Code2, Archive, File, Loader2, Play } from "lucide-react";
 import { api } from "../../lib/api";
 
 type InputMode = "command" | "edit" | "idea";
@@ -111,6 +111,7 @@ function expandToPrompt(shortIdea: string): string {
 
 interface ChatInputProps {
   hasActiveGoal: boolean;
+  activeGoal?: string;
   goalStarted: boolean;
   onCreateGoal: (title: string, mode: "manager" | "discussion" | "auto") => void;
   onStartGoal: () => void;
@@ -120,8 +121,15 @@ interface ChatInputProps {
   onClearExternalFiles?: () => void;
 }
 
-export function ChatInput({ hasActiveGoal, goalStarted, onCreateGoal, onStartGoal, onSendMessage, isStarting, externalFiles, onClearExternalFiles }: ChatInputProps) {
+export function ChatInput({ hasActiveGoal, activeGoal, goalStarted, onCreateGoal, onStartGoal, onSendMessage, isStarting, externalFiles, onClearExternalFiles }: ChatInputProps) {
+  const MAX_MESSAGE_LENGTH = 10000;
   const [text, setText] = useState("");
+
+  const handleTextChange = (val: string) => {
+    const sanitized = val.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, "");
+    if (sanitized.length <= MAX_MESSAGE_LENGTH) setText(sanitized);
+  };
+  const [goalTitle, setGoalTitle] = useState("");
   const [mode, setMode] = useState<InputMode>("command");
   const [goalMode, setGoalMode] = useState<GoalMode>("manager");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -131,6 +139,7 @@ export function ChatInput({ hasActiveGoal, goalStarted, onCreateGoal, onStartGoa
   const [attachedFiles, setAttachedFiles] = useState<File[]>([]);
   const [isEnhancing, setIsEnhancing] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const goalTitleRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Merge external files (from drag & drop) into attachedFiles
@@ -158,16 +167,12 @@ export function ChatInput({ hasActiveGoal, goalStarted, onCreateGoal, onStartGoa
   const handleCategorySelect = useCallback((cat: typeof categoryButtons[0]) => {
     setSelectedCategory(cat.id);
     setGoalMode(cat.mode);
-    if (cat.prefix) {
-      setText((prev) => {
-        const cleaned = prev.replace(/^\[(Код|Дизайн|Ресёрч|Текст)\]\s*/u, "");
-        return cat.prefix + " " + cleaned;
-      });
+    if (!hasActiveGoal) {
+      goalTitleRef.current?.focus();
     } else {
-      setText((prev) => prev.replace(/^\[(Код|Дизайн|Ресёрч|Текст)\]\s*/u, ""));
+      textareaRef.current?.focus();
     }
-    textareaRef.current?.focus();
-  }, []);
+  }, [hasActiveGoal]);
 
   const handleAutoPrompt = useCallback(async () => {
     const trimmed = text.trim();
@@ -216,58 +221,86 @@ export function ChatInput({ hasActiveGoal, goalStarted, onCreateGoal, onStartGoa
     }
   }, [expandedText]);
 
-  const handleSubmit = useCallback(() => {
+  const handleCreateGoalOnly = useCallback(() => {
+    const title = goalTitle.trim();
+    if (!title) return;
+    onCreateGoal(title, goalMode);
+    setGoalTitle("");
+    setSelectedCategory(null);
+  }, [goalTitle, goalMode, onCreateGoal]);
+
+  const handleSubmit = useCallback(async () => {
     const trimmed = text.trim();
     const hasFiles = allFiles.length > 0;
     if (!trimmed && !hasFiles) return;
 
-    if (!hasActiveGoal) {
-      onCreateGoal(trimmed || "Загрузка файлов", goalMode);
-    } else if (!goalStarted) {
-      onStartGoal();
-    } else {
-      // Build message content with file references
+    if (hasActiveGoal && !goalStarted) {
+      // Описание задачи → отправить как сообщение и запустить
+      const uploadedNames: string[] = [];
+      if (hasFiles && activeGoal) {
+        for (const file of allFiles) {
+          try {
+            const result = await api.files.upload(activeGoal, file);
+            uploadedNames.push(result.filename || file.name);
+          } catch (e) {
+            console.error("Upload failed:", e);
+            uploadedNames.push(file.name + " (не загружен)");
+          }
+        }
+      }
       let content = trimmed;
-      if (hasFiles) {
-        const fileNames = allFiles.map((f) => f.name).join(", ");
-        content = content
-          ? `${content}\n\n📎 Файлы: ${fileNames}`
-          : `📎 Файлы: ${fileNames}`;
+      if (uploadedNames.length > 0) {
+        const fileNames = uploadedNames.join(", ");
+        content = content ? `${content}\n\n📎 Файлы: ${fileNames}` : `📎 Файлы: ${fileNames}`;
+      }
+      onSendMessage(content, "command");
+      onStartGoal();
+    } else if (hasActiveGoal && goalStarted) {
+      // Обычное сообщение в чат
+      const uploadedNames: string[] = [];
+      if (hasFiles && activeGoal) {
+        for (const file of allFiles) {
+          try {
+            const result = await api.files.upload(activeGoal, file);
+            uploadedNames.push(result.filename || file.name);
+          } catch (e) {
+            console.error("Upload failed:", e);
+            uploadedNames.push(file.name + " (не загружен)");
+          }
+        }
+      }
+      let content = trimmed;
+      if (uploadedNames.length > 0) {
+        const fileNames = uploadedNames.join(", ");
+        content = content ? `${content}\n\n📎 Файлы: ${fileNames}` : `📎 Файлы: ${fileNames}`;
       }
       onSendMessage(content, mode);
     }
     setText("");
     setAttachedFiles([]);
     onClearExternalFiles?.();
-    setSelectedCategory(null);
     setShowExpandedPreview(false);
     if (textareaRef.current) {
       textareaRef.current.style.height = "44px";
     }
-  }, [text, mode, goalMode, hasActiveGoal, goalStarted, onCreateGoal, onStartGoal, onSendMessage, allFiles, onClearExternalFiles]);
-
-  const handleCreateAndStart = useCallback(() => {
-    const trimmed = text.trim();
-    if (!trimmed && allFiles.length === 0) return;
-    onCreateGoal(trimmed || "Загрузка файлов", goalMode);
-    setText("");
-    setAttachedFiles([]);
-    onClearExternalFiles?.();
-    setSelectedCategory(null);
-    setShowExpandedPreview(false);
-    // onStartGoal will be called after goal is created via the goalStarted flow
-    setTimeout(() => onStartGoal(), 500);
-  }, [text, goalMode, onCreateGoal, onStartGoal, allFiles, onClearExternalFiles]);
+  }, [text, mode, goalMode, hasActiveGoal, goalStarted, activeGoal, onCreateGoal, onStartGoal, onSendMessage, allFiles, onClearExternalFiles]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
-      if (!hasActiveGoal || (e.metaKey || e.ctrlKey)) {
+      if (hasActiveGoal && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
         handleSubmit();
-      } else if (e.metaKey || e.ctrlKey) {
+      } else if (hasActiveGoal && !goalStarted) {
         e.preventDefault();
         handleSubmit();
       }
+    }
+  };
+
+  const handleTitleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleCreateGoalOnly();
     }
   };
 
@@ -282,7 +315,7 @@ export function ChatInput({ hasActiveGoal, goalStarted, onCreateGoal, onStartGoa
   const placeholder = !hasActiveGoal
     ? "Опишите задачу для ИИ-команды..."
     : !goalStarted
-    ? "Цель создана. Нажми Enter чтобы запустить."
+    ? "Опишите задачу подробнее..."
     : "Напиши команду, правку или идею для команды...";
 
   const ModeIcon = modes[mode].icon;
@@ -294,7 +327,25 @@ export function ChatInput({ hasActiveGoal, goalStarted, onCreateGoal, onStartGoa
     >
       {/* Goal creation form — when no active goal */}
       {!hasActiveGoal && (
-        <div className="mb-3 space-y-2 overflow-hidden">
+        <div className="mb-3 space-y-3 overflow-hidden">
+          {/* Title input */}
+          <input
+            ref={goalTitleRef}
+            type="text"
+            value={goalTitle}
+            onChange={(e) => setGoalTitle(e.target.value)}
+            onKeyDown={handleTitleKeyDown}
+            placeholder="Название цели..."
+            className="w-full bg-transparent outline-none"
+            style={{
+              fontSize: "18px",
+              fontWeight: 600,
+              color: "var(--text-primary)",
+              borderBottom: "1px solid var(--border-default)",
+              paddingBottom: "8px",
+            }}
+          />
+
           {/* Category quick-select */}
           <div className="flex items-center gap-1.5 flex-wrap">
             <span className="text-[10px] font-medium mr-1" style={{ color: "var(--text-tertiary)" }}>
@@ -341,6 +392,16 @@ export function ChatInput({ hasActiveGoal, goalStarted, onCreateGoal, onStartGoa
               </button>
             ))}
           </div>
+
+          {/* Create goal button */}
+          <button
+            onClick={handleCreateGoalOnly}
+            disabled={!goalTitle.trim() || isStarting}
+            className="px-4 py-2 rounded-lg text-[13px] font-medium transition-all disabled:opacity-30"
+            style={{ backgroundColor: "var(--accent-blue)", color: "#fff" }}
+          >
+            Создать цель
+          </button>
         </div>
       )}
 
@@ -459,87 +520,96 @@ export function ChatInput({ hasActiveGoal, goalStarted, onCreateGoal, onStartGoa
         </div>
       )}
 
-      {/* Input area */}
-      <div
-        className="flex items-end gap-2 rounded-xl px-3 py-2 min-w-0 overflow-hidden"
-        style={{ backgroundColor: "var(--bg-surface)", border: "1px solid var(--border-default)" }}
-      >
-        {/* Paperclip button */}
-        <button
-          onClick={() => fileInputRef.current?.click()}
-          className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-all hover:bg-white/5"
-          title="Прикрепить файл"
-        >
-          <Paperclip size={14} style={{ color: "var(--text-tertiary)" }} />
-        </button>
-        <input
-          ref={fileInputRef}
-          type="file"
-          multiple
-          hidden
-          onChange={handleFileSelect}
-        />
-
-        <textarea
-          ref={textareaRef}
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          onKeyDown={handleKeyDown}
-          onInput={handleInput}
-          placeholder={placeholder}
-          rows={1}
-          className="flex-1 min-w-0 bg-transparent resize-none text-sm outline-none overflow-y-auto word-break-all"
-          style={{
-            color: "var(--text-primary)",
-            height: "44px",
-            maxHeight: "160px",
-            lineHeight: "1.5",
-            wordBreak: "break-word",
-            overflowWrap: "break-word",
-          }}
-        />
-        {/* Auto-prompt button — всегда доступна */}
-        {text.trim() && text.trim().length <= 200 && (
-          <button
-            onClick={handleAutoPrompt}
-            disabled={isEnhancing}
-            className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-all hover:bg-white/5 disabled:opacity-50"
-            title="Улучшить промпт с помощью ИИ"
+      {/* Input area — hidden when no active goal (title form is shown above instead) */}
+      {hasActiveGoal && (
+        <>
+          <div
+            className="flex items-end gap-2 rounded-xl px-3 py-2 min-w-0 overflow-hidden"
+            style={{ backgroundColor: "var(--bg-surface)", border: "1px solid var(--border-default)" }}
           >
-            {isEnhancing ? (
-              <Loader2 size={14} className="animate-spin" style={{ color: "var(--accent-lavender)" }} />
-            ) : (
-              <Wand2 size={14} style={{ color: "var(--accent-lavender)" }} />
+            {/* Paperclip button */}
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-all hover:bg-white/5"
+              title="Прикрепить файл"
+            >
+              <Paperclip size={14} style={{ color: "var(--text-tertiary)" }} />
+            </button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              multiple
+              hidden
+              onChange={handleFileSelect}
+            />
+
+            <textarea
+              ref={textareaRef}
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              onKeyDown={handleKeyDown}
+              onInput={handleInput}
+              placeholder={placeholder}
+              rows={1}
+              className="flex-1 min-w-0 bg-transparent resize-none text-sm outline-none overflow-y-auto word-break-all"
+              style={{
+                color: "var(--text-primary)",
+                height: "44px",
+                maxHeight: "160px",
+                lineHeight: "1.5",
+                wordBreak: "break-word",
+                overflowWrap: "break-word",
+              }}
+            />
+            {/* Auto-prompt button */}
+            {text.trim() && text.trim().length <= 200 && (
+              <button
+                onClick={handleAutoPrompt}
+                disabled={isEnhancing}
+                className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-all hover:bg-white/5 disabled:opacity-50"
+                title="Улучшить промпт с помощью ИИ"
+              >
+                {isEnhancing ? (
+                  <Loader2 size={14} className="animate-spin" style={{ color: "var(--accent-lavender)" }} />
+                ) : (
+                  <Wand2 size={14} style={{ color: "var(--accent-lavender)" }} />
+                )}
+              </button>
             )}
-          </button>
-        )}
-        {!hasActiveGoal && (text.trim() || allFiles.length > 0) ? (
-          <button
-            onClick={handleCreateAndStart}
-            disabled={isStarting}
-            className="px-3 h-8 rounded-lg flex items-center gap-1.5 flex-shrink-0 transition-all disabled:opacity-30 text-[11px] font-medium"
-            style={{ backgroundColor: "var(--accent-blue)", color: "#fff" }}
-          >
-            <Zap size={12} />
-            Создать и запустить
-          </button>
-        ) : (
-          <button
-            onClick={handleSubmit}
-            disabled={(!text.trim() && allFiles.length === 0) || isStarting}
-            className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-all disabled:opacity-30"
-            style={{
-              backgroundColor: (text.trim() || allFiles.length > 0) ? "var(--accent-blue)" : "transparent",
-            }}
-          >
-            <Send size={14} style={{ color: (text.trim() || allFiles.length > 0) ? "#fff" : "var(--text-tertiary)" }} />
-          </button>
-        )}
-      </div>
+            {!goalStarted ? (
+              <button
+                onClick={handleSubmit}
+                disabled={(!text.trim() && allFiles.length === 0) || isStarting}
+                className="px-3 h-8 rounded-lg flex items-center gap-1.5 flex-shrink-0 transition-all disabled:opacity-30 text-[11px] font-medium"
+                style={{ backgroundColor: "var(--accent-blue)", color: "#fff" }}
+              >
+                <Play size={12} />
+                {isStarting ? "Запуск..." : "Запустить"}
+              </button>
+            ) : (
+              <button
+                onClick={handleSubmit}
+                disabled={(!text.trim() && allFiles.length === 0) || isStarting}
+                className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-all disabled:opacity-30"
+                style={{
+                  backgroundColor: (text.trim() || allFiles.length > 0) ? "var(--accent-blue)" : "transparent",
+                }}
+              >
+                <Send size={14} style={{ color: (text.trim() || allFiles.length > 0) ? "#fff" : "var(--text-tertiary)" }} />
+              </button>
+            )}
+          </div>
 
-      <p className="text-[10px] mt-1.5 text-center" style={{ color: "var(--text-placeholder)" }}>
-        {!hasActiveGoal ? "Нажми Enter для отправки" : "Ctrl+Enter — отправить"}
-      </p>
+          <p className="text-[10px] mt-1.5 text-center" style={{ color: "var(--text-placeholder)" }}>
+            {!goalStarted ? "Enter — описать и запустить" : "Ctrl+Enter — отправить"}
+          </p>
+        </>
+      )}
+      {!hasActiveGoal && (
+        <p className="text-[10px] mt-1.5 text-center" style={{ color: "var(--text-placeholder)" }}>
+          Введите название и нажмите Enter или кнопку
+        </p>
+      )}
     </div>
   );
 }

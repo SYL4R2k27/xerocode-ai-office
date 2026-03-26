@@ -18,7 +18,7 @@ import { toast } from "sonner";
 /* ------------------------------------------------------------------ */
 interface AuthPageProps {
   onLogin: (email: string, password: string) => Promise<void>;
-  onRegister: (email: string, password: string, name: string) => Promise<void>;
+  onRegister: (email: string, password: string, name: string, inviteCode?: string) => Promise<void>;
   loading: boolean;
   error: string | null;
 }
@@ -268,6 +268,7 @@ export function AuthPage({ onLogin, onRegister, loading, error }: AuthPageProps)
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
+  const [inviteCode, setInviteCode] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
   const [shakeError, setShakeError] = useState(false);
@@ -298,6 +299,10 @@ export function AuthPage({ onLogin, onRegister, loading, error }: AuthPageProps)
         setLocalError("Введите имя");
         return;
       }
+      if (mode === "register" && !inviteCode) {
+        setLocalError("Введите инвайт-код для доступа к бета-тесту");
+        return;
+      }
       if (password.length < 6) {
         setLocalError("Пароль должен быть не менее 6 символов");
         return;
@@ -307,7 +312,7 @@ export function AuthPage({ onLogin, onRegister, loading, error }: AuthPageProps)
         if (mode === "login") {
           await onLogin(email, password);
         } else {
-          await onRegister(email, password, name);
+          await onRegister(email, password, name, inviteCode);
         }
         setSuccess(true);
       } catch {
@@ -470,10 +475,10 @@ export function AuthPage({ onLogin, onRegister, loading, error }: AuthPageProps)
 
           {/* Card */}
           <div
-            className="rounded-2xl p-8"
+            className="rounded-2xl p-8 shadow-2xl"
             style={{
-              backgroundColor: "#1C1C1E",
-              border: "1px solid #2A2A2D",
+              backgroundColor: "#222226",
+              border: "1px solid #3A3A40",
             }}
           >
             {/* Tabs */}
@@ -635,6 +640,18 @@ export function AuthPage({ onLogin, onRegister, loading, error }: AuthPageProps)
                       {pwStrength.label}
                     </div>
                   </motion.div>
+                )}
+
+                {/* Invite code (бета-тест, только регистрация) */}
+                {mode === "register" && (
+                  <FloatingInput
+                    id="invite"
+                    label="Инвайт-код (бета-тест)"
+                    value={inviteCode}
+                    onChange={setInviteCode}
+                    autoComplete="off"
+                    delay={0.15}
+                  />
                 )}
 
                 {/* Forgot password (login only) */}

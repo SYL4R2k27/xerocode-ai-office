@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from datetime import datetime
+
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from pydantic import BaseModel
 from sqlalchemy import select
@@ -28,9 +30,24 @@ from app.services.auth import (
 router = APIRouter(prefix="/auth", tags=["Auth"])
 
 
+from app.core.config import settings as _settings
+INVITE_CODE = _settings.invite_code or "DISABLED"
+
+
 @router.post("/register", response_model=TokenResponse, status_code=201)
 async def register(data: UserCreate, request: Request, db: AsyncSession = Depends(get_db)):
     """Register a new user and return an access token."""
+    # Invite code check (бета-тест)
+    invite = getattr(data, "invite_code", None)
+    if invite != INVITE_CODE:
+        raise HTTPException(403, "Неверный инвайт-код. Платформа на закрытом бета-тесте.")
+
+    # Password policy
+    if len(data.password) < 8:
+        raise HTTPException(400, "Пароль должен быть минимум 8 символов")
+    if data.password.isdigit() or data.password.isalpha():
+        raise HTTPException(400, "Пароль должен содержать буквы и цифры")
+
     existing = await db.execute(select(User).where(User.email == data.email))
     if existing.scalar_one_or_none():
         raise HTTPException(
@@ -38,10 +55,14 @@ async def register(data: UserCreate, request: Request, db: AsyncSession = Depend
             detail="Email already registered",
         )
 
+    from datetime import timedelta
+
     user = User(
         email=data.email,
         password_hash=hash_password(data.password),
         name=data.name,
+        trial_plan="start",
+        trial_expires_at=datetime.utcnow() + timedelta(days=3),
     )
     db.add(user)
     await db.commit()
@@ -56,26 +77,35 @@ async def register(data: UserCreate, request: Request, db: AsyncSession = Depend
 @router.post("/login", response_model=TokenResponse)
 async def login(data: UserLogin, request: Request, db: AsyncSession = Depends(get_db)):
     """Authenticate user and return an access token."""
+    from app.core.rate_limiter import auth_limiter
+
+    ip = request.client.host if request.client else "unknown"
+    can_try, reason = auth_limiter.check(ip)
+    if not can_try:
+        raise HTTPException(status_code=429, detail=reason)
+
     result = await db.execute(select(User).where(User.email == data.email))
     user = result.scalar_one_or_none()
 
     if not user or not verify_password(data.password, user.password_hash):
-        log_auth_failure(data.email, request.client.host, "invalid_credentials")
+        auth_limiter.record(ip)
+        log_auth_failure(data.email, ip, "invalid_credentials")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid email or password",
         )
 
     if not user.is_active:
-        log_auth_failure(data.email, request.client.host, "account_deactivated")
+        log_auth_failure(data.email, ip, "account_deactivated")
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Account deactivated",
         )
 
+    auth_limiter.reset(ip)
     token = create_access_token(str(user.id), user.email, user.plan)
     refresh = create_refresh_token(str(user.id))
-    log_auth_success(user.email, request.client.host)
+    log_auth_success(user.email, ip)
     return TokenResponse(access_token=token, refresh_token=refresh)
 
 
@@ -108,10 +138,25 @@ async def refresh_tokens(data: RefreshRequest, db: AsyncSession = Depends(get_db
     return TokenResponse(access_token=new_access, refresh_token=new_refresh)
 
 
-@router.get("/me", response_model=UserResponse)
+@router.get("/me")
 async def me(current_user: User = Depends(get_current_user)):
-    """Get current user profile."""
-    return current_user
+    """Get current user profile with subscription limits."""
+    from app.core.subscription import get_user_limits
+
+    user_data = {
+        "id": str(current_user.id),
+        "email": current_user.email,
+        "name": current_user.name,
+        "plan": current_user.plan,
+        "is_admin": current_user.is_admin,
+        "is_active": current_user.is_active,
+        "tasks_used_this_month": current_user.tasks_used_this_month,
+        "created_at": str(current_user.created_at),
+        "organization_id": str(current_user.organization_id) if current_user.organization_id else None,
+        "org_role": current_user.org_role,
+        "limits": get_user_limits(current_user),
+    }
+    return user_data
 
 
 @router.patch("/profile")

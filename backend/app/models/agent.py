@@ -38,6 +38,7 @@ class Agent(Base):
     system_prompt: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
 
     # Ownership
+    user_id: Mapped[Optional[str]] = mapped_column(String(36), nullable=True, index=True)
     owner_type: Mapped[str] = mapped_column(String(20), default="user")  # "user" | "platform"
     subscription_tier: Mapped[Optional[str]] = mapped_column(String(20), nullable=True, default=None)  # "free_pool" | "premium" | None
 

@@ -15,6 +15,8 @@ from app.schemas.message import MessageCreate, MessageResponse, UserInput
 
 router = APIRouter(prefix="/messages", tags=["Messages"])
 
+MAX_PROMPT_LENGTH = 10_000
+
 
 @router.get("/", response_model=list[MessageResponse])
 async def list_messages(
@@ -22,9 +24,16 @@ async def list_messages(
     limit: int = 50,
     offset: int = 0,
     db: AsyncSession = Depends(get_db),
-    _user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
 ):
     """Получить историю чата моделей для конкретной цели."""
+    # Verify goal ownership
+    if not current_user.is_admin:
+        goal_result = await db.execute(
+            select(Goal).where(Goal.id == goal_id, Goal.user_id == str(current_user.id))
+        )
+        if not goal_result.scalar_one_or_none():
+            raise HTTPException(status_code=404, detail="Goal not found")
     query = (
         select(Message)
         .where(Message.goal_id == goal_id)
@@ -55,8 +64,14 @@ async def user_input(data: UserInput, db: AsyncSession = Depends(get_db), curren
     - edit → изменить существующую задачу
     - idea → предложение для обсуждения
     """
-    # Check goal exists
-    result = await db.execute(select(Goal).where(Goal.id == data.goal_id))
+    if len(data.content) > MAX_PROMPT_LENGTH:
+        raise HTTPException(status_code=400, detail=f"Сообщение слишком длинное (макс {MAX_PROMPT_LENGTH} символов)")
+
+    # Check goal exists and ownership
+    query = select(Goal).where(Goal.id == data.goal_id)
+    if not current_user.is_admin:
+        query = query.where(Goal.user_id == str(current_user.id))
+    result = await db.execute(query)
     goal = result.scalar_one_or_none()
     if not goal:
         raise HTTPException(status_code=404, detail="Goal not found")

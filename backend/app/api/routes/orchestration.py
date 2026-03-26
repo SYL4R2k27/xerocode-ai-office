@@ -21,6 +21,8 @@ from app.services.supervisor import Supervisor
 
 router = APIRouter(prefix="/orchestration", tags=["Orchestration"])
 
+MAX_PROMPT_LENGTH = 10_000
+
 
 @router.post("/start/{goal_id}")
 async def start_goal(goal_id: uuid.UUID, db: AsyncSession = Depends(get_db), current_user: User = Depends(get_current_user)):
@@ -49,12 +51,15 @@ async def start_goal(goal_id: uuid.UUID, db: AsyncSession = Depends(get_db), cur
 @router.post("/user-input")
 async def process_user_input(data: UserInput, db: AsyncSession = Depends(get_db), current_user: User = Depends(get_current_user)):
     """
-    🎯 Пользователь-дирижер вмешивается в процесс.
+    Пользователь-дирижер вмешивается в процесс.
 
     - command: прямое указание команде
     - edit: изменить план
     - idea: предложить идею на обсуждение
     """
+    if len(data.content) > MAX_PROMPT_LENGTH:
+        raise HTTPException(status_code=400, detail=f"Сообщение слишком длинное (макс {MAX_PROMPT_LENGTH} символов)")
+
     supervisor = Supervisor(db)
     supervisor.set_ws_callback(ws_manager.broadcast)
 

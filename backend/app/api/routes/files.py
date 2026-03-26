@@ -1,8 +1,7 @@
 from __future__ import annotations
 
 import io
-import os
-import uuid
+import uuid as uuid_mod
 import zipfile
 from pathlib import Path
 
@@ -17,12 +16,14 @@ router = APIRouter(prefix="/files", tags=["Files"])
 BASE_DIR = Path("/tmp/ai-office")
 MAX_FILE_SIZE = 50 * 1024 * 1024  # 50 MB
 ALLOWED_EXTENSIONS = {
-    ".py", ".js", ".ts", ".html", ".css", ".json",
-    ".txt", ".md", ".pdf", ".png", ".jpg", ".svg",
+    ".txt", ".md", ".py", ".js", ".ts", ".html", ".css", ".json",
+    ".csv", ".pdf", ".png", ".jpg", ".jpeg", ".gif", ".webp", ".svg",
+    ".zip", ".tar", ".gz",
 }
+PUBLIC_UPLOAD_DIR = Path("/var/www/ai-office/uploads")
 
 
-def _workspace(goal_id: uuid.UUID) -> Path:
+def _workspace(goal_id: uuid_mod.UUID) -> Path:
     return BASE_DIR / str(goal_id) / "uploads"
 
 
@@ -37,7 +38,7 @@ def _validate_extension(filename: str) -> None:
 
 @router.post("/upload")
 async def upload_file(
-    goal_id: uuid.UUID,
+    goal_id: uuid_mod.UUID,
     file: UploadFile,
     _user: User = Depends(get_current_user),
 ):
@@ -48,35 +49,56 @@ async def upload_file(
             detail="Filename is required",
         )
 
-    _validate_extension(file.filename)
+    # Validate extension
+    safe_ext = Path(file.filename).suffix.lower()
+    if safe_ext not in ALLOWED_EXTENSIONS:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Тип файла не разрешён: {safe_ext}",
+        )
 
+    # Read and check size
     content = await file.read()
     if len(content) > MAX_FILE_SIZE:
         raise HTTPException(
-            status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
-            detail=f"File too large. Max size: {MAX_FILE_SIZE // (1024 * 1024)} MB",
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Файл слишком большой (макс 50МБ)",
         )
+
+    # Validate magic bytes for images
+    if safe_ext in (".png",) and content[:4] != b"\x89PNG":
+        raise HTTPException(status_code=400, detail="Файл не является PNG")
+    if safe_ext in (".jpg", ".jpeg") and content[:2] != b"\xff\xd8":
+        raise HTTPException(status_code=400, detail="Файл не является JPEG")
+    if safe_ext in (".gif",) and content[:4] not in (b"GIF8", b"GIF9"):
+        raise HTTPException(status_code=400, detail="Файл не является GIF")
+
+    # Sanitize filename — UUID + original extension
+    safe_name = f"{uuid_mod.uuid4().hex}{safe_ext}"
 
     workspace = _workspace(goal_id)
     workspace.mkdir(parents=True, exist_ok=True)
-
-    # Sanitise filename — keep only the basename
-    safe_name = Path(file.filename).name
     dest = workspace / safe_name
-
     dest.write_bytes(content)
+
+    # Также сохранить в публичную папку для доступа через nginx
+    PUBLIC_UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+    public_dest = PUBLIC_UPLOAD_DIR / safe_name
+    public_dest.write_bytes(content)
 
     return {
         "filename": safe_name,
+        "original_name": file.filename,
         "size": len(content),
         "goal_id": str(goal_id),
         "path": str(dest),
+        "url": f"/uploads/{safe_name}",
     }
 
 
 @router.get("/{goal_id}")
 async def list_files(
-    goal_id: uuid.UUID,
+    goal_id: uuid_mod.UUID,
     _user: User = Depends(get_current_user),
 ):
     """List all files in a goal workspace."""
@@ -98,7 +120,7 @@ async def list_files(
 
 @router.get("/{goal_id}/zip")
 async def download_zip(
-    goal_id: uuid.UUID,
+    goal_id: uuid_mod.UUID,
     _user: User = Depends(get_current_user),
 ):
     """Download all files in a goal workspace as a ZIP archive."""
@@ -125,7 +147,7 @@ async def download_zip(
 
 @router.get("/{goal_id}/{path:path}")
 async def download_file(
-    goal_id: uuid.UUID,
+    goal_id: uuid_mod.UUID,
     path: str,
     _user: User = Depends(get_current_user),
 ):

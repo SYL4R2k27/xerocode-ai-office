@@ -29,6 +29,7 @@ class Goal(Base):
     runtime_mode: Mapped[str] = mapped_column(
         String(20), default="text"  # text | cloud | local
     )
+    user_id: Mapped[Optional[str]] = mapped_column(String(36), nullable=True, index=True)
 
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()

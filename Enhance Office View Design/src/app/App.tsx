@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState, useCallback, useRef, Component, type ReactNode } from "react";
 import { Sidebar } from "./components/layout/Sidebar";
 import { ContextPanel } from "./components/layout/ContextPanel";
 import { ChatArea } from "./components/chat/ChatArea";
@@ -11,6 +11,14 @@ import { CorporateLayout, type CorporatePage } from "./components/corporate/Corp
 import { Dashboard } from "./components/corporate/Dashboard";
 import { KanbanBoard } from "./components/corporate/KanbanBoard";
 import { TeamPage } from "./components/corporate/TeamPage";
+
+/* ErrorBoundary для Corp View */
+class CorpErrorBoundary extends Component<{children: ReactNode; fallback: ReactNode}, {hasError: boolean}> {
+  state = { hasError: false };
+  static getDerivedStateFromError() { return { hasError: true }; }
+  componentDidCatch(e: Error) { console.error("Corp View error:", e); }
+  render() { return this.state.hasError ? this.props.fallback : this.props.children; }
+}
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "./components/ui/resizable";
 import { useAgentStore, useGoalStore, useTaskStore, useMessageStore, useStatusStore } from "./store/useStore";
 import { useAuthStore } from "./store/useAuthStore";
@@ -448,9 +456,20 @@ export default function App() {
     );
   }
 
-  // Корпоративный пользователь → CorporateLayout
+  // Корпоративный пользователь → CorporateLayout (с ErrorBoundary)
   if (isCorporate) {
+    const corpFallback = (
+      <div className="h-screen flex items-center justify-center" style={{ backgroundColor: "var(--bg-base)" }}>
+        <div className="text-center p-8">
+          <div className="text-4xl mb-4">⚠️</div>
+          <h2 className="text-lg font-bold mb-2" style={{ color: "var(--text-primary)" }}>Ошибка корпоративного режима</h2>
+          <p className="text-sm mb-4" style={{ color: "var(--text-secondary)" }}>Переключаемся на обычный режим</p>
+          <button onClick={() => { setAdminTestCorporate(false); setFocusMode(false); }} className="px-4 py-2 rounded-lg bg-purple-600 text-white text-sm">Обычный режим</button>
+        </div>
+      </div>
+    );
     return (
+      <CorpErrorBoundary fallback={corpFallback}>
       <>
         <CorporateLayout
           activePage={corporatePage}
@@ -572,6 +591,7 @@ export default function App() {
           }}
         />
       </>
+      </CorpErrorBoundary>
     );
   }
 

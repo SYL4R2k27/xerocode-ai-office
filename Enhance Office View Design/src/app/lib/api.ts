@@ -252,10 +252,10 @@ export interface GoalStatus {
 export const api = {
   // Auth
   auth: {
-    register: (email: string, password: string, name: string) =>
+    register: (email: string, password: string, name: string, invite_code?: string) =>
       request<TokenResponse>("/auth/register", {
         method: "POST",
-        body: JSON.stringify({ email, password, name }),
+        body: JSON.stringify({ email, password, name, invite_code: invite_code || "" }),
       }),
     login: (email: string, password: string) =>
       request<TokenResponse>("/auth/login", {

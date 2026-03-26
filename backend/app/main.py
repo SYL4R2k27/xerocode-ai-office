@@ -2,8 +2,11 @@ from __future__ import annotations
 
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+import logging
+
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
 from app.api.routes import admin, agents, audit, auth, autoprompt, custom_pools, files, goals, messages, orchestration, organization, payments, tasks, templates
 from app.api.websocket import setup_websocket
@@ -37,6 +40,13 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Global error handler — hide stack traces
+@app.exception_handler(Exception)
+async def generic_exception_handler(request: Request, exc: Exception):
+    logging.getLogger("uvicorn.error").error(f"Unhandled: {exc}", exc_info=True)
+    return JSONResponse(status_code=500, content={"detail": "Internal server error"})
+
 
 # REST Routes
 app.include_router(auth.router, prefix="/api")

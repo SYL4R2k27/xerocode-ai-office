@@ -1,11 +1,20 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { PanelRightOpen, PanelRightClose, Play, Users, Upload } from "lucide-react";
+import { PanelRightOpen, PanelRightClose, Play, Users, Upload, ChevronDown, Code, Palette, Search, FileText, MoreHorizontal } from "lucide-react";
 import { ChatMessage } from "./ChatMessage";
 import { ChatInput } from "./ChatInput";
 import { AgentStatusBar } from "./AgentStatusBar";
 import { MessageSkeleton } from "../shared/LoadingSkeleton";
+import { api } from "../../lib/api";
 import type { Message, Agent, Goal } from "../../lib/api";
+
+const categoryOptions = [
+  { id: "code", label: "Код", icon: Code, color: "var(--accent-blue)" },
+  { id: "design", label: "Дизайн", icon: Palette, color: "var(--accent-lavender)" },
+  { id: "research", label: "Ресёрч", icon: Search, color: "var(--accent-teal)" },
+  { id: "text", label: "Текст", icon: FileText, color: "var(--accent-amber)" },
+  { id: "other", label: "Другое", icon: MoreHorizontal, color: "var(--text-tertiary)" },
+];
 
 interface ChatAreaProps {
   messages: Message[];
@@ -44,7 +53,33 @@ export function ChatArea({
   const scrollRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [droppedFiles, setDroppedFiles] = useState<File[]>([]);
+  const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
+  const [localCategory, setLocalCategory] = useState<string | null>(null);
   const dragCounter = useRef(0);
+
+  // Sync local category when active goal changes
+  useEffect(() => {
+    setLocalCategory((activeGoal as any)?.category || null);
+  }, [activeGoal?.id]);
+
+  // Close category dropdown on outside click
+  useEffect(() => {
+    if (!showCategoryDropdown) return;
+    const handleClick = () => setShowCategoryDropdown(false);
+    const timer = setTimeout(() => document.addEventListener("click", handleClick), 0);
+    return () => { clearTimeout(timer); document.removeEventListener("click", handleClick); };
+  }, [showCategoryDropdown]);
+
+  const handleCategoryChange = useCallback(async (category: string) => {
+    if (!activeGoal) return;
+    setLocalCategory(category);
+    setShowCategoryDropdown(false);
+    try {
+      await api.goals.update(activeGoal.id, { category } as any);
+    } catch (e) {
+      console.error("Не удалось обновить категорию:", e);
+    }
+  }, [activeGoal]);
 
   // Auto-scroll on new messages
   useEffect(() => {
@@ -52,6 +87,14 @@ export function ChatArea({
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages.length]);
+
+  // Scroll to top and close dropdowns when switching goals
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = 0;
+    }
+    setShowCategoryDropdown(false);
+  }, [activeGoal?.id]);
 
   const goalStarted = activeGoal?.status === "active";
 
@@ -154,6 +197,52 @@ export function ChatArea({
               >
                 {modeLabels[activeGoal.distribution_mode] || activeGoal.distribution_mode}
               </span>
+              {/* Category badge with dropdown */}
+              <div className="relative flex-shrink-0">
+                {(() => {
+                  const cat = categoryOptions.find(c => c.id === localCategory) || null;
+                  const CatIcon = cat?.icon || MoreHorizontal;
+                  return (
+                    <>
+                      <button
+                        onClick={() => setShowCategoryDropdown(!showCategoryDropdown)}
+                        className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium transition-all hover:brightness-110"
+                        style={{
+                          backgroundColor: cat ? cat.color : "var(--bg-elevated)",
+                          color: cat ? "#fff" : "var(--text-secondary)",
+                          border: `1px solid ${cat ? cat.color : "var(--border-subtle)"}`,
+                        }}
+                      >
+                        <CatIcon size={10} />
+                        {cat?.label || "Категория"}
+                        <ChevronDown size={8} />
+                      </button>
+                      {showCategoryDropdown && (
+                        <div
+                          className="absolute top-full left-0 mt-1 rounded-lg py-1 z-50 min-w-[130px]"
+                          style={{ backgroundColor: "var(--bg-elevated)", border: "1px solid var(--border-default)" }}
+                        >
+                          {categoryOptions.map((opt) => {
+                            const OptIcon = opt.icon;
+                            const isActive = localCategory === opt.id;
+                            return (
+                              <button
+                                key={opt.id}
+                                onClick={() => handleCategoryChange(opt.id)}
+                                className="flex items-center gap-2 w-full px-3 py-1.5 text-[11px] hover:bg-white/5 transition-colors"
+                                style={{ color: isActive ? opt.color : "var(--text-secondary)" }}
+                              >
+                                <OptIcon size={12} />
+                                {opt.label}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </>
+                  );
+                })()}
+              </div>
               {/* Agent avatars */}
               <div className="flex -space-x-1.5 ml-2">
                 {agents.slice(0, 4).map((agent) => (
@@ -202,6 +291,15 @@ export function ChatArea({
 
       {/* Messages */}
       <div ref={scrollRef} className="flex-1 overflow-y-auto py-4">
+        <AnimatePresence mode="wait">
+        <motion.div
+          key={activeGoal?.id || "empty"}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2 }}
+          className="h-full"
+        >
         {messagesLoading ? (
           <div className="space-y-2 py-2">
             <MessageSkeleton />
@@ -257,6 +355,8 @@ export function ChatArea({
             })}
           </div>
         )}
+        </motion.div>
+        </AnimatePresence>
       </div>
 
       {/* Agent Status Bar */}
@@ -265,6 +365,7 @@ export function ChatArea({
       {/* Input */}
       <ChatInput
         hasActiveGoal={!!activeGoal}
+        activeGoal={activeGoal?.id}
         goalStarted={goalStarted}
         onCreateGoal={onCreateGoal}
         onStartGoal={onStartGoal}

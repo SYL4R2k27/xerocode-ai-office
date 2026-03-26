@@ -6,97 +6,152 @@ import { PoolBuilder as PoolBuilderComponent } from "./PoolBuilder";
 import { api, Agent } from "../../lib/api";
 import type { Pool } from "../../lib/api";
 
-const providers = [
-  { id: "openrouter", name: "OpenRouter", desc: "22+ модели через один ключ", color: "#8b5cf6" },
-  { id: "groq", name: "Groq", desc: "Llama 3.3 70B, Scout — бесплатно", color: "#F55036" },
-  { id: "google", name: "Google Gemini", desc: "Flash, Pro, Nano Banana", color: "#4285F4" },
-  { id: "openai", name: "OpenAI", desc: "GPT-4o, GPT-4.1, o3, o4-mini", color: "#10a37f" },
-  { id: "anthropic", name: "Anthropic", desc: "Claude Sonnet 4.6, Opus, Haiku", color: "#d97706" },
-  { id: "xai", name: "xAI (Grok)", desc: "Grok 4, Grok Code, Aurora", color: "#1DA1F2" },
-  { id: "stability", name: "Stability AI", desc: "SD 3.5 — изображения", color: "#8B5CF6" },
-  { id: "ollama", name: "Ollama", desc: "Локальные модели", color: "#333333" },
-  { id: "custom", name: "Custom", desc: "OpenAI-совместимый API", color: "#666666" },
+// Категории моделей (вместо провайдеров)
+const categories = [
+  { id: "flagship", name: "🧠 Флагманы", desc: "Топ модели для сложных задач", color: "#7C3AED" },
+  { id: "fast", name: "⚡ Быстрые", desc: "Дешёвые и быстрые", color: "#06B6D4" },
+  { id: "code", name: "💻 Код", desc: "Специализированные для программирования", color: "#10B981" },
+  { id: "images", name: "🎨 Изображения", desc: "Генерация картинок", color: "#EC4899" },
+  { id: "research", name: "🔍 Ресёрч", desc: "Reasoning + поиск", color: "#F59E0B" },
+  { id: "chat", name: "💬 Чат", desc: "Универсальные модели", color: "#4F7CFF" },
+  { id: "free", name: "🆓 Бесплатные", desc: "Без оплаты", color: "#22C55E" },
+  { id: "video", name: "🎬 Видео", desc: "Генерация видео", color: "#EF4444" },
+  { id: "custom", name: "⚙️ Custom", desc: "Свой API", color: "#666666" },
 ];
 
+// Для обратной совместимости — providers теперь = categories
+const providers = categories;
+
 const modelSuggestions: Record<string, string[]> = {
-  openrouter: [
-    "google/gemini-2.5-flash-image", "google/gemini-2.5-flash", "google/gemini-2.5-pro",
-    "google/gemini-3-pro-image-preview", "google/gemma-3-27b-it:free", "google/gemma-3-12b-it:free",
-    "openai/gpt-4o", "openai/gpt-4.1", "openai/gpt-4.1-nano", "openai/gpt-4.1-mini",
-    "openai/o3", "openai/o4-mini",
-    "anthropic/claude-sonnet-4.6", "anthropic/claude-opus-4.6", "anthropic/claude-haiku-4.5",
-    "x-ai/grok-4", "x-ai/grok-4.1-fast", "x-ai/grok-3",
-    "meta-llama/llama-3.3-70b-instruct:free",
+  flagship: [
+    "gpt-5.4-pro", "gpt-5.4", "claude-opus-4-6", "gpt-5", "gpt-5.2-pro",
+    "x-ai/grok-4", "o3", "o1-pro", "qwen/qwen-max", "moonshotai/kimi-k2.5",
   ],
-  groq: ["llama-3.3-70b-versatile", "llama-3.1-8b-instant", "llama-4-scout-17b-16e-instruct", "gemma2-9b-it"],
-  google: ["gemini-2.5-flash", "gemini-2.5-pro", "gemini-2.5-flash-image", "gemini-3-pro-image-preview"],
-  openai: ["gpt-4o", "gpt-4o-mini", "gpt-4.1", "gpt-4.1-mini", "gpt-4.1-nano", "o3", "o4-mini"],
-  anthropic: ["claude-sonnet-4-6", "claude-haiku-4-5", "claude-opus-4-6"],
-  xai: ["grok-4", "grok-4.1-fast", "grok-3", "grok-code-fast-1"],
-  stability: ["sd3.5-large", "sd3.5-medium", "stable-image-ultra"],
-  ollama: ["llama3.1:8b", "mistral:7b", "codellama:13b", "qwen2.5:14b", "llama3.3:70b"],
+  fast: [
+    "gpt-5.4-nano", "gpt-5-nano", "gpt-4.1-nano", "gpt-5.4-mini", "gpt-5-mini",
+    "gpt-4o-mini", "claude-haiku-4-5", "x-ai/grok-4.1-fast", "x-ai/grok-4-fast",
+    "o4-mini", "o3-mini", "deepseek/deepseek-chat",
+  ],
+  code: [
+    "gpt-5.3-codex", "gpt-5.2-codex", "gpt-5.1-codex-max", "gpt-5.1-codex", "gpt-5-codex",
+    "claude-sonnet-4-6", "qwen/qwen3-coder", "qwen/qwen3-coder-plus",
+    "mistralai/codestral-2508", "mistralai/devstral-medium", "x-ai/grok-code-fast-1",
+    "inception/mercury-coder",
+  ],
+  images: [
+    "gpt-image-1.5", "gpt-image-1", "gpt-image-1-mini", "dall-e-3",
+    "sd3.5-large", "sd3.5-large-turbo", "sd3.5-medium", "stable-image-ultra", "stable-image-core",
+  ],
+  research: [
+    "deepseek/deepseek-r1-0528", "deepseek/deepseek-r1",
+    "perplexity/sonar-pro-search", "perplexity/sonar-pro", "perplexity/sonar-deep-research",
+    "qwen/qwen3-235b-a22b", "deepseek/deepseek-prover-v2",
+  ],
+  chat: [
+    "gpt-4o", "gpt-4.1", "claude-sonnet-4-5", "mistralai/mistral-large-2411",
+    "meta-llama/llama-4-maverick", "cohere/command-a", "moonshotai/kimi-k2",
+    "z-ai/glm-5-turbo", "minimax/minimax-m2.7", "baidu/ernie-4.5-300b-a47b",
+    "amazon/nova-premier-v1",
+  ],
+  free: [
+    "llama-3.3-70b-versatile", "llama-3.1-8b-instant", "qwen-3-235b",
+    "nvidia/nemotron-3-nano-30b-a3b:free", "nvidia/nemotron-nano-9b-v2:free",
+    "stepfun/step-3.5-flash:free",
+  ],
+  video: ["sora-2-pro", "sora-2"],
   custom: [],
 };
 
 const modelDescriptions: Record<string, string> = {
-  // OpenRouter
-  "google/gemini-2.5-flash-image": "Nano Banana — генерация изображений",
-  "google/gemini-2.5-flash": "Быстрая, $0.15/1M токенов",
-  "google/gemini-2.5-pro": "Мощная, $1.25/1M токенов",
-  "google/gemini-3-pro-image-preview": "Превью изображений, новая",
-  "google/gemma-3-27b-it:free": "27B, бесплатно",
-  "google/gemma-3-12b-it:free": "12B, бесплатно",
-  "openai/gpt-4o": "$2.50/1M — универсальная",
-  "openai/gpt-4.1": "$2.00/1M — новейшая",
-  "openai/gpt-4.1-nano": "$0.10/1M — сверхдешёвая",
-  "openai/gpt-4.1-mini": "$0.40/1M — баланс цена/качество",
-  "openai/o3": "Reasoning, $10/1M",
-  "openai/o4-mini": "Reasoning, $1.10/1M",
-  "anthropic/claude-sonnet-4.6": "Лучший баланс, $3/1M",
-  "anthropic/claude-opus-4.6": "Самая мощная, $15/1M",
-  "anthropic/claude-haiku-4.5": "Быстрая, $0.80/1M",
-  "x-ai/grok-4": "Флагман xAI",
-  "x-ai/grok-4.1-fast": "Быстрый Grok",
-  "x-ai/grok-3": "Предыдущее поколение",
-  "meta-llama/llama-3.3-70b-instruct:free": "70B, бесплатно",
-  // Groq
-  "llama-3.3-70b-versatile": "70B, быстрый, бесплатно",
-  "llama-3.1-8b-instant": "8B, мгновенный, бесплатно",
-  "llama-4-scout-17b-16e-instruct": "Scout MoE, бесплатно",
-  "gemma2-9b-it": "9B от Google, бесплатно",
-  // Google
-  "gemini-2.5-flash": "Быстрая, бесплатный тир",
-  "gemini-2.5-pro": "Мощная, бесплатный тир",
-  "gemini-2.5-flash-image": "Nano Banana — генерация изображений",
-  "gemini-3-pro-image-preview": "Превью нового поколения",
-  // OpenAI
-  "gpt-4o": "$2.50/1M — универсальная",
-  "gpt-4o-mini": "$0.15/1M — лёгкая",
-  "gpt-4.1": "$2.00/1M — новейшая",
-  "gpt-4.1-mini": "$0.40/1M — баланс",
-  "gpt-4.1-nano": "$0.10/1M — сверхдешёвая",
-  "o3": "Reasoning, $10/1M",
-  "o4-mini": "Reasoning, $1.10/1M",
-  // Anthropic
-  "claude-sonnet-4-6": "Лучший баланс, $3/1M",
-  "claude-haiku-4-5": "Быстрая, $0.80/1M",
-  "claude-opus-4-6": "Самая мощная, $15/1M",
-  // xAI
-  "grok-4": "Флагман xAI",
-  "grok-4.1-fast": "Быстрый Grok",
-  "grok-3": "Предыдущее поколение",
-  "grok-code-fast-1": "Код, быстрый",
-  // Stability
-  "sd3.5-large": "Лучшее качество",
-  "sd3.5-medium": "Баланс скорость/качество",
-  "stable-image-ultra": "Максимальное качество",
-  // Ollama
-  "llama3.1:8b": "8B, локально",
-  "mistral:7b": "7B, локально",
-  "codellama:13b": "13B, код",
-  "qwen2.5:14b": "14B, мультиязычная",
-  "llama3.3:70b": "70B, мощная локальная",
+  // Flagship
+  "gpt-5.4-pro": "Самая мощная модель, $30/$180 за 1M",
+  "gpt-5.4": "Флагман 2026, $2.50/$15",
+  "claude-opus-4-6": "Самая умная Claude, $5/$25",
+  "gpt-5": "Универсальная топ, $1.25/$10",
+  "gpt-5.2-pro": "Reasoning Pro, $21/$168",
+  "x-ai/grok-4": "Флагман xAI, $3/$15",
+  "o3": "Сложная логика, $2/$8",
+  "o1-pro": "Reasoning Pro, $15/$60",
+  "qwen/qwen-max": "Топ Alibaba, $1/$4",
+  "moonshotai/kimi-k2.5": "Топ Moonshot, $0.45/$2.20",
+  // Fast
+  "gpt-5.4-nano": "Ультра-быстрая, $0.20/$1.25",
+  "gpt-5-nano": "Быстрая, $0.05/$0.40",
+  "gpt-4.1-nano": "Самая дешёвая, $0.10/$0.40",
+  "gpt-5.4-mini": "Мини флагман, $0.75/$4.50",
+  "gpt-5-mini": "Компактная, $0.25/$2",
+  "gpt-4o-mini": "Классика, $0.15/$0.60",
+  "claude-haiku-4-5": "Быстрая Claude, $1/$5",
+  "x-ai/grok-4.1-fast": "2M контекст, $0.20/$0.50",
+  "x-ai/grok-4-fast": "Быстрый Grok, $0.20/$0.50",
+  "o4-mini": "Reasoning быстрый, $1.10/$4.40",
+  "o3-mini": "Reasoning компактный, $1.10/$4.40",
+  "deepseek/deepseek-chat": "Дешёвый, $0.14/$0.28",
+  // Code
+  "gpt-5.3-codex": "Код: новейший, $1.75/$14",
+  "gpt-5.2-codex": "Код: продвинутый, $1.75/$14",
+  "gpt-5.1-codex-max": "Код: макс контекст, $1.25/$10",
+  "gpt-5.1-codex": "Код: стандартный, $1.25/$10",
+  "gpt-5-codex": "Код: GPT-5, $1.25/$10",
+  "claude-sonnet-4-6": "Лучшая для кода, $3/$15",
+  "qwen/qwen3-coder": "Кодер 480B, специализированный",
+  "qwen/qwen3-coder-plus": "Улучшенный кодер",
+  "mistralai/codestral-2508": "80+ языков программирования",
+  "mistralai/devstral-medium": "Код от Mistral",
+  "x-ai/grok-code-fast-1": "Быстрый кодер, $0.20/$1.50",
+  "inception/mercury-coder": "Специализированный кодер",
+  // Images
+  "gpt-image-1.5": "Новейшая генерация OpenAI",
+  "gpt-image-1": "Генерация изображений",
+  "gpt-image-1-mini": "Быстрая генерация",
+  "dall-e-3": "Классическая генерация",
+  "sd3.5-large": "SD 3.5 топ качество",
+  "sd3.5-large-turbo": "SD 3.5 быстрый",
+  "sd3.5-medium": "SD 3.5 средний",
+  "stable-image-ultra": "Максимальное качество SD",
+  "stable-image-core": "Базовый SD",
+  // Research
+  "deepseek/deepseek-r1-0528": "Chain-of-thought reasoning",
+  "deepseek/deepseek-r1": "Reasoning модель",
+  "perplexity/sonar-pro-search": "С поиском в интернете!",
+  "perplexity/sonar-pro": "Ресёрч Perplexity",
+  "perplexity/sonar-deep-research": "Глубокий ресёрч",
+  "qwen/qwen3-235b-a22b": "235 млрд параметров",
+  "deepseek/deepseek-prover-v2": "Математические доказательства",
+  // Chat
+  "gpt-4o": "Универсальная, $2.50/$10",
+  "gpt-4.1": "1M контекст, $2/$8",
+  "claude-sonnet-4-5": "Claude 4.5, $3/$15",
+  "mistralai/mistral-large-2411": "Топ Mistral, $2/$6",
+  "meta-llama/llama-4-maverick": "Мультимодальная Meta",
+  "cohere/command-a": "Для RAG, $2.50/$10",
+  "moonshotai/kimi-k2": "Moonshot AI, $0.57/$2.30",
+  "z-ai/glm-5-turbo": "ChatGLM, $1.20/$4",
+  "minimax/minimax-m2.7": "MiniMax AI, $0.30/$1.20",
+  "baidu/ernie-4.5-300b-a47b": "Baidu AI, $0.28/$1.10",
+  "amazon/nova-premier-v1": "Amazon AI, $2.50/$12.50",
+  // Free
+  "llama-3.3-70b-versatile": "70B, Groq, бесплатно",
+  "llama-3.1-8b-instant": "8B, Groq, бесплатно",
+  "qwen-3-235b": "235B, Cerebras, бесплатно",
+  "nvidia/nemotron-3-nano-30b-a3b:free": "30B, Nvidia, бесплатно",
+  "nvidia/nemotron-nano-9b-v2:free": "9B, Nvidia, бесплатно",
+  "stepfun/step-3.5-flash:free": "StepFun, бесплатно",
+  // Video
+  "sora-2-pro": "Генерация видео Pro",
+  "sora-2": "Генерация видео",
 };
+
+// Авто-определение провайдера по model ID
+function detectProvider(modelId: string): string {
+  if (modelId.startsWith("gpt-") || modelId.startsWith("o3") || modelId.startsWith("o4") || modelId.startsWith("o1") || modelId.startsWith("dall-e") || modelId.startsWith("sora-") || modelId.startsWith("chatgpt-")) return "openai";
+  if (modelId.startsWith("claude-")) return "anthropic";
+  if (modelId.startsWith("sd3") || modelId.startsWith("stable-")) return "stability";
+  if (modelId.startsWith("llama-3.3-70b-versatile") || modelId.startsWith("llama-3.1-8b-instant")) return "groq";
+  if (modelId.startsWith("qwen-3-235b")) return "cerebras";
+  if (modelId.includes("/")) return "openrouter";
+  return "openrouter";
+}
 
 const skillOptions = ["code", "research", "analysis", "design", "image", "text", "planning", "review", "testing"];
 

@@ -41,6 +41,20 @@ function getAgentModel(agents: Agent[], senderName: string): string | null {
 }
 
 // Parse code blocks and images from content
+function sanitizeContent(text: string): string {
+  return text
+    .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, "")
+    .replace(/on\w+\s*=\s*["'][^"']*["']/gi, "")
+    .replace(/javascript:/gi, "")
+    .replace(/<iframe\b[^>]*>[\s\S]*?<\/iframe>/gi, "")
+    .replace(/<object\b[^>]*>[\s\S]*?<\/object>/gi, "")
+    .replace(/<embed\b[^>]*>/gi, "");
+}
+
+function isAllowedImageUrl(url: string): boolean {
+  return url.startsWith("/uploads/") || url.startsWith("data:image/") || url.startsWith("https://");
+}
+
 function parseContent(content: string): Array<{ type: "text" | "code" | "image"; value: string; language?: string }> {
   const parts: Array<{ type: "text" | "code" | "image"; value: string; language?: string }> = [];
 
@@ -385,7 +399,7 @@ export function ChatMessage({ message, agents, isGrouped, onOpenInPreview }: Cha
 
   // User messages — right-aligned
   if (sender_type === "user") {
-    const parts = parseContent(content);
+    const parts = parseContent(sanitizeContent(content));
     return (
       <>
         <motion.div
@@ -435,7 +449,7 @@ export function ChatMessage({ message, agents, isGrouped, onOpenInPreview }: Cha
   const agentColor = getAgentColor(agents, sender_name);
   const provider = getAgentProvider(agents, sender_name);
   const modelName = getAgentModel(agents, sender_name);
-  const parts = parseContent(content);
+  const parts = parseContent(sanitizeContent(content));
 
   return (
     <>
@@ -465,10 +479,9 @@ export function ChatMessage({ message, agents, isGrouped, onOpenInPreview }: Cha
               <span className="text-[13px] font-semibold" style={{ color: agentColor }}>
                 {sender_name}
               </span>
-              {provider && <ProviderBadge provider={provider} />}
               {modelName && (
                 <span className="text-[10px]" style={{ color: "var(--text-tertiary)" }}>
-                  {modelName}
+                  {modelName.replace(/^[^/]+\//, "")}
                 </span>
               )}
             </div>

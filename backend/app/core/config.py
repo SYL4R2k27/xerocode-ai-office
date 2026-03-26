@@ -1,9 +1,8 @@
 from __future__ import annotations
 
-import secrets
-import warnings
-from pathlib import Path
+import os
 
+from pydantic import model_validator
 from pydantic_settings import BaseSettings
 
 
@@ -27,46 +26,32 @@ class Settings(BaseSettings):
     # API Proxy (for routing API calls through EU)
     api_proxy: str | None = None  # socks5://127.0.0.1:10808
 
-    # Groq (для autoprompt)
+    # API ключи провайдеров (платформенные)
     groq_api_key: str | None = None
-
-    # OpenRouter
+    openai_api_key: str | None = None
+    anthropic_api_key: str | None = None
     openrouter_api_key: str | None = None
+    sambanova_api_key: str | None = None
+    cerebras_api_key: str | None = None
+    together_api_key: str | None = None
+    stability_api_key: str | None = None
+    apiyi_api_key: str | None = None
     openrouter_fallback_enabled: bool = True
+    invite_code: str | None = None  # Бета-тест инвайт код (из .env)
 
     model_config = {"env_file": ".env", "extra": "ignore"}
 
-
-def _ensure_persistent_secret_key(s: Settings) -> None:
-    """If SECRET_KEY is the default placeholder, generate a secure one and
-    persist it to .env so encrypted data survives restarts."""
-    if s.secret_key != "change-me-in-production":
-        return
-
-    generated = secrets.token_urlsafe(32)
-    env_path = Path(__file__).resolve().parent.parent.parent / ".env"
-
-    # Append to .env so it loads automatically next time
-    try:
-        existing = env_path.read_text() if env_path.exists() else ""
-        if "SECRET_KEY" not in existing:
-            with env_path.open("a") as f:
-                f.write(f"\nSECRET_KEY={generated}\n")
-        s.secret_key = generated
-        warnings.warn(
-            "SECRET_KEY was not set. Generated and saved to .env. "
-            "Keep .env safe — it protects all encrypted API keys.",
-            stacklevel=2,
-        )
-    except OSError:
-        s.secret_key = generated
-        warnings.warn(
-            "SECRET_KEY is not set and .env is not writable! "
-            "Using auto-generated key — encrypted data will be LOST on restart. "
-            "Set SECRET_KEY in your environment for production.",
-            stacklevel=2,
-        )
+    @model_validator(mode="after")
+    def validate_secret(self):
+        if not self.secret_key or self.secret_key == "change-me-in-production":
+            key = os.environ.get("SECRET_KEY")
+            if not key:
+                raise ValueError(
+                    "FATAL: SECRET_KEY must be set in .env. "
+                    'Run: python -c "import secrets; print(secrets.token_urlsafe(64))"'
+                )
+            self.secret_key = key
+        return self
 
 
 settings = Settings()
-_ensure_persistent_secret_key(settings)

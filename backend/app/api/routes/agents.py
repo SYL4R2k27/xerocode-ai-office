@@ -36,6 +36,7 @@ async def create_agent(data: AgentCreate, db: AsyncSession = Depends(get_db), cu
         agent_data["api_key_encrypted"] = encrypt_api_key(data.api_key)
 
     agent = Agent(**agent_data)
+    agent.user_id = str(current_user.id)
     db.add(agent)
     await db.commit()
     await db.refresh(agent)
@@ -47,9 +48,14 @@ async def list_agents(
     provider: str | None = None,
     is_active: bool | None = None,
     db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
     """Список всех подключенных моделей (сотрудников офиса)."""
     query = select(Agent).order_by(Agent.created_at)
+    if not current_user.is_admin:
+        query = query.where(
+            (Agent.user_id == str(current_user.id)) | (Agent.owner_type == "platform")
+        )
     if provider:
         query = query.where(Agent.provider == provider)
     if is_active is not None:
@@ -79,6 +85,8 @@ async def update_agent(
     agent = result.scalar_one_or_none()
     if not agent:
         raise HTTPException(status_code=404, detail="Agent not found")
+    if not current_user.is_admin and agent.user_id != str(current_user.id):
+        raise HTTPException(status_code=403, detail="Access denied")
 
     update_data = data.model_dump(exclude_unset=True)
 
@@ -107,6 +115,8 @@ async def delete_agent(agent_id: uuid.UUID, db: AsyncSession = Depends(get_db), 
     agent = result.scalar_one_or_none()
     if not agent:
         raise HTTPException(status_code=404, detail="Agent not found")
+    if not current_user.is_admin and agent.user_id != str(current_user.id):
+        raise HTTPException(status_code=403, detail="Access denied")
 
     # Отвязать сообщения и задачи от агента (SET NULL)
     await db.execute(
@@ -137,21 +147,41 @@ async def list_pools(tier: str | None = None, category: str | None = None):
 @router.post("/pools/{pool_id}/activate", response_model=list[AgentResponse], status_code=201)
 async def activate_pool(pool_id: str, db: AsyncSession = Depends(get_db), current_user: User = Depends(get_current_user)):
     """Активировать пул — создать агентов из шаблона."""
+    from app.core.subscription import check_pool_access, check_subscription_limits
+
+    # Проверка доступа к пулу по подписке
+    if not check_pool_access(current_user, pool_id):
+        raise HTTPException(status_code=403, detail="Этот пул недоступен на вашем тарифе. Повысьте подписку.")
+
+    check_subscription_limits(current_user, "use_pool")
+
     pool = get_pool(pool_id)
     if not pool:
         raise HTTPException(status_code=404, detail=f"Pool '{pool_id}' not found")
 
+    # Получить API-ключ платформы для этого провайдера
+    from app.core.config import settings as app_settings
+    provider_keys = {
+        "groq": getattr(app_settings, "groq_api_key", None),
+        "openrouter": getattr(app_settings, "openrouter_api_key", None),
+        "openai": getattr(app_settings, "openai_api_key", None),
+        "anthropic": getattr(app_settings, "anthropic_api_key", None),
+    }
+
     created_agents = []
     for agent_template in pool.get("agents", []):
+        platform_key = provider_keys.get(agent_template["provider"], "") or ""
         agent = Agent(
             name=agent_template["name"],
             role=agent_template["role"],
             avatar=agent_template.get("avatar"),
             provider=agent_template["provider"],
             model_name=agent_template["model_name"],
+            api_key_encrypted=platform_key,
             skills=agent_template.get("skills"),
             owner_type="platform",
             subscription_tier="free_pool" if pool["tier"] == "pro" else "premium",
+            user_id=str(current_user.id),
         )
         db.add(agent)
         created_agents.append(agent)
