@@ -54,11 +54,15 @@ PREMIUM_MODEL_PREFIXES = [
 ]
 
 # Пулы доступные по планам
+# "all" означает доступ ко всем пулам из model_pools.POOLS
 POOL_ACCESS = {
     "free": [],
     "start": [],
-    "pro": ["coding_start", "research", "text"],
-    "pro_plus": ["coding_start", "research", "text", "design_start", "coding_advanced"],
+    "pro": ["coding_start", "design_start", "research", "copywriting", "solo_deepseek", "solo_fast"],
+    "pro_plus": [
+        "coding_start", "design_start", "research", "copywriting", "solo_deepseek", "solo_fast",
+        "coding_pro", "coding_fullstack", "data_analysis", "automation", "solo_grok",
+    ],
     "ultima": "all",
     "corporate": "all",
     "admin": "all",

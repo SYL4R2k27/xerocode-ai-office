@@ -1,6 +1,20 @@
 import { useState, useRef, useCallback } from "react";
-import { Send, Zap, Edit3, Lightbulb, ChevronDown, Wand2, Code, Palette, Search, FileText, MoreHorizontal, Paperclip, X, Image, Code2, Archive, File, Loader2, Play } from "lucide-react";
+import { Send, Zap, Edit3, Lightbulb, ChevronDown, Wand2, Code, Palette, Search, FileText, MoreHorizontal, Paperclip, X, Image, Code2, Archive, File, Loader2, Play, BarChart3, ClipboardList, GraduationCap } from "lucide-react";
 import { api } from "../../lib/api";
+import { DesignPanel, DEFAULT_DESIGN_PARAMS, serializeDesignParams } from "./DesignPanel";
+import type { DesignParams } from "./DesignPanel";
+import { CodePanel, DEFAULT_CODE_PARAMS, serializeCodeParams } from "./CodePanel";
+import type { CodeParams } from "./CodePanel";
+import { ResearchPanel, DEFAULT_RESEARCH_PARAMS, serializeResearchParams } from "./ResearchPanel";
+import type { ResearchParams } from "./ResearchPanel";
+import { TextPanel, DEFAULT_TEXT_PARAMS, serializeTextParams } from "./TextPanel";
+import type { TextParams } from "./TextPanel";
+import { DataPanel, DEFAULT_DATA_PARAMS, serializeDataParams } from "./DataPanel";
+import type { DataParams } from "./DataPanel";
+import { ManagementPanel, DEFAULT_MANAGEMENT_PARAMS, serializeManagementParams } from "./ManagementPanel";
+import type { ManagementParams } from "./ManagementPanel";
+import { EducationPanel, DEFAULT_EDUCATION_PARAMS, serializeEducationParams } from "./EducationPanel";
+import type { EducationParams } from "./EducationPanel";
 
 type InputMode = "command" | "edit" | "idea";
 type GoalMode = "manager" | "discussion" | "auto";
@@ -18,11 +32,13 @@ const goalModes: Record<GoalMode, { label: string; color: string }> = {
 };
 
 const categoryButtons = [
-  { id: "code", label: "Код", icon: Code, mode: "manager" as GoalMode, prefix: "[Код]", color: "var(--accent-blue)" },
-  { id: "design", label: "Дизайн", icon: Palette, mode: "auto" as GoalMode, prefix: "[Дизайн]", color: "var(--accent-lavender)" },
-  { id: "research", label: "Ресёрч", icon: Search, mode: "discussion" as GoalMode, prefix: "[Ресёрч]", color: "var(--accent-teal)" },
-  { id: "text", label: "Текст", icon: FileText, mode: "auto" as GoalMode, prefix: "[Текст]", color: "var(--accent-amber)" },
-  { id: "other", label: "Другое", icon: MoreHorizontal, mode: "manager" as GoalMode, prefix: "", color: "var(--text-tertiary)" },
+  { id: "code", label: "Код", icon: Code, mode: "manager" as GoalMode, prefix: "[Код]", color: "#3b82f6" },
+  { id: "design", label: "Дизайн", icon: Palette, mode: "auto" as GoalMode, prefix: "[Дизайн]", color: "#a78bfa" },
+  { id: "research", label: "Ресёрч", icon: Search, mode: "discussion" as GoalMode, prefix: "[Ресёрч]", color: "#2dd4bf" },
+  { id: "text", label: "Текст", icon: FileText, mode: "auto" as GoalMode, prefix: "[Текст]", color: "#f59e0b" },
+  { id: "data", label: "Данные", icon: BarChart3, mode: "manager" as GoalMode, prefix: "[Данные]", color: "#10b981" },
+  { id: "management", label: "Менеджмент", icon: ClipboardList, mode: "manager" as GoalMode, prefix: "[Менеджмент]", color: "#f43f5e" },
+  { id: "education", label: "Обучение", icon: GraduationCap, mode: "discussion" as GoalMode, prefix: "[Обучение]", color: "#8b5cf6" },
 ];
 
 const IMAGE_EXTS = [".png", ".jpg", ".jpeg", ".gif", ".webp", ".svg"];
@@ -138,6 +154,14 @@ export function ChatInput({ hasActiveGoal, activeGoal, goalStarted, onCreateGoal
   const [expandedText, setExpandedText] = useState("");
   const [attachedFiles, setAttachedFiles] = useState<File[]>([]);
   const [isEnhancing, setIsEnhancing] = useState(false);
+  const [panelOpen, setPanelOpen] = useState(false);
+  const [designParams, setDesignParams] = useState<DesignParams>(DEFAULT_DESIGN_PARAMS);
+  const [codeParams, setCodeParams] = useState<CodeParams>(DEFAULT_CODE_PARAMS);
+  const [researchParams, setResearchParams] = useState<ResearchParams>(DEFAULT_RESEARCH_PARAMS);
+  const [textParams, setTextParams] = useState<TextParams>(DEFAULT_TEXT_PARAMS);
+  const [dataParams, setDataParams] = useState<DataParams>(DEFAULT_DATA_PARAMS);
+  const [managementParams, setManagementParams] = useState<ManagementParams>(DEFAULT_MANAGEMENT_PARAMS);
+  const [educationParams, setEducationParams] = useState<EducationParams>(DEFAULT_EDUCATION_PARAMS);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const goalTitleRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -164,9 +188,14 @@ export function ChatInput({ hasActiveGoal, activeGoal, goalStarted, onCreateGoal
     }
   }, [attachedFiles.length, onClearExternalFiles]);
 
+  // Категории, у которых есть специализированная панель
+  const PANEL_CATEGORIES = ["code", "design", "research", "text", "data", "management", "education"];
+
   const handleCategorySelect = useCallback((cat: typeof categoryButtons[0]) => {
     setSelectedCategory(cat.id);
     setGoalMode(cat.mode);
+    // Автоматически открывать панель при выборе категории с панелью
+    setPanelOpen(PANEL_CATEGORIES.includes(cat.id));
     if (!hasActiveGoal) {
       goalTitleRef.current?.focus();
     } else {
@@ -226,13 +255,27 @@ export function ChatInput({ hasActiveGoal, activeGoal, goalStarted, onCreateGoal
     if (!title) return;
     onCreateGoal(title, goalMode);
     setGoalTitle("");
-    setSelectedCategory(null);
+    // НЕ сбрасываем selectedCategory — панель (Дизайн и др.) остаётся активной
   }, [goalTitle, goalMode, onCreateGoal]);
 
   const handleSubmit = useCallback(async () => {
     const trimmed = text.trim();
     const hasFiles = allFiles.length > 0;
     if (!trimmed && !hasFiles) return;
+
+    // Добавляем параметры категории если панель открыта
+    let categorySuffix = "";
+    if (panelOpen && selectedCategory) {
+      switch (selectedCategory) {
+        case "design": categorySuffix = serializeDesignParams(designParams); break;
+        case "code": categorySuffix = serializeCodeParams(codeParams); break;
+        case "research": categorySuffix = serializeResearchParams(researchParams); break;
+        case "text": categorySuffix = serializeTextParams(textParams); break;
+        case "data": categorySuffix = serializeDataParams(dataParams); break;
+        case "management": categorySuffix = serializeManagementParams(managementParams); break;
+        case "education": categorySuffix = serializeEducationParams(educationParams); break;
+      }
+    }
 
     if (hasActiveGoal && !goalStarted) {
       // Описание задачи → отправить как сообщение и запустить
@@ -248,7 +291,7 @@ export function ChatInput({ hasActiveGoal, activeGoal, goalStarted, onCreateGoal
           }
         }
       }
-      let content = trimmed;
+      let content = trimmed + categorySuffix;
       if (uploadedNames.length > 0) {
         const fileNames = uploadedNames.join(", ");
         content = content ? `${content}\n\n📎 Файлы: ${fileNames}` : `📎 Файлы: ${fileNames}`;
@@ -269,7 +312,7 @@ export function ChatInput({ hasActiveGoal, activeGoal, goalStarted, onCreateGoal
           }
         }
       }
-      let content = trimmed;
+      let content = trimmed + categorySuffix;
       if (uploadedNames.length > 0) {
         const fileNames = uploadedNames.join(", ");
         content = content ? `${content}\n\n📎 Файлы: ${fileNames}` : `📎 Файлы: ${fileNames}`;
@@ -283,7 +326,7 @@ export function ChatInput({ hasActiveGoal, activeGoal, goalStarted, onCreateGoal
     if (textareaRef.current) {
       textareaRef.current.style.height = "44px";
     }
-  }, [text, mode, goalMode, hasActiveGoal, goalStarted, activeGoal, onCreateGoal, onStartGoal, onSendMessage, allFiles, onClearExternalFiles]);
+  }, [text, mode, goalMode, hasActiveGoal, goalStarted, activeGoal, onCreateGoal, onStartGoal, onSendMessage, allFiles, onClearExternalFiles, selectedCategory, panelOpen, designParams, codeParams, researchParams, textParams, dataParams, managementParams, educationParams]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -520,6 +563,29 @@ export function ChatInput({ hasActiveGoal, activeGoal, goalStarted, onCreateGoal
         </div>
       )}
 
+      {/* Специализированные панели — выезжают при выборе категории */}
+      {selectedCategory === "code" && (
+        <CodePanel isOpen={panelOpen} onToggle={() => setPanelOpen(!panelOpen)} params={codeParams} onParamsChange={setCodeParams} />
+      )}
+      {selectedCategory === "design" && (
+        <DesignPanel isOpen={panelOpen} onToggle={() => setPanelOpen(!panelOpen)} params={designParams} onParamsChange={setDesignParams} />
+      )}
+      {selectedCategory === "research" && (
+        <ResearchPanel isOpen={panelOpen} onToggle={() => setPanelOpen(!panelOpen)} params={researchParams} onParamsChange={setResearchParams} />
+      )}
+      {selectedCategory === "text" && (
+        <TextPanel isOpen={panelOpen} onToggle={() => setPanelOpen(!panelOpen)} params={textParams} onParamsChange={setTextParams} />
+      )}
+      {selectedCategory === "data" && (
+        <DataPanel isOpen={panelOpen} onToggle={() => setPanelOpen(!panelOpen)} params={dataParams} onParamsChange={setDataParams} />
+      )}
+      {selectedCategory === "management" && (
+        <ManagementPanel isOpen={panelOpen} onToggle={() => setPanelOpen(!panelOpen)} params={managementParams} onParamsChange={setManagementParams} />
+      )}
+      {selectedCategory === "education" && (
+        <EducationPanel isOpen={panelOpen} onToggle={() => setPanelOpen(!panelOpen)} params={educationParams} onParamsChange={setEducationParams} />
+      )}
+
       {/* Input area — hidden when no active goal (title form is shown above instead) */}
       {hasActiveGoal && (
         <>
@@ -561,6 +627,25 @@ export function ChatInput({ hasActiveGoal, activeGoal, goalStarted, onCreateGoal
                 overflowWrap: "break-word",
               }}
             />
+            {/* Panel toggle button — показывает иконку выбранной категории */}
+            {selectedCategory && PANEL_CATEGORIES.includes(selectedCategory) && (() => {
+              const cat = categoryButtons.find(c => c.id === selectedCategory);
+              if (!cat) return null;
+              const CatIcon = cat.icon;
+              return (
+                <button
+                  onClick={() => setPanelOpen(!panelOpen)}
+                  className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-all hover:bg-white/5"
+                  title={panelOpen ? "Скрыть параметры" : "Параметры"}
+                  style={{
+                    backgroundColor: panelOpen ? `color-mix(in srgb, ${cat.color} 15%, transparent)` : "transparent",
+                    border: panelOpen ? `1px solid color-mix(in srgb, ${cat.color} 30%, transparent)` : "1px solid transparent",
+                  }}
+                >
+                  <CatIcon size={14} style={{ color: panelOpen ? cat.color : "var(--text-tertiary)" }} />
+                </button>
+              );
+            })()}
             {/* Auto-prompt button */}
             {text.trim() && text.trim().length <= 200 && (
               <button

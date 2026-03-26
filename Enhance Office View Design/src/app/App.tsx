@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useRef, Component, type ReactNode } from "react";
+import { useEffect, useState, useCallback, useRef, Component, type ReactNode, useSyncExternalStore } from "react";
 import { Sidebar } from "./components/layout/Sidebar";
 import { ContextPanel } from "./components/layout/ContextPanel";
 import { ChatArea } from "./components/chat/ChatArea";
@@ -11,6 +11,7 @@ import { CorporateLayout, type CorporatePage } from "./components/corporate/Corp
 import { Dashboard } from "./components/corporate/Dashboard";
 import { KanbanBoard } from "./components/corporate/KanbanBoard";
 import { TeamPage } from "./components/corporate/TeamPage";
+import { MobileLayout } from "./components/mobile/MobileLayout";
 
 /* ErrorBoundary для Corp View */
 class CorpErrorBoundary extends Component<{children: ReactNode; fallback: ReactNode}, {hasError: boolean}> {
@@ -19,6 +20,18 @@ class CorpErrorBoundary extends Component<{children: ReactNode; fallback: ReactN
   componentDidCatch(e: Error) { console.error("Corp View error:", e); }
   render() { return this.state.hasError ? this.props.fallback : this.props.children; }
 }
+/* Responsive helpers */
+function useMediaQuery(query: string): boolean {
+  const subscribe = useCallback((cb: () => void) => {
+    const mql = window.matchMedia(query);
+    mql.addEventListener("change", cb);
+    return () => mql.removeEventListener("change", cb);
+  }, [query]);
+  const getSnapshot = useCallback(() => window.matchMedia(query).matches, [query]);
+  const getServerSnapshot = useCallback(() => false, []);
+  return useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+}
+
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "./components/ui/resizable";
 import { useAgentStore, useGoalStore, useTaskStore, useMessageStore, useStatusStore } from "./store/useStore";
 import { useAuthStore } from "./store/useAuthStore";
@@ -58,10 +71,25 @@ function ChatInterface({
   const [previewCode, setPreviewCode] = useState<string | null>(null);
   const [previewLanguage, setPreviewLanguage] = useState("text");
 
+  // Responsive
+  const isMobile = useMediaQuery("(max-width: 767px)");
+  const isTablet = useMediaQuery("(min-width: 768px) and (max-width: 1023px)");
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
   // Resizable panel refs
   const contextPanelRef = useRef<ImperativePanelHandle>(null);
   const sidebarPanelRef = useRef<ImperativePanelHandle>(null);
   const [contextPanelOpen, setContextPanelOpen] = useState(true);
+
+  // Auto-collapse sidebar on tablet, auto-hide on mobile
+  useEffect(() => {
+    if (isMobile && sidebarPanelRef.current && !sidebarPanelRef.current.isCollapsed()) {
+      sidebarPanelRef.current.collapse();
+    }
+    if (isMobile && contextPanelRef.current && !contextPanelRef.current.isCollapsed()) {
+      contextPanelRef.current.collapse();
+    }
+  }, [isMobile]);
 
   // Load saved panel sizes
   const savedSizes = JSON.parse(localStorage.getItem("ai-office-panel-sizes") || "[20, 55, 25]");
@@ -207,6 +235,26 @@ function ChatInterface({
 
   return (
     <>
+      {/* Мобильный гамбургер */}
+      {isMobile && !isCorporateEmbed && (
+        <button
+          onClick={() => {
+            setMobileMenuOpen(!mobileMenuOpen);
+            if (sidebarPanelRef.current) {
+              if (sidebarPanelRef.current.isCollapsed()) sidebarPanelRef.current.expand();
+              else sidebarPanelRef.current.collapse();
+            }
+          }}
+          className="fixed top-3 left-3 z-50 p-2 rounded-lg"
+          style={{
+            backgroundColor: "var(--bg-elevated)",
+            border: "1px solid var(--border-default)",
+            color: "var(--text-secondary)",
+          }}
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="18" x2="21" y2="18" /></svg>
+        </button>
+      )}
       <ResizablePanelGroup
         direction="horizontal"
         className="h-full"
@@ -217,9 +265,9 @@ function ChatInterface({
           <>
             <ResizablePanel
               ref={sidebarPanelRef}
-              defaultSize={savedSizes[0] ?? 20}
-              minSize={12}
-              maxSize={30}
+              defaultSize={isMobile ? 0 : isTablet ? 8 : (savedSizes[0] ?? 20)}
+              minSize={isMobile ? 0 : isTablet ? 5 : 12}
+              maxSize={isMobile ? 80 : 30}
               collapsible
               collapsedSize={0}
               className="min-w-0"
@@ -350,6 +398,9 @@ export default function App() {
   // Focus mode — корпоративный пользователь переключается в чистый чат
   const [focusMode, setFocusMode] = useState(false);
 
+  // Mobile detection
+  const isMobileApp = useMediaQuery("(max-width: 767px)");
+
   // Keyboard shortcuts (must be before any early returns per React hooks rules)
   useKeyboardShortcuts({
     onCloseModal: () => {
@@ -409,6 +460,53 @@ export default function App() {
       <div className="flex items-center justify-center h-screen" style={{ backgroundColor: "var(--bg-base)" }}>
         <div className="text-[14px] animate-pulse" style={{ color: "var(--text-tertiary)" }}>Загрузка...</div>
       </div>
+    );
+  }
+
+  // Мобильная версия — полностью отдельный layout
+  if (isMobileApp) {
+    return (
+      <>
+        <MobileLayout
+          user={user}
+          onShowModelSetup={() => setShowModelSetup(true)}
+          onShowProfileSettings={() => setShowProfileSettings(true)}
+          onShowPricing={() => setShowPricing(true)}
+        />
+
+        {/* Модалки поверх мобильного layout */}
+        {showModelSetup && (
+          <ModelSetup
+            agents={[]}
+            onAddAgent={async () => ({} as any)}
+            onRemoveAgent={async () => {}}
+            onClose={() => setShowModelSetup(false)}
+          />
+        )}
+        <ProfileSettings
+          user={user}
+          open={showProfileSettings}
+          onClose={() => setShowProfileSettings(false)}
+          onUserUpdate={() => authStore.loadUser()}
+          onOpenPricing={() => setShowPricing(true)}
+        />
+        <PricingPage
+          open={showPricing}
+          onClose={() => setShowPricing(false)}
+          currentPlan={user.plan}
+        />
+        <Toaster
+          theme="dark"
+          position="top-center"
+          toastOptions={{
+            style: {
+              background: "var(--bg-elevated)",
+              border: "1px solid var(--border-default)",
+              color: "var(--text-primary)",
+            },
+          }}
+        />
+      </>
     );
   }
 

@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { X, Check, Loader2, Trash2, ChevronRight, ChevronLeft, Users } from "lucide-react";
+import { useState, useEffect, useMemo } from "react";
+import { X, Check, Loader2, Trash2, ChevronRight, ChevronLeft, Users, Search } from "lucide-react";
 import { StatusDot } from "../shared/StatusDot";
 import { ProviderBadge } from "../shared/ProviderBadge";
 import { PoolBuilder as PoolBuilderComponent } from "./PoolBuilder";
@@ -153,6 +153,44 @@ function detectProvider(modelId: string): string {
   return "openrouter";
 }
 
+// Полный каталог моделей по провайдерам
+const providerModels: Record<string, { category: string; models: string[] }[]> = {
+  openrouter: [
+    { category: "Флагманы", models: ["x-ai/grok-4", "deepseek/deepseek-r1-0528", "qwen/qwen-max"] },
+    { category: "Код", models: ["qwen/qwen3-coder", "mistralai/codestral-2508", "x-ai/grok-code-fast-1", "inception/mercury-coder"] },
+    { category: "Быстрые", models: ["x-ai/grok-4.1-fast", "deepseek/deepseek-chat", "meta-llama/llama-3.3-70b-instruct"] },
+    { category: "Ресёрч", models: ["perplexity/sonar-pro-search", "deepseek/deepseek-r1-0528"] },
+    { category: "Чат", models: ["mistralai/mistral-large-2411", "cohere/command-a", "moonshotai/kimi-k2.5"] },
+    { category: "Бесплатные", models: ["nvidia/nemotron-3-nano-30b-a3b:free", "stepfun/step-3.5-flash:free"] },
+  ],
+  groq: [
+    { category: "Все", models: ["llama-3.3-70b-versatile", "llama-3.1-8b-instant"] },
+  ],
+  openai: [
+    { category: "Все", models: ["gpt-4o", "gpt-4.1", "gpt-4.1-nano", "gpt-4.1-mini", "o3", "o4-mini", "gpt-5", "gpt-5-nano"] },
+  ],
+  anthropic: [
+    { category: "Все", models: ["claude-sonnet-4-6", "claude-haiku-4-5", "claude-opus-4-6"] },
+  ],
+  stability: [
+    { category: "Все", models: ["sd3.5-large", "sd3.5-medium", "stable-image-ultra"] },
+  ],
+  apiyi: [
+    { category: "Все", models: ["nano-banana", "nano-banana-2", "nano-banana-pro", "gemini-2.5-flash", "gemini-2.5-pro", "flux-2-pro"] },
+  ],
+  custom: [],
+};
+
+// Маппинг категорий → провайдеры для обратной совместимости
+function getProviderForCategory(categoryId: string): string | null {
+  const map: Record<string, string> = {
+    flagship: "openrouter", fast: "openrouter", code: "openrouter",
+    images: "stability", research: "openrouter", chat: "openrouter",
+    free: "groq", video: "openai", custom: "custom",
+  };
+  return map[categoryId] || null;
+}
+
 const skillOptions = ["code", "research", "analysis", "design", "image", "text", "planning", "review", "testing"];
 
 interface ModelSetupProps {
@@ -180,6 +218,8 @@ export function ModelSetup({ agents, onAddAgent, onRemoveAgent, onClose }: Model
   const [testing, setTesting] = useState(false);
   const [testResult, setTestResult] = useState<"ok" | "fail" | null>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [modelSearch, setModelSearch] = useState("");
+  const [soloMode, setSoloMode] = useState(false);
 
   // Pools state
   const [pools, setPools] = useState<Pool[]>([]);
@@ -496,32 +536,108 @@ export function ModelSetup({ agents, onAddAgent, onRemoveAgent, onClose }: Model
                 </div>
               </div>
 
+              {/* Одиночный режим */}
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setSoloMode(!soloMode)}
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-[11px] transition-colors"
+                  style={{
+                    backgroundColor: soloMode ? "var(--accent-blue)" : "var(--bg-elevated)",
+                    color: soloMode ? "#fff" : "var(--text-secondary)",
+                    border: `1px solid ${soloMode ? "var(--accent-blue)" : "var(--border-default)"}`,
+                  }}
+                >
+                  {soloMode ? <Check size={12} /> : null}
+                  Одиночный режим
+                </button>
+                <span className="text-[10px]" style={{ color: "var(--text-tertiary)" }}>
+                  {soloMode ? "1 агент, без команды" : "Командный режим"}
+                </span>
+              </div>
+
               {/* Model */}
               <div>
                 <label className="text-[11px] block mb-1" style={{ color: "var(--text-tertiary)" }}>Модель</label>
-                <div className="flex flex-wrap gap-1.5 mb-2 max-h-[140px] overflow-y-auto">
-                  {(modelSuggestions[provider] || []).map((m) => (
-                    <button
-                      key={m}
-                      onClick={() => setModelName(m)}
-                      className="px-2 py-1 rounded-md text-[11px] transition-colors flex flex-col items-start"
-                      title={modelDescriptions[m] || m}
-                      style={{
-                        backgroundColor: modelName === m ? "var(--accent-blue)" : "var(--bg-elevated)",
-                        color: modelName === m ? "#fff" : "var(--text-secondary)",
-                      }}
-                    >
-                      <span>{m}</span>
-                      {modelDescriptions[m] && (
-                        <span
-                          className="text-[9px] mt-0.5"
-                          style={{ color: modelName === m ? "rgba(255,255,255,0.7)" : "var(--text-tertiary)" }}
-                        >
-                          {modelDescriptions[m]}
-                        </span>
-                      )}
-                    </button>
-                  ))}
+                {/* Поиск */}
+                <div className="relative mb-2">
+                  <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: "var(--text-tertiary)" }} />
+                  <input
+                    type="text"
+                    placeholder="Поиск модели..."
+                    value={modelSearch}
+                    onChange={(e) => setModelSearch(e.target.value)}
+                    className="w-full pl-8 pr-3 py-2 rounded-lg text-[12px] outline-none"
+                    style={{ backgroundColor: "var(--bg-input)", border: "1px solid var(--border-default)", color: "var(--text-primary)" }}
+                  />
+                </div>
+                {/* Модели по провайдеру */}
+                <div className="max-h-[180px] overflow-y-auto space-y-2 mb-2">
+                  {(() => {
+                    const resolvedProvider = getProviderForCategory(provider) || provider;
+                    const groups = providerModels[resolvedProvider] || [];
+                    const categoryModels = modelSuggestions[provider] || [];
+                    const searchLower = modelSearch.toLowerCase();
+
+                    // Если есть группы провайдера — показываем по группам
+                    if (groups.length > 0) {
+                      return groups.map((g) => {
+                        const filtered = g.models.filter((m) => m.toLowerCase().includes(searchLower));
+                        if (filtered.length === 0) return null;
+                        return (
+                          <div key={g.category}>
+                            <div className="text-[10px] font-semibold uppercase tracking-wider mb-1" style={{ color: "var(--text-tertiary)" }}>{g.category}</div>
+                            <div className="flex flex-wrap gap-1.5">
+                              {filtered.map((m) => (
+                                <button
+                                  key={m}
+                                  onClick={() => setModelName(m)}
+                                  className="px-2 py-1 rounded-md text-[11px] transition-colors flex flex-col items-start"
+                                  title={modelDescriptions[m] || m}
+                                  style={{
+                                    backgroundColor: modelName === m ? "var(--accent-blue)" : "var(--bg-elevated)",
+                                    color: modelName === m ? "#fff" : "var(--text-secondary)",
+                                  }}
+                                >
+                                  <span>{m}</span>
+                                  {modelDescriptions[m] && (
+                                    <span className="text-[9px] mt-0.5" style={{ color: modelName === m ? "rgba(255,255,255,0.7)" : "var(--text-tertiary)" }}>
+                                      {modelDescriptions[m]}
+                                    </span>
+                                  )}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        );
+                      });
+                    }
+
+                    // Фоллбэк на старые modelSuggestions
+                    const filtered = categoryModels.filter((m) => m.toLowerCase().includes(searchLower));
+                    return (
+                      <div className="flex flex-wrap gap-1.5">
+                        {filtered.map((m) => (
+                          <button
+                            key={m}
+                            onClick={() => setModelName(m)}
+                            className="px-2 py-1 rounded-md text-[11px] transition-colors flex flex-col items-start"
+                            title={modelDescriptions[m] || m}
+                            style={{
+                              backgroundColor: modelName === m ? "var(--accent-blue)" : "var(--bg-elevated)",
+                              color: modelName === m ? "#fff" : "var(--text-secondary)",
+                            }}
+                          >
+                            <span>{m}</span>
+                            {modelDescriptions[m] && (
+                              <span className="text-[9px] mt-0.5" style={{ color: modelName === m ? "rgba(255,255,255,0.7)" : "var(--text-tertiary)" }}>
+                                {modelDescriptions[m]}
+                              </span>
+                            )}
+                          </button>
+                        ))}
+                      </div>
+                    );
+                  })()}
                 </div>
                 <input
                   value={modelName}

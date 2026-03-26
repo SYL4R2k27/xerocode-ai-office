@@ -44,7 +44,60 @@ class Supervisor:
         """Подключить WebSocket."""
         self.bus.set_ws_callback(callback)
 
-    async def _generate_and_save_image(self, executor: CodeExecutor, prompt: str, model: str = "auto") -> list[str]:
+    @staticmethod
+    def _parse_design_params(text: str) -> dict:
+        """Парсинг [DESIGN:key=val,key=val,...] из текста задачи."""
+        import re as _re
+        match = _re.search(r'\[DESIGN:([^\]]+)\]', text)
+        if not match:
+            return {}
+        params = {}
+        for part in match.group(1).split(","):
+            if "=" in part:
+                key, val = part.split("=", 1)
+                key = key.strip()
+                val = val.strip()
+                if key == "resolution":
+                    params["resolution"] = val
+                elif key == "aspect":
+                    params["aspect_ratio"] = val
+                elif key == "style":
+                    params["style_preset"] = val
+                elif key == "negative":
+                    params["negative_prompt"] = val
+                elif key == "batch":
+                    try:
+                        params["batch_count"] = int(val)
+                    except ValueError:
+                        pass
+                elif key == "seed":
+                    try:
+                        params["seed"] = int(val)
+                    except ValueError:
+                        pass
+                elif key == "format":
+                    params["output_format"] = val
+                elif key == "model":
+                    params["model"] = val
+                elif key == "strength":
+                    try:
+                        params["img2img_strength"] = float(val)
+                    except ValueError:
+                        pass
+        return params
+
+    async def _generate_and_save_image(
+        self,
+        executor: CodeExecutor,
+        prompt: str,
+        model: str = "auto",
+        aspect_ratio: str = "1:1",
+        style_preset: str | None = None,
+        batch_count: int = 1,
+        output_format: str = "png",
+        seed: int | None = None,
+        negative_prompt: str = "",
+    ) -> list[str]:
         """Генерировать изображения. Пробует: Stability AI → Together AI → OpenRouter."""
         import httpx
         import base64 as b64mod
@@ -55,189 +108,221 @@ class Supervisor:
         upload_dir = PathCls("/var/www/ai-office/uploads")
         upload_dir.mkdir(parents=True, exist_ok=True)
         proxy = getattr(settings, 'api_proxy', None) or None
-        full_prompt = f"photorealistic high-quality image: {prompt}"
 
-        # ===== METHOD 1: Stability AI (SD 3.5) =====
-        stability_key = getattr(settings, 'stability_api_key', None)
-        if stability_key:
-            try:
-                logger.info("Image gen: trying Stability AI (SD 3.5)")
-                client_kwargs = {"timeout": 60.0}
-                if proxy:
-                    client_kwargs["proxy"] = proxy
-                async with httpx.AsyncClient(**client_kwargs) as client:
-                    import io
-                    form_data = {
-                        "prompt": (None, full_prompt),
-                        "model": (None, "sd3.5-large"),
-                        "output_format": (None, "jpeg"),
-                        "aspect_ratio": (None, "16:9"),
-                    }
-                    resp = await client.post(
-                        "https://api.stability.ai/v2beta/stable-image/generate/sd3",
-                        headers={"Authorization": f"Bearer {stability_key}", "Accept": "application/json"},
-                        files=form_data,
-                    )
-                    resp.raise_for_status()
-                    data = resp.json()
-                    if "image" in data:
-                        img_bytes = b64mod.b64decode(data["image"])
-                        filename = f"{uuid.uuid4().hex[:12]}_sd35.jpg"
-                        (upload_dir / filename).write_bytes(img_bytes)
-                        logger.info(f"SD 3.5 image saved: {filename} ({len(img_bytes)//1024}KB)")
-                        return [f"/uploads/{filename}"]
-            except Exception as e:
-                logger.warning(f"Stability AI failed: {e}")
+        # Формируем промпт с учётом стиля
+        style_prefix = f"{style_preset} style, " if style_preset and style_preset != "photorealistic" else "photorealistic "
+        full_prompt = f"{style_prefix}high-quality image: {prompt}"
 
-        # ===== METHOD 2: Together AI (FLUX) =====
-        together_key = getattr(settings, 'together_api_key', None)
-        if together_key:
-            try:
-                logger.info("Image gen: trying Together AI (FLUX)")
-                client_kwargs = {"timeout": 60.0}
-                if proxy:
-                    client_kwargs["proxy"] = proxy
-                async with httpx.AsyncClient(**client_kwargs) as client:
-                    resp = await client.post(
-                        "https://api.together.xyz/v1/images/generations",
-                        headers={"Authorization": f"Bearer {together_key}", "Content-Type": "application/json"},
-                        json={"model": "black-forest-labs/FLUX.1-schnell-Free", "prompt": full_prompt, "n": 1, "width": 1024, "height": 768},
-                    )
-                    resp.raise_for_status()
-                    data = resp.json()
-                    saved = []
-                    for i, img in enumerate(data.get("data", [])):
-                        if "b64_json" in img:
-                            img_bytes = b64mod.b64decode(img["b64_json"])
-                            filename = f"{uuid.uuid4().hex[:12]}_flux_{i}.png"
-                            (upload_dir / filename).write_bytes(img_bytes)
-                            saved.append(f"/uploads/{filename}")
-                        elif "url" in img:
-                            saved.append(img["url"])
-                    if saved:
-                        logger.info(f"FLUX images saved: {saved}")
-                        return saved
-            except Exception as e:
-                logger.warning(f"Together AI failed: {e}")
+        all_saved: list[str] = []
 
-        # ===== METHOD 3: OpenRouter (Nano Banana / Gemini Image) =====
-        openrouter_key = getattr(settings, 'openrouter_api_key', None)
-        if not openrouter_key:
-            logger.error("No image generation API keys available")
-            return []
+        for batch_idx in range(batch_count):
+            current_seed = seed + batch_idx if seed is not None else None
 
-        saved_urls = []
-        try:
-            logger.info("Image gen: trying OpenRouter (Nano Banana)")
-            client_kwargs = {"timeout": 120.0}
-            if proxy:
-                client_kwargs["proxy"] = proxy
-
-            or_model = model if model != "auto" else "google/gemini-2.5-flash-image"
-            async with httpx.AsyncClient(**client_kwargs) as client:
-                resp = await client.post(
-                    "https://openrouter.ai/api/v1/chat/completions",
-                    headers={"Authorization": f"Bearer {openrouter_key}", "Content-Type": "application/json"},
-                    json={"model": or_model, "messages": [{"role": "user", "content": full_prompt}], "modalities": ["text", "image"], "max_tokens": 4096},
-                )
-                resp.raise_for_status()
-                data = resp.json()
-
-            msg = data.get("choices", [{}])[0].get("message", {})
-            images = msg.get("images", [])
-            content_text = msg.get("content", "") or ""
-
-            upload_dir = PathCls("/var/www/ai-office/uploads")
-            upload_dir.mkdir(parents=True, exist_ok=True)
-
-            # Парсим ВСЕ изображения из поля images
-            for i, img in enumerate(images):
+            # ===== METHOD 1: Stability AI (SD 3.5) =====
+            stability_key = getattr(settings, 'stability_api_key', None)
+            if stability_key:
                 try:
-                    img_data_url = img.get("image_url", {}).get("url", "")
-                    if not img_data_url:
-                        continue
+                    logger.info(f"Image gen: trying Stability AI (batch {batch_idx+1}/{batch_count})")
+                    client_kwargs = {"timeout": 60.0}
+                    if proxy:
+                        client_kwargs["proxy"] = proxy
+                    async with httpx.AsyncClient(**client_kwargs) as client:
+                        import io
+                        sd_model = model if model not in ("auto",) and model.startswith("sd") else "sd3.5-large"
+                        form_data = {
+                            "prompt": (None, full_prompt),
+                            "model": (None, sd_model),
+                            "output_format": (None, output_format if output_format in ("png", "jpeg", "webp") else "jpeg"),
+                            "aspect_ratio": (None, aspect_ratio),
+                        }
+                        if negative_prompt:
+                            form_data["negative_prompt"] = (None, negative_prompt)
+                        if current_seed is not None:
+                            form_data["seed"] = (None, str(current_seed))
+                        if style_preset and style_preset in (
+                            "enhance", "anime", "photographic", "digital-art", "comic-book",
+                            "fantasy-art", "line-art", "analog-film", "neon-punk", "isometric",
+                            "low-poly", "origami", "cinematic", "pixel-art",
+                        ):
+                            form_data["style_preset"] = (None, style_preset)
 
-                    if img_data_url.startswith("data:image"):
-                        # data:image/png;base64,... или data:image/jpeg;base64,...
-                        match = re_mod.search(r'data:image/(png|jpeg|jpg|gif|webp|svg\+xml);base64,(.+)', img_data_url)
-                        if match:
-                            ext = match.group(1).replace("svg+xml", "svg")
+                        resp = await client.post(
+                            "https://api.stability.ai/v2beta/stable-image/generate/sd3",
+                            headers={"Authorization": f"Bearer {stability_key}", "Accept": "application/json"},
+                            files=form_data,
+                        )
+                        resp.raise_for_status()
+                        data = resp.json()
+                        if "image" in data:
+                            img_bytes = b64mod.b64decode(data["image"])
+                            ext = "jpg" if output_format == "jpeg" else output_format
+                            filename = f"{uuid.uuid4().hex[:12]}_sd35.{ext}"
+                            (upload_dir / filename).write_bytes(img_bytes)
+                            logger.info(f"SD 3.5 image saved: {filename} ({len(img_bytes)//1024}KB)")
+                            all_saved.append(f"/uploads/{filename}")
+                            continue
+                except Exception as e:
+                    logger.warning(f"Stability AI failed: {e}")
+
+            # ===== METHOD 2: Together AI (FLUX) =====
+            together_key = getattr(settings, 'together_api_key', None)
+            if together_key:
+                try:
+                    logger.info(f"Image gen: trying Together AI (batch {batch_idx+1}/{batch_count})")
+                    client_kwargs = {"timeout": 60.0}
+                    if proxy:
+                        client_kwargs["proxy"] = proxy
+                    # Парсим разрешение для Together AI
+                    width, height = 1024, 768
+                    if "x" in aspect_ratio.replace(":", "x"):
+                        pass  # aspect_ratio формат 16:9 и т.д.
+                    async with httpx.AsyncClient(**client_kwargs) as client:
+                        together_json: dict = {
+                            "model": "black-forest-labs/FLUX.1-schnell-Free",
+                            "prompt": full_prompt,
+                            "n": 1,
+                            "width": width,
+                            "height": height,
+                        }
+                        if current_seed is not None:
+                            together_json["seed"] = current_seed
+                        resp = await client.post(
+                            "https://api.together.xyz/v1/images/generations",
+                            headers={"Authorization": f"Bearer {together_key}", "Content-Type": "application/json"},
+                            json=together_json,
+                        )
+                        resp.raise_for_status()
+                        data = resp.json()
+                        saved = []
+                        for i, img in enumerate(data.get("data", [])):
+                            if "b64_json" in img:
+                                img_bytes = b64mod.b64decode(img["b64_json"])
+                                filename = f"{uuid.uuid4().hex[:12]}_flux_{i}.png"
+                                (upload_dir / filename).write_bytes(img_bytes)
+                                saved.append(f"/uploads/{filename}")
+                            elif "url" in img:
+                                saved.append(img["url"])
+                        if saved:
+                            logger.info(f"FLUX images saved: {saved}")
+                            all_saved.extend(saved)
+                            continue
+                except Exception as e:
+                    logger.warning(f"Together AI failed: {e}")
+
+            # ===== METHOD 3: OpenRouter (Nano Banana / Gemini Image) =====
+            openrouter_key = getattr(settings, 'openrouter_api_key', None)
+            if not openrouter_key:
+                logger.error("No image generation API keys available")
+                continue
+
+            saved_urls: list[str] = []
+            try:
+                logger.info(f"Image gen: trying OpenRouter (batch {batch_idx+1}/{batch_count})")
+                client_kwargs = {"timeout": 120.0}
+                if proxy:
+                    client_kwargs["proxy"] = proxy
+
+                or_model = model if model != "auto" else "google/gemini-2.5-flash-image"
+                async with httpx.AsyncClient(**client_kwargs) as client:
+                    resp = await client.post(
+                        "https://openrouter.ai/api/v1/chat/completions",
+                        headers={"Authorization": f"Bearer {openrouter_key}", "Content-Type": "application/json"},
+                        json={"model": or_model, "messages": [{"role": "user", "content": full_prompt}], "modalities": ["text", "image"], "max_tokens": 4096},
+                    )
+                    resp.raise_for_status()
+                    data = resp.json()
+
+                msg = data.get("choices", [{}])[0].get("message", {})
+                images = msg.get("images", [])
+                content_text = msg.get("content", "") or ""
+
+                # Парсим ВСЕ изображения из поля images
+                for i, img in enumerate(images):
+                    try:
+                        img_data_url = img.get("image_url", {}).get("url", "")
+                        if not img_data_url:
+                            continue
+
+                        if img_data_url.startswith("data:image"):
+                            match = re_mod.search(r'data:image/(png|jpeg|jpg|gif|webp|svg\+xml);base64,(.+)', img_data_url)
+                            if match:
+                                ext = match.group(1).replace("svg+xml", "svg")
+                                if ext == "jpeg":
+                                    ext = "jpg"
+                                b64data = match.group(2)
+                                img_bytes = b64mod.b64decode(b64data)
+                                filename = f"{uuid.uuid4().hex[:12]}_{i+1}.{ext}"
+                                (upload_dir / filename).write_bytes(img_bytes)
+                                saved_urls.append(f"/uploads/{filename}")
+                                logger.info(f"Image {i+1} saved: /uploads/{filename} ({len(img_bytes)//1024}KB)")
+
+                        elif img_data_url.startswith("http"):
+                            async with httpx.AsyncClient(timeout=30.0) as dl_client:
+                                dl_resp = await dl_client.get(img_data_url)
+                                if dl_resp.status_code == 200:
+                                    ct = dl_resp.headers.get("content-type", "image/png")
+                                    ext = "png"
+                                    if "jpeg" in ct or "jpg" in ct:
+                                        ext = "jpg"
+                                    elif "gif" in ct:
+                                        ext = "gif"
+                                    elif "webp" in ct:
+                                        ext = "webp"
+                                    elif "svg" in ct:
+                                        ext = "svg"
+                                    filename = f"{uuid.uuid4().hex[:12]}_{i+1}.{ext}"
+                                    (upload_dir / filename).write_bytes(dl_resp.content)
+                                    saved_urls.append(f"/uploads/{filename}")
+                                    logger.info(f"Image {i+1} downloaded: /uploads/{filename}")
+                    except Exception as img_err:
+                        logger.error(f"Failed to save image {i+1}: {img_err}")
+
+                # Также ищем base64 в content
+                if not saved_urls and content_text:
+                    b64_matches = re_mod.findall(r'data:image/(png|jpeg|jpg|gif|webp);base64,([A-Za-z0-9+/=]{1000,})', content_text)
+                    for i, (ext, b64data) in enumerate(b64_matches):
+                        try:
                             if ext == "jpeg":
                                 ext = "jpg"
-                            b64data = match.group(2)
                             img_bytes = b64mod.b64decode(b64data)
-                            filename = f"{uuid.uuid4().hex[:12]}_{i+1}.{ext}"
+                            filename = f"{uuid.uuid4().hex[:12]}_c{i+1}.{ext}"
                             (upload_dir / filename).write_bytes(img_bytes)
                             saved_urls.append(f"/uploads/{filename}")
-                            logger.info(f"Image {i+1} saved: /uploads/{filename} ({len(img_bytes)//1024}KB)")
+                            logger.info(f"Image from content {i+1}: /uploads/{filename}")
+                        except Exception:
+                            pass
 
-                    elif img_data_url.startswith("http"):
-                        # Прямой URL — скачиваем
-                        async with httpx.AsyncClient(timeout=30.0) as dl_client:
-                            dl_resp = await dl_client.get(img_data_url)
-                            if dl_resp.status_code == 200:
-                                ct = dl_resp.headers.get("content-type", "image/png")
+                # Последний fallback — ищем base64 в raw JSON
+                if not saved_urls:
+                    raw = str(data)
+                    big_b64 = re_mod.search(r'[A-Za-z0-9+/]{10000,}={0,2}', raw)
+                    if big_b64:
+                        try:
+                            img_bytes = b64mod.b64decode(big_b64.group())
+                            if len(img_bytes) > 1000:
                                 ext = "png"
-                                if "jpeg" in ct or "jpg" in ct:
+                                if img_bytes[:2] == b'\xff\xd8':
                                     ext = "jpg"
-                                elif "gif" in ct:
+                                elif img_bytes[:4] == b'GIF8':
                                     ext = "gif"
-                                elif "webp" in ct:
+                                elif img_bytes[:4] == b'RIFF':
                                     ext = "webp"
-                                elif "svg" in ct:
-                                    ext = "svg"
-                                filename = f"{uuid.uuid4().hex[:12]}_{i+1}.{ext}"
-                                (upload_dir / filename).write_bytes(dl_resp.content)
+                                filename = f"{uuid.uuid4().hex[:12]}_raw.{ext}"
+                                (upload_dir / filename).write_bytes(img_bytes)
                                 saved_urls.append(f"/uploads/{filename}")
-                                logger.info(f"Image {i+1} downloaded: /uploads/{filename}")
-                except Exception as img_err:
-                    logger.error(f"Failed to save image {i+1}: {img_err}")
+                                logger.info(f"Image from raw: /uploads/{filename}")
+                        except Exception:
+                            pass
 
-            # Также ищем base64 в content (некоторые модели вставляют туда)
-            if not saved_urls and content_text:
-                b64_matches = re_mod.findall(r'data:image/(png|jpeg|jpg|gif|webp);base64,([A-Za-z0-9+/=]{1000,})', content_text)
-                for i, (ext, b64data) in enumerate(b64_matches):
-                    try:
-                        if ext == "jpeg":
-                            ext = "jpg"
-                        img_bytes = b64mod.b64decode(b64data)
-                        filename = f"{uuid.uuid4().hex[:12]}_c{i+1}.{ext}"
-                        (upload_dir / filename).write_bytes(img_bytes)
-                        saved_urls.append(f"/uploads/{filename}")
-                        logger.info(f"Image from content {i+1}: /uploads/{filename}")
-                    except Exception:
-                        pass
+                if not saved_urls:
+                    logger.warning(f"No images extracted from {model} response (batch {batch_idx+1})")
 
-            # Последний fallback — ищем base64 в raw JSON
-            if not saved_urls:
-                raw = str(data)
-                big_b64 = re_mod.search(r'[A-Za-z0-9+/]{10000,}={0,2}', raw)
-                if big_b64:
-                    try:
-                        img_bytes = b64mod.b64decode(big_b64.group())
-                        if len(img_bytes) > 1000:
-                            # Определить формат по magic bytes
-                            ext = "png"
-                            if img_bytes[:2] == b'\xff\xd8':
-                                ext = "jpg"
-                            elif img_bytes[:4] == b'GIF8':
-                                ext = "gif"
-                            elif img_bytes[:4] == b'RIFF':
-                                ext = "webp"
-                            filename = f"{uuid.uuid4().hex[:12]}_raw.{ext}"
-                            (upload_dir / filename).write_bytes(img_bytes)
-                            saved_urls.append(f"/uploads/{filename}")
-                            logger.info(f"Image from raw: /uploads/{filename}")
-                    except Exception:
-                        pass
+                all_saved.extend(saved_urls)
 
-            if not saved_urls:
-                logger.warning(f"No images extracted from {model} response")
+            except Exception as e:
+                logger.error(f"Image generation failed (batch {batch_idx+1}): {e}")
 
-        except Exception as e:
-            logger.error(f"Image generation failed: {e}")
-
-        return saved_urls
+        return all_saved
 
     async def start_goal(self, goal_id: uuid.UUID) -> dict:
         """
@@ -529,7 +614,21 @@ class Supervisor:
                     if is_image_model and is_design_task:
                         img_prompt = f"{goal.title}. {task.title}. {task.description or ''}"
                         img_model = agent.model_name
-                        img_urls = await self._generate_and_save_image(executor, img_prompt, model=img_model)
+
+                        # Парсим параметры дизайна из описания цели/задачи
+                        design_source = f"{goal.title} {goal.description or ''} {task.title} {task.description or ''}"
+                        dp = self._parse_design_params(design_source)
+
+                        img_urls = await self._generate_and_save_image(
+                            executor, img_prompt,
+                            model=dp.get("model", img_model),
+                            aspect_ratio=dp.get("aspect_ratio", "1:1"),
+                            style_preset=dp.get("style_preset"),
+                            batch_count=dp.get("batch_count", 1),
+                            output_format=dp.get("output_format", "png"),
+                            seed=dp.get("seed"),
+                            negative_prompt=dp.get("negative_prompt", ""),
+                        )
 
                         for idx, img_url in enumerate(img_urls):
                             label = f"Вариант {idx + 1}" if len(img_urls) > 1 else "Изображение сгенерировано"

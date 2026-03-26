@@ -33,6 +33,7 @@ class CodeExecutor:
             "list_files": self._list_files,
             "search_code": self._search_code,
             "generate_image": self._generate_image,
+            "transform_image": self._transform_image,
         }
 
         handler = handlers.get(tool_name)
@@ -365,6 +366,76 @@ class CodeExecutor:
                 return {"success": False, "output": "", "error": f"OpenRouter error: {str(e)}"}
 
         return {"success": False, "output": "", "error": "Нет ключей для генерации изображений"}
+
+    async def _transform_image(self, image_path: str, prompt: str, strength: float = 0.7, style: str = "photorealistic") -> dict:
+        """Img2Img трансформация через Stability AI."""
+        import httpx
+        import base64
+
+        from app.core.config import settings
+
+        stability_key = getattr(settings, 'stability_api_key', None)
+        if not stability_key:
+            return {"success": False, "output": "", "error": "Stability API key не настроен"}
+
+        # Читаем исходное изображение
+        source_path = self._safe_path(image_path)
+        if not source_path.exists():
+            return {"success": False, "output": "", "error": f"Файл не найден: {image_path}"}
+
+        image_bytes = source_path.read_bytes()
+        if len(image_bytes) < 100:
+            return {"success": False, "output": "", "error": "Файл слишком мал для изображения"}
+
+        full_prompt = f"{style} style, {prompt}, high quality, detailed"
+
+        proxy = getattr(settings, 'api_proxy', None) or None
+        client_kwargs: dict = {"timeout": 120.0}
+        if proxy:
+            client_kwargs["proxy"] = proxy
+
+        try:
+            async with httpx.AsyncClient(**client_kwargs) as client:
+                # Stability AI Image-to-Image через SD3
+                files = {
+                    "image": ("source.png", image_bytes, "image/png"),
+                    "prompt": (None, full_prompt),
+                    "mode": (None, "image-to-image"),
+                    "strength": (None, str(strength)),
+                    "output_format": (None, "png"),
+                    "model": (None, "sd3.5-large"),
+                }
+
+                resp = await client.post(
+                    "https://api.stability.ai/v2beta/stable-image/generate/sd3",
+                    headers={
+                        "Authorization": f"Bearer {stability_key}",
+                        "Accept": "application/json",
+                    },
+                    files=files,
+                )
+                resp.raise_for_status()
+                data = resp.json()
+
+            if "image" in data:
+                img_bytes = base64.b64decode(data["image"])
+                result_filename = f"transformed_{style}.png"
+                result_path = self.workspace / result_filename
+                result_path.write_bytes(img_bytes)
+
+                b64data = base64.b64encode(img_bytes).decode("utf-8")
+                data_url = f"data:image/png;base64,{b64data}"
+
+                return {
+                    "success": True,
+                    "output": f"Img2Img трансформация выполнена: {result_filename} ({len(img_bytes)//1024}KB), сила: {strength}\n\n{data_url}",
+                    "error": None,
+                }
+
+            return {"success": False, "output": "", "error": "Stability AI не вернул изображение"}
+
+        except Exception as e:
+            return {"success": False, "output": "", "error": f"Img2Img ошибка: {str(e)}"}
 
     def get_workspace_path(self) -> str:
         """Вернуть путь к workspace."""

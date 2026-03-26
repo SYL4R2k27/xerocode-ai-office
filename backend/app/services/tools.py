@@ -127,10 +127,67 @@ IMAGE_TOOL = {
 }
 
 
+EDIT_IMAGE_TOOL = {
+    "type": "function",
+    "function": {
+        "name": "edit_image",
+        "description": "Редактировать изображение: inpaint, remove-background, erase, search-and-replace, upscale.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "image_path": {"type": "string", "description": "Путь к исходному изображению в workspace"},
+                "operation": {
+                    "type": "string",
+                    "description": "Операция: inpaint, remove-background, erase, search-and-replace, upscale-conservative, upscale-creative",
+                },
+                "prompt": {"type": "string", "description": "Описание результата (для inpaint/search-replace)"},
+                "search_prompt": {"type": "string", "description": "Что заменить (для search-and-replace)"},
+            },
+            "required": ["image_path", "operation"],
+        },
+    },
+}
+
+TRANSFORM_IMAGE_TOOL = {
+    "type": "function",
+    "function": {
+        "name": "transform_image",
+        "description": "Трансформировать изображение (Img2Img). Загрузить фото и создать новое на его основе.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "image_path": {"type": "string", "description": "Путь к исходному изображению"},
+                "prompt": {"type": "string", "description": "Описание желаемого результата"},
+                "strength": {"type": "number", "description": "Сила трансформации 0.0-1.0 (0=минимум, 1=полная перегенерация)", "default": 0.7},
+                "style": {"type": "string", "description": "Стиль: photorealistic, anime, illustration", "default": "photorealistic"},
+            },
+            "required": ["image_path", "prompt"],
+        },
+    },
+}
+
+GENERATE_VIDEO_TOOL = {
+    "type": "function",
+    "function": {
+        "name": "generate_video",
+        "description": "Создать видео из изображения (Image-to-Video). Результат — MP4 2-4 секунды.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "image_path": {"type": "string", "description": "Путь к исходному изображению"},
+            },
+            "required": ["image_path"],
+        },
+    },
+}
+
+
 def get_tools_for_task(task_type: str | None = None) -> list[dict]:
     """Вернуть набор инструментов для задачи."""
     tools = list(AGENT_TOOLS)
-    # Добавить генерацию изображений для дизайн-задач
     if task_type in ("design", "image", "image processing", None):
         tools.append(IMAGE_TOOL)
+        tools.append(EDIT_IMAGE_TOOL)
+        tools.append(TRANSFORM_IMAGE_TOOL)
+        tools.append(GENERATE_VIDEO_TOOL)
     return tools

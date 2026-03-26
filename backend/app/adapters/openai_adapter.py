@@ -28,11 +28,15 @@ class OpenAIAdapter(BaseAdapter):
             all_messages.append({"role": "system", "content": system_prompt})
         all_messages.extend(messages)
 
+        # GPT-5+ модели используют max_completion_tokens вместо max_tokens
+        is_new_model = any(model.startswith(p) for p in ("gpt-5", "o3", "o4", "o1"))
+        token_param = "max_completion_tokens" if is_new_model else "max_tokens"
+
         payload = {
             "model": model,
             "messages": all_messages,
             "temperature": temperature,
-            "max_tokens": max_tokens,
+            token_param: max_tokens,
         }
 
         if tools:

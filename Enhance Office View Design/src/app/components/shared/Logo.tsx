@@ -27,18 +27,21 @@ export function LogoFull({ height = 28 }: { height?: number }) {
       <LogoIcon size={height} />
       <span className="font-bold text-white" style={{ fontSize: height * 0.65 }}>XeroCode</span>
       <span
-        className="font-bold uppercase tracking-wider"
         style={{
-          fontSize: height * 0.3,
+          fontSize: height * 0.55,
           lineHeight: 1,
-          padding: `${height * 0.08}px ${height * 0.15}px`,
-          borderRadius: height * 0.12,
-          background: "rgba(124,58,237,0.2)",
-          border: "1px solid rgba(124,58,237,0.4)",
+          padding: `${height * 0.05}px ${height * 0.12}px`,
+          borderRadius: height * 0.15,
+          background: "rgba(124,58,237,0.15)",
+          border: "1px solid rgba(124,58,237,0.3)",
           color: "#a78bfa",
+          fontWeight: 600,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
         }}
       >
-        beta
+        β
       </span>
     </div>
   );

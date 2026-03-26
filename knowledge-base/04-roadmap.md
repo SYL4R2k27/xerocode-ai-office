@@ -1,114 +1,599 @@
-# Роадмап ИИ Офис
+# Роадмап XeroCode AI Office
 
-## Статус: 5 из 10 этапов завершены (50%)
+## Статус: 14 из 20 этапов завершены (70%)
+## Незадеплоено: 28 файлов (+6243 строк кода) ожидают коммита
+
+---
+
+## ═══════════════════════════════════════
+## ФАЗА 1: ПЛАТФОРМА (завершена)
+## ═══════════════════════════════════════
 
 ### ✅ Этап 1: MVP — Ядро платформы
-- FastAPI бэкенд, 13 API эндпоинтов
-- 4 базовых адаптера: OpenAI, Anthropic, Ollama, Custom
-- Supervisor (3 режима: manager/discussion/auto)
-- Communication Bus, Task Parser, Loop Guard, Cost Tracker
-- WebSocket реалтайм (13 типов событий), SQLite
-- Деплой на Yandex Cloud (YOUR_SERVER_IP)
 
-### ✅ Этап 2: Chat-First интерфейс
-- Полный редизайн (тёплая палитра, без неона)
-- 3-панельная раскладка: Sidebar + Чат + Контекст
-- 19 новых компонентов (chat, sidebar, context, modals, shared)
-- Nginx proxy (API + WebSocket)
-- Продакшн билд на сервере
+**Бэкенд (FastAPI):**
+- 13 API эндпоинтов: goals, tasks, agents, messages, orchestration, auth, files, pools, capabilities
+- SQLAlchemy ORM + Alembic миграции + SQLite
+- Модели данных: User, Goal, Task, Agent, Message
 
-### ✅ Этап 3: Agent Runtime
-- Tool-calling во всех адаптерах (ToolCall, AIResponse расширен)
-- 5 инструментов: write_file, read_file, run_command, list_files, search_code
-- CodeExecutor (исполнение в /tmp sandbox)
-- Tool execution loop (до 10 раундов)
-- runtime_mode: text / cloud / local
+**Оркестрация:**
+- Supervisor — мозг системы, 3 режима работы:
+  - Manager — Supervisor распределяет задачи между агентами
+  - Discussion — агенты обсуждают между собой, человек модерирует
+  - Auto — полностью автономное выполнение
+- Communication Bus — маршрутизация сообщений между агентами
+- Task Parser — декомпозиция цели на подзадачи
+- Loop Guard — защита от зацикливания (макс. 10 раундов)
+- Cost Tracker — отслеживание расходов на API в реальном времени
 
-### ✅ Этап 4: Новые адаптеры + Исследование
-- Groq (Llama 3.3 70B, Mixtral — бесплатно)
-- Google Gemini (Flash, Pro, Nano Banana — бесплатно)
-- Stability AI (Stable Diffusion 3.5 — изображения)
-- Grok xAI (исследован, адаптер через Custom)
-- Итого 7 провайдеров + совместимость с 10+ через Custom
-- Полный ресёрч: 20+ конкурентов, 30+ бесплатных моделей
-- База знаний (9 файлов в knowledge-base/)
+**Реалтайм (WebSocket):**
+- /ws/{goal_id} — 13 типов событий:
+  - new_message, agent_status, task_update, goal_complete
+  - thinking_start, thinking_end, tool_use, error
+  - progress, cost_update, file_created, approval_request, system
 
-### ✅ Этап 5: EU Proxy — доступ к API из РФ
-- Xray-core (VLESS+REALITY) установлен на Yandex Cloud
-- Подключение через HyNet VDS (Нидерланды, 195.189.96.224)
-- SOCKS5 прокси на localhost:10808
-- Все 7 адаптеров маршрутизируют через прокси
-- Проверено: OpenAI ✅, Anthropic ✅, Groq ✅
-- Пользователю не нужен VPN — всё прозрачно
+**Деплой:**
+- Yandex Cloud (Ubuntu 22.04)
+- Nginx (фронтенд + /api/ reverse proxy + /ws/ WebSocket)
 - Systemd сервис с автозапуском
 
 ---
 
-### 🔵 Этап 6: Первый E2E тест (СЛЕДУЮЩИЙ)
-- Получить Groq API ключ (бесплатно)
-- Подключить модель через интерфейс
-- Создать цель → оркестрация → результат
-- Проверить tool-calling (write_file, run_command)
-- Исправить баги по результатам теста
+### ✅ Этап 2: Chat-First интерфейс
 
-### 🔵 Этап 7: Авторизация + Личный кабинет
-- Модель User (email, password_hash, plan)
-- JWT авторизация (регистрация, вход, middleware)
-- Личный кабинет (профиль, история, расходы)
-- Привязка агентов и целей к user_id
-- Лимиты по тарифу
+**Дизайн-система:**
+- Тёплая тёмная палитра (без кибер-неона)
+- 30+ CSS переменных в theme.css (цвета, тени, радиусы)
+- Провайдерные цвета: OpenAI=зелёный, Anthropic=бежевый, Groq=изумрудный
 
-### 🔵 Этап 8: Пулы моделей + Онбординг
-- 5 категорий пулов: Код, Дизайн, Ресёрч, Тексты, Данные
-- 2 уровня: Старт (бесплатные) + Премиум (платные)
-- Конструктор индивидуальных пулов
-- Визард первого запуска, подсказки
-- Демо-режим без API-ключей
+**3-панельная раскладка (десктоп):**
+```
+┌──────────┬──────────────────┬────────────┐
+│ Sidebar  │     Чат          │  Контекст  │
+│ 20%      │     55%          │  25%       │
+│          │                  │            │
+│ Цели     │ Сообщения агентов│ Задачи     │
+│ Модели   │ Ввод пользователя│ Статусы    │
+│ Прогресс │ Markdown+код     │ Расходы    │
+└──────────┴──────────────────┴────────────┘
+```
 
-### 🔵 Этап 9: Десктоп-клиент
-- WebSocket /ws/agent/{goal_id} для локального агента
-- NPM пакет ai-office-agent
-- Electron обёртка (Mac/Win/Linux)
-- Доступ к файлам и терминалу пользователя
-
-### ⬜ Этап 10: Монетизация
-- Free (0₽) / Pro (990₽/мес) / Business (2990₽/мес)
-- Оплата: ЮKassa / Stripe
-- Наши API-ключи для PRO/BUSINESS пользователей
-
-### ⬜ Этап 11: Docker Sandbox
-- Изолированные контейнеры на задачу
-- Python + Node.js в sandbox
-- Превью веб-проектов через iframe
-
-### ⬜ Этап 12: Масштабирование
-- PostgreSQL (миграция с SQLite)
-- Шифрование API-ключей (AES-256)
-- Docker Compose + CI/CD
-- Мониторинг (Grafana)
-- Домен + SSL + бренд
+**19 компонентов:**
+- Chat: ChatArea, ChatMessage, ChatInput, CodeBlock
+- Sidebar: GoalSelector, ModelList, TaskProgress, CostMeter
+- Context: ControlPanel, ActivityLog, TaskGraph
+- Modals: ModelSetup, ProfileSettings, PricingPage
+- Shared: StatusDot, Logo, ImageViewer, LoadingSkeleton
+- Layout: TopBar, OfficeView
 
 ---
 
-## Бизнес-модель
+### ✅ Этап 3: Agent Runtime — инструменты для ИИ
 
-| Тариф | Цена | Что включено |
-|-------|------|-------------|
-| Free | 0₽ | Свои модели (до 3), 50 задач/мес |
-| Pro | 990₽/мес | 10 агентов, ~30 бесплатных моделей, 500 задач, готовые пулы |
-| Business | 2990₽/мес | Без лимитов, премиум (GPT-4o, Claude, Grok), Docker sandbox |
+**5 инструментов (tools):**
+- write_file — Создать/перезаписать файл в workspace
+- read_file — Прочитать содержимое файла
+- run_command — Выполнить shell-команду (timeout 30s)
+- list_files — Список файлов и папок в директории
+- search_code — Поиск текста/паттерна по файлам проекта
 
-## Расходы на содержание
-- Yandex Cloud: ~2500₽/мес
-- HyNet VDS (EU proxy): ~500₽/мес
-- Бесплатные API (Groq, Gemini, OpenRouter): $0
-- Премиум API (BUSINESS): ~$20-50/мес
-- **Итого: ~3500-6500₽/мес**
-- **Окупаемость: 4-7 PRO подписчиков**
+**CodeExecutor:**
+- Исполнение в /tmp sandbox (изоляция)
+- Таймаут 30 секунд на команду
+- Автоочистка временных файлов
 
-## Инфраструктура
-- Сервер: Yandex Cloud (YOUR_SERVER_IP), Ubuntu 22.04
-- EU Proxy: HyNet VLESS+REALITY → Нидерланды (195.189.96.224)
-- Xray-core: SOCKS5 на localhost:10808, systemd
-- Nginx: фронтенд + /api/ + /ws/
-- SQLite (dev), PostgreSQL (prod — будущее)
+**Tool Execution Loop:**
+- Агент вызывает tool → получает результат → может вызвать снова
+- До 10 раундов за одну задачу
+- Автоостановка при зацикливании (Loop Guard)
+
+**3 режима исполнения (runtime_mode):**
+- text — только текстовый ответ (без инструментов)
+- cloud — выполнение на сервере (через CodeExecutor)
+- local — выполнение на ПК пользователя (через ai-office-agent)
+
+---
+
+### ✅ Этап 4: Новые адаптеры + Исследование
+
+**7 провайдеров подключены:**
+
+| Провайдер | Модели | Тип | Стоимость |
+|-----------|--------|-----|-----------|
+| OpenAI | GPT-5.4, GPT-5, GPT-4o, GPT-4.1, o3, o4-mini, DALL-E 3, Sora 2 | Текст + Изображения + Видео | Платный |
+| Anthropic | Claude Opus 4.6, Sonnet 4.6, Haiku 4.5 | Текст | Платный |
+| Groq | Llama 3.3 70B, Llama 3.1 8B | Текст | Бесплатно |
+| Google Gemini | Gemini 2.5 Flash/Pro, Nano Banana 1/2/Pro | Текст + Изображения | Бесплатно |
+| Stability AI | SD 3.5 Large/Medium/Turbo, Ultra, Core + edit/upscale/video/3D | Изображения + Видео + 3D | Кредиты |
+| xAI | Grok 4, Grok 4.1 Fast, Grok Code Fast | Текст | Платный |
+| Ollama | Любая локальная модель | Текст | Бесплатно |
+
+**Адаптерная архитектура:**
+```python
+BaseAdapter (абстрактный)
+├── OpenAIAdapter      → /v1/chat/completions
+├── AnthropicAdapter   → /v1/messages
+├── GroqAdapter        → extends OpenAI (другой endpoint)
+├── GeminiAdapter      → Google AI API
+├── StabilityAdapter   → /v2beta/* (multipart/form-data)
+├── OllamaAdapter      → localhost:11434
+└── CustomAdapter      → любой OpenAI-совместимый URL
+```
+
+**Ресёрч проведён:**
+- 20+ конкурентов проанализировано (Cursor, Bolt, Replit Agent, v0, Devin)
+- 30+ бесплатных моделей каталогизировано
+- База знаний создана: 9 файлов в knowledge-base/
+
+---
+
+### ✅ Этап 5: EU Proxy — доступ к API из РФ
+
+**Проблема:** OpenAI, Anthropic, xAI блокируют запросы из РФ.
+**Решение:** прозрачный прокси через Европу.
+
+**Схема:**
+```
+Пользователь (РФ) → Yandex Cloud (РФ) → Xray-core → HyNet VDS (Нидерланды) → OpenAI/Anthropic
+```
+
+- Xray-core (VLESS+REALITY) — не блокируется DPI
+- HyNet VDS — Нидерланды, €3.5/мес
+- SOCKS5 прокси на localhost:10808
+- Все адаптеры автоматически маршрутизируют через прокси
+- Systemd сервис с автозапуском
+- Пользователю VPN не нужен — всё прозрачно
+
+---
+
+## ═══════════════════════════════════════
+## ФАЗА 2: ПОДПИСКИ И МОДЕЛИ (завершена)
+## ═══════════════════════════════════════
+
+### ✅ Этап 6: Авторизация + Подписки
+
+**Модель User:**
+```
+id, email, password_hash, name
+plan: free | start | pro | pro_plus | ultima | corporate
+is_admin: bool
+trial_expires_at, trial_plan
+tasks_used_this_month, images_generated_this_month
+```
+
+**JWT авторизация:**
+- POST /auth/register → аккаунт + trial 14 дней
+- POST /auth/login → JWT токен (exp 7 дней)
+- GET /auth/me → профиль + динамические лимиты
+- Middleware get_current_user на всех защищённых эндпоинтах
+
+**6 тарифов с лимитами:**
+
+| Параметр | Free | Pro | Pro Plus | Ultima | Corporate |
+|----------|------|-----|----------|--------|-----------|
+| Цена | 0₽ | 990₽/мес | 2490₽/мес | 4990₽/мес | от 15000₽ |
+| Агенты | 3 | 10 | 15 | ∞ | ∞ |
+| Задачи/мес | 50 | 500 | 2000 | ∞ | ∞ |
+| Изображения/мес | 0 | 100 | 500 | ∞ | ∞ |
+| Пулы | Нет | 6 | 11 | Все | Все + свои |
+| Премиум-модели | Нет | Нет | 100K ток/день | ∞ | ∞ |
+| Кастомные пулы | Нет | Нет | Да | Да | Да |
+
+**Проверки (subscription.py):**
+- check_subscription_limits(user, action) → raise 403
+- check_can_create_agent(user, count) → bool
+- check_pool_access(user, pool_id) → bool
+- is_premium_model(model_name) → bool
+- increment_task_usage(user, db)
+- get_user_limits(user) → dict для фронтенда
+
+---
+
+### ✅ Этап 7: Пулы моделей — готовые команды ИИ
+
+**14 готовых пулов:**
+
+| ID | Название | Категория | Модели | Подписка |
+|----|---------|-----------|--------|----------|
+| flagship | Flagship Team | Код | GPT-5 + Claude Opus + Grok 4 | ultima |
+| coding_start | Кодинг Старт | Код | Llama 3.3 + Llama 3.1 + Gemini Flash | pro |
+| coding_pro | Кодинг Про | Код | Qwen3 Coder + DeepSeek V3 + Gemini Pro | pro_plus |
+| coding_fullstack | Fullstack | Код | Claude Sonnet + GPT-4.1 + Grok Code + o4-mini | pro_plus |
+| design_start | Дизайн Старт | Дизайн | Nano Banana + Llama 3.3 | pro |
+| design_pro | Дизайн Про | Дизайн | SD 3.5 + Nano Banana Pro + Claude | ultima |
+| research | Ресёрч | Ресёрч | Gemini Flash + Llama 3.3 | pro |
+| research_deep | Deep Research | Ресёрч | Sonar Pro + Gemini Pro + DeepSeek R1 | ultima |
+| copywriting | Копирайтинг | Тексты | Llama 3.3 + Gemini Flash | pro |
+| data_analysis | Аналитика | Данные | Gemini Pro + Llama 3.3 | pro_plus |
+| automation | Автоматизация | Другое | DeepSeek V3 + Gemini Flash + Llama 3.1 | pro_plus |
+| solo_grok | Solo Grok | Одиночный | Grok 4.1 Fast | pro_plus |
+| solo_deepseek | Solo DeepSeek | Одиночный | DeepSeek Chat V3.1 | pro |
+| solo_fast | Solo Fast | Одиночный | Llama 3.1 8B (Groq) | pro |
+
+**API:**
+- GET /agents/pools/?tier=pro → список доступных пулов
+- POST /agents/pools/{pool_id}/activate → создать агентов из шаблона
+
+---
+
+### ✅ Этап 8: Model Capabilities — карта умений
+
+**50+ моделей с 22 типами capabilities:**
+```
+text, code, image_gen, image_edit, image_analysis, img2img
+upscale, remove_bg, inpaint, outpaint, video_gen, 3d_gen
+search, reasoning, function_calling, batch, style_presets
+negative_prompt, seed_control, aspect_ratio, resolution, svg_output
+```
+
+**API:** GET /agents/models/capabilities?model=sd3.5-large
+**Функции:**
+- get_model_capabilities(model) → ["image_gen", "seed_control", ...]
+- can_model_do(model, "image_gen") → True/False
+- get_image_models() → список всех моделей для генерации
+- get_models_for_capability("reasoning") → ["o3", "deepseek-r1", ...]
+
+---
+
+### ✅ Этап 9: Stability AI — полная интеграция
+
+**StabilityAdapter — 15 операций:**
+
+| Группа | Операции | Эндпоинты |
+|--------|---------|-----------|
+| Генерация | SD 3.5 Large, Medium, Turbo, Ultra, Core | /stable-image/generate/* |
+| Редактирование | Inpaint, Outpaint, Remove BG, Search&Replace, Erase | /stable-image/edit/* |
+| Улучшение | Upscale Conservative, Upscale Creative | /stable-image/upscale/* |
+| Контроль | Sketch, Structure, Style Transfer | /stable-image/control/* |
+| Видео | Image-to-Video (async poll, 60 попыток × 3с) | /image-to-video |
+| 3D | Stable Fast 3D (GLB формат) | /3d/stable-fast-3d |
+
+**Новые tools для агентов:**
+- generate_image — текст → изображение (prompt, style, aspect_ratio, seed, batch)
+- edit_image — inpaint, remove-bg, erase, search-replace, upscale
+- transform_image — Img2Img (фото + prompt + strength 0.0-1.0)
+- generate_video — изображение → MP4 видео (2-4 сек)
+
+---
+
+## ═══════════════════════════════════════
+## ФАЗА 3: UI/UX (завершена)
+## ═══════════════════════════════════════
+
+### ✅ Этап 10: UI/UX Редизайн — IDE стиль
+
+**Resizable панели:**
+- react-resizable-panels v2.1.7 + ResizableHandle
+- Sidebar: default 20%, min 12%, max 30%
+- Chat: default 55% (flexes)
+- Context: default 25%, min 12%, max 40%, collapsible
+- Размеры сохраняются в localStorage
+- Авто-коллапс sidebar/context на мобильных и планшетах
+
+**Markdown в сообщениях:**
+- react-markdown + remark-gfm (таблицы, чеклисты, зачёркивание)
+- Подсветка кода: Prism + oneDark тема + JetBrains Mono шрифт
+- Кнопка "Копировать" на каждом блоке кода
+- Защита: скрипты, iframes, event handlers удаляются
+
+**ImageViewer (fullscreen):**
+- Клик по картинке → overlay с blur
+- Zoom 0.5x — 3x (кнопки +/-)
+- Скачивание, закрытие (Esc / клик по overlay)
+- Анимация: motion fade + scale
+
+**Keyboard shortcuts:**
+- Ctrl+B → toggle sidebar
+- Ctrl+J → toggle context panel
+- Ctrl+N → новая цель
+- Ctrl+/ → focus input
+- Escape → закрыть модалку
+
+---
+
+### ✅ Этап 11: Мобильный UI — Telegram-стиль
+
+**Детекция:** window.width < 768px → MobileLayout вместо 3-панельного
+
+**5-tab навигация (BottomTabBar):**
+```
+[ 💬 Чат ] [ 🤖 Модели ] [ ➕ ] [ 📋 Задачи ] [ 👤 Профиль ]
+```
+- Центральная "+" — градиент purple→blue, поднята на -12px, shadow
+- Активная вкладка — фиолетовый цвет + индикатор-линия сверху
+- Backdrop-filter blur(24px), safe-area-inset-bottom
+
+**MobileChatView:**
+- Сообщения пользователя справа (синий пузырь, borderRadius 18px 4px 18px 18px)
+- Сообщения агентов слева (тёмный фон + цветная полоска провайдера)
+- Группировка: аватар только у первого сообщения в серии
+- Long-press 500ms → контекстное меню (Копировать / Цитировать)
+- MobileCodeBlock — горизонтальная прокрутка, шрифт 12px
+- AgentStatusCompact — строка "💭 Agent думает / ⚙️ работает"
+- Reply preview с цитатой + кнопка X
+- Автоскролл на новые сообщения
+
+**MobileModelsView:**
+- Карточки агентов (аватар + имя + модель + статус)
+- Свайп влево → красная кнопка "Удалить" (2-step: "Удалить" → "Точно?")
+- Кнопки внизу: "Добавить" (синяя) + "Пулы" (серая)
+
+**MobileTaskView:**
+- Вертикальный таймлайн с линией слева
+- Иконки: ✅ done, ⚡ in_progress, 🕐 pending, ❌ failed
+- Нажатие → развёрнутые детали (описание + результат)
+- Прогресс-бар для задач в работе (60% для in_progress, 20% для assigned)
+
+**MobileProfileView:**
+- Аватар 80px с градиентом (purple → blue) + первая буква имени
+- Бейдж плана: Free (серый) / PRO (синий) / ULTIMA (фиолетовый+Crown)
+- Trial: "X дней пробного" (жёлтый бейдж с pluralize)
+- Прогресс-бар задач (X / limit, анимация от 0%)
+- Меню из 6 пунктов + красная кнопка "Выйти"
+- Staggered анимация появления (delay: index × 0.04)
+
+---
+
+### ✅ Этап 12: DesignPanel — контролы для дизайнеров
+
+**Выезжающая панель при выборе "Дизайн":**
+- maxHeight: 300px → 0px (transition 0.3s)
+- Тёмный фон #141416, скролл внутри
+
+| Контрол | Опции |
+|---------|-------|
+| Модель | SD 3.5 Large/Medium/Turbo, Ultra, Core, Nano Banana, Nano Banana Pro, FLUX Pro |
+| Разрешение | 512, 768, 1024, 1536, 2048, 4K |
+| Пропорции | 1:1, 16:9, 9:16, 4:3, 3:2, 4:5, 21:9 |
+| Стиль | 20 пресетов: Фотореализм, Аниме, Акварель, Масло, 3D, Вектор, Лайн-арт, Скетч, Пиксель, Комикс, Кино, Фэнтези, Неон-панк, Изометрия, Low Poly, Диджитал, Плёнка, Оригами, Улучшение |
+| Negative prompt | Текстовое поле (сворачиваемое) |
+| Batch | x1, x2, x4, x8 |
+| Seed | Случайный ↔ Зафиксированный + рандомизация |
+| Формат | PNG, JPEG, WebP |
+| Img2Img | Загрузка фото + ползунок силы 0.0-1.0 |
+
+**Сериализация:** `[DESIGN:model=sd3.5-large,aspect=16:9,style=anime,batch=4]`
+
+---
+
+### ✅ Этап 13: 6 профильных панелей — контролы для каждого профиля
+
+**Принцип:** выбрал категорию → снизу выехала панель с настройками. Панель остаётся после создания цели. Toggle-кнопка рядом с Send.
+
+**💻 CodePanel (синий #3b82f6) — для программистов:**
+
+| Контрол | Опции |
+|---------|-------|
+| Язык (12) | Python, TypeScript, JavaScript, Rust, Go, Java, C#, C++, Swift, Kotlin, PHP, Ruby |
+| Фреймворк | Динамический по языку: TS→React/Next.js/Vue/NestJS/Angular/Svelte, Python→FastAPI/Django/Flask/PyTorch/LangChain, Rust→Actix/Axum/Tauri, Go→Gin/Fiber/Echo, и т.д. |
+| Режим | Один файл / Весь проект / Монорепо |
+| Вывод | Diff / Полный файл / Inline |
+| Стиль кода | ESLint/Prettier/Biome (JS), Black/Ruff/PEP8 (Python), Rustfmt, Gofmt, и т.д. |
+| Тесты | Vitest/Jest/Playwright/Cypress (JS), Pytest (Python), Cargo Test, Go Test, и т.д. |
+
+→ `[CODE:lang=python,framework=fastapi,tests=pytest,scope=project]`
+
+**🔬 ResearchPanel (бирюзовый #2dd4bf) — для ресёрчеров:**
+
+| Контрол | Опции |
+|---------|-------|
+| Глубина | Быстрый / Стандартный / Глубокий |
+| Источники | 5 / 10 / 25 / 50+ |
+| Тип | Все / Академические / Новости / Патенты / Блоги |
+| Период | Неделя / Месяц / Год / Всё время |
+| Цитаты | APA / MLA / Chicago / ГОСТ / Harvard |
+| Вывод | Сводка / Отчёт / Таблица / Презентация |
+| Язык | RU / EN / Мультиязычный |
+
+→ `[RESEARCH:depth=deep,sources=25,type=academic,citation=gost]`
+
+**📝 TextPanel (янтарный #f59e0b) — для копирайтеров:**
+
+| Контрол | Опции |
+|---------|-------|
+| Тон (6) | Профессиональный / Дружелюбный / Продающий / Экспертный / Юмористический / Формальный |
+| Длина | Твит / Пост / Статья / Лонгрид |
+| Аудитория | B2B / B2C / Подростки / Бизнес / Широкая |
+| Платформа (7) | Блог / LinkedIn / Telegram / Email / Реклама / Instagram / YouTube |
+| SEO | Текстовое поле для ключевых слов |
+| Формат | Markdown / HTML / Plain text |
+| Язык | RU / EN / Адаптация |
+
+→ `[TEXT:tone=professional,length=article,platform=linkedin,seo=AI офис]`
+
+**📊 DataPanel (изумрудный #10b981) — для аналитиков:**
+
+| Контрол | Опции |
+|---------|-------|
+| Источник | CSV / Excel / JSON / SQL / Google Sheets / API |
+| Код | Python / R / SQL |
+| Графики (7) | Bar / Line / Scatter / Heatmap / Pie / Histogram / Treemap |
+| Анализ (5) | Описательный / Предиктивный / Кластеризация / Регрессия / Временной ряд |
+| Библиотека | Matplotlib / Plotly / Seaborn / Pandas (только для Python) |
+| Вывод | Notebook / PDF / Dashboard / Код |
+
+→ `[DATA:source=csv,chart=heatmap,analysis=clustering,code=python,lib=plotly]`
+
+**📋 ManagementPanel (розовый #f43f5e) — для менеджеров:**
+
+| Контрол | Опции |
+|---------|-------|
+| Формат | Executive summary / Детальный / Одностраничник / Презентация |
+| Аудитория | Руководство / Команда / Клиент / Инвесторы |
+| Шаблон (6) | Статус-отчёт / Ретро / Риски / Устав проекта / Спринт-обзор / KPI |
+| Интеграции (6) | Jira / Trello / Notion / Slack / Linear / Asana |
+| Период | За день / За неделю / За спринт / За месяц / За квартал |
+
+→ `[MGMT:format=executive,audience=leadership,template=status,period=week]`
+
+**🎓 EducationPanel (фиолетовый #8b5cf6) — для обучения:**
+
+| Контрол | Опции |
+|---------|-------|
+| Уровень | Школа / Бакалавриат / Магистратура / PhD / Самообучение |
+| Предмет (7) | Математика / Программирование / Физика / Языки / История / Биология / Экономика |
+| Режим (5) | Объясни / Проверь меня / Сократ / Задачи / Конспект |
+| Сложность | Ползунок 1-5 (Легко → Средне → Сложно) |
+
+→ `[EDU:level=bachelor,subject=programming,mode=socratic,difficulty=4]`
+
+**ChatInput обновлён:**
+- 7 категорий: Код, Дизайн, Ресёрч, Текст, Данные, Менеджмент, Обучение
+- Панель открывается автоматически при выборе категории
+- Панель сохраняется после создания цели (не сбрасывается)
+- Кнопка toggle рядом с Send — иконка категории с её цветом
+- При отправке → параметры сериализуются и добавляются к сообщению
+
+---
+
+### ✅ Этап 14: Лендинг + Бренд
+
+- Бренд: XeroCode (от "zero code")
+- Лендинг с анимациями (motion/react)
+- AuthPage: регистрация + вход (email + password)
+- PricingPage: тарифы Free / Pro / Pro Plus / Ultima
+- Legal: Terms of Service, Privacy Policy
+- Beta badge на логотипе
+
+---
+
+## ═══════════════════════════════════════
+## ЧТО НУЖНО ЗАДЕПЛОИТЬ (28 файлов)
+## ═══════════════════════════════════════
+
+### Новые файлы (A — 16 файлов, +5271 строк):
+
+**7 панелей:**
+- CodePanel.tsx (412 строк)
+- DataPanel.tsx (470 строк)
+- DesignPanel.tsx (699 строк)
+- EducationPanel.tsx (328 строк)
+- ManagementPanel.tsx (412 строк)
+- ResearchPanel.tsx (280 строк)
+- TextPanel.tsx (340 строк)
+
+**6 мобильных компонентов:**
+- MobileLayout.tsx (343 строки)
+- MobileChatView.tsx (728 строк)
+- MobileModelsView.tsx (214 строк)
+- MobileTaskView.tsx (239 строк)
+- MobileProfileView.tsx (244 строки)
+- BottomTabBar.tsx (130 строк)
+
+**Прочее:**
+- useSwipe.ts (74 строки) — хук для свайп-жестов
+- model_capabilities.py (158 строк) — карта capabilities 50+ моделей
+
+### Изменённые файлы (M — 12 файлов, +972 строк backend):
+
+**Frontend:**
+- App.tsx — resizable панели, мобильный детект, localStorage
+- ChatInput.tsx — 7 категорий, все панели подключены, сериализация
+- AuthPage.tsx — обновления дизайна
+- ModelSetup.tsx — расширенная форма добавления модели
+- Logo.tsx — обновлённый логотип
+
+**Backend:**
+- stability_adapter.py — полный адаптер (generate/edit/upscale/video/3D) (+296 строк)
+- supervisor.py — парсинг параметров панелей, design params (+417 строк)
+- tools.py — generate_image, edit_image, transform_image, generate_video (+59 строк)
+- model_pools.py — 14 пулов с ролями и моделями
+- subscription.py — 6 тарифов, POOL_ACCESS
+- agents.py — API pools, capabilities
+- openai_adapter.py — max_completion_tokens fix для GPT-5+
+- code_executor.py — улучшения sandbox
+
+---
+
+## ═══════════════════════════════════════
+## ФАЗА 4: ЗАПУСК (следующая)
+## ═══════════════════════════════════════
+
+### 🔵 Этап 15: Деплой
+- Закоммитить 28 файлов
+- Пушнуть на GitHub (SYL4R2k27/xerocode-ai-office)
+- vite build → обновить dist/ на сервере
+- Перезапуск FastAPI (systemctl restart)
+- Smoke-тест в браузере + мобильный вид
+
+### 🔵 Этап 16: E2E тестирование
+- Полный флоу: регистрация → модель → цель → оркестрация → результат
+- Каждая из 7 панелей открывается и параметры передаются
+- Мобильная версия на реальном устройстве
+- Tool-calling: write_file, run_command
+- WebSocket: сообщения приходят реалтайм
+- Пулы: активация → агенты создаются
+- Баг-фиксы по результатам
+
+### 🔵 Этап 17: Lock-система (фичи по подпискам)
+- FeatureLock компонент — 🔒 на недоступных фичах
+- MobilePoolsView — экран пулов
+- Динамические прогресс-бары из API (задачи/изображения/токены)
+- Upgrade-баннеры при достижении лимитов
+- Premium-бейджи на моделях
+- Конструктор кастомных пулов (Pro Plus+)
+
+### 🔵 Этап 18: Десктоп-клиент
+- Доработать ai-office-agent (уже есть каркас)
+- WebSocket подключение к серверу
+- Исполнение задач на ПК пользователя
+- Electron обёртка или CLI
+
+---
+
+## ═══════════════════════════════════════
+## ФАЗА 5: БИЗНЕС (будущее)
+## ═══════════════════════════════════════
+
+### ⬜ Этап 19: Монетизация
+- ЮKassa (РФ) + Stripe (зарубежные)
+- Webhook: оплата → обновить plan в БД
+- Recurring (автопродление), отмена, downgrade
+- Наши API-ключи для PRO+ юзеров
+- Ротация ключей при rate limit
+- Промокоды, реферальная программа
+
+### ⬜ Этап 20: Масштабирование
+- PostgreSQL (миграция через Alembic)
+- Redis (кеш, очереди)
+- Docker Compose (backend + postgres + redis + nginx)
+- CI/CD: GitHub Actions → build → test → deploy
+- Docker Sandbox (изолированные контейнеры на задачу)
+- Grafana + Sentry мониторинг
+- Домен xerocode.ai + SSL + CDN
+
+---
+
+## БИЗНЕС-МОДЕЛЬ
+
+### Тарифы
+
+| Тариф | Цена | Агенты | Задачи/мес | Изображения | Пулы | Премиум |
+|-------|------|--------|-----------|-------------|------|---------|
+| Free | 0₽ | 3 (BYOK) | 50 | 0 | 0 | Нет |
+| Pro | 990₽ | 10 | 500 | 100 | 6 | Нет |
+| Pro Plus | 2490₽ | 15 | 2000 | 500 | 11 | 100K/день |
+| Ultima | 4990₽ | ∞ | ∞ | ∞ | Все | ∞ |
+| Corporate | 15000₽+ | ∞ | ∞ | ∞ | Все | Свой сервер |
+
+### Расходы и окупаемость
+
+| Статья | Сумма |
+|--------|-------|
+| Yandex Cloud | ~2500₽/мес |
+| HyNet VDS (EU proxy) | ~500₽/мес |
+| Бесплатные API | $0 |
+| **Итого базовые** | **~3500₽/мес** |
+| Премиум API на юзера | ~$20-50/мес |
+
+- 4 PRO подписчика = покрытие базовых расходов
+- 10 PRO = первая прибыль (~6500₽/мес)
+- 3 Ultima + 10 Pro = ~25000₽/мес
+
+### Тех. стек
+
+**Backend:** FastAPI, SQLAlchemy, Alembic, 7 AI-адаптеров, 50+ моделей, 14 пулов, JWT, WebSocket, httpx+SOCKS5, Pydantic v2
+
+**Frontend:** React 19, TypeScript, Vite 6, Tailwind CSS 4, 50+ shadcn/radix компонентов, react-resizable-panels, motion 12, react-markdown, 7 панелей, мобильный UI
+
+**Инфра:** Yandex Cloud, Nginx, Xray-core (EU proxy), HyNet VDS, GitHub, SQLite → PostgreSQL

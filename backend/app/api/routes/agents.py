@@ -131,17 +131,32 @@ async def delete_agent(agent_id: uuid.UUID, db: AsyncSession = Depends(get_db), 
 
 
 @router.get("/pools/", response_model=list[dict])
-async def list_pools(tier: str | None = None, category: str | None = None):
-    """Список доступных пулов моделей."""
+async def list_pools(tier: str | None = None):
+    """Список доступных пулов моделей (15 пулов, фильтрация по tier подписки)."""
     if tier:
         pools = get_available_pools(tier)
     else:
         pools = get_all_pools()
 
-    if category:
-        pools = [p for p in pools if p.get("category") == category or p.get("category") == "all"]
-
     return pools
+
+
+@router.get("/models/capabilities")
+async def list_model_capabilities(model: str | None = None, capability: str | None = None):
+    """Capabilities моделей — что умеет каждая модель."""
+    from app.core.model_capabilities import (
+        MODEL_CAPS, CAPS, get_model_capabilities, get_models_for_capability,
+    )
+
+    if model:
+        caps = get_model_capabilities(model)
+        return {"model": model, "capabilities": caps, "labels": {c: CAPS.get(c, c) for c in caps}}
+
+    if capability:
+        models = get_models_for_capability(capability)
+        return {"capability": capability, "label": CAPS.get(capability, capability), "models": models}
+
+    return {"capabilities": CAPS, "models": {m: c for m, c in MODEL_CAPS.items()}}
 
 
 @router.post("/pools/{pool_id}/activate", response_model=list[AgentResponse], status_code=201)
@@ -166,6 +181,7 @@ async def activate_pool(pool_id: str, db: AsyncSession = Depends(get_db), curren
         "openrouter": getattr(app_settings, "openrouter_api_key", None),
         "openai": getattr(app_settings, "openai_api_key", None),
         "anthropic": getattr(app_settings, "anthropic_api_key", None),
+        "stability": getattr(app_settings, "stability_api_key", None),
     }
 
     created_agents = []

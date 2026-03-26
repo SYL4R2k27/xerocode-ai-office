@@ -135,10 +135,10 @@ function FloatingInput({
         onBlur={() => setFocused(false)}
         className="peer w-full rounded-xl px-4 pt-5 pb-2 text-[14px] outline-none transition-all duration-200"
         style={{
-          backgroundColor: "var(--bg-input)",
+          backgroundColor: "#141416",
           border: focused
             ? "1px solid rgba(147,51,234,0.5)"
-            : "1px solid var(--border-default)",
+            : "1px solid rgba(255, 255, 255, 0.1)",
           color: "var(--text-primary)",
           boxShadow: focused
             ? "0 0 0 3px rgba(147,51,234,0.1)"
@@ -154,7 +154,7 @@ function FloatingInput({
           top: active ? "6px" : "50%",
           transform: active ? "none" : "translateY(-50%)",
           fontSize: active ? "10px" : "14px",
-          color: focused ? "rgba(147,51,234,0.8)" : "var(--text-tertiary)",
+          color: focused ? "rgba(147,51,234,0.8)" : "rgba(255, 255, 255, 0.7)",
           fontWeight: active ? 500 : 400,
         }}
       >
@@ -187,8 +187,8 @@ function OAuthButton({
       onClick={onClick}
       className="flex items-center justify-center gap-2.5 w-full rounded-xl px-4 py-2.5 text-[13px] font-medium transition-all duration-200"
       style={{
-        backgroundColor: "var(--bg-input)",
-        border: "1px solid var(--border-default)",
+        backgroundColor: "#141416",
+        border: "1px solid rgba(255, 255, 255, 0.1)",
         color: "var(--text-secondary)",
       }}
       whileHover={{
@@ -475,14 +475,14 @@ export function AuthPage({ onLogin, onRegister, loading, error }: AuthPageProps)
 
           {/* Card */}
           <div
-            className="rounded-2xl p-8 shadow-2xl"
+            className="rounded-2xl p-8 shadow-2xl backdrop-blur-xl"
             style={{
-              backgroundColor: "#222226",
-              border: "1px solid #3A3A40",
+              backgroundColor: "rgba(28, 28, 30, 0.9)",
+              border: "1px solid rgba(255, 255, 255, 0.1)",
             }}
           >
             {/* Tabs */}
-            <div className="flex mb-8 rounded-xl overflow-hidden" style={{ backgroundColor: "#141416" }}>
+            <div className="flex mb-8 rounded-xl overflow-hidden" style={{ backgroundColor: "#141416", border: "1px solid rgba(255,255,255,0.06)" }}>
               {(["login", "register"] as const).map((tab) => (
                 <button
                   key={tab}
@@ -505,7 +505,7 @@ export function AuthPage({ onLogin, onRegister, loading, error }: AuthPageProps)
                         background: "linear-gradient(90deg, #9333ea, #3b82f6)",
                       }}
                       layoutId="auth-tab-indicator"
-                      transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                      transition={{ duration: 0.3, ease: "easeOut" }}
                     />
                   )}
                 </button>
