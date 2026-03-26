@@ -121,7 +121,7 @@ function FloatingInput({
   return (
     <motion.div
       className="relative"
-      initial={{ opacity: 0, y: 12 }}
+      initial={false}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35, delay }}
     >
@@ -337,12 +337,9 @@ export function AuthPage({ onLogin, onRegister, loading, error }: AuthPageProps)
   /*  Render                                                           */
   /* ---------------------------------------------------------------- */
   return (
-    <motion.div
+    <div
       className="flex min-h-screen w-full"
       style={{ backgroundColor: "#0F0F12" }}
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.5 }}
     >
       {/* ============ LEFT PANEL (hidden on mobile) ============ */}
       <div className="hidden lg:flex lg:w-1/2 relative flex-col justify-center px-16 overflow-hidden">
@@ -360,7 +357,7 @@ export function AuthPage({ onLogin, onRegister, loading, error }: AuthPageProps)
         {/* Content */}
         <div className="relative z-10 max-w-md">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={false}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
           >
@@ -413,7 +410,7 @@ export function AuthPage({ onLogin, onRegister, loading, error }: AuthPageProps)
               <motion.div
                 key={i}
                 className="flex items-start gap-4"
-                initial={{ opacity: 0, x: -20 }}
+                initial={false}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.4, delay: 0.4 + i * 0.1 }}
               >
@@ -449,11 +446,8 @@ export function AuthPage({ onLogin, onRegister, loading, error }: AuthPageProps)
 
       {/* ============ RIGHT PANEL ============ */}
       <div className="flex-1 flex items-center justify-center p-6 lg:p-16">
-        <motion.div
+        <div
           className="w-full max-w-[420px]"
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.15 }}
         >
           {/* Mobile logo */}
           <div className="lg:hidden flex items-center gap-3 mb-8 justify-center">
@@ -522,7 +516,7 @@ export function AuthPage({ onLogin, onRegister, loading, error }: AuthPageProps)
                     color: "var(--accent-rose)",
                     border: "1px solid rgba(212,106,106,0.2)",
                   }}
-                  initial={{ opacity: 0, y: -8 }}
+                  initial={false}
                   animate={{
                     opacity: 1,
                     y: 0,
@@ -547,7 +541,7 @@ export function AuthPage({ onLogin, onRegister, loading, error }: AuthPageProps)
                     color: "var(--accent-teal)",
                     border: "1px solid rgba(90,191,173,0.2)",
                   }}
-                  initial={{ opacity: 0, scale: 0.95 }}
+                  initial={false}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0 }}
                 >
@@ -563,7 +557,7 @@ export function AuthPage({ onLogin, onRegister, loading, error }: AuthPageProps)
                 key={mode}
                 onSubmit={handleSubmit}
                 className="space-y-4"
-                initial={{ opacity: 0, x: mode === "login" ? -20 : 20 }}
+                initial={false}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: mode === "login" ? 20 : -20 }}
                 transition={{ duration: 0.25 }}
@@ -615,7 +609,7 @@ export function AuthPage({ onLogin, onRegister, loading, error }: AuthPageProps)
                 {mode === "register" && password.length > 0 && pwStrength && (
                   <motion.div
                     className="space-y-1.5"
-                    initial={{ opacity: 0, height: 0 }}
+                    initial={false}
                     animate={{ opacity: 1, height: "auto" }}
                     transition={{ duration: 0.2 }}
                   >
@@ -658,7 +652,7 @@ export function AuthPage({ onLogin, onRegister, loading, error }: AuthPageProps)
                 {mode === "login" && (
                   <motion.div
                     className="text-right"
-                    initial={{ opacity: 0 }}
+                    initial={false}
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.15 }}
                   >
@@ -687,7 +681,7 @@ export function AuthPage({ onLogin, onRegister, loading, error }: AuthPageProps)
                   }}
                   whileHover={{ scale: 1.01, brightness: 1.1 }}
                   whileTap={{ scale: 0.98 }}
-                  initial={{ opacity: 0, y: 8 }}
+                  initial={false}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: mode === "register" ? 0.15 : 0.1 }}
                 >
@@ -709,7 +703,7 @@ export function AuthPage({ onLogin, onRegister, loading, error }: AuthPageProps)
             {/* OAuth */}
             <motion.div
               className="space-y-2.5"
-              initial={{ opacity: 0 }}
+              initial={false}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.3 }}
             >
@@ -733,7 +727,7 @@ export function AuthPage({ onLogin, onRegister, loading, error }: AuthPageProps)
             {/* Switch mode */}
             <motion.div
               className="mt-6 text-center"
-              initial={{ opacity: 0 }}
+              initial={false}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.35 }}
             >
@@ -756,7 +750,7 @@ export function AuthPage({ onLogin, onRegister, loading, error }: AuthPageProps)
               </button>
             </motion.div>
           </div>
-        </motion.div>
+        </div>
       </div>
 
       {/* Footer */}
@@ -766,6 +760,6 @@ export function AuthPage({ onLogin, onRegister, loading, error }: AuthPageProps)
       >
         © 2026 XeroCode — Vladimir Tirskikh · ИНН 503015361714 · Владимир Тирских
       </div>
-    </motion.div>
+    </div>
   );
 }
