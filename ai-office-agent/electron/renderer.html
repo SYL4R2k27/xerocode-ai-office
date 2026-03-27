@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>XeroCode Agent</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    background: #0a0a0a; color: #e0e0e0;
+    height: 100vh; display: flex; flex-direction: column;
+    -webkit-app-region: drag; user-select: none; overflow: hidden;
+  }
+  .titlebar { height: 38px; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #888; flex-shrink: 0; }
+  .content { flex: 1; display: flex; flex-direction: column; padding: 0 16px 16px; -webkit-app-region: no-drag; overflow: hidden; }
+  .status-bar { display: flex; align-items: center; gap: 8px; padding: 10px 14px; border-radius: 10px; background: #141414; margin-bottom: 12px; flex-shrink: 0; }
+  .status-dot { width: 8px; height: 8px; border-radius: 50%; background: #666; transition: background 0.3s; }
+  .status-dot.connected { background: #22c55e; box-shadow: 0 0 6px #22c55e; }
+  .status-dot.connecting { background: #eab308; animation: pulse 1s infinite; }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+  .status-text { font-size: 13px; flex: 1; }
+  .tabs { display: flex; gap: 2px; margin-bottom: 12px; flex-shrink: 0; }
+  .tab { flex: 1; padding: 8px; text-align: center; font-size: 12px; background: #141414; border: none; color: #888; cursor: pointer; border-radius: 8px; transition: all 0.2s; }
+  .tab.active { background: #1e1e1e; color: #fff; }
+  .tab:hover { background: #1a1a1a; }
+  .panel { display: none; flex-direction: column; flex: 1; overflow: hidden; }
+  .panel.active { display: flex; }
+  .form-group { margin-bottom: 10px; }
+  .form-group label { display: block; font-size: 11px; color: #888; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .form-group input { width: 100%; padding: 10px 12px; background: #141414; border: 1px solid #2a2a2a; border-radius: 8px; color: #fff; font-size: 13px; outline: none; transition: border 0.2s; }
+  .form-group input:focus { border-color: #8b5cf6; }
+  .form-group input::placeholder { color: #555; }
+  .btn { padding: 10px 16px; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; width: 100%; margin-top: 6px; }
+  .btn-primary { background: linear-gradient(135deg, #8b5cf6, #6366f1); color: #fff; }
+  .btn-primary:hover { opacity: 0.9; }
+  .btn-danger { background: #dc2626; color: #fff; }
+  .btn-danger:hover { background: #b91c1c; }
+  .btn-secondary { background: #1e1e1e; color: #ccc; }
+  .btn-secondary:hover { background: #2a2a2a; }
+  .btn-folder { padding: 10px 12px; background: #141414; border: 1px solid #2a2a2a; border-radius: 8px; color: #888; font-size: 13px; cursor: pointer; width: 100%; text-align: left; display: flex; align-items: center; gap: 8px; }
+  .btn-folder:hover { border-color: #8b5cf6; color: #fff; }
+  .log-container { flex: 1; overflow-y: auto; background: #0e0e0e; border-radius: 8px; padding: 8px; font-family: 'SF Mono','JetBrains Mono','Menlo',monospace; font-size: 11px; line-height: 1.6; }
+  .log-entry { padding: 2px 4px; }
+  .log-time { color: #555; margin-right: 6px; }
+  .log-info { color: #888; } .log-success { color: #22c55e; } .log-error { color: #ef4444; } .log-tool { color: #3b82f6; }
+  ::-webkit-scrollbar { width: 4px; } ::-webkit-scrollbar-track { background: transparent; } ::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
+  .version { font-size: 10px; color: #444; text-align: center; margin-top: 8px; flex-shrink: 0; }
+</style>
+</head>
+<body>
+  <div class="titlebar">XeroCode Agent</div>
+  <div class="content">
+    <div class="status-bar">
+      <div class="status-dot" id="statusDot"></div>
+      <span class="status-text" id="statusText">Not connected</span>
+    </div>
+    <div class="tabs">
+      <button class="tab active" onclick="showTab('connect', this)">Connect</button>
+      <button class="tab" onclick="showTab('log', this)">Log</button>
+      <button class="tab" onclick="showTab('settings', this)">Settings</button>
+    </div>
+    <div class="panel active" id="panel-connect">
+      <div class="form-group"><label>Server</label><input type="text" id="server" value="https://xerocode.space"></div>
+      <div class="form-group"><label>Goal ID</label><input type="text" id="goalId" placeholder="Enter goal ID from XeroCode"></div>
+      <div class="form-group"><label>JWT Token</label><input type="password" id="token" placeholder="Paste your JWT token"></div>
+      <div class="form-group"><label>Project Folder</label><button class="btn-folder" onclick="selectFolder()"><span>📁</span><span id="folderPath">Click to select project folder</span></button></div>
+      <button class="btn btn-primary" id="connectBtn" onclick="toggleConnect()">Connect</button>
+    </div>
+    <div class="panel" id="panel-log">
+      <div class="log-container" id="logContainer"></div>
+      <button class="btn btn-secondary" onclick="clearLog()" style="margin-top:8px">Clear Log</button>
+    </div>
+    <div class="panel" id="panel-settings">
+      <div class="form-group"><label>Login to XeroCode</label></div>
+      <div class="form-group"><input type="email" id="loginEmail" placeholder="Email"></div>
+      <div class="form-group"><input type="password" id="loginPassword" placeholder="Password"></div>
+      <button class="btn btn-primary" onclick="login()">Login & Save Token</button>
+      <button class="btn btn-danger" onclick="logout()" style="margin-top:8px">Logout</button>
+    </div>
+    <div class="version">XeroCode Agent v0.2.0</div>
+  </div>
+  <script>
+    const { ipcRenderer } = require('electron');
+    let connected = false, selectedFolder = '';
+
+    function showTab(name, el) {
+      document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.getElementById('panel-' + name).classList.add('active');
+      el.classList.add('active');
+    }
+
+    function selectFolder() { ipcRenderer.send('select-folder'); }
+
+    ipcRenderer.on('folder-selected', (_, folder) => {
+      selectedFolder = folder;
+      document.getElementById('folderPath').textContent = folder;
+    });
+
+    function toggleConnect() {
+      if (connected) { ipcRenderer.send('disconnect'); return; }
+      const server = document.getElementById('server').value;
+      const goalId = document.getElementById('goalId').value;
+      const token = document.getElementById('token').value;
+      if (!goalId) { alert('Enter Goal ID'); return; }
+      if (!token) { alert('Enter JWT token'); return; }
+      if (!selectedFolder) { alert('Select project folder'); return; }
+      ipcRenderer.send('connect', { server, goalId, token, projectDir: selectedFolder });
+    }
+
+    function login() {
+      const server = document.getElementById('server').value;
+      const email = document.getElementById('loginEmail').value;
+      const password = document.getElementById('loginPassword').value;
+      if (!email || !password) { alert('Enter email and password'); return; }
+      ipcRenderer.send('login', { server, email, password });
+    }
+
+    function logout() {
+      const fs = require('fs'), path = require('path'), os = require('os');
+      const f = path.join(os.homedir(), '.ai-office', 'config.json');
+      if (fs.existsSync(f)) fs.unlinkSync(f);
+      document.getElementById('token').value = '';
+      addLogEntry('Logged out', 'info');
+    }
+
+    function addLogEntry(msg, type) {
+      const c = document.getElementById('logContainer');
+      const d = document.createElement('div');
+      d.className = 'log-entry';
+      d.innerHTML = '<span class="log-time">' + new Date().toLocaleTimeString() + '</span><span class="log-' + type + '">' + msg + '</span>';
+      c.appendChild(d); c.scrollTop = c.scrollHeight;
+    }
+
+    function clearLog() { document.getElementById('logContainer').innerHTML = ''; }
+
+    ipcRenderer.on('status', (_, s) => {
+      document.getElementById('statusDot').className = 'status-dot ' + s;
+      connected = s === 'connected';
+      document.getElementById('statusText').textContent = { connected: 'Connected', connecting: 'Connecting...', disconnected: 'Disconnected' }[s] || s;
+      const btn = document.getElementById('connectBtn');
+      btn.textContent = connected ? 'Disconnect' : 'Connect';
+      btn.className = connected ? 'btn btn-danger' : 'btn btn-primary';
+    });
+
+    ipcRenderer.on('log', (_, e) => addLogEntry(e.msg, e.type));
+
+    ipcRenderer.on('config', (_, c) => {
+      if (c.server) document.getElementById('server').value = c.server;
+      if (c.token) document.getElementById('token').value = c.token;
+      if (c.lastGoalId) document.getElementById('goalId').value = c.lastGoalId;
+      if (c.projectDir) { selectedFolder = c.projectDir; document.getElementById('folderPath').textContent = c.projectDir; }
+    });
+
+    ipcRenderer.on('login-success', (_, d) => {
+      document.getElementById('token').value = d.token;
+      addLogEntry('Login successful! Token saved.', 'success');
+    });
+
+    ipcRenderer.on('login-error', (_, m) => { addLogEntry('Login failed: ' + m, 'error'); });
+
+    addLogEntry('XeroCode Agent ready', 'info');
+  </script>
+</body>
+</html>

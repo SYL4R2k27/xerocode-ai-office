@@ -2,7 +2,9 @@ import { program } from 'commander';
 import WebSocket from 'ws';
 import * as path from 'path';
 import * as fs from 'fs';
+import * as readline from 'readline';
 import { executeToolCall } from './executor';
+import { loadConfig, saveConfig, clearConfig, getConfigPath } from './config';
 import {
   showBanner,
   showConnected,
@@ -37,7 +39,6 @@ function connect(serverUrl: string, goalId: string, token: string, projectDir: s
   ws.on('open', () => {
     showConnected(serverUrl, projectDir, goalId);
 
-    // Announce as agent
     ws!.send(JSON.stringify({
       type: 'agent_connect',
       goal_id: goalId,
@@ -64,10 +65,10 @@ function connect(serverUrl: string, goalId: string, token: string, projectDir: s
       } else if (msg.action === 'goal_complete') {
         showComplete();
       } else if (msg.action === 'error') {
-        showError(msg.message || 'Неизвестная ошибка сервера');
+        showError(msg.message || 'Unknown server error');
       }
     } catch (err: any) {
-      showError(`Ошибка обработки сообщения: ${err.message}`);
+      showError(`Message processing error: ${err.message}`);
     }
   });
 
@@ -75,7 +76,7 @@ function connect(serverUrl: string, goalId: string, token: string, projectDir: s
     if (isShuttingDown) return;
 
     if (code === 4001) {
-      showError('Невалидный токен. Получите новый через /api/auth/login');
+      showError('Invalid token. Run: xerocode-agent login');
       process.exit(1);
     }
 
@@ -99,38 +100,162 @@ function scheduleReconnect(serverUrl: string, goalId: string, token: string, pro
 
 function shutdown(): void {
   isShuttingDown = true;
-  showInfo('Завершение работы...');
+  showInfo('Shutting down...');
   if (reconnectTimer) clearTimeout(reconnectTimer);
   if (ws) ws.close();
   process.exit(0);
 }
 
-// CLI
-program
-  .name('ai-office-agent')
-  .description('Локальный агент для ИИ Офис — подключи свой компьютер к ИИ моделям')
-  .version('0.1.0')
-  .requiredOption('-g, --goal <id>', 'ID цели (goal_id)')
-  .requiredOption('-t, --token <jwt>', 'JWT токен авторизации')
-  .option('-s, --server <url>', 'URL сервера', 'https://xerocode.space')
-  .option('-p, --project <path>', 'Путь к проекту', process.cwd())
-  .parse(process.argv);
-
-const opts = program.opts();
-
-// Validate project path
-const projectDir = path.resolve(opts.project);
-if (!fs.existsSync(projectDir)) {
-  showError(`Папка проекта не найдена: ${projectDir}`);
-  process.exit(1);
+function prompt(question: string): Promise<string> {
+  const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+  return new Promise((resolve) => {
+    rl.question(question, (answer) => {
+      rl.close();
+      resolve(answer.trim());
+    });
+  });
 }
 
-// Graceful shutdown
-process.on('SIGINT', shutdown);
-process.on('SIGTERM', shutdown);
+async function loginCommand(serverUrl: string): Promise<void> {
+  showBanner();
+  showInfo(`Server: ${serverUrl}`);
 
-// Start
-showBanner();
-showInfo(`Проект: ${projectDir}`);
-showInfo(`Сервер: ${opts.server}`);
-connect(opts.server, opts.goal, opts.token, projectDir);
+  const email = await prompt('Email: ');
+  const password = await prompt('Password: ');
+
+  if (!email || !password) {
+    showError('Email and password are required');
+    process.exit(1);
+  }
+
+  const postData = JSON.stringify({ email, password });
+  const url = new URL(`${serverUrl}/api/auth/login`);
+
+  const httpModule = serverUrl.startsWith('https') ? require('https') : require('http');
+
+  const req = httpModule.request(
+    {
+      hostname: url.hostname,
+      port: url.port || (serverUrl.startsWith('https') ? 443 : 80),
+      path: url.pathname,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Content-Length': Buffer.byteLength(postData),
+      },
+    },
+    (res: any) => {
+      let body = '';
+      res.on('data', (chunk: string) => { body += chunk; });
+      res.on('end', () => {
+        try {
+          const data = JSON.parse(body);
+          if (res.statusCode === 200 && data.access_token) {
+            saveConfig({
+              server: serverUrl,
+              token: data.access_token,
+              projectDir: process.cwd(),
+            });
+            showInfo(`Logged in as ${email}`);
+            showInfo(`Token saved to ${getConfigPath()}`);
+            showInfo('Now run: xerocode-agent connect -g <goal_id>');
+          } else {
+            showError(data.detail || data.message || `Login failed (${res.statusCode})`);
+          }
+        } catch {
+          showError(`Invalid server response (${res.statusCode})`);
+        }
+      });
+    }
+  );
+
+  req.on('error', (err: Error) => {
+    showError(`Connection failed: ${err.message}`);
+  });
+
+  req.write(postData);
+  req.end();
+}
+
+// CLI
+program
+  .name('xerocode-agent')
+  .description('XeroCode Agent — connect your computer to AI models')
+  .version('0.2.0');
+
+program
+  .command('login')
+  .description('Login to XeroCode and save credentials')
+  .option('-s, --server <url>', 'Server URL', 'https://xerocode.space')
+  .action(async (opts) => {
+    await loginCommand(opts.server);
+  });
+
+program
+  .command('connect')
+  .description('Connect to a goal and execute tasks locally')
+  .requiredOption('-g, --goal <id>', 'Goal ID')
+  .option('-t, --token <jwt>', 'JWT token (uses saved if omitted)')
+  .option('-s, --server <url>', 'Server URL (uses saved if omitted)')
+  .option('-p, --project <path>', 'Project directory', process.cwd())
+  .action((opts) => {
+    const config = loadConfig();
+
+    const token = opts.token || config?.token;
+    const server = opts.server || config?.server || 'https://xerocode.space';
+    const projectDir = path.resolve(opts.project);
+
+    if (!token) {
+      showError('No token. Run: xerocode-agent login');
+      process.exit(1);
+    }
+
+    if (!fs.existsSync(projectDir)) {
+      showError(`Project directory not found: ${projectDir}`);
+      process.exit(1);
+    }
+
+    // Save config with latest goal
+    saveConfig({ server, token, projectDir, lastGoalId: opts.goal });
+
+    // Graceful shutdown
+    process.on('SIGINT', shutdown);
+    process.on('SIGTERM', shutdown);
+
+    showBanner();
+    showInfo(`Project: ${projectDir}`);
+    showInfo(`Server: ${server}`);
+    connect(server, opts.goal, token, projectDir);
+  });
+
+program
+  .command('status')
+  .description('Show saved configuration')
+  .action(() => {
+    const config = loadConfig();
+    if (!config) {
+      showInfo('Not configured. Run: xerocode-agent login');
+      return;
+    }
+    showBanner();
+    showInfo(`Server:    ${config.server}`);
+    showInfo(`Project:   ${config.projectDir}`);
+    showInfo(`Last goal: ${config.lastGoalId || 'none'}`);
+    showInfo(`Token:     ${config.token.slice(0, 20)}...`);
+    showInfo(`Config:    ${getConfigPath()}`);
+  });
+
+program
+  .command('logout')
+  .description('Clear saved credentials')
+  .action(() => {
+    clearConfig();
+    showInfo('Credentials cleared');
+  });
+
+program.parse(process.argv);
+
+// If no command provided, show help
+if (!process.argv.slice(2).length) {
+  program.outputHelp();
+}

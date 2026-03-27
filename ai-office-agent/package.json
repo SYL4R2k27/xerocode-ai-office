@@ -1,11 +1,16 @@
 {
-  "name": "ai-office-agent",
-  "version": "0.1.0",
-  "description": "Local agent for AI Office — connect your computer to AI models",
+  "name": "@xerocode/agent",
+  "version": "0.2.0",
+  "description": "XeroCode Agent — connect your computer to AI models",
   "bin": {
+    "xerocode-agent": "./bin/cli.js",
     "ai-office-agent": "./bin/cli.js"
   },
   "main": "dist/index.js",
+  "files": [
+    "dist/",
+    "bin/"
+  ],
   "scripts": {
     "build": "tsc",
     "dev": "ts-node src/index.ts",
@@ -25,6 +30,11 @@
   "engines": {
     "node": ">=18.0.0"
   },
-  "keywords": ["ai", "office", "agent", "orchestration", "local"],
-  "license": "MIT"
+  "keywords": ["ai", "office", "agent", "orchestration", "local", "xerocode"],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/SYL4R2k27/xerocode-ai-office.git"
+  },
+  "homepage": "https://xerocode.space"
 }
