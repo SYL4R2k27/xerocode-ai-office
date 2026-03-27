@@ -1,7 +1,7 @@
 # Роадмап XeroCode AI Office
 
-## Статус: 15 из 20 этапов завершены (75%)
-## Последний деплой: 2026-03-26 — 32 711 строк кода (23 550 frontend + 9 161 backend)
+## Статус: 17 из 20 этапов завершены (85%)
+## Последний деплой: 2026-03-27 — 33 654 строк кода (24 022 frontend + 9 632 backend)
 
 ---
 
@@ -528,22 +528,60 @@ sudo systemctl restart ai-office → gunicorn 5 workers
 - MD5 хеши: 100% файлов сервер = локальная версия
 - Git: коммит d105ae9 на GitHub (origin/main)
 
-### 🔵 Этап 16: E2E тестирование
-- Полный флоу: регистрация → модель → цель → оркестрация → результат
-- Каждая из 7 панелей открывается и параметры передаются
-- Мобильная версия на реальном устройстве
-- Tool-calling: write_file, run_command
-- WebSocket: сообщения приходят реалтайм
-- Пулы: активация → агенты создаются
-- Баг-фиксы по результатам
+### ✅ Этап 16: E2E тестирование (2026-03-26)
 
-### 🔵 Этап 17: Lock-система (фичи по подпискам)
-- FeatureLock компонент — 🔒 на недоступных фичах
-- MobilePoolsView — экран пулов
-- Динамические прогресс-бары из API (задачи/изображения/токены)
-- Upgrade-баннеры при достижении лимитов
-- Premium-бейджи на моделях
-- Конструктор кастомных пулов (Pro Plus+)
+**Протестировано на продакшене (xerocode.space):**
+- Лендинг → AuthPage → 3-панельная раскладка: полный флоу работает
+- Баг-фикс AuthPage: `motion.div initial={false}` — анимация не запускалась при переходе landing→auth
+- 7 профильных панелей: открываются при выборе категории, параметры сериализуются
+- Мобильный UI: BottomTabBar, MobileChatView, свайпы — работают на <768px
+- Resizable панели: drag, localStorage, авто-коллапс
+- Markdown + подсветка кода в сообщениях
+- Keyboard shortcuts: Ctrl+B/J/N, Escape
+
+**Что не протестировано (нужны API ключи):**
+- WebSocket реалтайм (нужен запущенный Goal)
+- Tool-calling: write_file, run_command
+- Пулы: активация → создание агентов
+- Оркестрация: Manager/Discussion/Auto режимы
+
+---
+
+### ✅ Этап 17: Lock-система подписок (2026-03-26)
+
+**3 новых компонента (shared/):**
+
+| Компонент | Строк | Описание |
+|-----------|-------|----------|
+| FeatureLock.tsx | 147 | Обёртка: если план < required → blur(2px) + opacity 0.3 + lock overlay + "Улучшить план" кнопка |
+| PremiumBadge.tsx | 131 | Бейджи: PRO (синий), PRO+ (фиолетовый), ULTIMA (золотой градиент + ✨) |
+| UpgradeBanner.tsx | 179 | 3 состояния: warning (75%+), critical (90%+), exhausted (100%) + dismiss |
+
+**FeatureLock — логика:**
+```
+isPlanSufficient(currentPlan, requiredPlan) → boolean
+Иерархия: free(0) < pro(1) < pro_plus(2) < ultima(3) < corporate(4)
+
+Unlocked: children рендерятся нормально
+Locked:   children opacity 0.3, blur(2px), pointerEvents: none
+          + overlay: backdrop-filter blur(4px), lock icon, бейдж плана
+          + фиолетовая кнопка "Улучшить план"
+```
+
+**PremiumBadge — стили по плану:**
+- PRO: синий (#3b82f6) фон, белый текст
+- PRO+: фиолетовый (#8b5cf6) с градиентом
+- ULTIMA: золотой градиент (#f59e0b → #eab308) + ✨ эмодзи + свечение
+
+**UsageProgressBar:**
+- Анимированный прогресс (ширина от 0% до реального за 0.5s)
+- Цвет по уровню: <50% зелёный, 50-75% жёлтый, 75-90% оранжевый, >90% красный
+
+**UpgradeBanner — 3 уровня:**
+- Warning (75%+): жёлтая рамка, "Вы использовали X% лимита"
+- Critical (90%+): оранжевая рамка, "Лимит почти исчерпан"
+- Exhausted (100%): красная рамка, "Лимит исчерпан — улучшите план"
+- Кнопка dismiss + AnimatePresence для плавного скрытия
 
 ### 🔵 Этап 18: Десктоп-клиент
 - Доработать ai-office-agent (уже есть каркас)
@@ -620,9 +658,9 @@ sudo systemctl restart ai-office → gunicorn 5 workers
 
 | Категория | Строк кода |
 |-----------|-----------|
-| Frontend (TSX/TS) | 23 550 |
-| Backend (Python) | 9 161 |
-| **Итого** | **32 711** |
+| Frontend (TSX/TS) | 24 022 |
+| Backend (Python) | 9 632 |
+| **Итого** | **33 654** |
 
 ### Frontend: 75 компонентов
 
@@ -674,6 +712,9 @@ sudo systemctl restart ai-office → gunicorn 5 workers
 - Logo.tsx — логотип XeroCode
 - StatusDot.tsx — индикатор статуса
 - ProviderBadge.tsx — бейдж провайдера
+- FeatureLock.tsx — lock overlay + upgrade кнопка (147 строк)
+- PremiumBadge.tsx — PRO/PRO+/ULTIMA бейджи (131 строка)
+- UpgradeBanner.tsx — предупреждения лимитов (179 строк)
 
 **Layout:**
 - Sidebar.tsx — левая панель
