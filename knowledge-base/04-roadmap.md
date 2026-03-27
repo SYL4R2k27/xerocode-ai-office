@@ -1,7 +1,7 @@
 # Роадмап XeroCode AI Office
 
-## Статус: 17 из 20 этапов завершены (85%)
-## Последний деплой: 2026-03-27 — 33 654 строк кода (24 022 frontend + 9 632 backend)
+## Статус: 18 из 20 этапов завершены (90%)
+## Последний деплой: 2026-03-27 — 33 980 строк кода (24 022 frontend + 9 632 backend + 326 agent)
 
 ---
 
@@ -583,11 +583,46 @@ Locked:   children opacity 0.3, blur(2px), pointerEvents: none
 - Exhausted (100%): красная рамка, "Лимит исчерпан — улучшите план"
 - Кнопка dismiss + AnimatePresence для плавного скрытия
 
-### 🔵 Этап 18: Десктоп-клиент
-- Доработать ai-office-agent (уже есть каркас)
-- WebSocket подключение к серверу
-- Исполнение задач на ПК пользователя
-- Electron обёртка или CLI
+### ✅ Этап 18: Десктоп-клиент (2026-03-27)
+
+**CLI v0.2.0 — гибридный стиль (Claude Code + спиннеры):**
+
+| Команда | Описание |
+|---------|----------|
+| `xerocode-agent` | Интерактивный режим (inquirer меню) |
+| `xerocode-agent login` | Email/password → JWT → сохранить в ~/.ai-office/ |
+| `xerocode-agent connect -g <id>` | Подключение к цели + исполнение задач |
+| `xerocode-agent goals` | Список целей с сервера |
+| `xerocode-agent status` | Показать конфиг + статус |
+| `xerocode-agent logout` | Очистить credentials |
+
+**CLI UX:**
+- `ora` спиннеры для long-running операций
+- Таймеры: `✓ write_file src/auth.ts (1.2KB) (0.3s)`
+- Прогресс: `✓ 3/5 tasks complete`
+- Без ASCII-боксов, чистый минималистичный вывод
+- bin: `xerocode-agent`, `xerocode`, `ai-office-agent`
+
+**Electron — GUI приложение:**
+- BrowserWindow 480×640, frameless (macOS hiddenInset)
+- System tray: иконка + статус + quick actions
+- 3-tab UI: Connect / Log / Settings
+- WebSocket менеджер с auto-reconnect (3s)
+- IPC: login, connect, disconnect, select-folder
+- Native folder picker
+
+**AgentConnect (веб-панель):**
+- Таб "Терминал": `npx @xerocode/agent login` → `connect`
+- Таб "Приложение": кнопки macOS/Windows/Linux
+- Статус подключения (зелёный/серый индикатор)
+- Copy-to-clipboard на всех командах
+
+**Security (executor + security.ts):**
+- 38 заблокированных команд (rm -rf, sudo, eval, curl|sh...)
+- 5 regex паттернов (backtick, subshell, /etc writes)
+- Path validation (не выходит за projectDir)
+- Блокировка .ssh, .aws, .gnupg, .config
+- Timeout 30s на команду, max 100KB вывода
 
 ---
 
