@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { execSync } from 'child_process';
 import { validatePath, validateCommand } from './security';
-import { showToolExecution, showToolResult } from './ui';
+import { showToolStart, showToolSuccess, showToolFail } from './ui';
 
 export interface ToolResult {
   success: boolean;
@@ -17,7 +17,8 @@ export async function executeToolCall(
   args: Record<string, any>,
   projectDir: string
 ): Promise<ToolResult> {
-  showToolExecution(tool, args);
+  const startTime = Date.now();
+  showToolStart(tool, args);
 
   try {
     let result: ToolResult;
@@ -39,14 +40,20 @@ export async function executeToolCall(
         result = searchCode(args.query, args.path || '.', projectDir);
         break;
       default:
-        result = { success: false, output: '', error: `Неизвестный инструмент: ${tool}` };
+        result = { success: false, output: '', error: `Unknown tool: ${tool}` };
     }
 
-    showToolResult(tool, result.success, result.output || result.error || '');
+    const elapsed = Date.now() - startTime;
+    if (result.success) {
+      showToolSuccess(tool, result.output, elapsed);
+    } else {
+      showToolFail(tool, result.error || 'Failed', elapsed);
+    }
     return result;
   } catch (err: any) {
+    const elapsed = Date.now() - startTime;
     const error = err.message || String(err);
-    showToolResult(tool, false, error);
+    showToolFail(tool, error, elapsed);
     return { success: false, output: '', error };
   }
 }
@@ -58,14 +65,14 @@ function writeFile(filePath: string, content: string, projectDir: string): ToolR
   const fullPath = path.resolve(projectDir, filePath);
   const dir = path.dirname(fullPath);
 
-  // Create directories if needed
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir, { recursive: true });
   }
 
   fs.writeFileSync(fullPath, content, 'utf-8');
   const size = Buffer.byteLength(content, 'utf-8');
-  return { success: true, output: `Файл создан: ${filePath} (${size} байт)` };
+  const sizeStr = size > 1024 ? `${(size / 1024).toFixed(1)}KB` : `${size}B`;
+  return { success: true, output: `${filePath} (${sizeStr})` };
 }
 
 function readFile(filePath: string, projectDir: string): ToolResult {
@@ -75,12 +82,12 @@ function readFile(filePath: string, projectDir: string): ToolResult {
   const fullPath = path.resolve(projectDir, filePath);
 
   if (!fs.existsSync(fullPath)) {
-    return { success: false, output: '', error: `Файл не найден: ${filePath}` };
+    return { success: false, output: '', error: `File not found: ${filePath}` };
   }
 
   const stat = fs.statSync(fullPath);
   if (stat.size > MAX_OUTPUT) {
-    return { success: false, output: '', error: `Файл слишком большой: ${stat.size} байт (макс ${MAX_OUTPUT})` };
+    return { success: false, output: '', error: `File too large: ${stat.size}B (max ${MAX_OUTPUT})` };
   }
 
   const content = fs.readFileSync(fullPath, 'utf-8');
@@ -94,7 +101,7 @@ function runCommand(command: string, projectDir: string): ToolResult {
   try {
     const output = execSync(command, {
       cwd: projectDir,
-      timeout: 30000, // 30 seconds
+      timeout: 30000,
       maxBuffer: MAX_OUTPUT,
       encoding: 'utf-8',
       stdio: ['pipe', 'pipe', 'pipe'],
@@ -119,14 +126,13 @@ function listFiles(directory: string, projectDir: string): ToolResult {
   const fullPath = path.resolve(projectDir, directory);
 
   if (!fs.existsSync(fullPath)) {
-    return { success: false, output: '', error: `Директория не найдена: ${directory}` };
+    return { success: false, output: '', error: `Directory not found: ${directory}` };
   }
 
   const files: string[] = [];
   const walk = (dir: string, prefix: string = '') => {
     const entries = fs.readdirSync(dir, { withFileTypes: true });
     for (const entry of entries) {
-      // Skip heavy dirs
       if (['node_modules', '.git', '__pycache__', '.venv', 'dist', 'build'].includes(entry.name)) continue;
 
       const rel = prefix ? `${prefix}/${entry.name}` : entry.name;
@@ -151,13 +157,12 @@ function searchCode(query: string, searchPath: string, projectDir: string): Tool
   const fullPath = path.resolve(projectDir, searchPath);
 
   try {
-    // Use grep if available
     const output = execSync(
       `grep -rn --include="*.{py,js,ts,tsx,jsx,html,css,json,md,txt,yaml,yml}" "${query}" "${fullPath}" 2>/dev/null | head -50`,
       { cwd: projectDir, timeout: 10000, maxBuffer: MAX_OUTPUT, encoding: 'utf-8' }
     );
-    return { success: true, output: output.trim() || 'Совпадений не найдено' };
+    return { success: true, output: output.trim() || 'No matches found' };
   } catch {
-    return { success: true, output: 'Совпадений не найдено' };
+    return { success: true, output: 'No matches found' };
   }
 }

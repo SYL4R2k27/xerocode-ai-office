@@ -10,6 +10,7 @@ export interface AgentConfig {
   token: string;
   projectDir: string;
   lastGoalId?: string;
+  email?: string;
 }
 
 export function loadConfig(): AgentConfig | null {
