@@ -1,0 +1,79 @@
+name: Build Electron App
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: macos-latest
+            platform: mac
+            artifact: "release/*.dmg"
+          - os: windows-latest
+            platform: win
+            artifact: "release/*.exe"
+          - os: ubuntu-latest
+            platform: linux
+            artifact: "release/*.AppImage"
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        working-directory: ai-office-agent
+        run: npm ci
+
+      - name: Build TypeScript
+        working-directory: ai-office-agent
+        run: |
+          npx tsc
+          npx tsc electron/main.ts --outDir electron --module commonjs --target ES2020 --esModuleInterop --skipLibCheck --resolveJsonModule
+
+      - name: Build Electron (${{ matrix.platform }})
+        working-directory: ai-office-agent
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: false
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npx electron-builder --${{ matrix.platform }} --publish never
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: xerocode-agent-${{ matrix.platform }}
+          path: |
+            ai-office-agent/release/*.dmg
+            ai-office-agent/release/*.exe
+            ai-office-agent/release/*.AppImage
+          if-no-files-found: warn
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: artifacts/**/*
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
