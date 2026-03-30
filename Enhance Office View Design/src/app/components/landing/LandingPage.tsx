@@ -3,15 +3,16 @@ import { motion, AnimatePresence } from "motion/react";
 import {
   Rocket, Sparkles, Brain, Plug, Bot, Zap, Palette, Building2,
   Shield, Globe, ChevronDown, ChevronLeft, Check, X, Crown, Star,
-  Menu, LogIn, ArrowRight,
+  Menu, LogIn, ArrowRight, Monitor,
 } from "lucide-react";
 
 import { TermsPage } from "../legal/TermsPage";
 import { PrivacyPage } from "../legal/PrivacyPage";
 import { LogoIcon, LogoFull } from "../shared/Logo";
+import { AgentConnect } from "../shared/AgentConnect";
 
 interface LandingPageProps { onLogin: () => void; }
-type Section = null | "features" | "pricing" | "faq" | "about";
+type Section = null | "features" | "pricing" | "faq" | "about" | "agent";
 
 function useTypewriter(text: string, speed = 40, start = true) {
   const [displayed, setDisplayed] = useState("");
@@ -142,14 +143,48 @@ function AboutContent() {
   </div>);
 }
 
+function AgentContent() {
+  return (<div className="h-full overflow-y-auto p-8">
+    <motion.h2 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-3xl font-bold text-white mb-2">Десктоп-агент</motion.h2>
+    <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }} className="text-white/50 mb-8">Подключите компьютер к XeroCode — ИИ будет работать с вашими файлами напрямую</motion.p>
+    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="max-w-[500px]">
+      <AgentConnect />
+    </motion.div>
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }} className="mt-8 max-w-[500px] space-y-4">
+      <h3 className="text-white font-semibold text-sm">Что умеет агент</h3>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        {[
+          { icon: "📝", t: "Создавать и редактировать файлы", d: "write_file, read_file" },
+          { icon: "⚡", t: "Запускать команды", d: "npm install, git commit..." },
+          { icon: "🔍", t: "Искать по коду", d: "grep по паттернам" },
+          { icon: "📁", t: "Навигация по проекту", d: "list_files, структура" },
+          { icon: "🔒", t: "Песочница", d: "38 опасных команд заблокировано" },
+          { icon: "🔄", t: "Авто-переподключение", d: "При обрыве — через 3 сек" },
+        ].map((f) => (
+          <div key={f.t} className="p-3 rounded-xl bg-white/[0.03] border border-white/[0.06]">
+            <div className="flex items-start gap-3">
+              <span className="text-lg">{f.icon}</span>
+              <div>
+                <p className="text-white text-xs font-medium">{f.t}</p>
+                <p className="text-white/30 text-[10px]">{f.d}</p>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </motion.div>
+  </div>);
+}
+
 const NAV = [
   { id: "features" as Section, icon: Sparkles, label: "Возможности" },
   { id: "pricing" as Section, icon: Star, label: "Тарифы" },
+  { id: "agent" as Section, icon: Monitor, label: "Агент" },
   { id: "faq" as Section, icon: ChevronDown, label: "FAQ" },
   { id: "about" as Section, icon: Building2, label: "О нас" },
 ];
 
-const CONTENT: Record<string, React.ReactNode> = { features: <FeaturesContent />, pricing: <PricingContent />, faq: <FAQContent />, about: <AboutContent /> };
+const CONTENT: Record<string, React.ReactNode> = { features: <FeaturesContent />, pricing: <PricingContent />, agent: <AgentContent />, faq: <FAQContent />, about: <AboutContent /> };
 
 export function LandingPage({ onLogin }: LandingPageProps) {
   const [section, setSection] = useState<Section>(null);

@@ -1,7 +1,8 @@
-import { motion } from "motion/react";
-import { Send, Sparkles, Edit3, Lightbulb, Play, Plus, ChevronDown } from "lucide-react";
+import { motion, AnimatePresence } from "motion/react";
+import { Send, Sparkles, Edit3, Lightbulb, Play, Plus, ChevronDown, Monitor } from "lucide-react";
 import { useState } from "react";
 import type { Goal } from "../lib/api";
+import { AgentConnect } from "./shared/AgentConnect";
 
 interface ControlPanelProps {
   activeGoal: Goal | null;
@@ -20,6 +21,7 @@ export function ControlPanel({
   const [mode, setMode] = useState<"manager" | "discussion" | "auto">("manager");
   const [isCreating, setIsCreating] = useState(false);
   const [showGoalSelector, setShowGoalSelector] = useState(false);
+  const [showAgentConnect, setShowAgentConnect] = useState(false);
 
   const handleSubmit = async (type: "command" | "edit" | "idea") => {
     if (!inputValue.trim()) return;
@@ -200,7 +202,7 @@ export function ControlPanel({
       )}
 
       {/* Mode description */}
-      <div className="flex-1 px-6 overflow-y-auto">
+      <div className="flex-1 px-6 overflow-y-auto space-y-4">
         <div className="bg-[#0F0F12] rounded-xl p-4 border border-white/5">
           <p className="text-xs text-gray-500 mb-1">{modeLabels[mode]}</p>
           <p className="text-xs text-gray-400">
@@ -209,6 +211,33 @@ export function ControlPanel({
             {mode === "auto" && "Платформа автоматически назначает задачи по навыкам моделей."}
           </p>
         </div>
+
+        {/* Agent Connect button */}
+        <motion.button
+          onClick={() => setShowAgentConnect(!showAgentConnect)}
+          className="w-full flex items-center gap-2 px-4 py-2.5 rounded-xl border border-purple-500/20 bg-purple-500/5 text-purple-400 text-sm hover:bg-purple-500/10 transition-colors"
+          whileHover={{ scale: 1.01 }}
+          whileTap={{ scale: 0.99 }}
+        >
+          <Monitor className="w-4 h-4" />
+          Подключить компьютер
+        </motion.button>
+
+        <AnimatePresence>
+          {showAgentConnect && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.2 }}
+            >
+              <AgentConnect
+                goalId={activeGoal?.id}
+                onClose={() => setShowAgentConnect(false)}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );
