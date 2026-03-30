@@ -1,5 +1,5 @@
 {
-  "name": "@xerocode/agent",
+  "name": "xerocode-agent",
   "version": "0.2.0",
   "description": "XeroCode Agent — connect your computer to AI models",
   "bin": {

@@ -16,8 +16,8 @@ export const AgentConnect: React.FC<AgentConnectProps> = ({
   const [tab, setTab] = useState<"cli" | "desktop">("cli");
 
   const cliCommand = goalId
-    ? `npx @xerocode/agent connect -g ${goalId}`
-    : `npx @xerocode/agent login`;
+    ? `npx xerocode-agent connect -g ${goalId}`
+    : `npx xerocode-agent login`;
 
   const copyToClipboard = (text: string, label: string) => {
     navigator.clipboard.writeText(text);
@@ -174,11 +174,11 @@ export const AgentConnect: React.FC<AgentConnectProps> = ({
                         "'SF Mono', 'JetBrains Mono', 'Menlo', monospace",
                     }}
                   >
-                    npx @xerocode/agent login
+                    npx xerocode-agent login
                   </code>
                   <button
                     onClick={() =>
-                      copyToClipboard("npx @xerocode/agent login", "login")
+                      copyToClipboard("npx xerocode-agent login", "login")
                     }
                     style={{
                       padding: "10px 12px",
