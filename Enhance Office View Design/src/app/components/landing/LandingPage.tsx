@@ -120,12 +120,6 @@ function FAQContent() {
 }
 
 function AboutContent() {
-  const stats = [
-    { val: "34 000", label: "строк кода", color: "#8b5cf6" },
-    { val: "430+", label: "AI моделей", color: "#3b82f6" },
-    { val: "10", label: "провайдеров", color: "#22c55e" },
-    { val: "80+", label: "API эндпоинтов", color: "#f59e0b" },
-  ];
   const panels = [
     { icon: Code, label: "Код", desc: "Язык, фреймворк, тесты, стиль кода", color: "#3b82f6" },
     { icon: Palette, label: "Дизайн", desc: "SD 3.5, FLUX, стили, Img2Img, batch", color: "#a855f7" },
@@ -143,18 +137,6 @@ function AboutContent() {
         <h3 className="text-lg font-bold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent mb-3">Миссия</h3>
         <p className="text-white/60 text-sm leading-relaxed mb-3">XeroCode создаёт будущее, где ИИ-модели работают как команда. Вместо выбора между GPT, Claude или Gemini — используйте все сразу, каждую для того, в чём она лучше.</p>
         <p className="text-white/60 text-sm leading-relaxed">BYOK (Bring Your Own Key) — вы подключаете свои API-ключи и платите только провайдерам. Мы оркестрируем, не перепродаём.</p>
-      </motion.div>
-
-      {/* Stats */}
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.05 }}>
-        <div className="grid grid-cols-4 gap-3">
-          {stats.map(s => (
-            <div key={s.label} className="p-4 rounded-xl bg-white/[0.03] border border-white/[0.06] text-center">
-              <div className="text-xl font-bold" style={{ color: s.color }}>{s.val}</div>
-              <div className="text-white/40 text-[10px] mt-1">{s.label}</div>
-            </div>
-          ))}
-        </div>
       </motion.div>
 
       {/* 7 panels */}
@@ -195,37 +177,6 @@ function AboutContent() {
           ))}
         </div>
         <p className="text-white/40 text-[10px] mt-3">Elo-рейтинг обновляется после каждого голосования</p>
-      </motion.div>
-
-      {/* Tech stack */}
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }} className="p-6 rounded-xl bg-white/[0.03] border border-white/[0.06]">
-        <h3 className="text-white font-semibold mb-3">Технологии</h3>
-        <div className="space-y-3">
-          <div>
-            <div className="text-white/30 text-[10px] uppercase mb-1.5">Backend</div>
-            <div className="flex flex-wrap gap-1.5">
-              {["FastAPI", "SQLAlchemy", "Alembic", "Pydantic v2", "JWT", "WebSocket", "httpx", "10 AI-адаптеров"].map(t => <span key={t} className="px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-400/70 text-[10px]">{t}</span>)}
-            </div>
-          </div>
-          <div>
-            <div className="text-white/30 text-[10px] uppercase mb-1.5">Frontend</div>
-            <div className="flex flex-wrap gap-1.5">
-              {["React 19", "TypeScript", "Vite 6", "Tailwind CSS 4", "motion", "react-markdown", "Prism", "shadcn/ui"].map(t => <span key={t} className="px-2 py-0.5 rounded-md bg-blue-500/10 text-blue-400/70 text-[10px]">{t}</span>)}
-            </div>
-          </div>
-          <div>
-            <div className="text-white/30 text-[10px] uppercase mb-1.5">Desktop</div>
-            <div className="flex flex-wrap gap-1.5">
-              {["Electron", "Node.js", "commander", "ora", "npm: xerocode-agent"].map(t => <span key={t} className="px-2 py-0.5 rounded-md bg-purple-500/10 text-purple-400/70 text-[10px]">{t}</span>)}
-            </div>
-          </div>
-          <div>
-            <div className="text-white/30 text-[10px] uppercase mb-1.5">Инфраструктура</div>
-            <div className="flex flex-wrap gap-1.5">
-              {["Yandex Cloud", "Nginx", "Xray-core (EU)", "Certbot", "Fail2ban", "GitHub Actions"].map(t => <span key={t} className="px-2 py-0.5 rounded-md bg-amber-500/10 text-amber-400/70 text-[10px]">{t}</span>)}
-            </div>
-          </div>
-        </div>
       </motion.div>
 
       {/* Providers */}

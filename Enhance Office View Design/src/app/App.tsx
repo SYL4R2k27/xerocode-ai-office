@@ -12,6 +12,8 @@ import { Dashboard } from "./components/corporate/Dashboard";
 import { KanbanBoard } from "./components/corporate/KanbanBoard";
 import { TeamPage } from "./components/corporate/TeamPage";
 import { MobileLayout } from "./components/mobile/MobileLayout";
+import { ArenaView } from "./components/arena/ArenaView";
+import { LeaderboardView } from "./components/arena/LeaderboardView";
 
 /* ErrorBoundary для Corp View */
 class CorpErrorBoundary extends Component<{children: ReactNode; fallback: ReactNode}, {hasError: boolean}> {
@@ -398,6 +400,9 @@ export default function App() {
   // Focus mode — корпоративный пользователь переключается в чистый чат
   const [focusMode, setFocusMode] = useState(false);
 
+  // Arena / Evolution mode
+  const [showArena, setShowArena] = useState<"battle" | "leaderboard" | null>(null);
+
   // Mobile detection
   const isMobileApp = useMediaQuery("(max-width: 767px)");
 
@@ -696,18 +701,76 @@ export default function App() {
   // Обычный пользователь (Free/PRO/ULTIMA) → стандартный чат-интерфейс
   return (
     <div className="h-screen overflow-hidden" style={{ backgroundColor: "var(--bg-base)" }}>
-      <ChatInterface
-        showModelSetup={showModelSetup}
-        setShowModelSetup={setShowModelSetup}
-        showProfileSettings={showProfileSettings}
-        setShowProfileSettings={setShowProfileSettings}
-        showPricing={showPricing}
-        setShowPricing={setShowPricing}
-      />
+      {showArena ? (
+        <div className="h-full flex flex-col">
+          {/* Arena tabs */}
+          <div className="flex items-center gap-2 px-4 py-2 border-b" style={{ borderColor: "var(--border-default)", background: "var(--bg-elevated)" }}>
+            <button
+              onClick={() => setShowArena("battle")}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-medium transition-all"
+              style={{
+                background: showArena === "battle" ? "rgba(244,63,94,0.15)" : "transparent",
+                color: showArena === "battle" ? "#f43f5e" : "var(--text-secondary)",
+                border: showArena === "battle" ? "1px solid rgba(244,63,94,0.3)" : "1px solid transparent",
+              }}
+            >
+              ⚔️ Битва
+            </button>
+            <button
+              onClick={() => setShowArena("leaderboard")}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-medium transition-all"
+              style={{
+                background: showArena === "leaderboard" ? "rgba(245,158,11,0.15)" : "transparent",
+                color: showArena === "leaderboard" ? "#f59e0b" : "var(--text-secondary)",
+                border: showArena === "leaderboard" ? "1px solid rgba(245,158,11,0.3)" : "1px solid transparent",
+              }}
+            >
+              🏆 Рейтинг
+            </button>
+            <div style={{ flex: 1 }} />
+            <button
+              onClick={() => setShowArena(null)}
+              className="px-3 py-1.5 rounded-lg text-[12px] transition-all"
+              style={{ color: "var(--text-secondary)" }}
+            >
+              ← Чат
+            </button>
+          </div>
+          <div className="flex-1 overflow-hidden">
+            {showArena === "battle" && <ArenaView />}
+            {showArena === "leaderboard" && <LeaderboardView />}
+          </div>
+        </div>
+      ) : (
+        <ChatInterface
+          showModelSetup={showModelSetup}
+          setShowModelSetup={setShowModelSetup}
+          showProfileSettings={showProfileSettings}
+          setShowProfileSettings={setShowProfileSettings}
+          showPricing={showPricing}
+          setShowPricing={setShowPricing}
+        />
+      )}
 
       {/* Onboarding Wizard */}
       {showOnboarding && authStore.user && (
         <OnboardingWizard onComplete={handleOnboardingComplete} />
+      )}
+
+      {/* Кнопка Эволюция */}
+      {!showArena && (
+        <button
+          onClick={() => setShowArena("battle")}
+          className="fixed bottom-4 left-4 z-50 flex items-center gap-2 px-3 py-2 rounded-xl text-[11px] font-medium transition-all hover:scale-105"
+          style={{
+            backgroundColor: "rgba(244,63,94,0.15)",
+            border: "1px solid rgba(244,63,94,0.3)",
+            color: "#f43f5e",
+            backdropFilter: "blur(8px)",
+          }}
+        >
+          ⚔️ Эволюция
+        </button>
       )}
 
       {/* Админ: универсальная кнопка переключения (корп ↔ обычный) */}
