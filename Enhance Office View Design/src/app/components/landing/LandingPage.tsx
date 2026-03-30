@@ -224,6 +224,119 @@ function AboutContent() {
   </div>);
 }
 
+function CorporateContent() {
+  const tiers = [
+    { team: "3-5 человек", price: "89 990₽/мес", color: "#F59E0B" },
+    { team: "6-10 человек", price: "179 990₽/мес", color: "#F59E0B" },
+    { team: "11-15 человек", price: "229 990₽/мес", color: "#F59E0B" },
+    { team: "16-20 человек", price: "379 990₽/мес", color: "#F59E0B" },
+  ];
+  return (<div className="h-full overflow-y-auto p-8">
+    <motion.h2 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-3xl font-bold text-white mb-2">Для бизнеса</motion.h2>
+    <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }} className="text-white/50 mb-8">Командная работа с ИИ для компаний от 3 до 20 сотрудников</motion.p>
+    <div className="max-w-[600px] space-y-6">
+
+      {/* Hero block */}
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-6 rounded-xl bg-gradient-to-br from-[#F59E0B]/10 to-[#7C3AED]/10 border border-[#F59E0B]/20">
+        <h3 className="text-lg font-bold text-white mb-3">Единое рабочее пространство</h3>
+        <p className="text-white/60 text-sm leading-relaxed mb-4">Руководитель ставит цели, менеджеры распределяют задачи, сотрудники работают с ИИ — всё в одном интерфейсе. Как Битрикс24, но с командой из 430+ ИИ-моделей.</p>
+        <div className="grid grid-cols-3 gap-3">
+          {[
+            { role: "Руководитель", desc: "Дашборд, аналитика, бюджеты", icon: "👔" },
+            { role: "Менеджер", desc: "Kanban, задачи, ревью", icon: "📋" },
+            { role: "Сотрудник", desc: "Чат с ИИ, инструменты", icon: "💻" },
+          ].map(r => (
+            <div key={r.role} className="p-3 rounded-lg bg-white/[0.03] text-center">
+              <div className="text-xl mb-1">{r.icon}</div>
+              <div className="text-white text-[11px] font-semibold">{r.role}</div>
+              <div className="text-white/30 text-[9px] mt-1">{r.desc}</div>
+            </div>
+          ))}
+        </div>
+      </motion.div>
+
+      {/* Features grid */}
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }} className="p-6 rounded-xl bg-white/[0.03] border border-white/[0.06]">
+        <h3 className="text-white font-semibold mb-4">Что входит</h3>
+        <div className="grid grid-cols-2 gap-3">
+          {[
+            { icon: "📊", t: "Командный дашборд", d: "Статистика использования, расходы по сотрудникам, ROI от ИИ" },
+            { icon: "📋", t: "Kanban-доска", d: "Задачи с ревью — менеджер проверяет результаты ИИ перед отправкой" },
+            { icon: "👥", t: "Роли и доступы", d: "Руководитель / Менеджер / Сотрудник — каждому свои права" },
+            { icon: "📈", t: "Аналитика расходов", d: "Сколько токенов потратил каждый сотрудник, на какие задачи" },
+            { icon: "🔒", t: "SSO (SAML/OIDC)", d: "Единый вход через корпоративный аккаунт (Google Workspace, AD)" },
+            { icon: "📝", t: "Аудит-лог", d: "Полная история действий всех сотрудников для compliance" },
+            { icon: "🔔", t: "Webhook-уведомления", d: "Интеграция с Telegram, Slack — уведомления о завершении задач" },
+            { icon: "🎨", t: "Брендинг", d: "Логотип компании, фон рабочего пространства, цветовая схема" },
+            { icon: "🤖", t: "Все 430+ моделей", d: "GPT-5, Claude Opus, Gemini, Grok, Stability AI — без ограничений" },
+            { icon: "⚡", t: "Безлимитные задачи", d: "Никаких лимитов на задачи, агентов, изображения и токены" },
+            { icon: "🛡️", t: "Шифрование ключей", d: "API-ключи шифруются Fernet, расшифровываются только при запросе" },
+            { icon: "🌐", t: "Без VPN из РФ", d: "Прозрачный EU-прокси — сотрудники работают без настроек" },
+          ].map(f => (
+            <div key={f.t} className="p-3 rounded-lg bg-white/[0.02]">
+              <div className="flex items-start gap-2">
+                <span className="text-sm flex-shrink-0">{f.icon}</span>
+                <div>
+                  <div className="text-white text-[11px] font-semibold">{f.t}</div>
+                  <div className="text-white/30 text-[9px] mt-0.5 leading-relaxed">{f.d}</div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </motion.div>
+
+      {/* Pricing tiers */}
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.15 }} className="p-6 rounded-xl bg-white/[0.03] border border-white/[0.06]">
+        <h3 className="text-white font-semibold mb-4">Тарифы для команд</h3>
+        <div className="space-y-2">
+          {tiers.map(t => (
+            <div key={t.team} className="flex items-center justify-between p-3 rounded-lg bg-white/[0.02] border border-white/[0.04]">
+              <div className="flex items-center gap-3">
+                <Users size={14} style={{ color: t.color }} />
+                <span className="text-white text-[12px] font-medium">{t.team}</span>
+              </div>
+              <span className="text-[13px] font-bold" style={{ color: t.color }}>{t.price}</span>
+            </div>
+          ))}
+        </div>
+        <p className="text-white/30 text-[10px] mt-3">Только для юр. лиц. Оплата по счёту + акт с НДС.</p>
+      </motion.div>
+
+      {/* How it works */}
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }} className="p-6 rounded-xl bg-white/[0.03] border border-white/[0.06]">
+        <h3 className="text-white font-semibold mb-4">Как это работает</h3>
+        <div className="space-y-3">
+          {[
+            { step: "1", title: "Регистрация организации", desc: "Создаёте workspace, приглашаете сотрудников по email" },
+            { step: "2", title: "Настройка моделей", desc: "Подключаете API-ключи компании или используете наши (безлимит)" },
+            { step: "3", title: "Распределение ролей", desc: "Руководитель → Менеджер → Сотрудник, каждому свои доступы" },
+            { step: "4", title: "Работа с ИИ", desc: "Сотрудники ставят цели, ИИ-команда выполняет, менеджер ревьюит" },
+            { step: "5", title: "Аналитика", desc: "Дашборд с расходами, эффективностью и ROI от использования ИИ" },
+          ].map((s, i) => (
+            <div key={s.step} className="flex items-start gap-3">
+              <div className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 text-[11px] font-bold" style={{ background: "rgba(245,158,11,0.15)", color: "#F59E0B" }}>{s.step}</div>
+              <div>
+                <div className="text-white text-[12px] font-semibold">{s.title}</div>
+                <div className="text-white/30 text-[10px]">{s.desc}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </motion.div>
+
+      {/* CTA */}
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.25 }} className="p-6 rounded-xl bg-gradient-to-r from-[#F59E0B]/15 to-[#F59E0B]/5 border border-[#F59E0B]/20 text-center">
+        <h3 className="text-white font-bold text-lg mb-2">Готовы подключить команду?</h3>
+        <p className="text-white/50 text-sm mb-4">Напишите нам — настроим workspace за 1 день</p>
+        <a href="mailto:sales@xerocode.space" className="inline-flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-semibold transition-all hover:scale-105" style={{ background: "#F59E0B", color: "#000" }}>
+          sales@xerocode.space
+        </a>
+      </motion.div>
+    </div>
+  </div>);
+}
+
 function AgentContent() {
   return (<div className="h-full overflow-y-auto p-8">
     <motion.h2 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-3xl font-bold text-white mb-2">Десктоп-агент</motion.h2>

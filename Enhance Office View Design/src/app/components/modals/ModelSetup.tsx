@@ -6,22 +6,136 @@ import { PoolBuilder as PoolBuilderComponent } from "./PoolBuilder";
 import { api, Agent } from "../../lib/api";
 import type { Pool } from "../../lib/api";
 
-// Категории моделей (вместо провайдеров)
-const categories = [
-  { id: "flagship", name: "🧠 Флагманы", desc: "Топ модели для сложных задач", color: "#7C3AED" },
-  { id: "fast", name: "⚡ Быстрые", desc: "Дешёвые и быстрые", color: "#06B6D4" },
-  { id: "code", name: "💻 Код", desc: "Специализированные для программирования", color: "#10B981" },
-  { id: "images", name: "🎨 Изображения", desc: "Генерация картинок", color: "#EC4899" },
-  { id: "research", name: "🔍 Ресёрч", desc: "Reasoning + поиск", color: "#F59E0B" },
-  { id: "chat", name: "💬 Чат", desc: "Универсальные модели", color: "#4F7CFF" },
-  { id: "free", name: "🆓 Бесплатные", desc: "Без оплаты", color: "#22C55E" },
-  { id: "video", name: "🎬 Видео", desc: "Генерация видео", color: "#EF4444" },
-  { id: "custom", name: "⚙️ Custom", desc: "Свой API", color: "#666666" },
+// Провайдер-фильтры для каталога
+const providerFilters = [
+  { id: "all", name: "Все", color: "var(--text-primary)" },
+  { id: "openai", name: "OpenAI", color: "#10a37f" },
+  { id: "anthropic", name: "Anthropic", color: "#d4a27f" },
+  { id: "google", name: "Google", color: "#4285f4" },
+  { id: "xai", name: "xAI", color: "#1da1f2" },
+  { id: "meta", name: "Meta", color: "#0668e1" },
+  { id: "deepseek", name: "DeepSeek", color: "#4f46e5" },
+  { id: "qwen", name: "Qwen", color: "#7C3AED" },
+  { id: "stability", name: "Stability", color: "#9333ea" },
+  { id: "perplexity", name: "Perplexity", color: "#22C55E" },
+  { id: "mistral", name: "Mistral", color: "#ff7000" },
+  { id: "free", name: "Free", color: "#22C55E" },
+  { id: "custom", name: "Custom", color: "#666" },
 ];
 
-// Для обратной совместимости — providers теперь = categories
-const providers = categories;
+// Плоский каталог всех моделей
+interface ModelEntry {
+  id: string;
+  name: string;
+  provider: string;
+  providerDisplay: string;
+  price: string;
+  desc: string;
+  category: string;
+  free?: boolean;
+}
 
+const ALL_MODELS: ModelEntry[] = [
+  // OpenAI — Flagship
+  { id: "gpt-5.4-pro", name: "GPT-5.4 Pro", provider: "openai", providerDisplay: "OpenAI", price: "$30/$180", desc: "Самая мощная модель", category: "flagship" },
+  { id: "gpt-5.4", name: "GPT-5.4", provider: "openai", providerDisplay: "OpenAI", price: "$2.50/$15", desc: "Флагман 2026", category: "flagship" },
+  { id: "gpt-5", name: "GPT-5", provider: "openai", providerDisplay: "OpenAI", price: "$1.25/$10", desc: "Универсальная топ", category: "flagship" },
+  { id: "gpt-5.2-pro", name: "GPT-5.2 Pro", provider: "openai", providerDisplay: "OpenAI", price: "$21/$168", desc: "Reasoning Pro", category: "flagship" },
+  // OpenAI — Fast
+  { id: "gpt-5.4-nano", name: "GPT-5.4 Nano", provider: "openai", providerDisplay: "OpenAI", price: "$0.20/$1.25", desc: "Ультра-быстрая", category: "fast" },
+  { id: "gpt-5.4-mini", name: "GPT-5.4 Mini", provider: "openai", providerDisplay: "OpenAI", price: "$0.75/$4.50", desc: "Мини флагман", category: "fast" },
+  { id: "gpt-5-mini", name: "GPT-5 Mini", provider: "openai", providerDisplay: "OpenAI", price: "$0.25/$2", desc: "Компактная", category: "fast" },
+  { id: "gpt-5-nano", name: "GPT-5 Nano", provider: "openai", providerDisplay: "OpenAI", price: "$0.05/$0.40", desc: "Быстрая", category: "fast" },
+  { id: "gpt-4o-mini", name: "GPT-4o Mini", provider: "openai", providerDisplay: "OpenAI", price: "$0.15/$0.60", desc: "Классика", category: "fast" },
+  { id: "gpt-4.1-nano", name: "GPT-4.1 Nano", provider: "openai", providerDisplay: "OpenAI", price: "$0.10/$0.40", desc: "Самая дешёвая", category: "fast" },
+  // OpenAI — Code
+  { id: "gpt-5.3-codex", name: "GPT-5.3 Codex", provider: "openai", providerDisplay: "OpenAI", price: "$1.75/$14", desc: "Код: новейший", category: "code" },
+  { id: "gpt-5.2-codex", name: "GPT-5.2 Codex", provider: "openai", providerDisplay: "OpenAI", price: "$1.75/$14", desc: "Код: продвинутый", category: "code" },
+  { id: "gpt-5.1-codex-max", name: "GPT-5.1 Codex Max", provider: "openai", providerDisplay: "OpenAI", price: "$1.25/$10", desc: "Код: макс контекст", category: "code" },
+  { id: "gpt-5-codex", name: "GPT-5 Codex", provider: "openai", providerDisplay: "OpenAI", price: "$1.25/$10", desc: "Код: GPT-5", category: "code" },
+  // OpenAI — Reasoning
+  { id: "o3", name: "o3", provider: "openai", providerDisplay: "OpenAI", price: "$2/$8", desc: "Сложная логика", category: "research" },
+  { id: "o4-mini", name: "o4-mini", provider: "openai", providerDisplay: "OpenAI", price: "$1.10/$4.40", desc: "Reasoning быстрый", category: "research" },
+  { id: "o3-mini", name: "o3-mini", provider: "openai", providerDisplay: "OpenAI", price: "$1.10/$4.40", desc: "Reasoning компактный", category: "research" },
+  { id: "o1-pro", name: "o1-pro", provider: "openai", providerDisplay: "OpenAI", price: "$15/$60", desc: "Reasoning Pro", category: "research" },
+  // OpenAI — Chat
+  { id: "gpt-4o", name: "GPT-4o", provider: "openai", providerDisplay: "OpenAI", price: "$2.50/$10", desc: "Универсальная", category: "chat" },
+  { id: "gpt-4.1", name: "GPT-4.1", provider: "openai", providerDisplay: "OpenAI", price: "$2/$8", desc: "1M контекст", category: "chat" },
+  // OpenAI — Images
+  { id: "gpt-image-1.5", name: "GPT Image 1.5", provider: "openai", providerDisplay: "OpenAI", price: "~$0.02/img", desc: "Новейшая генерация", category: "images" },
+  { id: "gpt-image-1", name: "GPT Image 1", provider: "openai", providerDisplay: "OpenAI", price: "~$0.02/img", desc: "Генерация изображений", category: "images" },
+  { id: "dall-e-3", name: "DALL-E 3", provider: "openai", providerDisplay: "OpenAI", price: "~$0.04/img", desc: "Классическая генерация", category: "images" },
+  // OpenAI — Video
+  { id: "sora-2-pro", name: "Sora 2 Pro", provider: "openai", providerDisplay: "OpenAI", price: "Premium", desc: "Генерация видео Pro", category: "video" },
+  { id: "sora-2", name: "Sora 2", provider: "openai", providerDisplay: "OpenAI", price: "Premium", desc: "Генерация видео", category: "video" },
+
+  // Anthropic
+  { id: "claude-opus-4-6", name: "Claude Opus 4.6", provider: "anthropic", providerDisplay: "Anthropic", price: "$5/$25", desc: "Самая умная Claude", category: "flagship" },
+  { id: "claude-sonnet-4-6", name: "Claude Sonnet 4.6", provider: "anthropic", providerDisplay: "Anthropic", price: "$3/$15", desc: "Лучшая для кода", category: "code" },
+  { id: "claude-sonnet-4-5", name: "Claude Sonnet 4.5", provider: "anthropic", providerDisplay: "Anthropic", price: "$3/$15", desc: "Claude 4.5", category: "chat" },
+  { id: "claude-haiku-4-5", name: "Claude Haiku 4.5", provider: "anthropic", providerDisplay: "Anthropic", price: "$1/$5", desc: "Быстрая Claude", category: "fast" },
+
+  // xAI
+  { id: "x-ai/grok-4", name: "Grok 4", provider: "xai", providerDisplay: "xAI", price: "$3/$15", desc: "Флагман xAI", category: "flagship" },
+  { id: "x-ai/grok-4.1-fast", name: "Grok 4.1 Fast", provider: "xai", providerDisplay: "xAI", price: "$0.20/$0.50", desc: "2M контекст", category: "fast" },
+  { id: "x-ai/grok-4-fast", name: "Grok 4 Fast", provider: "xai", providerDisplay: "xAI", price: "$0.20/$0.50", desc: "Быстрый Grok", category: "fast" },
+  { id: "x-ai/grok-code-fast-1", name: "Grok Code Fast", provider: "xai", providerDisplay: "xAI", price: "$0.20/$1.50", desc: "Быстрый кодер", category: "code" },
+
+  // Google
+  { id: "gemini-2.5-pro", name: "Gemini 2.5 Pro", provider: "google", providerDisplay: "Google", price: "$1.25/$10", desc: "1M контекст", category: "flagship" },
+  { id: "gemini-2.5-flash", name: "Gemini 2.5 Flash", provider: "google", providerDisplay: "Google", price: "$0.15/$0.60", desc: "Быстрая Gemini", category: "fast" },
+  { id: "nano-banana", name: "Nano Banana", provider: "google", providerDisplay: "Google", price: "Бесплатно", desc: "Генерация изображений", category: "images", free: true },
+  { id: "nano-banana-2", name: "Nano Banana 2", provider: "google", providerDisplay: "Google", price: "Бесплатно", desc: "Улучшенная генерация", category: "images", free: true },
+  { id: "nano-banana-pro", name: "Nano Banana Pro", provider: "google", providerDisplay: "Google", price: "$0.50/img", desc: "Pro генерация", category: "images" },
+
+  // Meta
+  { id: "meta-llama/llama-4-maverick", name: "Llama 4 Maverick", provider: "meta", providerDisplay: "Meta", price: "$0.20/$0.60", desc: "Мультимодальная", category: "chat" },
+  { id: "meta-llama/llama-3.3-70b-instruct", name: "Llama 3.3 70B", provider: "meta", providerDisplay: "Meta", price: "$0.10/$0.30", desc: "Открытая 70B", category: "chat" },
+
+  // DeepSeek
+  { id: "deepseek/deepseek-chat-v3-0324", name: "DeepSeek V3", provider: "deepseek", providerDisplay: "DeepSeek", price: "$0.14/$0.28", desc: "Дешёвый и сильный", category: "chat" },
+  { id: "deepseek/deepseek-r1-0528", name: "DeepSeek R1", provider: "deepseek", providerDisplay: "DeepSeek", price: "$0.55/$2.19", desc: "Chain-of-thought", category: "research" },
+  { id: "deepseek/deepseek-prover-v2", name: "DeepSeek Prover V2", provider: "deepseek", providerDisplay: "DeepSeek", price: "$0.55/$2.19", desc: "Мат. доказательства", category: "research" },
+
+  // Qwen
+  { id: "qwen/qwen-max", name: "Qwen Max", provider: "qwen", providerDisplay: "Qwen", price: "$1/$4", desc: "Топ Alibaba", category: "flagship" },
+  { id: "qwen/qwen3-coder", name: "Qwen3 Coder", provider: "qwen", providerDisplay: "Qwen", price: "$0.20/$0.60", desc: "Кодер 480B", category: "code" },
+  { id: "qwen/qwen3-coder-plus", name: "Qwen3 Coder+", provider: "qwen", providerDisplay: "Qwen", price: "$0.40/$1.20", desc: "Улучшенный кодер", category: "code" },
+  { id: "qwen/qwen3-235b-a22b", name: "Qwen3 235B", provider: "qwen", providerDisplay: "Qwen", price: "$0.20/$0.60", desc: "235 млрд параметров", category: "research" },
+
+  // Stability AI
+  { id: "sd3.5-large", name: "SD 3.5 Large", provider: "stability", providerDisplay: "Stability AI", price: "6.5 кр/img", desc: "Топ качество", category: "images" },
+  { id: "sd3.5-large-turbo", name: "SD 3.5 Turbo", provider: "stability", providerDisplay: "Stability AI", price: "4 кр/img", desc: "Быстрый SD", category: "images" },
+  { id: "sd3.5-medium", name: "SD 3.5 Medium", provider: "stability", providerDisplay: "Stability AI", price: "3.5 кр/img", desc: "Средний SD", category: "images" },
+  { id: "stable-image-ultra", name: "Stable Ultra", provider: "stability", providerDisplay: "Stability AI", price: "8 кр/img", desc: "Максимальное качество", category: "images" },
+  { id: "stable-image-core", name: "Stable Core", provider: "stability", providerDisplay: "Stability AI", price: "3 кр/img", desc: "Базовый SD", category: "images" },
+  { id: "flux-2-pro", name: "FLUX 2 Pro", provider: "stability", providerDisplay: "Stability AI", price: "5 кр/img", desc: "FLUX генерация", category: "images" },
+
+  // Perplexity
+  { id: "perplexity/sonar-pro-search", name: "Sonar Pro Search", provider: "perplexity", providerDisplay: "Perplexity", price: "$3/$15", desc: "С поиском в интернете!", category: "research" },
+  { id: "perplexity/sonar-pro", name: "Sonar Pro", provider: "perplexity", providerDisplay: "Perplexity", price: "$3/$15", desc: "Ресёрч Perplexity", category: "research" },
+  { id: "perplexity/sonar-deep-research", name: "Sonar Deep Research", provider: "perplexity", providerDisplay: "Perplexity", price: "$5/$25", desc: "Глубокий ресёрч", category: "research" },
+
+  // Mistral
+  { id: "mistralai/mistral-large-2411", name: "Mistral Large", provider: "mistral", providerDisplay: "Mistral", price: "$2/$6", desc: "Топ Mistral", category: "chat" },
+  { id: "mistralai/codestral-2508", name: "Codestral", provider: "mistral", providerDisplay: "Mistral", price: "$0.30/$0.90", desc: "80+ языков кода", category: "code" },
+  { id: "mistralai/devstral-medium", name: "Devstral", provider: "mistral", providerDisplay: "Mistral", price: "$0.50/$1.50", desc: "Код от Mistral", category: "code" },
+
+  // Free models
+  { id: "llama-3.3-70b-versatile", name: "Llama 3.3 70B (Groq)", provider: "free", providerDisplay: "Groq", price: "Бесплатно", desc: "70B, быстрый", category: "chat", free: true },
+  { id: "llama-3.1-8b-instant", name: "Llama 3.1 8B (Groq)", provider: "free", providerDisplay: "Groq", price: "Бесплатно", desc: "8B, мгновенный", category: "fast", free: true },
+  { id: "qwen-3-235b", name: "Qwen 3 235B (Cerebras)", provider: "free", providerDisplay: "Cerebras", price: "Бесплатно", desc: "235B, бесплатно", category: "chat", free: true },
+  { id: "nvidia/nemotron-3-nano-30b-a3b:free", name: "Nemotron 30B", provider: "free", providerDisplay: "Nvidia", price: "Бесплатно", desc: "30B, Nvidia", category: "chat", free: true },
+  { id: "nvidia/nemotron-nano-9b-v2:free", name: "Nemotron 9B", provider: "free", providerDisplay: "Nvidia", price: "Бесплатно", desc: "9B, Nvidia", category: "fast", free: true },
+
+  // Other
+  { id: "cohere/command-a", name: "Command A", provider: "meta", providerDisplay: "Cohere", price: "$2.50/$10", desc: "Для RAG", category: "chat" },
+  { id: "moonshotai/kimi-k2.5", name: "Kimi K2.5", provider: "qwen", providerDisplay: "Moonshot", price: "$0.45/$2.20", desc: "Топ Moonshot", category: "flagship" },
+  { id: "inception/mercury-coder", name: "Mercury Coder", provider: "deepseek", providerDisplay: "Inception", price: "$0.20/$0.60", desc: "Специализированный кодер", category: "code" },
+  { id: "amazon/nova-premier-v1", name: "Nova Premier", provider: "meta", providerDisplay: "Amazon", price: "$2.50/$12.50", desc: "Amazon AI", category: "chat" },
+];
+
+// Legacy — для обратной совместимости
 const modelSuggestions: Record<string, string[]> = {
   flagship: [
     "gpt-5.4-pro", "gpt-5.4", "claude-opus-4-6", "gpt-5", "gpt-5.2-pro",
@@ -220,6 +334,7 @@ export function ModelSetup({ agents, onAddAgent, onRemoveAgent, onClose }: Model
   const [deleting, setDeleting] = useState<string | null>(null);
   const [modelSearch, setModelSearch] = useState("");
   const [soloMode, setSoloMode] = useState(false);
+  const [providerFilter, setProviderFilter] = useState("all");
 
   // Pools state
   const [pools, setPools] = useState<Pool[]>([]);
@@ -232,6 +347,16 @@ export function ModelSetup({ agents, onAddAgent, onRemoveAgent, onClose }: Model
       api.pools.list().then(setPools).catch(console.error).finally(() => setPoolsLoading(false));
     }
   }, [activeTab]);
+
+  // Filtered models for catalog
+  const filteredModels = useMemo(() => {
+    const q = modelSearch.toLowerCase();
+    return ALL_MODELS.filter(m => {
+      const matchesSearch = !q || m.id.toLowerCase().includes(q) || m.name.toLowerCase().includes(q) || m.desc.toLowerCase().includes(q) || m.providerDisplay.toLowerCase().includes(q);
+      const matchesProvider = providerFilter === "all" || m.provider === providerFilter || (providerFilter === "free" && m.free);
+      return matchesSearch && matchesProvider;
+    });
+  }, [modelSearch, providerFilter]);
 
   const needsApiKey = provider !== "ollama";
   const needsBaseUrl = provider === "ollama" || provider === "custom";
@@ -476,34 +601,113 @@ export function ModelSetup({ agents, onAddAgent, onRemoveAgent, onClose }: Model
             ))}
           </div>
 
-          {/* Step 1: Provider */}
+          {/* Step 1: Model Catalog */}
           {step === 1 && (
             <div>
-              <p className="text-[13px] font-medium mb-3">Выбери провайдера</p>
-              <div className="grid grid-cols-2 gap-2">
-                {providers.map((p) => (
+              {/* Search */}
+              <div className="relative mb-3">
+                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: "var(--text-tertiary)" }} />
+                <input
+                  type="text"
+                  placeholder="Поиск модели... (gpt-5, claude, llama, sd3...)"
+                  value={modelSearch}
+                  onChange={(e) => setModelSearch(e.target.value)}
+                  className="w-full pl-8 pr-3 py-2.5 rounded-lg text-[13px] outline-none"
+                  style={{ backgroundColor: "var(--bg-input)", border: "1px solid var(--border-default)", color: "var(--text-primary)" }}
+                  autoFocus
+                />
+              </div>
+
+              {/* Provider filter pills */}
+              <div className="flex flex-wrap gap-1.5 mb-3">
+                {providerFilters.map(pf => (
                   <button
-                    key={p.id}
-                    onClick={() => {
-                      setProvider(p.id);
-                      if (modelSuggestions[p.id]?.length) setModelName(modelSuggestions[p.id][0]);
-                      if (p.id === "ollama") setBaseUrl("http://localhost:11434");
-                      setStep(2);
-                    }}
-                    className="flex flex-col items-start p-3 rounded-xl text-left transition-all hover:scale-[1.02]"
+                    key={pf.id}
+                    onClick={() => setProviderFilter(pf.id)}
+                    className="px-2.5 py-1 rounded-lg text-[10px] font-medium transition-all"
                     style={{
-                      backgroundColor: "var(--bg-elevated)",
-                      border: `1px solid ${provider === p.id ? p.color : "var(--border-default)"}`,
+                      backgroundColor: providerFilter === pf.id ? pf.color : "var(--bg-elevated)",
+                      color: providerFilter === pf.id ? "#fff" : "var(--text-tertiary)",
+                      border: `1px solid ${providerFilter === pf.id ? pf.color : "var(--border-default)"}`,
                     }}
                   >
-                    <span className="text-[13px] font-semibold" style={{ color: p.color }}>
-                      {p.name}
-                    </span>
-                    <span className="text-[11px] mt-0.5" style={{ color: "var(--text-tertiary)" }}>
-                      {p.desc}
-                    </span>
+                    {pf.name}
                   </button>
                 ))}
+              </div>
+
+              {/* Model list */}
+              <div className="max-h-[320px] overflow-y-auto space-y-1">
+                {filteredModels.length === 0 && (
+                  <p className="text-center py-8 text-[12px]" style={{ color: "var(--text-tertiary)" }}>Модели не найдены</p>
+                )}
+                {filteredModels.map(m => {
+                  const isAdded = agents.some(a => a.model_name === m.id);
+                  const pf = providerFilters.find(p => p.id === m.provider);
+                  const provColor = pf?.color || "var(--text-tertiary)";
+                  return (
+                    <div
+                      key={m.id}
+                      className="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors cursor-pointer"
+                      style={{ backgroundColor: "var(--bg-elevated)", border: "1px solid var(--border-default)" }}
+                      onClick={() => {
+                        if (isAdded) return;
+                        const detected = detectProvider(m.id);
+                        setProvider(detected);
+                        setModelName(m.id);
+                        setName(m.name);
+                        setStep(2);
+                      }}
+                      onMouseEnter={e => { e.currentTarget.style.borderColor = provColor; }}
+                      onMouseLeave={e => { e.currentTarget.style.borderColor = "var(--border-default)"; }}
+                    >
+                      {/* Provider dot */}
+                      <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: provColor }} />
+                      {/* Info */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="text-[12px] font-semibold" style={{ color: "var(--text-primary)" }}>{m.name}</span>
+                          {m.free && <span className="text-[8px] px-1.5 py-0.5 rounded" style={{ backgroundColor: "rgba(34,197,94,0.15)", color: "#22c55e" }}>FREE</span>}
+                        </div>
+                        <div className="text-[10px]" style={{ color: "var(--text-tertiary)" }}>
+                          <span style={{ color: provColor }}>{m.providerDisplay}</span>
+                          <span className="mx-1">·</span>
+                          <span>{m.price}</span>
+                          <span className="mx-1">·</span>
+                          <span>{m.desc}</span>
+                        </div>
+                      </div>
+                      {/* Add button */}
+                      {isAdded ? (
+                        <Check size={14} style={{ color: "var(--accent-teal)", flexShrink: 0 }} />
+                      ) : (
+                        <div className="w-6 h-6 rounded-md flex items-center justify-center flex-shrink-0 text-[14px] font-light" style={{ backgroundColor: "var(--bg-surface)", color: "var(--text-secondary)" }}>+</div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Custom model input */}
+              <div className="mt-3 pt-3" style={{ borderTop: "1px solid var(--border-default)" }}>
+                <p className="text-[10px] font-semibold uppercase mb-1.5" style={{ color: "var(--text-tertiary)" }}>Или введите ID модели вручную</p>
+                <div className="flex gap-2">
+                  <input
+                    value={modelName}
+                    onChange={(e) => setModelName(e.target.value)}
+                    placeholder="provider/model-name"
+                    className="flex-1 px-3 py-2 rounded-lg text-[12px] outline-none"
+                    style={{ backgroundColor: "var(--bg-input)", border: "1px solid var(--border-default)", color: "var(--text-primary)" }}
+                  />
+                  <button
+                    onClick={() => { if (modelName) { setProvider(detectProvider(modelName)); setName(modelName.split("/").pop() || modelName); setStep(2); } }}
+                    disabled={!modelName}
+                    className="px-4 py-2 rounded-lg text-[12px] font-medium disabled:opacity-30"
+                    style={{ backgroundColor: "var(--accent-blue)", color: "#fff" }}
+                  >
+                    Далее
+                  </button>
+                </div>
               </div>
             </div>
           )}
