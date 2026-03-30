@@ -1,7 +1,7 @@
 # Роадмап XeroCode AI Office
 
-## Статус: 18 из 20 этапов завершены (90%)
-## Последний деплой: 2026-03-27 — 33 980 строк кода (24 022 frontend + 9 632 backend + 326 agent)
+## Статус: 21 из 23 этапов завершены (91%)
+## Последний деплой: 2026-03-30 — ~35 500 строк кода (24 800 frontend + 10 300 backend + 400 agent)
 
 ---
 
@@ -626,26 +626,74 @@ Locked:   children opacity 0.3, blur(2px), pointerEvents: none
 
 ---
 
+### ✅ Этап 19: Критичные фиксы (2026-03-30)
+
+- Alembic миграции инициализированы (11 таблиц, ревизия b0a11b8e62b2)
+- Тесты: 13 кейсов (register, login, me, goals) — pytest + httpx
+- SECRET_KEY сгенерирован и установлен
+- Together AI ключ — нужен новый (пока не работает)
+
+---
+
+### ✅ Этап 20: Лендинг обновлён + Бизнес-документы (2026-03-30)
+
+- 430+ моделей, 10 провайдеров (вместо 60+/9)
+- 4 новые фичи на лендинге: Эволюция, 7 панелей, мобильный UI, CLI
+- "О нас" расширен: миссия, 7 панелей, провайдеры, контакты
+- Arena → Эволюция (переименование)
+- PPTX питч-презентация (10 слайдов)
+- DOCX бизнес-план (7 разделов)
+
+---
+
+### ✅ Этап 21: Эволюция (Arena) — интеграция в дизайн-систему (2026-03-30)
+
+**Backend (arena.py):**
+- ORM: ArenaBattle + ArenaLeaderboard (Elo рейтинг)
+- 5 API эндпоинтов: create battle, get status, vote, leaderboard, history
+- 4 режима: duel, evolution, tournament, blind
+
+**Frontend — интеграция в 3-панельный layout:**
+- Sidebar.tsx: кнопка "Эволюция" (Swords icon) между GoalSelector и ModelList
+- ChatArea.tsx: ArenaView рендерится внутри чата (sidebar + context остаются)
+- ContextPanel.tsx: динамический таб "Рейтинг" (Trophy) с LeaderboardView
+- Клик на цель → arenaMode сбрасывается, возврат в чат
+
+**ArenaView.tsx (рефакторинг):**
+- Все hardcoded hex → CSS variables (bg-base, text-primary, border-default...)
+- 4 режима: Дуэль / Эволюция / Турнир / Слепой тест
+- Model picker (12 моделей), split view, голосование
+
+**LeaderboardView.tsx (рефакторинг):**
+- CSS variables + provider-* переменные
+- 5-колоночный grid (адаптирован под узкую ContextPanel)
+- Top-3 бейджи: Crown (золото), Medal (серебро/бронза)
+
+**theme.css:**
+- Новые: --accent-arena, --provider-groq/xai/deepseek/meta/mistral
+
+---
+
 ## ═══════════════════════════════════════
-## ФАЗА 5: БИЗНЕС (будущее)
+## ФАЗА 5: БИЗНЕС (следующая)
 ## ═══════════════════════════════════════
 
-### ⬜ Этап 19: Монетизация
+### ⬜ Этап 22: Монетизация
 - ЮKassa (РФ) + Stripe (зарубежные)
 - Webhook: оплата → обновить plan в БД
 - Recurring (автопродление), отмена, downgrade
-- Наши API-ключи для PRO+ юзеров
-- Ротация ключей при rate limit
+- OAuth: Google, Yandex ID, Telegram Login
+- Email SMTP: подтверждение, сброс пароля
 - Промокоды, реферальная программа
 
-### ⬜ Этап 20: Масштабирование
+### ⬜ Этап 23: Масштабирование
 - PostgreSQL (миграция через Alembic)
 - Redis (кеш, очереди)
 - Docker Compose (backend + postgres + redis + nginx)
 - CI/CD: GitHub Actions → build → test → deploy
 - Docker Sandbox (изолированные контейнеры на задачу)
 - Grafana + Sentry мониторинг
-- Домен xerocode.ai + SSL + CDN
+- Cloudflare CDN
 
 ---
 
@@ -693,9 +741,10 @@ Locked:   children opacity 0.3, blur(2px), pointerEvents: none
 
 | Категория | Строк кода |
 |-----------|-----------|
-| Frontend (TSX/TS) | 24 022 |
-| Backend (Python) | 9 632 |
-| **Итого** | **33 654** |
+| Frontend (TSX/TS) | 24 800 |
+| Backend (Python) | 10 300 |
+| Agent (Node.js) | 400 |
+| **Итого** | **~35 500** |
 
 ### Frontend: 75 компонентов
 
@@ -819,8 +868,9 @@ Locked:   children opacity 0.3, blur(2px), pointerEvents: none
 | auth.py | Регистрация, логин, JWT |
 
 **API Routes (api/routes/) — 13 эндпоинтов:**
-- auth.py — register, login, me
+- auth.py — register, login, me, OAuth
 - goals.py — CRUD целей
+- arena.py — battle, vote, leaderboard, history
 - tasks.py — CRUD задач
 - agents.py — CRUD агентов + pools + capabilities
 - messages.py — история сообщений
@@ -836,8 +886,16 @@ Locked:   children opacity 0.3, blur(2px), pointerEvents: none
 **WebSocket:**
 - websocket.py — /ws/{goal_id}, 13 типов событий
 
-**Models (7 ORM моделей):**
-- User, Goal, Task, Agent, Message, AuditLog, Organization, CustomPool, TaskTemplate, Memory
+**Models (13 ORM моделей):**
+- User, Goal, Task, Agent, Message, AuditLog, Organization, CustomPool, TaskTemplate, Memory, ArenaBattle, ArenaLeaderboard
+
+**Arena (arena/):**
+- ArenaView.tsx — 4 режима, split view, голосование
+- LeaderboardView.tsx — Elo рейтинг, top-3 бейджи
+
+**Тесты (tests/):**
+- conftest.py — фикстуры, тестовая БД
+- test_auth.py — 13 тест-кейсов (register/login/me/goals)
 
 ### Инфраструктура сервера
 
