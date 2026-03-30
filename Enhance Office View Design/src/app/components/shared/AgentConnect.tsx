@@ -287,16 +287,15 @@ export const AgentConnect: React.FC<AgentConnectProps> = ({
               }}
             >
               {[
-                { os: "macOS", icon: "🍎", file: "XeroCode-Agent.dmg" },
-                {
-                  os: "Windows",
-                  icon: "🪟",
-                  file: "XeroCode-Agent-Setup.exe",
-                },
-                { os: "Linux", icon: "🐧", file: "xerocode-agent.AppImage" },
-              ].map(({ os, icon, file }) => (
-                <button
+                { os: "macOS", icon: "🍎", url: "https://github.com/SYL4R2k27/xerocode-ai-office/releases/download/v0.2.0/XeroCode.Agent-0.2.0-arm64.dmg" },
+                { os: "Windows", icon: "🪟", url: "https://github.com/SYL4R2k27/xerocode-ai-office/releases/download/v0.2.0/XeroCode.Agent.Setup.0.2.0.exe" },
+                { os: "Linux", icon: "🐧", url: "https://github.com/SYL4R2k27/xerocode-ai-office/releases/download/v0.2.0/XeroCode.Agent-0.2.0.AppImage" },
+              ].map(({ os, icon, url }) => (
+                <a
                   key={os}
+                  href={url}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   style={{
                     flex: 1,
                     display: "flex",
@@ -311,17 +310,18 @@ export const AgentConnect: React.FC<AgentConnectProps> = ({
                     cursor: "pointer",
                     fontSize: "11px",
                     transition: "all 0.2s",
+                    textDecoration: "none",
                   }}
                   onMouseEnter={(e) => {
-                    (e.target as HTMLElement).style.borderColor = "#8b5cf6";
+                    (e.currentTarget as HTMLElement).style.borderColor = "#8b5cf6";
                   }}
                   onMouseLeave={(e) => {
-                    (e.target as HTMLElement).style.borderColor = "#2a2a2a";
+                    (e.currentTarget as HTMLElement).style.borderColor = "#2a2a2a";
                   }}
                 >
                   <span style={{ fontSize: "20px" }}>{icon}</span>
                   <span>{os}</span>
-                </button>
+                </a>
               ))}
             </div>
 
