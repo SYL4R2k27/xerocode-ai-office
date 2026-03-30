@@ -1,4 +1,4 @@
-import { Settings, Wifi, WifiOff, LogOut } from "lucide-react";
+import { Settings, Wifi, WifiOff, LogOut, Swords } from "lucide-react";
 import { GoalSelector } from "../sidebar/GoalSelector";
 import { ModelList } from "../sidebar/ModelList";
 import { TaskProgress } from "../sidebar/TaskProgress";
@@ -35,9 +35,11 @@ interface SidebarProps {
   onLogout?: () => void;
   onOpenProfile?: () => void;
   agentsLoading?: boolean;
+  arenaMode?: "battle" | "leaderboard" | null;
+  onToggleArena?: () => void;
 }
 
-export function Sidebar({ agents, goals, tasks, activeGoal, status, connected, onSelectGoal, onAddModel, onRemoveAgent, onNewGoal, user, onLogout, onOpenProfile, agentsLoading }: SidebarProps) {
+export function Sidebar({ agents, goals, tasks, activeGoal, status, connected, onSelectGoal, onAddModel, onRemoveAgent, onNewGoal, user, onLogout, onOpenProfile, agentsLoading, arenaMode, onToggleArena }: SidebarProps) {
   return (
     <div
       className="w-full h-full flex flex-col"
@@ -72,6 +74,23 @@ export function Sidebar({ agents, goals, tasks, activeGoal, status, connected, o
 
       {/* Goal selector */}
       <GoalSelector goals={goals} activeGoal={activeGoal} onSelectGoal={onSelectGoal} onNewGoal={onNewGoal} />
+
+      {/* Эволюция */}
+      <div className="px-3 py-1">
+        <button
+          onClick={onToggleArena}
+          className="w-full flex items-center gap-2.5 px-2 py-1.5 rounded-lg text-[12px] font-medium transition-colors"
+          style={{
+            backgroundColor: arenaMode ? "color-mix(in srgb, var(--accent-arena) 12%, transparent)" : "transparent",
+            color: arenaMode ? "var(--accent-arena)" : "var(--text-secondary)",
+          }}
+          onMouseEnter={e => { if (!arenaMode) (e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.03)"); }}
+          onMouseLeave={e => { if (!arenaMode) (e.currentTarget.style.backgroundColor = "transparent"); }}
+        >
+          <Swords size={14} />
+          Эволюция
+        </button>
+      </div>
 
       {/* Divider */}
       <div className="mx-3" style={{ borderBottom: "1px solid var(--border-subtle)" }} />

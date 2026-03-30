@@ -12,8 +12,7 @@ import { Dashboard } from "./components/corporate/Dashboard";
 import { KanbanBoard } from "./components/corporate/KanbanBoard";
 import { TeamPage } from "./components/corporate/TeamPage";
 import { MobileLayout } from "./components/mobile/MobileLayout";
-import { ArenaView } from "./components/arena/ArenaView";
-import { LeaderboardView } from "./components/arena/LeaderboardView";
+// Arena components imported inside ChatInterface
 
 /* ErrorBoundary для Corp View */
 class CorpErrorBoundary extends Component<{children: ReactNode; fallback: ReactNode}, {hasError: boolean}> {
@@ -72,6 +71,9 @@ function ChatInterface({
   const [isStarting, setIsStarting] = useState(false);
   const [previewCode, setPreviewCode] = useState<string | null>(null);
   const [previewLanguage, setPreviewLanguage] = useState("text");
+
+  // Arena / Evolution mode
+  const [arenaMode, setArenaMode] = useState<"battle" | "leaderboard" | null>(null);
 
   // Responsive
   const isMobile = useMediaQuery("(max-width: 767px)");
@@ -281,13 +283,15 @@ function ChatInterface({
                 activeGoal={goalStore.activeGoal}
                 status={statusStore.status}
                 connected={ws.connected}
-                onSelectGoal={goalStore.setActiveGoal}
+                onSelectGoal={(g: any) => { setArenaMode(null); goalStore.setActiveGoal(g); }}
                 onAddModel={() => setShowModelSetup(true)}
                 onRemoveAgent={async (id) => { await agentStore.removeAgent(id); }}
-                onNewGoal={() => { goalStore.setActiveGoal(null as any); }}
+                onNewGoal={() => { setArenaMode(null); goalStore.setActiveGoal(null as any); }}
                 user={authStore.user}
                 onLogout={authStore.logout}
                 onOpenProfile={() => setShowProfileSettings(true)}
+                arenaMode={arenaMode}
+                onToggleArena={() => setArenaMode(arenaMode ? null : "battle")}
               />
             </ResizablePanel>
 
@@ -313,6 +317,8 @@ function ChatInterface({
             onStartGoal={handleStartGoal}
             onUserInput={handleUserInput}
             onOpenInPreview={handleOpenInPreview}
+            arenaMode={arenaMode}
+            onSetArenaMode={setArenaMode}
           />
         </ResizablePanel>
 
@@ -337,6 +343,7 @@ function ChatInterface({
             activeGoal={goalStore.activeGoal}
             previewCode={previewCode}
             previewLanguage={previewLanguage}
+            arenaMode={arenaMode}
           />
         </ResizablePanel>
       </ResizablePanelGroup>
@@ -400,8 +407,7 @@ export default function App() {
   // Focus mode — корпоративный пользователь переключается в чистый чат
   const [focusMode, setFocusMode] = useState(false);
 
-  // Arena / Evolution mode
-  const [showArena, setShowArena] = useState<"battle" | "leaderboard" | null>(null);
+  // Arena state removed — now inside ChatInterface
 
   // Mobile detection
   const isMobileApp = useMediaQuery("(max-width: 767px)");
@@ -701,76 +707,18 @@ export default function App() {
   // Обычный пользователь (Free/PRO/ULTIMA) → стандартный чат-интерфейс
   return (
     <div className="h-screen overflow-hidden" style={{ backgroundColor: "var(--bg-base)" }}>
-      {showArena ? (
-        <div className="h-full flex flex-col">
-          {/* Arena tabs */}
-          <div className="flex items-center gap-2 px-4 py-2 border-b" style={{ borderColor: "var(--border-default)", background: "var(--bg-elevated)" }}>
-            <button
-              onClick={() => setShowArena("battle")}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-medium transition-all"
-              style={{
-                background: showArena === "battle" ? "rgba(244,63,94,0.15)" : "transparent",
-                color: showArena === "battle" ? "#f43f5e" : "var(--text-secondary)",
-                border: showArena === "battle" ? "1px solid rgba(244,63,94,0.3)" : "1px solid transparent",
-              }}
-            >
-              ⚔️ Битва
-            </button>
-            <button
-              onClick={() => setShowArena("leaderboard")}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-medium transition-all"
-              style={{
-                background: showArena === "leaderboard" ? "rgba(245,158,11,0.15)" : "transparent",
-                color: showArena === "leaderboard" ? "#f59e0b" : "var(--text-secondary)",
-                border: showArena === "leaderboard" ? "1px solid rgba(245,158,11,0.3)" : "1px solid transparent",
-              }}
-            >
-              🏆 Рейтинг
-            </button>
-            <div style={{ flex: 1 }} />
-            <button
-              onClick={() => setShowArena(null)}
-              className="px-3 py-1.5 rounded-lg text-[12px] transition-all"
-              style={{ color: "var(--text-secondary)" }}
-            >
-              ← Чат
-            </button>
-          </div>
-          <div className="flex-1 overflow-hidden">
-            {showArena === "battle" && <ArenaView />}
-            {showArena === "leaderboard" && <LeaderboardView />}
-          </div>
-        </div>
-      ) : (
-        <ChatInterface
-          showModelSetup={showModelSetup}
-          setShowModelSetup={setShowModelSetup}
-          showProfileSettings={showProfileSettings}
-          setShowProfileSettings={setShowProfileSettings}
-          showPricing={showPricing}
-          setShowPricing={setShowPricing}
-        />
-      )}
+      <ChatInterface
+        showModelSetup={showModelSetup}
+        setShowModelSetup={setShowModelSetup}
+        showProfileSettings={showProfileSettings}
+        setShowProfileSettings={setShowProfileSettings}
+        showPricing={showPricing}
+        setShowPricing={setShowPricing}
+      />
 
       {/* Onboarding Wizard */}
       {showOnboarding && authStore.user && (
         <OnboardingWizard onComplete={handleOnboardingComplete} />
-      )}
-
-      {/* Кнопка Эволюция */}
-      {!showArena && (
-        <button
-          onClick={() => setShowArena("battle")}
-          className="fixed bottom-4 left-4 z-50 flex items-center gap-2 px-3 py-2 rounded-xl text-[11px] font-medium transition-all hover:scale-105"
-          style={{
-            backgroundColor: "rgba(244,63,94,0.15)",
-            border: "1px solid rgba(244,63,94,0.3)",
-            color: "#f43f5e",
-            backdropFilter: "blur(8px)",
-          }}
-        >
-          ⚔️ Эволюция
-        </button>
       )}
 
       {/* Админ: универсальная кнопка переключения (корп ↔ обычный) */}

@@ -30,6 +30,13 @@
   --provider-ollama: #6E99B5;
   --provider-custom: #9B7EB5;
   --provider-google: #4285F4;
+  --provider-groq: #f55036;
+  --provider-xai: #1da1f2;
+  --provider-deepseek: #4f46e5;
+  --provider-meta: #0668e1;
+  --provider-mistral: #ff7000;
+
+  --accent-arena: #f43f5e;
 
   --user-bubble: #2A3A50;
 

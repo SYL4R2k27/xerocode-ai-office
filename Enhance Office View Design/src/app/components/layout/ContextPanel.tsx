@@ -1,12 +1,13 @@
-import { useState } from "react";
-import { Map, Eye, Activity, Rocket } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Map, Eye, Activity, Rocket, Trophy } from "lucide-react";
 import { TaskRoadmap } from "../context/TaskRoadmap";
 import { PreviewPane } from "../context/PreviewPane";
 import { ActivityFeed } from "../context/ActivityFeed";
 import { ProjectPlan } from "../context/ProjectPlan";
+import { LeaderboardView } from "../arena/LeaderboardView";
 import type { Task, Agent, Message, Goal } from "../../lib/api";
 
-type Tab = "plan" | "tasks" | "preview" | "log";
+type Tab = "plan" | "tasks" | "preview" | "log" | "leaderboard";
 
 const tabs: { id: Tab; label: string; icon: typeof Map }[] = [
   { id: "plan", label: "План", icon: Rocket },
@@ -22,11 +23,23 @@ interface ContextPanelProps {
   activeGoal: Goal | null;
   previewCode: string | null;
   previewLanguage: string;
+  arenaMode?: "battle" | "leaderboard" | null;
 }
 
-export function ContextPanel({ tasks, agents, messages, activeGoal, previewCode, previewLanguage }: ContextPanelProps) {
+export function ContextPanel({ tasks, agents, messages, activeGoal, previewCode, previewLanguage, arenaMode }: ContextPanelProps) {
   const [activeTab, setActiveTab] = useState<Tab>("plan");
   const [hoveredTab, setHoveredTab] = useState<string | null>(null);
+
+  const allTabs = arenaMode
+    ? [...tabs, { id: "leaderboard" as const, label: "Рейтинг", icon: Trophy }]
+    : tabs;
+
+  // Auto-switch to leaderboard tab when arena mode activates
+  useEffect(() => {
+    if (arenaMode) {
+      setActiveTab("leaderboard");
+    }
+  }, [arenaMode]);
 
   return (
     <div
@@ -41,7 +54,7 @@ export function ContextPanel({ tasks, agents, messages, activeGoal, previewCode,
         className="flex items-center h-12 px-1 flex-shrink-0 gap-0.5 overflow-hidden"
         style={{ borderBottom: "1px solid var(--border-default)" }}
       >
-        {tabs.map((tab) => {
+        {allTabs.map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
           const isHovered = hoveredTab === tab.id;
@@ -86,6 +99,7 @@ export function ContextPanel({ tasks, agents, messages, activeGoal, previewCode,
         {activeTab === "tasks" && <TaskRoadmap tasks={tasks} agents={agents} />}
         {activeTab === "preview" && <PreviewPane code={previewCode} language={previewLanguage} />}
         {activeTab === "log" && <ActivityFeed messages={messages} />}
+        {activeTab === "leaderboard" && <LeaderboardView />}
       </div>
     </div>
   );

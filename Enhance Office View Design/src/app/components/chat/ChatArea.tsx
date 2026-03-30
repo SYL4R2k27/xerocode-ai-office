@@ -4,6 +4,7 @@ import { PanelRightOpen, PanelRightClose, Play, Users, Upload, ChevronDown, Code
 import { ChatMessage } from "./ChatMessage";
 import { ChatInput } from "./ChatInput";
 import { AgentStatusBar } from "./AgentStatusBar";
+import { ArenaView } from "../arena/ArenaView";
 import { MessageSkeleton } from "../shared/LoadingSkeleton";
 import { api } from "../../lib/api";
 import type { Message, Agent, Goal } from "../../lib/api";
@@ -29,6 +30,8 @@ interface ChatAreaProps {
   onUserInput: (content: string, type: "command" | "edit" | "idea") => void;
   onOpenInPreview?: (code: string, language: string) => void;
   messagesLoading?: boolean;
+  arenaMode?: "battle" | "leaderboard" | null;
+  onSetArenaMode?: (mode: "battle" | "leaderboard" | null) => void;
 }
 
 const modeLabels: Record<string, string> = {
@@ -49,6 +52,8 @@ export function ChatArea({
   onUserInput,
   onOpenInPreview,
   messagesLoading,
+  arenaMode,
+  onSetArenaMode,
 }: ChatAreaProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -289,91 +294,139 @@ export function ChatArea({
         </button>
       </div>
 
-      {/* Messages */}
-      <div ref={scrollRef} className="flex-1 overflow-y-auto py-4">
-        <AnimatePresence mode="wait">
-        <motion.div
-          key={activeGoal?.id || "empty"}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.2 }}
-          className="h-full"
-        >
-        {messagesLoading ? (
-          <div className="space-y-2 py-2">
-            <MessageSkeleton />
-            <MessageSkeleton />
-            <MessageSkeleton />
-          </div>
-        ) : messages.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full gap-4">
-            <div
-              className="w-16 h-16 rounded-2xl flex items-center justify-center"
-              style={{ backgroundColor: "var(--bg-surface)" }}
+      {arenaMode ? (
+        <div className="flex-1 flex flex-col overflow-hidden">
+          {/* Arena header with tabs */}
+          <div className="flex items-center gap-2 px-4 py-2" style={{ borderBottom: "1px solid var(--border-default)" }}>
+            <button
+              onClick={() => onSetArenaMode?.("battle")}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-medium transition-all"
+              style={{
+                background: arenaMode === "battle" ? "color-mix(in srgb, var(--accent-arena) 15%, transparent)" : "transparent",
+                color: arenaMode === "battle" ? "var(--accent-arena)" : "var(--text-tertiary)",
+              }}
             >
-              <Users size={24} style={{ color: "var(--text-tertiary)" }} />
-            </div>
-            <div className="text-center">
-              <p className="text-[14px] font-medium" style={{ color: "var(--text-secondary)" }}>
-                {!activeGoal ? "Опиши задачу для ИИ-команды" : "Готово к запуску"}
-              </p>
-              <p className="text-[12px] mt-1" style={{ color: "var(--text-tertiary)" }}>
-                {!activeGoal
-                  ? "Напиши цель и модели начнут работу"
-                  : "Сообщения от моделей появятся здесь"}
-              </p>
-            </div>
-            {activeGoal && !goalStarted && (
-              <motion.button
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                onClick={onStartGoal}
-                disabled={isStarting}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all hover:brightness-110 disabled:opacity-50"
-                style={{ backgroundColor: "var(--accent-blue)", color: "#fff" }}
-              >
-                <Play size={14} />
-                {isStarting ? "Запуск..." : "Запустить команду"}
-              </motion.button>
+              ⚔️ Битва
+            </button>
+            <button
+              onClick={() => onSetArenaMode?.("leaderboard")}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-medium transition-all"
+              style={{
+                background: arenaMode === "leaderboard" ? "color-mix(in srgb, var(--accent-amber) 15%, transparent)" : "transparent",
+                color: arenaMode === "leaderboard" ? "var(--accent-amber)" : "var(--text-tertiary)",
+              }}
+            >
+              🏆 Рейтинг
+            </button>
+            <div style={{ flex: 1 }} />
+            <button
+              onClick={() => onSetArenaMode?.(null)}
+              className="px-2 py-1 rounded-lg text-[11px] transition-all"
+              style={{ color: "var(--text-tertiary)" }}
+              onMouseEnter={e => (e.currentTarget.style.color = "var(--text-primary)")}
+              onMouseLeave={e => (e.currentTarget.style.color = "var(--text-tertiary)")}
+            >
+              ← Чат
+            </button>
+          </div>
+          <div className="flex-1 overflow-hidden">
+            {arenaMode === "battle" && <ArenaView />}
+            {arenaMode === "leaderboard" && (
+              <div className="h-full flex items-center justify-center" style={{ color: "var(--text-secondary)" }}>
+                <p className="text-sm">Рейтинг отображается в правой панели →</p>
+              </div>
             )}
           </div>
-        ) : (
-          <div className="space-y-1">
-            {messages.map((msg, i) => {
-              const prev = i > 0 ? messages[i - 1] : null;
-              const isGrouped = prev?.sender_name === msg.sender_name && prev?.sender_type === msg.sender_type;
-              return (
-                <ChatMessage
-                  key={msg.id}
-                  message={msg}
-                  agents={agents}
-                  isGrouped={isGrouped}
-                  onOpenInPreview={onOpenInPreview}
-                />
-              );
-            })}
+        </div>
+      ) : (
+        <>
+          {/* Messages */}
+          <div ref={scrollRef} className="flex-1 overflow-y-auto py-4">
+            <AnimatePresence mode="wait">
+            <motion.div
+              key={activeGoal?.id || "empty"}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="h-full"
+            >
+            {messagesLoading ? (
+              <div className="space-y-2 py-2">
+                <MessageSkeleton />
+                <MessageSkeleton />
+                <MessageSkeleton />
+              </div>
+            ) : messages.length === 0 ? (
+              <div className="flex flex-col items-center justify-center h-full gap-4">
+                <div
+                  className="w-16 h-16 rounded-2xl flex items-center justify-center"
+                  style={{ backgroundColor: "var(--bg-surface)" }}
+                >
+                  <Users size={24} style={{ color: "var(--text-tertiary)" }} />
+                </div>
+                <div className="text-center">
+                  <p className="text-[14px] font-medium" style={{ color: "var(--text-secondary)" }}>
+                    {!activeGoal ? "Опиши задачу для ИИ-команды" : "Готово к запуску"}
+                  </p>
+                  <p className="text-[12px] mt-1" style={{ color: "var(--text-tertiary)" }}>
+                    {!activeGoal
+                      ? "Напиши цель и модели начнут работу"
+                      : "Сообщения от моделей появятся здесь"}
+                  </p>
+                </div>
+                {activeGoal && !goalStarted && (
+                  <motion.button
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    onClick={onStartGoal}
+                    disabled={isStarting}
+                    className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all hover:brightness-110 disabled:opacity-50"
+                    style={{ backgroundColor: "var(--accent-blue)", color: "#fff" }}
+                  >
+                    <Play size={14} />
+                    {isStarting ? "Запуск..." : "Запустить команду"}
+                  </motion.button>
+                )}
+              </div>
+            ) : (
+              <div className="space-y-1">
+                {messages.map((msg, i) => {
+                  const prev = i > 0 ? messages[i - 1] : null;
+                  const isGrouped = prev?.sender_name === msg.sender_name && prev?.sender_type === msg.sender_type;
+                  return (
+                    <ChatMessage
+                      key={msg.id}
+                      message={msg}
+                      agents={agents}
+                      isGrouped={isGrouped}
+                      onOpenInPreview={onOpenInPreview}
+                    />
+                  );
+                })}
+              </div>
+            )}
+            </motion.div>
+            </AnimatePresence>
           </div>
-        )}
-        </motion.div>
-        </AnimatePresence>
-      </div>
 
-      {/* Agent Status Bar */}
-      <AgentStatusBar agents={agents} />
+          {/* Agent Status Bar */}
+          <AgentStatusBar agents={agents} />
 
-      {/* Input */}
-      <ChatInput
-        hasActiveGoal={!!activeGoal}
-        activeGoal={activeGoal?.id}
-        goalStarted={goalStarted}
-        onCreateGoal={onCreateGoal}
-        onStartGoal={onStartGoal}
-        onSendMessage={onUserInput}
-        isStarting={isStarting}
-        externalFiles={droppedFiles}
-        onClearExternalFiles={handleClearDroppedFiles}
-      />
+          {/* Input */}
+          <ChatInput
+            hasActiveGoal={!!activeGoal}
+            activeGoal={activeGoal?.id}
+            goalStarted={goalStarted}
+            onCreateGoal={onCreateGoal}
+            onStartGoal={onStartGoal}
+            onSendMessage={onUserInput}
+            isStarting={isStarting}
+            externalFiles={droppedFiles}
+            onClearExternalFiles={handleClearDroppedFiles}
+          />
+        </>
+      )}
     </div>
   );
 }

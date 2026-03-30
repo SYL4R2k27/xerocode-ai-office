@@ -50,16 +50,9 @@ export const ArenaView: React.FC<ArenaViewProps> = ({ onStartBattle }) => {
   };
 
   return (
-    <div style={{ height: "100%", display: "flex", flexDirection: "column", background: "#0a0a0a", color: "#e0e0e0" }}>
-      {/* Header */}
-      <div style={{ padding: "16px 20px", borderBottom: "1px solid #1e1e1e", display: "flex", alignItems: "center", gap: "10px" }}>
-        <Swords size={20} color="#8b5cf6" />
-        <span style={{ fontSize: "16px", fontWeight: 700, color: "#fff" }}>Arena</span>
-        <span style={{ fontSize: "12px", color: "#666", marginLeft: "auto" }}>Битва моделей</span>
-      </div>
-
+    <div style={{ height: "100%", display: "flex", flexDirection: "column", background: "var(--bg-base)", color: "var(--text-primary)" }}>
       {/* Mode selector */}
-      <div style={{ padding: "12px 20px", display: "flex", gap: "8px", borderBottom: "1px solid #1e1e1e" }}>
+      <div style={{ padding: "12px 20px", display: "flex", gap: "8px", borderBottom: "1px solid var(--border-default)" }}>
         {MODES.map(m => {
           const Icon = m.icon;
           const active = mode === m.id;
@@ -69,8 +62,8 @@ export const ArenaView: React.FC<ArenaViewProps> = ({ onStartBattle }) => {
               onClick={() => setMode(m.id)}
               style={{
                 flex: 1, padding: "8px 12px", borderRadius: "8px", border: "none", cursor: "pointer",
-                background: active ? m.color : "#141416",
-                color: active ? "#fff" : "#888",
+                background: active ? m.color : "var(--bg-input)",
+                color: active ? "#fff" : "var(--text-secondary)",
                 fontSize: "12px", fontWeight: active ? 600 : 400,
                 display: "flex", flexDirection: "column", alignItems: "center", gap: "4px",
                 transition: "all 0.2s",
@@ -84,8 +77,8 @@ export const ArenaView: React.FC<ArenaViewProps> = ({ onStartBattle }) => {
       </div>
 
       {/* Prompt + model pickers */}
-      <div style={{ padding: "16px 20px", borderBottom: "1px solid #1e1e1e" }}>
-        <div style={{ fontSize: "10px", color: "#666", marginBottom: "6px", textTransform: "uppercase", fontWeight: 600 }}>
+      <div style={{ padding: "16px 20px", borderBottom: "1px solid var(--border-default)" }}>
+        <div style={{ fontSize: "10px", color: "var(--text-tertiary)", marginBottom: "6px", textTransform: "uppercase", fontWeight: 600 }}>
           {currentMode.desc}
         </div>
         <textarea
@@ -93,8 +86,8 @@ export const ArenaView: React.FC<ArenaViewProps> = ({ onStartBattle }) => {
           onChange={e => setPrompt(e.target.value)}
           placeholder="Введите задачу для битвы..."
           style={{
-            width: "100%", height: "60px", background: "#141416", border: "1px solid #2a2a2a",
-            borderRadius: "8px", padding: "10px 12px", color: "#e0e0e0", fontSize: "13px",
+            width: "100%", height: "60px", background: "var(--bg-input)", border: "1px solid var(--border-default)",
+            borderRadius: "8px", padding: "10px 12px", color: "var(--text-primary)", fontSize: "13px",
             fontFamily: "'SF Mono', monospace", resize: "none", outline: "none",
           }}
         />
@@ -107,14 +100,14 @@ export const ArenaView: React.FC<ArenaViewProps> = ({ onStartBattle }) => {
               value={modelA}
               onChange={e => setModelA(e.target.value)}
               style={{
-                width: "100%", padding: "8px 10px", background: "#141416", border: "1px solid #2a2a2a",
-                borderRadius: "6px", color: "#e0e0e0", fontSize: "12px", outline: "none",
+                width: "100%", padding: "8px 10px", background: "var(--bg-input)", border: "1px solid var(--border-default)",
+                borderRadius: "6px", color: "var(--text-primary)", fontSize: "12px", outline: "none",
               }}
             >
               {MODELS.map(m => <option key={m} value={m}>{m}</option>)}
             </select>
           </div>
-          <div style={{ fontSize: "20px", color: "#666", marginTop: "16px" }}>VS</div>
+          <div style={{ fontSize: "20px", color: "var(--text-tertiary)", marginTop: "16px" }}>VS</div>
           <div style={{ flex: 1 }}>
             <div style={{ fontSize: "10px", color: currentMode.color, marginBottom: "4px", fontWeight: 600 }}>
               МОДЕЛЬ B
@@ -123,8 +116,8 @@ export const ArenaView: React.FC<ArenaViewProps> = ({ onStartBattle }) => {
               value={modelB}
               onChange={e => setModelB(e.target.value)}
               style={{
-                width: "100%", padding: "8px 10px", background: "#141416", border: "1px solid #2a2a2a",
-                borderRadius: "6px", color: "#e0e0e0", fontSize: "12px", outline: "none",
+                width: "100%", padding: "8px 10px", background: "var(--bg-input)", border: "1px solid var(--border-default)",
+                borderRadius: "6px", color: "var(--text-primary)", fontSize: "12px", outline: "none",
               }}
             >
               {MODELS.map(m => <option key={m} value={m}>{m}</option>)}
@@ -149,21 +142,21 @@ export const ArenaView: React.FC<ArenaViewProps> = ({ onStartBattle }) => {
       {/* Responses split view */}
       <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
         {/* Model A */}
-        <div style={{ flex: 1, borderRight: "1px solid #1e1e1e", display: "flex", flexDirection: "column" }}>
-          <div style={{ padding: "10px 16px", borderBottom: "1px solid #1e1e1e", fontSize: "12px", fontWeight: 600, color: mode === "blind" && !voted ? "#888" : currentMode.color }}>
+        <div style={{ flex: 1, borderRight: "1px solid var(--border-default)", display: "flex", flexDirection: "column" }}>
+          <div style={{ padding: "10px 16px", borderBottom: "1px solid var(--border-default)", fontSize: "12px", fontWeight: 600, color: mode === "blind" && !voted ? "var(--text-secondary)" : currentMode.color }}>
             {mode === "blind" && !voted ? "Модель 1" : modelA}
           </div>
-          <div style={{ flex: 1, padding: "16px", overflowY: "auto", fontSize: "13px", lineHeight: 1.6, color: "#d1d5db" }}>
-            {responseA || <span style={{ color: "#555" }}>Ожидание ответа...</span>}
+          <div style={{ flex: 1, padding: "16px", overflowY: "auto", fontSize: "13px", lineHeight: 1.6, color: "var(--text-secondary)" }}>
+            {responseA || <span style={{ color: "var(--text-placeholder)" }}>Ожидание ответа...</span>}
           </div>
         </div>
         {/* Model B */}
         <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
-          <div style={{ padding: "10px 16px", borderBottom: "1px solid #1e1e1e", fontSize: "12px", fontWeight: 600, color: mode === "blind" && !voted ? "#888" : currentMode.color }}>
+          <div style={{ padding: "10px 16px", borderBottom: "1px solid var(--border-default)", fontSize: "12px", fontWeight: 600, color: mode === "blind" && !voted ? "var(--text-secondary)" : currentMode.color }}>
             {mode === "blind" && !voted ? "Модель 2" : modelB}
           </div>
-          <div style={{ flex: 1, padding: "16px", overflowY: "auto", fontSize: "13px", lineHeight: 1.6, color: "#d1d5db" }}>
-            {responseB || <span style={{ color: "#555" }}>Ожидание ответа...</span>}
+          <div style={{ flex: 1, padding: "16px", overflowY: "auto", fontSize: "13px", lineHeight: 1.6, color: "var(--text-secondary)" }}>
+            {responseB || <span style={{ color: "var(--text-placeholder)" }}>Ожидание ответа...</span>}
           </div>
         </div>
       </div>
@@ -174,15 +167,15 @@ export const ArenaView: React.FC<ArenaViewProps> = ({ onStartBattle }) => {
           initial={{ y: 60, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           style={{
-            padding: "12px 20px", borderTop: "1px solid #1e1e1e",
+            padding: "12px 20px", borderTop: "1px solid var(--border-default)",
             display: "flex", gap: "12px", justifyContent: "center", alignItems: "center",
-            background: "#141416",
+            background: "var(--bg-input)",
           }}
         >
           {voted ? (
             <div style={{ fontSize: "14px", color: "#22c55e", fontWeight: 600 }}>
               {voted === "draw" ? "Ничья!" : `Победитель: ${voted}`}
-              {mode === "blind" && <span style={{ color: "#888", marginLeft: "8px" }}>({modelA} vs {modelB})</span>}
+              {mode === "blind" && <span style={{ color: "var(--text-secondary)", marginLeft: "8px" }}>({modelA} vs {modelB})</span>}
             </div>
           ) : (
             <>
@@ -190,7 +183,7 @@ export const ArenaView: React.FC<ArenaViewProps> = ({ onStartBattle }) => {
                 <ThumbsUp size={14} style={{ marginRight: "6px", verticalAlign: "-2px" }} />
                 {mode === "blind" ? "Модель 1" : "A лучше"}
               </button>
-              <button onClick={() => handleVote("draw")} style={{ padding: "8px 16px", borderRadius: "8px", border: "1px solid #666", background: "transparent", color: "#888", cursor: "pointer", fontSize: "13px" }}>
+              <button onClick={() => handleVote("draw")} style={{ padding: "8px 16px", borderRadius: "8px", border: "1px solid var(--text-tertiary)", background: "transparent", color: "var(--text-secondary)", cursor: "pointer", fontSize: "13px" }}>
                 <Equal size={14} style={{ marginRight: "4px", verticalAlign: "-2px" }} />
                 Ничья
               </button>
