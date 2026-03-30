@@ -8,7 +8,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from app.api.routes import admin, agents, audit, auth, autoprompt, custom_pools, files, goals, messages, orchestration, organization, payments, tasks, templates
+from app.api.routes import admin, agents, arena, audit, auth, autoprompt, custom_pools, files, goals, messages, orchestration, organization, payments, tasks, templates
 from app.api.websocket import setup_websocket
 from app.core.config import settings
 from app.core.database import Base, engine
@@ -63,6 +63,7 @@ app.include_router(organization.router, prefix="/api")
 app.include_router(templates.router, prefix="/api")
 app.include_router(audit.router, prefix="/api")
 app.include_router(autoprompt.router, prefix="/api")
+app.include_router(arena.router, prefix="/api")
 
 # WebSocket
 setup_websocket(app)
