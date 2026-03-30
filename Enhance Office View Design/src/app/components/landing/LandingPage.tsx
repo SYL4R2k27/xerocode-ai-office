@@ -3,7 +3,8 @@ import { motion, AnimatePresence } from "motion/react";
 import {
   Rocket, Sparkles, Brain, Plug, Bot, Zap, Palette, Building2,
   Shield, Globe, ChevronDown, ChevronLeft, Check, X, Crown, Star,
-  Menu, LogIn, ArrowRight, Monitor,
+  Menu, LogIn, ArrowRight, Monitor, Swords, Layout, Smartphone, Terminal,
+  Code, FileText, BarChart3, GraduationCap, Users,
 } from "lucide-react";
 
 import { TermsPage } from "../legal/TermsPage";
@@ -38,17 +39,21 @@ function MeshBg() {
 function FeaturesContent() {
   const f = [
     { icon: Brain, t: "Мульти-агентная оркестрация", d: "3 режима: Менеджер, Обсуждение, Авто", c: "#7C3AED" },
-    { icon: Plug, t: "9 провайдеров", d: "OpenAI, Claude, Gemini, Grok, Groq, Stability, Ollama, OpenRouter, Custom", c: "#4F7CFF" },
-    { icon: Bot, t: "60+ моделей", d: "GPT-5, Claude Opus, Grok 4, Nano Banana Pro", c: "#06B6D4" },
+    { icon: Plug, t: "10 провайдеров", d: "OpenAI, Anthropic, Google, xAI, Groq, Stability AI, OpenRouter, APIyi, Ollama, Custom", c: "#4F7CFF" },
+    { icon: Bot, t: "430+ моделей", d: "GPT-5.4, Claude Opus 4.6, Grok 4, Gemini 2.5, SD 3.5, FLUX, DeepSeek V3", c: "#06B6D4" },
     { icon: Zap, t: "Tool-calling", d: "Модели пишут код, создают файлы, запускают команды", c: "#F59E0B" },
     { icon: Palette, t: "Генерация изображений", d: "Stable Diffusion 3.5, FLUX, Nano Banana", c: "#EC4899" },
     { icon: Building2, t: "Корпоративный режим", d: "Дашборд, Kanban, команды до 20 человек", c: "#10B981" },
-    { icon: Shield, t: "Безопасность", d: "Шифрование AES-256, JWT, rate limiting, HTTPS", c: "#EF4444" },
-    { icon: Globe, t: "Работа из РФ", d: "Без VPN, через защищённый прокси", c: "#8B5CF6" },
+    { icon: Shield, t: "Безопасность", d: "Fernet шифрование, JWT, rate limiting, HTTPS, 3 аудита пройдено", c: "#EF4444" },
+    { icon: Globe, t: "Работа из РФ", d: "Без VPN, через EU-прокси (VLESS+REALITY)", c: "#8B5CF6" },
+    { icon: Swords, t: "Эволюция — битва моделей", d: "Дуэль, Эволюция, Турнир, Слепой тест. Elo-рейтинг.", c: "#F43F5E" },
+    { icon: Layout, t: "7 профильных панелей", d: "Код, Дизайн, Ресёрч, Текст, Данные, Менеджмент, Обучение", c: "#2DD4BF" },
+    { icon: Smartphone, t: "Мобильный UI", d: "Telegram-стиль: свайпы, пузыри, bottom tabs", c: "#F97316" },
+    { icon: Terminal, t: "CLI + Десктоп", d: "npx xerocode-agent или Electron-приложение (Mac/Win/Linux)", c: "#A855F7" },
   ];
   return (<div className="h-full overflow-y-auto p-8">
     <motion.h2 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-3xl font-bold text-white mb-2">Что умеет XeroCode</motion.h2>
-    <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }} className="text-white/50 mb-8">Платформа для командной работы ИИ-агентов</motion.p>
+    <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }} className="text-white/50 mb-8">Платформа-оркестратор для командной работы 430+ ИИ-моделей</motion.p>
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       {f.map((x, i) => (<motion.div key={x.t} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.06 }} whileHover={{ scale: 1.01 }} className="p-5 rounded-xl bg-white/[0.03] border border-white/[0.06] hover:border-white/[0.12] transition-colors">
         <div className="flex items-start gap-4">
@@ -93,7 +98,7 @@ function FAQContent() {
   const [op, setOp] = useState<number | null>(null);
   const items = [
     { q: "Что такое XeroCode?", a: "Платформа-хаб для объединения ИИ-моделей в команду. Ставите цель — модели распределяют задачи, общаются и доставляют результат." },
-    { q: "Какие модели поддерживаются?", a: "60+ моделей: OpenAI, Anthropic, Google, xAI, Groq, Stability, Ollama, OpenRouter и любые Custom API." },
+    { q: "Какие модели поддерживаются?", a: "430+ моделей через 10 провайдеров: OpenAI (GPT-5.4), Anthropic (Claude Opus 4.6), Google (Gemini 2.5), xAI (Grok 4), Groq, Stability AI, OpenRouter, APIyi, Ollama и Custom API." },
     { q: "Нужен ли VPN из России?", a: "Нет. API-запросы проходят через наш защищённый прокси (VLESS+REALITY). Просто открываете сайт." },
     { q: "Как подключить свои модели?", a: "Настройки → провайдер → API-ключ → модель. Или используйте готовые пулы." },
     { q: "Можно попробовать бесплатно?", a: "Да! START, PRO и PRO PLUS включают 3 дня триала." },
@@ -115,30 +120,155 @@ function FAQContent() {
 }
 
 function AboutContent() {
+  const stats = [
+    { val: "34 000", label: "строк кода", color: "#8b5cf6" },
+    { val: "430+", label: "AI моделей", color: "#3b82f6" },
+    { val: "10", label: "провайдеров", color: "#22c55e" },
+    { val: "80+", label: "API эндпоинтов", color: "#f59e0b" },
+  ];
+  const panels = [
+    { icon: Code, label: "Код", desc: "Язык, фреймворк, тесты, стиль кода", color: "#3b82f6" },
+    { icon: Palette, label: "Дизайн", desc: "SD 3.5, FLUX, стили, Img2Img, batch", color: "#a855f7" },
+    { icon: Sparkles, label: "Ресёрч", desc: "Глубина, источники, цитаты APA/ГОСТ", color: "#2dd4bf" },
+    { icon: FileText, label: "Текст", desc: "Тон, длина, SEO, платформа", color: "#f59e0b" },
+    { icon: BarChart3, label: "Данные", desc: "CSV/SQL, графики, Python/R", color: "#10b981" },
+    { icon: Users, label: "Менеджмент", desc: "Шаблоны, Jira/Notion, отчёты", color: "#f43f5e" },
+    { icon: GraduationCap, label: "Обучение", desc: "Сократ, задачи, сложность", color: "#8b5cf6" },
+  ];
   return (<div className="h-full overflow-y-auto p-8">
-    <motion.h2 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-3xl font-bold text-white mb-6">О нас</motion.h2>
-    <div className="max-w-[500px] space-y-6">
+    <motion.h2 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-3xl font-bold text-white mb-6">О проекте</motion.h2>
+    <div className="max-w-[600px] space-y-6">
+      {/* Mission */}
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-6 rounded-xl bg-white/[0.03] border border-white/[0.06]">
         <h3 className="text-lg font-bold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent mb-3">Миссия</h3>
-        <p className="text-white/60 text-sm leading-relaxed">Мы создаём будущее, где ИИ работает командой. XeroCode объединяет лучшие модели в единую экосистему.</p>
+        <p className="text-white/60 text-sm leading-relaxed mb-3">XeroCode создаёт будущее, где ИИ-модели работают как команда. Вместо выбора между GPT, Claude или Gemini — используйте все сразу, каждую для того, в чём она лучше.</p>
+        <p className="text-white/60 text-sm leading-relaxed">BYOK (Bring Your Own Key) — вы подключаете свои API-ключи и платите только провайдерам. Мы оркестрируем, не перепродаём.</p>
       </motion.div>
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }} className="p-6 rounded-xl bg-white/[0.03] border border-white/[0.06]">
-        <h3 className="text-white font-semibold mb-3">Технологии</h3>
-        <div className="flex flex-wrap gap-2">
-          {["Python", "FastAPI", "React", "TypeScript", "PostgreSQL", "WebSocket", "Tailwind", "Nginx"].map(t => <span key={t} className="px-3 py-1 rounded-lg bg-white/[0.05] text-white/50 text-xs">{t}</span>)}
+
+      {/* Stats */}
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.05 }}>
+        <div className="grid grid-cols-4 gap-3">
+          {stats.map(s => (
+            <div key={s.label} className="p-4 rounded-xl bg-white/[0.03] border border-white/[0.06] text-center">
+              <div className="text-xl font-bold" style={{ color: s.color }}>{s.val}</div>
+              <div className="text-white/40 text-[10px] mt-1">{s.label}</div>
+            </div>
+          ))}
         </div>
       </motion.div>
+
+      {/* 7 panels */}
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }} className="p-6 rounded-xl bg-white/[0.03] border border-white/[0.06]">
+        <h3 className="text-white font-semibold mb-4">7 профильных панелей</h3>
+        <div className="grid grid-cols-2 gap-2">
+          {panels.map(p => (
+            <div key={p.label} className="flex items-center gap-2 p-2 rounded-lg bg-white/[0.02]">
+              <div className="w-7 h-7 rounded-md flex items-center justify-center flex-shrink-0" style={{ background: `${p.color}15` }}>
+                <p.icon size={14} style={{ color: p.color }} />
+              </div>
+              <div>
+                <div className="text-white text-[11px] font-semibold">{p.label}</div>
+                <div className="text-white/30 text-[9px]">{p.desc}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </motion.div>
+
+      {/* Arena */}
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.15 }} className="p-6 rounded-xl bg-white/[0.03] border border-[#f43f5e]/20">
+        <div className="flex items-center gap-2 mb-3">
+          <Swords size={18} color="#f43f5e" />
+          <h3 className="text-white font-semibold">Эволюция — битва моделей</h3>
+        </div>
+        <div className="grid grid-cols-2 gap-2">
+          {[
+            { mode: "Дуэль", desc: "2 модели, 1 задача, вы судья" },
+            { mode: "Эволюция", desc: "Модели улучшают ответы друг друга" },
+            { mode: "Турнир", desc: "4 модели, bracket, финал" },
+            { mode: "Слепой тест", desc: "Имена скрыты до голосования" },
+          ].map(a => (
+            <div key={a.mode} className="p-2 rounded-lg bg-white/[0.02]">
+              <div className="text-white text-[11px] font-semibold">{a.mode}</div>
+              <div className="text-white/30 text-[9px]">{a.desc}</div>
+            </div>
+          ))}
+        </div>
+        <p className="text-white/40 text-[10px] mt-3">Elo-рейтинг обновляется после каждого голосования</p>
+      </motion.div>
+
+      {/* Tech stack */}
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }} className="p-6 rounded-xl bg-white/[0.03] border border-white/[0.06]">
-          <h3 className="text-white font-semibold mb-3">Контакты</h3>
-          <div className="space-y-2 text-white/60 text-sm">
-            <p>Тирских Владимир Сергеевич</p>
-            <p>ИНН: 503015361714</p>
-            <p>Email: <a href="mailto:support@xerocode.space" className="text-purple-400">support@xerocode.space</a></p>
-            <p>Коммерческие: <a href="mailto:sales@xerocode.space" className="text-purple-400">sales@xerocode.space</a></p>
-            <p>Телефон: <a href="tel:+79166859658" className="text-purple-400">+7 (916) 685-96-58</a></p>
-            <p>Сайт: <a href="https://xerocode.space" className="text-purple-400">xerocode.space</a></p>
+        <h3 className="text-white font-semibold mb-3">Технологии</h3>
+        <div className="space-y-3">
+          <div>
+            <div className="text-white/30 text-[10px] uppercase mb-1.5">Backend</div>
+            <div className="flex flex-wrap gap-1.5">
+              {["FastAPI", "SQLAlchemy", "Alembic", "Pydantic v2", "JWT", "WebSocket", "httpx", "10 AI-адаптеров"].map(t => <span key={t} className="px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-400/70 text-[10px]">{t}</span>)}
+            </div>
           </div>
-        </motion.div>
+          <div>
+            <div className="text-white/30 text-[10px] uppercase mb-1.5">Frontend</div>
+            <div className="flex flex-wrap gap-1.5">
+              {["React 19", "TypeScript", "Vite 6", "Tailwind CSS 4", "motion", "react-markdown", "Prism", "shadcn/ui"].map(t => <span key={t} className="px-2 py-0.5 rounded-md bg-blue-500/10 text-blue-400/70 text-[10px]">{t}</span>)}
+            </div>
+          </div>
+          <div>
+            <div className="text-white/30 text-[10px] uppercase mb-1.5">Desktop</div>
+            <div className="flex flex-wrap gap-1.5">
+              {["Electron", "Node.js", "commander", "ora", "npm: xerocode-agent"].map(t => <span key={t} className="px-2 py-0.5 rounded-md bg-purple-500/10 text-purple-400/70 text-[10px]">{t}</span>)}
+            </div>
+          </div>
+          <div>
+            <div className="text-white/30 text-[10px] uppercase mb-1.5">Инфраструктура</div>
+            <div className="flex flex-wrap gap-1.5">
+              {["Yandex Cloud", "Nginx", "Xray-core (EU)", "Certbot", "Fail2ban", "GitHub Actions"].map(t => <span key={t} className="px-2 py-0.5 rounded-md bg-amber-500/10 text-amber-400/70 text-[10px]">{t}</span>)}
+            </div>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* Providers */}
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.25 }} className="p-6 rounded-xl bg-white/[0.03] border border-white/[0.06]">
+        <h3 className="text-white font-semibold mb-3">Провайдеры</h3>
+        <div className="grid grid-cols-2 gap-2">
+          {[
+            { name: "OpenAI", models: "GPT-5.4, o3, DALL-E 3", color: "#10a37f" },
+            { name: "Anthropic", models: "Claude Opus 4.6, Sonnet, Haiku", color: "#d4a27f" },
+            { name: "Google", models: "Gemini 2.5 Pro/Flash, Nano Banana", color: "#4285f4" },
+            { name: "xAI", models: "Grok 4, Grok Code Fast", color: "#1da1f2" },
+            { name: "Groq", models: "Llama 3.3 70B (бесплатно)", color: "#f55036" },
+            { name: "Stability AI", models: "SD 3.5, Ultra, Video, 3D", color: "#9333ea" },
+            { name: "OpenRouter", models: "245+ моделей, fallback", color: "#6366f1" },
+            { name: "APIyi", models: "430+ моделей", color: "#ec4899" },
+            { name: "Ollama", models: "Любая локальная модель", color: "#888" },
+            { name: "Custom", models: "Любой OpenAI-совместимый API", color: "#666" },
+          ].map(p => (
+            <div key={p.name} className="flex items-center gap-2 p-2 rounded-lg bg-white/[0.02]">
+              <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: p.color }} />
+              <div>
+                <div className="text-white text-[11px] font-semibold">{p.name}</div>
+                <div className="text-white/30 text-[9px]">{p.models}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </motion.div>
+
+      {/* Contacts */}
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }} className="p-6 rounded-xl bg-white/[0.03] border border-white/[0.06]">
+        <h3 className="text-white font-semibold mb-3">Контакты</h3>
+        <div className="space-y-2 text-white/60 text-sm">
+          <p>Тирских Владимир Сергеевич</p>
+          <p>ИНН: 503015361714</p>
+          <p>Email: <a href="mailto:support@xerocode.space" className="text-purple-400">support@xerocode.space</a></p>
+          <p>Коммерческие: <a href="mailto:sales@xerocode.space" className="text-purple-400">sales@xerocode.space</a></p>
+          <p>Телефон: <a href="tel:+79166859658" className="text-purple-400">+7 (916) 685-96-58</a></p>
+          <p>Сайт: <a href="https://xerocode.space" className="text-purple-400">xerocode.space</a></p>
+          <p>GitHub: <a href="https://github.com/SYL4R2k27/xerocode-ai-office" className="text-purple-400" target="_blank" rel="noopener">github.com/SYL4R2k27</a></p>
+          <p>npm: <a href="https://npmjs.com/package/xerocode-agent" className="text-purple-400" target="_blank" rel="noopener">xerocode-agent</a></p>
+        </div>
+      </motion.div>
     </div>
   </div>);
 }
@@ -192,7 +322,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
   const [mob, setMob] = useState(false);
   const [legalPage, setLegalPage] = useState<"terms" | "privacy" | null>(null);
   const { displayed: brand, done: brandDone } = useTypewriter("XeroCode", 80);
-  const { displayed: botMsg, done: botDone } = useTypewriter("Привет! Я XeroCode — платформа для командной работы ИИ-агентов.\n\nКуда хотите перейти?", 20, brandDone);
+  const { displayed: botMsg, done: botDone } = useTypewriter("Привет! Я XeroCode — платформа для командной работы ИИ-моделей.\n430+ моделей, 10 провайдеров, 7 профильных панелей.\n\nКуда хотите перейти?", 20, brandDone);
   useEffect(() => { if (botDone) setTimeout(() => setShowBtns(true), 200); }, [botDone]);
   const go = useCallback((s: Section) => { setSection(s); setMob(false); }, []);
 
