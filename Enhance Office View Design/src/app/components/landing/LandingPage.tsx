@@ -13,7 +13,7 @@ import { LogoIcon, LogoFull } from "../shared/Logo";
 import { AgentConnect } from "../shared/AgentConnect";
 
 interface LandingPageProps { onLogin: () => void; }
-type Section = null | "features" | "pricing" | "faq" | "about" | "agent";
+type Section = null | "features" | "pricing" | "corporate" | "faq" | "about" | "agent";
 
 function useTypewriter(text: string, speed = 40, start = true) {
   const [displayed, setDisplayed] = useState("");
@@ -373,12 +373,13 @@ function AgentContent() {
 const NAV = [
   { id: "features" as Section, icon: Sparkles, label: "Возможности" },
   { id: "pricing" as Section, icon: Star, label: "Тарифы" },
+  { id: "corporate" as Section, icon: Building2, label: "Бизнесу" },
   { id: "agent" as Section, icon: Monitor, label: "Агент" },
   { id: "faq" as Section, icon: ChevronDown, label: "FAQ" },
-  { id: "about" as Section, icon: Building2, label: "О нас" },
+  { id: "about" as Section, icon: Users, label: "О нас" },
 ];
 
-const CONTENT: Record<string, React.ReactNode> = { features: <FeaturesContent />, pricing: <PricingContent />, agent: <AgentContent />, faq: <FAQContent />, about: <AboutContent /> };
+const CONTENT: Record<string, React.ReactNode> = { features: <FeaturesContent />, pricing: <PricingContent />, corporate: <CorporateContent />, agent: <AgentContent />, faq: <FAQContent />, about: <AboutContent /> };
 
 export function LandingPage({ onLogin }: LandingPageProps) {
   const [section, setSection] = useState<Section>(null);
