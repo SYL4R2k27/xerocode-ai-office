@@ -1,119 +1,58 @@
-# Провайдеры ИИ-моделей — Полный справочник
+# Провайдеры XeroCode — Обновлено 01.04.2026
 
-## ПЛАТНЫЕ ПРОВАЙДЕРЫ
+## Сводка: 283 рабочих модели через 7 провайдеров
 
-### OpenAI
-- **Endpoint:** `https://api.openai.com/v1/chat/completions`
-- **Auth:** `Authorization: Bearer sk-...`
-- **Формат tools:** `tools[].function.parameters` + `strict: true`
-- **Ответ tool_calls:** `message.tool_calls[].function.name/arguments`
-- **Результат:** `{"role": "tool", "tool_call_id": "...", "content": "..."}`
-- **Минимум:** $5 для Tier 1
+| # | Провайдер | Ключ | Моделей | Прокси | Баланс |
+|---|-----------|:----:|---------|:------:|--------|
+| 1 | OpenAI | ✅ | 17 | Обязательно | Платный |
+| 2 | Anthropic | ✅ | 5 | Обязательно | Платный |
+| 3 | OpenRouter | ✅ | 234 | Частично | $23 |
+| 4 | Groq | ✅ | 2 | Обязательно | Бесплатно |
+| 5 | Cerebras | ✅ | 2 | Обязательно | Бесплатно |
+| 6 | SambaNova | ✅ | 2 | Нет | Бесплатно |
+| 7 | Stability AI | ✅ | 21 сервис | Нет | 865 кредитов |
+| 8 | Together AI | ❌ | 0 | — | Ключ невалидный |
+| 9 | APIyi | ❌ | 0 | — | Баланс 0 |
 
-| Модель | ID | Вход $/1M | Выход $/1M | Контекст | Tools |
-|--------|---|-----------|-----------|----------|-------|
-| GPT-4o | `gpt-4o` | $2.50 | $10.00 | 128K | Да |
-| GPT-4o-mini | `gpt-4o-mini` | $0.15 | $0.60 | 128K | Да |
-| GPT-4.1 | `gpt-4.1` | $2.00 | $8.00 | 1M | Да |
-| GPT-4.1 mini | `gpt-4.1-mini` | $0.40 | $1.60 | 1M | Да |
-| GPT-4.1 nano | `gpt-4.1-nano` | $0.10 | $0.40 | 1M | Да |
-| o3 | `o3` | $2.00 | $8.00 | 200K | Да |
-| o4-mini | `o4-mini` | $1.10 | $4.40 | 200K | Да |
-| GPT-5 | `gpt-5` | $1.25 | $10.00 | — | Да |
+## OpenAI (17 моделей, через EU прокси)
 
-**Rate limits:** Free=3 RPM, Tier1($5)=500 RPM, Tier2($50)=1000, Tier3($100)=5000
+**Текст:** gpt-5.4, gpt-5.4-mini, gpt-5.4-nano, gpt-5, gpt-5-mini, gpt-5-nano, gpt-5.2, gpt-5.1, gpt-4o, gpt-4o-mini, gpt-4.1, gpt-4.1-mini, gpt-4.1-nano
+**Reasoning:** o3, o3-mini, o4-mini (требуют max_completion_tokens)
+**Images:** dall-e-2
+**Не работают:** gpt-5.4-pro (не chat API), codex модели (404)
 
----
+## Anthropic (5 моделей, через EU прокси)
 
-### Anthropic (Claude)
-- **Endpoint:** `https://api.anthropic.com/v1/messages`
-- **Auth:** `x-api-key` + `anthropic-version: 2023-06-01`
-- **Формат tools:** `tools[].input_schema` (НЕ parameters!)
-- **Ответ:** `content[].type == "tool_use"`, `stop_reason: "tool_use"`
-- **Результат:** `content[].type == "tool_result"` + `tool_use_id` + `is_error`
-- **Минимум:** $5 для Tier 1
+claude-opus-4-6, claude-sonnet-4-6, claude-sonnet-4-5-20250929, claude-opus-4-5-20251101, claude-haiku-4-5-20251001
+**Важно:** Model ID без даты для новых: "claude-opus-4-6" не "claude-opus-4-6-20250918"
 
-| Модель | ID | Вход $/1M | Выход $/1M | Контекст | Tools |
-|--------|---|-----------|-----------|----------|-------|
-| Claude Opus 4.6 | `claude-opus-4-6` | $5.00 | $25.00 | 1M | Да |
-| Claude Sonnet 4.6 | `claude-sonnet-4-6` | $3.00 | $15.00 | 1M | Да |
-| Claude Haiku 4.5 | `claude-haiku-4-5` | $1.00 | $5.00 | 200K | Да |
+## OpenRouter (234 модели, $23 баланс)
 
-**Rate limits:** Tier1=50 RPM, Tier2=1000, Tier3=2000, Tier4=4000
+**Ключевые:** llama-4-maverick, deepseek-v3, qwen3-coder, grok-4, sonar-pro, mistral-large, codestral, command-a, kimi-k2.5
+**Free:** nemotron-3-nano:free, nemotron-nano-9b:free
+**Заблокированы:** openai/*, anthropic/*, google/* на OR (403) — для них прямые ключи
 
----
+## Groq (2, бесплатно, через прокси)
 
-### Stability AI (изображения)
-- **Endpoint:** `https://api.stability.ai/v2beta/stable-image/generate/sd3`
-- **Auth:** `Authorization: Bearer sk-...`
-- **Формат:** multipart/form-data (НЕ JSON)
-- **Community License:** Бесплатно при revenue < $1M
+llama-3.3-70b-versatile, llama-3.1-8b-instant. Заблокирован по региону РФ.
 
-| Модель | ~Цена/изображение |
-|--------|-------------------|
-| SD 3.5 Large | $0.065 |
-| SD 3.5 Medium | $0.035 |
-| Stable Image Ultra | $0.08 |
+## Cerebras (2, бесплатно, через прокси)
 
----
+llama3.1-8b, qwen-3-235b-a22b-instruct-2507. Заблокирован по региону РФ.
 
-## БЕСПЛАТНЫЕ ПРОВАЙДЕРЫ
+## SambaNova (2, бесплатно, прямой)
 
-### Groq (OpenAI-совместимый)
-- **Endpoint:** `https://api.groq.com/openai/v1`
-- **Auth:** Бесплатный ключ, без карты → console.groq.com
-- **OpenAI-совместимый:** Да
+Meta-Llama-3.3-70B-Instruct, Meta-Llama-3.1-8B-Instruct.
 
-| Модель | ID | RPM | Tools |
-|--------|---|-----|-------|
-| Llama 3.3 70B | `llama-3.3-70b-versatile` | 30 | Да |
-| Llama 3.1 8B | `llama-3.1-8b-instant` | 30 | Да |
-| Llama 4 Scout | `llama-4-scout-17b-16e-instruct` | 30 | Да |
-| Qwen QwQ 32B | `qwen-qwq-32b` | 60 | Да |
+## Stability AI (21 сервис, 865 кредитов)
 
----
+**Generate:** Ultra(8кр), SD 3.5 Large(6.5)/Turbo(4)/Medium(3.5)/Flash(2.5), Core(3), SDXL(0.9)
+**Upscale:** Creative(60), Conservative(40), Fast(2)
+**Edit:** Erase(5), Inpaint(5), Outpaint(4), Remove BG(5), Search&Replace(5), Recolor(5), BG+Relight(8)
+**Control:** Structure(5), Sketch(5), Style Guide(5), Style Transfer(8)
 
-### Google Gemini
-- **Endpoint:** `https://generativelanguage.googleapis.com/v1beta`
-- **Auth:** Бесплатный ключ → aistudio.google.com/apikey
-- **Формат:** Свой (functionDeclarations)
+## EU Proxy
 
-| Модель | ID | RPM | RPD |
-|--------|---|-----|-----|
-| Gemini 2.5 Pro | `gemini-2.5-pro` | 5 | 100 |
-| Gemini 2.5 Flash | `gemini-2.5-flash` | 10 | 250 |
-| Nano Banana | `gemini-2.5-flash-image` | — | 500/день |
-| Nano Banana Pro | `gemini-3-pro-image-preview` | — | $0.134/img |
-
----
-
-### OpenRouter (29 бесплатных моделей)
-- **Endpoint:** `https://openrouter.ai/api/v1/chat/completions`
-- **Auth:** Бесплатный ключ → openrouter.ai/keys
-- **OpenAI-совместимый:** Да
-- **Лимит:** 20 RPM, 50-1000 req/день
-
-Лучшие бесплатные:
-- `deepseek/deepseek-chat-v3-0324:free`
-- `qwen/qwen3-coder:free`
-- `meta-llama/llama-3.3-70b-instruct:free`
-- `openai/gpt-oss-120b:free`
-
----
-
-### Cerebras
-- **Endpoint:** `https://api.cerebras.ai/v1/chat/completions`
-- **Auth:** Бесплатный ключ → cloud.cerebras.ai
-- **Лимит:** 1M токенов/день
-- **Скорость:** 2600 tok/sec
-
-### SambaNova
-- **Endpoint:** `https://api.sambanova.ai/v1/chat/completions`
-- **Auth:** Бесплатный ключ → cloud.sambanova.ai
-- **Модели:** Llama 3.1 405B (!), DeepSeek, GPT-OSS
-
-### Mistral
-- **Endpoint:** `https://api.mistral.ai/v1/chat/completions`
-- **Auth:** Бесплатный ключ (верификация телефона)
-- **Лимит:** 2 RPM (медленно)
-- **Codestral** — лучший для кода
+Xray-core (VLESS+REALITY) → HyNet VDS Нидерланды, socks5://127.0.0.1:10808
+Обязателен: OpenAI, Anthropic, Groq, Cerebras
+Опционален: OpenRouter (для cohere и других забаненных)
