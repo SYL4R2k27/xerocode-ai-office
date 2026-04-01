@@ -13,6 +13,7 @@ import { KanbanBoard } from "./components/corporate/KanbanBoard";
 import { TeamPage } from "./components/corporate/TeamPage";
 import { MobileLayout } from "./components/mobile/MobileLayout";
 // Arena components imported inside ChatInterface
+import { useTheme } from "./hooks/useTheme";
 
 /* ErrorBoundary для Corp View */
 class CorpErrorBoundary extends Component<{children: ReactNode; fallback: ReactNode}, {hasError: boolean}> {
@@ -65,6 +66,7 @@ function ChatInterface({
   const taskStore = useTaskStore();
   const messageStore = useMessageStore();
   const statusStore = useStatusStore();
+  const { toggleTheme, resolvedTheme } = useTheme();
 
   const ws = useWebSocket(goalStore.activeGoal?.id || null);
 
@@ -292,6 +294,8 @@ function ChatInterface({
                 onOpenProfile={() => setShowProfileSettings(true)}
                 arenaMode={arenaMode}
                 onToggleArena={() => setArenaMode(arenaMode ? null : "battle")}
+                toggleTheme={toggleTheme}
+                resolvedTheme={resolvedTheme}
               />
             </ResizablePanel>
 
@@ -381,6 +385,7 @@ function ChatInterface({
 
 export default function App() {
   const authStore = useAuthStore();
+  const { toggleTheme, resolvedTheme } = useTheme();
 
   const [showModelSetup, setShowModelSetup] = useState(false);
   const [showProfileSettings, setShowProfileSettings] = useState(false);

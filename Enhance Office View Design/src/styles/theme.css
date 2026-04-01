@@ -1,30 +1,50 @@
 @custom-variant dark (&:is(.dark *));
 
+/* ══════════════════════════════════════════════════════════
+   XeroCode Design System — Dual Theme + Glassmorphism
+   ══════════════════════════════════════════════════════════ */
+
 :root {
   --font-size: 14px;
+  --font-heading: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
 
-  /* AI Office warm dark palette */
-  --bg-base: #1C1C1E;
-  --bg-surface: #242426;
-  --bg-elevated: #2C2C2E;
-  --bg-input: #1A1A1C;
-  --bg-overlay: rgba(0, 0, 0, 0.5);
+  /* ── Dark theme (default) ── */
+  --bg-base: #0F0F11;
+  --bg-surface: #18181B;
+  --bg-elevated: #27272A;
+  --bg-input: #141416;
+  --bg-overlay: rgba(0, 0, 0, 0.6);
 
-  --text-primary: #F5F5F7;
-  --text-secondary: #A1A1A6;
-  --text-tertiary: #6E6E73;
-  --text-placeholder: #48484A;
+  --text-primary: #F9FAFB;
+  --text-secondary: #A1A1AA;
+  --text-tertiary: #71717A;
+  --text-placeholder: #52525B;
 
-  --border-default: #38383A;
-  --border-subtle: #2C2C2E;
-  --border-focus: #5E9ED6;
+  --border-default: #27272A;
+  --border-subtle: #1F1F23;
+  --border-focus: #818CF8;
 
-  --accent-blue: #5E9ED6;
-  --accent-teal: #5ABFAD;
-  --accent-amber: #D4A054;
-  --accent-rose: #D46A6A;
-  --accent-lavender: #9B8EC4;
+  /* Glassmorphism */
+  --glass-bg: rgba(15, 15, 17, 0.8);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-blur: 16px;
 
+  /* User bubble */
+  --user-bubble: rgba(99, 102, 241, 0.15);
+  --user-bubble-border: rgba(99, 102, 241, 0.2);
+
+  /* Accent colors */
+  --accent-blue: #818CF8;
+  --accent-teal: #5EEAD4;
+  --accent-amber: #FBBF24;
+  --accent-rose: #FB7185;
+  --accent-lavender: #A78BFA;
+  --accent-green: #34D399;
+  --accent-arena: #f43f5e;
+
+  /* Provider colors */
   --provider-openai: #6BAF7A;
   --provider-anthropic: #C4896E;
   --provider-ollama: #6E99B5;
@@ -36,16 +56,20 @@
   --provider-meta: #0668e1;
   --provider-mistral: #ff7000;
 
-  --accent-arena: #f43f5e;
-
-  --user-bubble: #2A3A50;
-
   /* Shadows */
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.12);
-  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.15);
-  --shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.2);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.25);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.3);
+  --shadow-glow: 0 0 20px rgba(129, 140, 248, 0.15);
 
-  /* Shadcn compatibility tokens */
+  /* Radius */
+  --radius: 0.625rem;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+
+  /* Shadcn compatibility */
   --background: var(--bg-base);
   --foreground: var(--text-primary);
   --card: var(--bg-surface);
@@ -69,7 +93,6 @@
   --ring: var(--accent-blue);
   --font-weight-medium: 500;
   --font-weight-normal: 400;
-  --radius: 0.625rem;
 
   --sidebar: var(--bg-surface);
   --sidebar-foreground: var(--text-primary);
@@ -79,6 +102,46 @@
   --sidebar-accent-foreground: var(--text-primary);
   --sidebar-border: var(--border-default);
   --sidebar-ring: var(--accent-blue);
+}
+
+/* ── Light theme ── */
+[data-theme="light"] {
+  --bg-base: #F8F9FB;
+  --bg-surface: #FFFFFF;
+  --bg-elevated: #F0F2F5;
+  --bg-input: #FFFFFF;
+  --bg-overlay: rgba(0, 0, 0, 0.3);
+
+  --text-primary: #111827;
+  --text-secondary: #6B7280;
+  --text-tertiary: #9CA3AF;
+  --text-placeholder: #D1D5DB;
+
+  --border-default: #E5E7EB;
+  --border-subtle: #F3F4F6;
+  --border-focus: #6366F1;
+
+  --glass-bg: rgba(255, 255, 255, 0.75);
+  --glass-border: rgba(0, 0, 0, 0.06);
+  --glass-blur: 12px;
+
+  --user-bubble: rgba(99, 102, 241, 0.08);
+  --user-bubble-border: rgba(99, 102, 241, 0.15);
+
+  --accent-blue: #6366F1;
+  --accent-teal: #14B8A6;
+  --accent-amber: #F59E0B;
+  --accent-rose: #F43F5E;
+  --accent-lavender: #8B5CF6;
+  --accent-green: #10B981;
+
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.1);
+  --shadow-glow: 0 0 20px rgba(99, 102, 241, 0.1);
+
+  --sidebar: var(--bg-surface);
+  --sidebar-border: var(--border-default);
 }
 
 @theme inline {
@@ -125,28 +188,34 @@
   body {
     background-color: var(--bg-base);
     color: var(--text-primary);
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    font-family: var(--font-body);
+    transition: background-color 0.2s ease, color 0.2s ease;
   }
 
   html {
     font-size: var(--font-size);
   }
 
-  h1 { font-size: 1.5rem; font-weight: 600; line-height: 1.3; }
-  h2 { font-size: 1.25rem; font-weight: 600; line-height: 1.3; }
-  h3 { font-size: 1rem; font-weight: 600; line-height: 1.3; }
-  h4 { font-size: 0.875rem; font-weight: 600; line-height: 1.3; }
+  h1 { font-family: var(--font-heading); font-size: 1.5rem; font-weight: 700; line-height: 1.2; letter-spacing: -0.02em; }
+  h2 { font-family: var(--font-heading); font-size: 1.25rem; font-weight: 700; line-height: 1.2; letter-spacing: -0.01em; }
+  h3 { font-family: var(--font-heading); font-size: 1rem; font-weight: 600; line-height: 1.3; }
+  h4 { font-family: var(--font-heading); font-size: 0.875rem; font-weight: 600; line-height: 1.3; }
 
   label { font-size: 0.875rem; font-weight: 500; line-height: 1.5; }
   button { font-size: 0.875rem; font-weight: 500; line-height: 1.5; }
   input { font-size: 0.875rem; font-weight: 400; line-height: 1.5; }
 
-  /* Scrollbar styling */
-  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: var(--border-default); border-radius: 3px; }
   ::-webkit-scrollbar-thumb:hover { background: var(--text-tertiary); }
 
-  /* Code font */
-  code, pre { font-family: 'JetBrains Mono', 'Fira Code', monospace; }
+  /* Code */
+  code, pre { font-family: var(--font-mono); }
+
+  /* Theme transition */
+  *, *::before, *::after {
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+  }
 }

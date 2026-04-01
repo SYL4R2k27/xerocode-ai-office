@@ -28,65 +28,51 @@ interface ContextPanelProps {
 
 export function ContextPanel({ tasks, agents, messages, activeGoal, previewCode, previewLanguage, arenaMode }: ContextPanelProps) {
   const [activeTab, setActiveTab] = useState<Tab>("plan");
-  const [hoveredTab, setHoveredTab] = useState<string | null>(null);
 
   const allTabs = arenaMode
     ? [...tabs, { id: "leaderboard" as const, label: "Рейтинг", icon: Trophy }]
     : tabs;
 
-  // Auto-switch to leaderboard tab when arena mode activates
   useEffect(() => {
-    if (arenaMode) {
-      setActiveTab("leaderboard");
-    }
+    if (arenaMode) setActiveTab("leaderboard");
   }, [arenaMode]);
 
   return (
     <div
       className="w-full h-full flex flex-col min-w-0"
       style={{
-        backgroundColor: "var(--bg-surface)",
-        borderLeft: "1px solid var(--border-default)",
+        background: "var(--glass-bg)",
+        backdropFilter: `blur(var(--glass-blur))`,
+        borderLeft: "1px solid var(--glass-border)",
       }}
     >
-      {/* Tab bar — адаптивный */}
+      {/* Tab bar — icon + label */}
       <div
-        className="flex items-center h-12 px-1 flex-shrink-0 gap-0.5 overflow-hidden"
-        style={{ borderBottom: "1px solid var(--border-default)" }}
+        className="flex items-center h-11 px-2 flex-shrink-0 gap-0.5"
+        style={{ borderBottom: "1px solid var(--border-subtle)" }}
       >
         {allTabs.map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
-          const isHovered = hoveredTab === tab.id;
           return (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              onMouseEnter={() => setHoveredTab(tab.id)}
-              onMouseLeave={() => setHoveredTab(null)}
-              className="relative flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-md text-[12px] font-medium transition-all min-w-[36px]"
+              className="relative flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition-all"
               style={{
-                backgroundColor: isActive ? "var(--bg-elevated)" : "transparent",
                 color: isActive ? "var(--text-primary)" : "var(--text-tertiary)",
-                flex: isActive ? "1 1 auto" : "0 0 auto",
               }}
-              title={tab.label}
+              onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = "var(--bg-elevated)"; }}
+              onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = "transparent"; }}
             >
               <Icon size={13} className="flex-shrink-0" />
-              <span className="truncate hidden sm:inline">{tab.label}</span>
-              {/* Tooltip при наведении на свёрнутый таб */}
-              {isHovered && !isActive && (
-                <span
-                  className="absolute -bottom-7 left-1/2 -translate-x-1/2 px-2 py-0.5 rounded text-[10px] whitespace-nowrap z-50 pointer-events-none"
-                  style={{
-                    backgroundColor: "var(--bg-elevated)",
-                    color: "var(--text-primary)",
-                    border: "1px solid var(--border-default)",
-                    boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
-                  }}
-                >
-                  {tab.label}
-                </span>
+              <span className="truncate">{tab.label}</span>
+              {/* Active indicator — colored underline */}
+              {isActive && (
+                <div
+                  className="absolute bottom-0 left-2 right-2 h-[2px] rounded-full"
+                  style={{ background: "var(--accent-blue)" }}
+                />
               )}
             </button>
           );
