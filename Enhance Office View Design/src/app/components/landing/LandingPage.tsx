@@ -135,7 +135,8 @@ function HeroSection({ onLogin }: { onLogin: () => void }) {
   }, [demoPlayed]);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    const container = messagesEndRef.current?.parentElement;
+    if (container) container.scrollTop = container.scrollHeight;
   }, [messages, typing]);
 
   const handleSend = useCallback(() => {
