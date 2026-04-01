@@ -643,7 +643,7 @@ export default function App() {
               orgName={orgName}
               userName={user?.name || ""}
               userEmail={user?.email}
-              onLogout={handleLogout}
+              onLogout={authStore.logout}
             />
           )}
         </CorporateLayout>
