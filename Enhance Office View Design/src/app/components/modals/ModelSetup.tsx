@@ -128,11 +128,34 @@ const ALL_MODELS: ModelEntry[] = [
   { id: "nvidia/nemotron-3-nano-30b-a3b:free", name: "Nemotron 30B", provider: "free", providerDisplay: "Nvidia", price: "Бесплатно", desc: "30B, Nvidia", category: "chat", free: true },
   { id: "nvidia/nemotron-nano-9b-v2:free", name: "Nemotron 9B", provider: "free", providerDisplay: "Nvidia", price: "Бесплатно", desc: "9B, Nvidia", category: "fast", free: true },
 
-  // Other
-  { id: "cohere/command-a", name: "Command A", provider: "meta", providerDisplay: "Cohere", price: "$2.50/$10", desc: "Для RAG", category: "chat" },
-  { id: "moonshotai/kimi-k2.5", name: "Kimi K2.5", provider: "qwen", providerDisplay: "Moonshot", price: "$0.45/$2.20", desc: "Топ Moonshot", category: "flagship" },
-  { id: "inception/mercury-coder", name: "Mercury Coder", provider: "deepseek", providerDisplay: "Inception", price: "$0.20/$0.60", desc: "Специализированный кодер", category: "code" },
-  { id: "amazon/nova-premier-v1", name: "Nova Premier", provider: "meta", providerDisplay: "Amazon", price: "$2.50/$12.50", desc: "Amazon AI", category: "chat" },
+  // Other providers
+  { id: "cohere/command-a", name: "Command A", provider: "other", providerDisplay: "Cohere", price: "$2.50/$10", desc: "Для RAG, retrieval", category: "chat" },
+  { id: "moonshotai/kimi-k2.5", name: "Kimi K2.5", provider: "other", providerDisplay: "Moonshot", price: "$0.45/$2.20", desc: "Топ Moonshot", category: "flagship" },
+  { id: "moonshotai/kimi-k2", name: "Kimi K2", provider: "other", providerDisplay: "Moonshot", price: "$0.57/$2.30", desc: "Moonshot AI", category: "chat" },
+  { id: "inception/mercury-coder", name: "Mercury Coder", provider: "other", providerDisplay: "Inception", price: "$0.25/$1", desc: "Специализированный кодер", category: "code" },
+  { id: "amazon/nova-premier-v1", name: "Nova Premier", provider: "other", providerDisplay: "Amazon", price: "$2.50/$12.50", desc: "Amazon AI", category: "chat" },
+  { id: "minimax/minimax-m2.7", name: "MiniMax M2.7", provider: "other", providerDisplay: "MiniMax", price: "$0.30/$1.20", desc: "MiniMax AI", category: "chat" },
+  { id: "baidu/ernie-4.5-300b-a47b", name: "ERNIE 4.5 300B", provider: "other", providerDisplay: "Baidu", price: "$0.28/$1.10", desc: "Baidu AI", category: "chat" },
+
+  // Meta (additional)
+  { id: "meta-llama/llama-4-scout", name: "Llama 4 Scout", provider: "meta", providerDisplay: "Meta", price: "$0.10/$0.30", desc: "Быстрая разведка", category: "fast" },
+
+  // OpenAI (additional verified)
+  { id: "gpt-5.2", name: "GPT-5.2", provider: "openai", providerDisplay: "OpenAI", price: "$1.75/$14", desc: "Advanced reasoning", category: "flagship" },
+  { id: "gpt-5.1", name: "GPT-5.1", provider: "openai", providerDisplay: "OpenAI", price: "$1.25/$10", desc: "Standard 5.1", category: "chat" },
+  { id: "gpt-4.1-mini", name: "GPT-4.1 Mini", provider: "openai", providerDisplay: "OpenAI", price: "$0.40/$1.60", desc: "Мини 4.1", category: "fast" },
+  { id: "dall-e-2", name: "DALL-E 2", provider: "openai", providerDisplay: "OpenAI", price: "~$0.02/img", desc: "Быстрая генерация", category: "images" },
+
+  // Anthropic (additional verified)
+  { id: "claude-sonnet-4-5-20250929", name: "Claude Sonnet 4.5", provider: "anthropic", providerDisplay: "Anthropic", price: "$3/$15", desc: "Предыдущее поколение", category: "chat" },
+  { id: "claude-opus-4-5-20251101", name: "Claude Opus 4.5", provider: "anthropic", providerDisplay: "Anthropic", price: "$5/$25", desc: "Предыдущее поколение", category: "flagship" },
+
+  // SambaNova (free)
+  { id: "Meta-Llama-3.3-70B-Instruct", name: "Llama 3.3 70B (SN)", provider: "free", providerDisplay: "SambaNova", price: "Бесплатно", desc: "70B, SambaNova, бесплатно", category: "chat", free: true },
+  { id: "Meta-Llama-3.1-8B-Instruct", name: "Llama 3.1 8B (SN)", provider: "free", providerDisplay: "SambaNova", price: "Бесплатно", desc: "8B, SambaNova, бесплатно", category: "fast", free: true },
+
+  // DeepSeek (additional)
+  { id: "deepseek/deepseek-r1", name: "DeepSeek R1 (v1)", provider: "deepseek", providerDisplay: "DeepSeek", price: "$0.55/$2.19", desc: "Reasoning v1", category: "research" },
 ];
 
 // Legacy — для обратной совместимости
