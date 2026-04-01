@@ -1,465 +1,1032 @@
-import { useState, useEffect, useCallback } from "react";
-import { motion, AnimatePresence } from "motion/react";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { motion, AnimatePresence, useInView } from "motion/react";
 import {
-  Rocket, Sparkles, Brain, Plug, Bot, Zap, Palette, Building2,
-  Shield, Globe, ChevronDown, ChevronLeft, Check, X, Crown, Star,
-  Menu, LogIn, ArrowRight, Monitor, Swords, Layout, Smartphone, Terminal,
-  Code, FileText, BarChart3, GraduationCap, Users,
+  MessageSquare, FileText, BarChart3, Cog, Send, Bot,
+  Clock, Zap, ArrowRight, Check, ChevronLeft,
+  Users, TrendingUp, Headphones, ShoppingCart, FileCheck,
+  PieChart, Megaphone, Settings, ChevronRight, LogIn, Menu, X,
+  Swords, Terminal,
 } from "lucide-react";
 
 import { TermsPage } from "../legal/TermsPage";
 import { PrivacyPage } from "../legal/PrivacyPage";
-import { LogoIcon, LogoFull } from "../shared/Logo";
-import { AgentConnect } from "../shared/AgentConnect";
+import { LogoFull } from "../shared/Logo";
+import { PricingPage } from "./PricingPage";
+import { FAQPage } from "./FAQPage";
+import { AboutPage } from "./AboutPage";
+import { AgentPage } from "./AgentPage";
+import { BusinessPage } from "./BusinessPage";
+import { ArenaPage } from "./ArenaPage";
+import { FeaturesPage } from "./FeaturesPage";
 
+/* ── Interfaces ── */
 interface LandingPageProps { onLogin: () => void; }
-type Section = null | "features" | "pricing" | "corporate" | "faq" | "about" | "agent";
+type SubPage = null | "pricing" | "faq" | "about" | "agent" | "business" | "arena" | "features" | "terms" | "privacy";
 
+/* ── Hooks ── */
 function useTypewriter(text: string, speed = 40, start = true) {
   const [displayed, setDisplayed] = useState("");
   const [done, setDone] = useState(false);
   useEffect(() => {
-    if (!start) { return; }
+    if (!start) return;
     setDisplayed(""); setDone(false);
     let i = 0;
-    const iv = setInterval(() => { setDisplayed(text.slice(0, ++i)); if (i >= text.length) { clearInterval(iv); setDone(true); } }, speed);
+    const iv = setInterval(() => {
+      setDisplayed(text.slice(0, ++i));
+      if (i >= text.length) { clearInterval(iv); setDone(true); }
+    }, speed);
     return () => clearInterval(iv);
   }, [text, speed, start]);
   return { displayed, done };
 }
 
+function useCountUp(end: number, duration = 2000, start = false) {
+  const [value, setValue] = useState(0);
+  useEffect(() => {
+    if (!start) return;
+    let startTime: number;
+    const step = (ts: number) => {
+      if (!startTime) startTime = ts;
+      const progress = Math.min((ts - startTime) / duration, 1);
+      setValue(Math.floor(progress * end));
+      if (progress < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  }, [end, duration, start]);
+  return value;
+}
+
+/* ── Section wrapper with scroll animation ── */
+function Section({ children, className = "", id }: { children: React.ReactNode; className?: string; id?: string }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const inView = useInView(ref, { once: true, amount: 0.15 });
+  return (
+    <motion.section
+      ref={ref} id={id}
+      initial={{ opacity: 0, y: 48 }}
+      animate={inView ? { opacity: 1, y: 0 } : {}}
+      transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+      className={`relative w-full max-w-[1440px] mx-auto px-6 md:px-16 ${className}`}
+    >
+      {children}
+    </motion.section>
+  );
+}
+
+/* ── Gradient mesh background ── */
 function MeshBg() {
-  return (<div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
-    <div className="absolute w-[500px] h-[500px] rounded-full" style={{ left: "15%", top: "20%", background: "radial-gradient(circle,rgba(124,58,237,0.12),transparent 70%)", filter: "blur(60px)" }} />
-    <div className="absolute w-[400px] h-[400px] rounded-full" style={{ left: "70%", top: "60%", background: "radial-gradient(circle,rgba(79,124,255,0.10),transparent 70%)", filter: "blur(60px)" }} />
-    <div className="absolute w-[350px] h-[350px] rounded-full" style={{ left: "40%", top: "80%", background: "radial-gradient(circle,rgba(6,182,212,0.08),transparent 70%)", filter: "blur(60px)" }} />
-  </div>);
-}
-
-function FeaturesContent() {
-  const f = [
-    { icon: Brain, t: "Мульти-агентная оркестрация", d: "3 режима: Менеджер, Обсуждение, Авто", c: "#7C3AED" },
-    { icon: Plug, t: "10 провайдеров", d: "OpenAI, Anthropic, Google, xAI, Groq, Stability AI, OpenRouter, APIyi, Ollama, Custom", c: "#4F7CFF" },
-    { icon: Bot, t: "430+ моделей", d: "GPT-5.4, Claude Opus 4.6, Grok 4, Gemini 2.5, SD 3.5, FLUX, DeepSeek V3", c: "#06B6D4" },
-    { icon: Zap, t: "Tool-calling", d: "Модели пишут код, создают файлы, запускают команды", c: "#F59E0B" },
-    { icon: Palette, t: "Генерация изображений", d: "Stable Diffusion 3.5, FLUX, Nano Banana", c: "#EC4899" },
-    { icon: Building2, t: "Корпоративный режим", d: "Дашборд, Kanban, команды до 20 человек", c: "#10B981" },
-    { icon: Shield, t: "Безопасность", d: "Fernet шифрование, JWT, rate limiting, HTTPS, 3 аудита пройдено", c: "#EF4444" },
-    { icon: Globe, t: "Работа из РФ", d: "Без VPN, через EU-прокси (VLESS+REALITY)", c: "#8B5CF6" },
-    { icon: Swords, t: "Эволюция — битва моделей", d: "Дуэль, Эволюция, Турнир, Слепой тест. Elo-рейтинг.", c: "#F43F5E" },
-    { icon: Layout, t: "7 профильных панелей", d: "Код, Дизайн, Ресёрч, Текст, Данные, Менеджмент, Обучение", c: "#2DD4BF" },
-    { icon: Smartphone, t: "Мобильный UI", d: "Telegram-стиль: свайпы, пузыри, bottom tabs", c: "#F97316" },
-    { icon: Terminal, t: "CLI + Десктоп", d: "npx xerocode-agent или Electron-приложение (Mac/Win/Linux)", c: "#A855F7" },
-  ];
-  return (<div className="h-full overflow-y-auto p-8">
-    <motion.h2 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-3xl font-bold text-white mb-2">Что умеет XeroCode</motion.h2>
-    <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }} className="text-white/50 mb-8">Платформа-оркестратор для командной работы 430+ ИИ-моделей</motion.p>
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-      {f.map((x, i) => (<motion.div key={x.t} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.06 }} whileHover={{ scale: 1.01 }} className="p-5 rounded-xl bg-white/[0.03] border border-white/[0.06] hover:border-white/[0.12] transition-colors">
-        <div className="flex items-start gap-4">
-          <div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: `${x.c}15` }}><x.icon size={20} style={{ color: x.c }} /></div>
-          <div><h3 className="text-white font-semibold text-sm mb-1">{x.t}</h3><p className="text-white/40 text-xs leading-relaxed">{x.d}</p></div>
-        </div>
-      </motion.div>))}
+  return (
+    <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
+      <div className="absolute w-[600px] h-[600px] rounded-full" style={{ left: "10%", top: "5%", background: "radial-gradient(circle,rgba(124,58,237,0.08),transparent 70%)", filter: "blur(80px)" }} />
+      <div className="absolute w-[500px] h-[500px] rounded-full" style={{ left: "65%", top: "30%", background: "radial-gradient(circle,rgba(79,124,255,0.06),transparent 70%)", filter: "blur(80px)" }} />
+      <div className="absolute w-[400px] h-[400px] rounded-full" style={{ left: "30%", top: "70%", background: "radial-gradient(circle,rgba(6,182,212,0.05),transparent 70%)", filter: "blur(80px)" }} />
     </div>
-  </div>);
+  );
 }
 
-function PricingContent() {
-  const [exp, setExp] = useState<string | null>(null);
-  const plans = [
-    { id: "start", n: "START", p: "500₽", note: "единоразово", badge: "", c: "#6B7280", feat: ["50 задач/мес", "3 агента", "Свои модели (BYOK)", "Tool-calling", "3 дня триал"], all: ["50 задач/мес", "3 агента", "Свои модели (BYOK)", "Tool-calling", "Локальный агент", "Конструктор пулов", "Fallback OpenRouter"] },
-    { id: "pro", n: "PRO", p: "1 990₽", note: "/ месяц", badge: "", c: "#10B981", feat: ["500 задач/мес", "10 агентов", "Бесплатный пул", "100 изображений/мес", "3 дня триал"], all: ["500 задач/мес", "10 агентов", "Бесплатный пул моделей", "100 изображений/мес", "Готовые пулы", "Всё из START"] },
-    { id: "pp", n: "PRO PLUS", p: "5 490₽", note: "/ месяц", badge: "Популярный", c: "#4F7CFF", feat: ["2 000 задач/мес", "15 агентов", "Средние модели", "500 изображений/мес", "3 дня триал"], all: ["2 000 задач/мес", "15 агентов", "Средние модели (Haiku, GPT-4.1 mini)", "100K премиум токенов/день", "500 изображений", "Кастомные пулы", "Всё из PRO"] },
-    { id: "ult", n: "ULTIMA", p: "34 990₽", note: "/ месяц", badge: "Безлимит", c: "#7C3AED", feat: ["Безлимитные задачи", "Безлимитные агенты", "ВСЕ премиум модели", "Безлимитные изображения"], all: ["Безлимитные задачи и агенты", "ВСЕ премиум модели", "GPT-5, Claude Opus, Grok 4", "Nano Banana Pro, FLUX, SD 3.5", "Docker Sandbox", "Всё из PRO PLUS"] },
-    { id: "corp", n: "CORPORATE", p: "от 89 990₽", note: "/ месяц", badge: "", c: "#F59E0B", feat: ["3-20 профилей", "Дашборд + Kanban", "SSO, Audit log", "Только юр. лица"], all: ["3-20 профилей", "Роли: рук/менеджер/сотрудник", "Командный дашборд", "Kanban + Ревью", "Аналитика расходов", "SSO, Webhook", "Всё из ULTIMA"] },
-  ];
-  return (<div className="h-full overflow-y-auto p-8">
-    <motion.h2 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-3xl font-bold text-white mb-2">Тарифы</motion.h2>
-    <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }} className="text-white/50 mb-8">3 дня бесплатно для START, PRO и PRO PLUS</motion.p>
-    <div className="flex flex-wrap gap-4 justify-center">
-      {plans.map((pl, i) => (<motion.div key={pl.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }} whileHover={{ scale: 1.01 }} onClick={() => setExp(exp === pl.id ? null : pl.id)} className={`relative w-[190px] rounded-xl p-5 border cursor-pointer transition-all ${pl.id === "pp" ? "border-[#4F7CFF]/40 bg-[#4F7CFF]/5 scale-105" : pl.id === "ult" ? "border-[#7C3AED]/30 bg-[#7C3AED]/5" : "border-white/[0.06] bg-white/[0.02]"}`}>
-        {pl.badge && <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 text-[10px] px-2 py-0.5 rounded-full border" style={{ background: `${pl.c}20`, borderColor: `${pl.c}40`, color: pl.c }}>{pl.badge}</span>}
-        <h3 className="font-bold text-white text-sm mb-1">{pl.n}</h3>
-        <div className="text-xl font-bold mb-0.5" style={{ color: pl.c }}>{pl.p}</div>
-        <div className="text-white/30 text-[10px] mb-3">{pl.note}</div>
-        {pl.feat.map(f => <div key={f} className="flex items-center gap-1.5 text-white/50 text-[11px] mb-1"><Check size={10} className="text-green-400 flex-shrink-0" />{f}</div>)}
-        <div className="mt-3 text-center text-[10px]" style={{ color: pl.c }}>{exp === pl.id ? "Свернуть ▲" : "Подробнее ▼"}</div>
-      </motion.div>))}
-    </div>
-    <AnimatePresence>{exp && (() => { const pl = plans.find(x => x.id === exp); if (!pl) return null; return (<motion.div key="exp" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} className="mt-6 p-6 rounded-xl border bg-white/[0.03]" style={{ borderColor: `${pl.c}30` }}>
-      <div className="flex items-center justify-between mb-4"><h3 className="text-lg font-bold text-white">{pl.n} — {pl.p}</h3><button onClick={() => setExp(null)} className="text-white/40 hover:text-white"><X size={16} /></button></div>
-      <div className="grid grid-cols-2 gap-2">{pl.all.map(f => <div key={f} className="flex items-center gap-2 text-white/60 text-xs"><Check size={12} style={{ color: pl.c }} />{f}</div>)}</div>
-    </motion.div>); })()}</AnimatePresence>
-  </div>);
-}
-
-function FAQContent() {
-  const [op, setOp] = useState<number | null>(null);
-  const items = [
-    { q: "Что такое XeroCode?", a: "Платформа-хаб для объединения ИИ-моделей в команду. Ставите цель — модели распределяют задачи, общаются и доставляют результат." },
-    { q: "Какие модели поддерживаются?", a: "430+ моделей через 10 провайдеров: OpenAI (GPT-5.4), Anthropic (Claude Opus 4.6), Google (Gemini 2.5), xAI (Grok 4), Groq, Stability AI, OpenRouter, APIyi, Ollama и Custom API." },
-    { q: "Нужен ли VPN из России?", a: "Нет. API-запросы проходят через наш защищённый прокси (VLESS+REALITY). Просто открываете сайт." },
-    { q: "Как подключить свои модели?", a: "Настройки → провайдер → API-ключ → модель. Или используйте готовые пулы." },
-    { q: "Можно попробовать бесплатно?", a: "Да! START, PRO и PRO PLUS включают 3 дня триала." },
-    { q: "Что такое оркестрация?", a: "Автоматическое распределение задач между моделями по их сильным сторонам." },
-    { q: "Как модели общаются?", a: "Через Communication Bus — платформа передаёт контекст и результаты между моделями." },
-    { q: "Корпоративный тариф?", a: "Дашборд, Kanban, до 20 сотрудников, ревью, аудит, SSO, webhook." },
-    { q: "Как оплатить?", a: "Карта, СБП, МИР. Юр. лицам — счёт + акт с НДС." },
-    { q: "Безопасность API-ключей?", a: "AES-256 шифрование, JWT + refresh tokens, rate limiting." },
-  ];
-  return (<div className="h-full overflow-y-auto p-8">
-    <motion.h2 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-3xl font-bold text-white mb-2">Частые вопросы</motion.h2>
-    <div className="space-y-3 max-w-[600px] mt-6">
-      {items.map((it, i) => (<motion.div key={i} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }} className="rounded-xl border border-white/[0.06] bg-white/[0.02] overflow-hidden">
-        <button onClick={() => setOp(op === i ? null : i)} className="w-full flex items-center justify-between p-4 text-left"><span className="text-white text-sm font-medium">{it.q}</span><motion.div animate={{ rotate: op === i ? 180 : 0 }}><ChevronDown size={16} className="text-white/30" /></motion.div></button>
-        <AnimatePresence>{op === i && <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }}><div className="px-4 pb-4 text-white/50 text-xs leading-relaxed">{it.a}</div></motion.div>}</AnimatePresence>
-      </motion.div>))}
-    </div>
-  </div>);
-}
-
-function AboutContent() {
-  const panels = [
-    { icon: Code, label: "Код", desc: "Язык, фреймворк, тесты, стиль кода", color: "#3b82f6" },
-    { icon: Palette, label: "Дизайн", desc: "SD 3.5, FLUX, стили, Img2Img, batch", color: "#a855f7" },
-    { icon: Sparkles, label: "Ресёрч", desc: "Глубина, источники, цитаты APA/ГОСТ", color: "#2dd4bf" },
-    { icon: FileText, label: "Текст", desc: "Тон, длина, SEO, платформа", color: "#f59e0b" },
-    { icon: BarChart3, label: "Данные", desc: "CSV/SQL, графики, Python/R", color: "#10b981" },
-    { icon: Users, label: "Менеджмент", desc: "Шаблоны, Jira/Notion, отчёты", color: "#f43f5e" },
-    { icon: GraduationCap, label: "Обучение", desc: "Сократ, задачи, сложность", color: "#8b5cf6" },
-  ];
-  return (<div className="h-full overflow-y-auto p-8">
-    <motion.h2 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-3xl font-bold text-white mb-6">О проекте</motion.h2>
-    <div className="max-w-[600px] space-y-6">
-      {/* Mission */}
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-6 rounded-xl bg-white/[0.03] border border-white/[0.06]">
-        <h3 className="text-lg font-bold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent mb-3">Миссия</h3>
-        <p className="text-white/60 text-sm leading-relaxed mb-3">XeroCode создаёт будущее, где ИИ-модели работают как команда. Вместо выбора между GPT, Claude или Gemini — используйте все сразу, каждую для того, в чём она лучше.</p>
-        <p className="text-white/60 text-sm leading-relaxed">BYOK (Bring Your Own Key) — вы подключаете свои API-ключи и платите только провайдерам. Мы оркестрируем, не перепродаём.</p>
-      </motion.div>
-
-      {/* 7 panels */}
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }} className="p-6 rounded-xl bg-white/[0.03] border border-white/[0.06]">
-        <h3 className="text-white font-semibold mb-4">7 профильных панелей</h3>
-        <div className="grid grid-cols-2 gap-2">
-          {panels.map(p => (
-            <div key={p.label} className="flex items-center gap-2 p-2 rounded-lg bg-white/[0.02]">
-              <div className="w-7 h-7 rounded-md flex items-center justify-center flex-shrink-0" style={{ background: `${p.color}15` }}>
-                <p.icon size={14} style={{ color: p.color }} />
-              </div>
-              <div>
-                <div className="text-white text-[11px] font-semibold">{p.label}</div>
-                <div className="text-white/30 text-[9px]">{p.desc}</div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </motion.div>
-
-      {/* Arena */}
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.15 }} className="p-6 rounded-xl bg-white/[0.03] border border-[#f43f5e]/20">
-        <div className="flex items-center gap-2 mb-3">
-          <Swords size={18} color="#f43f5e" />
-          <h3 className="text-white font-semibold">Эволюция — битва моделей</h3>
-        </div>
-        <div className="grid grid-cols-2 gap-2">
-          {[
-            { mode: "Дуэль", desc: "2 модели, 1 задача, вы судья" },
-            { mode: "Эволюция", desc: "Модели улучшают ответы друг друга" },
-            { mode: "Турнир", desc: "4 модели, bracket, финал" },
-            { mode: "Слепой тест", desc: "Имена скрыты до голосования" },
-          ].map(a => (
-            <div key={a.mode} className="p-2 rounded-lg bg-white/[0.02]">
-              <div className="text-white text-[11px] font-semibold">{a.mode}</div>
-              <div className="text-white/30 text-[9px]">{a.desc}</div>
-            </div>
-          ))}
-        </div>
-        <p className="text-white/40 text-[10px] mt-3">Elo-рейтинг обновляется после каждого голосования</p>
-      </motion.div>
-
-      {/* Providers */}
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.25 }} className="p-6 rounded-xl bg-white/[0.03] border border-white/[0.06]">
-        <h3 className="text-white font-semibold mb-3">Провайдеры</h3>
-        <div className="grid grid-cols-2 gap-2">
-          {[
-            { name: "OpenAI", models: "GPT-5.4, o3, DALL-E 3", color: "#10a37f" },
-            { name: "Anthropic", models: "Claude Opus 4.6, Sonnet, Haiku", color: "#d4a27f" },
-            { name: "Google", models: "Gemini 2.5 Pro/Flash, Nano Banana", color: "#4285f4" },
-            { name: "xAI", models: "Grok 4, Grok Code Fast", color: "#1da1f2" },
-            { name: "Groq", models: "Llama 3.3 70B (бесплатно)", color: "#f55036" },
-            { name: "Stability AI", models: "SD 3.5, Ultra, Video, 3D", color: "#9333ea" },
-            { name: "OpenRouter", models: "245+ моделей, fallback", color: "#6366f1" },
-            { name: "APIyi", models: "430+ моделей", color: "#ec4899" },
-            { name: "Ollama", models: "Любая локальная модель", color: "#888" },
-            { name: "Custom", models: "Любой OpenAI-совместимый API", color: "#666" },
-          ].map(p => (
-            <div key={p.name} className="flex items-center gap-2 p-2 rounded-lg bg-white/[0.02]">
-              <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: p.color }} />
-              <div>
-                <div className="text-white text-[11px] font-semibold">{p.name}</div>
-                <div className="text-white/30 text-[9px]">{p.models}</div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </motion.div>
-
-      {/* Contacts */}
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }} className="p-6 rounded-xl bg-white/[0.03] border border-white/[0.06]">
-        <h3 className="text-white font-semibold mb-3">Контакты</h3>
-        <div className="space-y-2 text-white/60 text-sm">
-          <p>Тирских Владимир Сергеевич</p>
-          <p>ИНН: 503015361714</p>
-          <p>Email: <a href="mailto:support@xerocode.space" className="text-purple-400">support@xerocode.space</a></p>
-          <p>Коммерческие: <a href="mailto:sales@xerocode.space" className="text-purple-400">sales@xerocode.space</a></p>
-          <p>Телефон: <a href="tel:+79166859658" className="text-purple-400">+7 (916) 685-96-58</a></p>
-          <p>Сайт: <a href="https://xerocode.space" className="text-purple-400">xerocode.space</a></p>
-          <p>GitHub: <a href="https://github.com/SYL4R2k27/xerocode-ai-office" className="text-purple-400" target="_blank" rel="noopener">github.com/SYL4R2k27</a></p>
-          <p>npm: <a href="https://npmjs.com/package/xerocode-agent" className="text-purple-400" target="_blank" rel="noopener">xerocode-agent</a></p>
-        </div>
-      </motion.div>
-    </div>
-  </div>);
-}
-
-function CorporateContent() {
-  const tiers = [
-    { team: "3-5 человек", price: "89 990₽/мес", color: "#F59E0B" },
-    { team: "6-10 человек", price: "179 990₽/мес", color: "#F59E0B" },
-    { team: "11-15 человек", price: "229 990₽/мес", color: "#F59E0B" },
-    { team: "16-20 человек", price: "379 990₽/мес", color: "#F59E0B" },
-  ];
-  return (<div className="h-full overflow-y-auto p-8">
-    <motion.h2 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-3xl font-bold text-white mb-2">Для бизнеса</motion.h2>
-    <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }} className="text-white/50 mb-8">Командная работа с ИИ для компаний от 3 до 20 сотрудников</motion.p>
-    <div className="max-w-[600px] space-y-6">
-
-      {/* Hero block */}
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-6 rounded-xl bg-gradient-to-br from-[#F59E0B]/10 to-[#7C3AED]/10 border border-[#F59E0B]/20">
-        <h3 className="text-lg font-bold text-white mb-3">Единое рабочее пространство</h3>
-        <p className="text-white/60 text-sm leading-relaxed mb-4">Руководитель ставит цели, менеджеры распределяют задачи, сотрудники работают с ИИ — всё в одном интерфейсе. Как Битрикс24, но с командой из 430+ ИИ-моделей.</p>
-        <div className="grid grid-cols-3 gap-3">
-          {[
-            { role: "Руководитель", desc: "Дашборд, аналитика, бюджеты", icon: "👔" },
-            { role: "Менеджер", desc: "Kanban, задачи, ревью", icon: "📋" },
-            { role: "Сотрудник", desc: "Чат с ИИ, инструменты", icon: "💻" },
-          ].map(r => (
-            <div key={r.role} className="p-3 rounded-lg bg-white/[0.03] text-center">
-              <div className="text-xl mb-1">{r.icon}</div>
-              <div className="text-white text-[11px] font-semibold">{r.role}</div>
-              <div className="text-white/30 text-[9px] mt-1">{r.desc}</div>
-            </div>
-          ))}
-        </div>
-      </motion.div>
-
-      {/* Features grid */}
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }} className="p-6 rounded-xl bg-white/[0.03] border border-white/[0.06]">
-        <h3 className="text-white font-semibold mb-4">Что входит</h3>
-        <div className="grid grid-cols-2 gap-3">
-          {[
-            { icon: "📊", t: "Командный дашборд", d: "Статистика использования, расходы по сотрудникам, ROI от ИИ" },
-            { icon: "📋", t: "Kanban-доска", d: "Задачи с ревью — менеджер проверяет результаты ИИ перед отправкой" },
-            { icon: "👥", t: "Роли и доступы", d: "Руководитель / Менеджер / Сотрудник — каждому свои права" },
-            { icon: "📈", t: "Аналитика расходов", d: "Сколько токенов потратил каждый сотрудник, на какие задачи" },
-            { icon: "🔒", t: "SSO (SAML/OIDC)", d: "Единый вход через корпоративный аккаунт (Google Workspace, AD)" },
-            { icon: "📝", t: "Аудит-лог", d: "Полная история действий всех сотрудников для compliance" },
-            { icon: "🔔", t: "Webhook-уведомления", d: "Интеграция с Telegram, Slack — уведомления о завершении задач" },
-            { icon: "🎨", t: "Брендинг", d: "Логотип компании, фон рабочего пространства, цветовая схема" },
-            { icon: "🤖", t: "Все 430+ моделей", d: "GPT-5, Claude Opus, Gemini, Grok, Stability AI — без ограничений" },
-            { icon: "⚡", t: "Безлимитные задачи", d: "Никаких лимитов на задачи, агентов, изображения и токены" },
-            { icon: "🛡️", t: "Шифрование ключей", d: "API-ключи шифруются Fernet, расшифровываются только при запросе" },
-            { icon: "🌐", t: "Без VPN из РФ", d: "Прозрачный EU-прокси — сотрудники работают без настроек" },
-          ].map(f => (
-            <div key={f.t} className="p-3 rounded-lg bg-white/[0.02]">
-              <div className="flex items-start gap-2">
-                <span className="text-sm flex-shrink-0">{f.icon}</span>
-                <div>
-                  <div className="text-white text-[11px] font-semibold">{f.t}</div>
-                  <div className="text-white/30 text-[9px] mt-0.5 leading-relaxed">{f.d}</div>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </motion.div>
-
-      {/* Pricing tiers */}
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.15 }} className="p-6 rounded-xl bg-white/[0.03] border border-white/[0.06]">
-        <h3 className="text-white font-semibold mb-4">Тарифы для команд</h3>
-        <div className="space-y-2">
-          {tiers.map(t => (
-            <div key={t.team} className="flex items-center justify-between p-3 rounded-lg bg-white/[0.02] border border-white/[0.04]">
-              <div className="flex items-center gap-3">
-                <Users size={14} style={{ color: t.color }} />
-                <span className="text-white text-[12px] font-medium">{t.team}</span>
-              </div>
-              <span className="text-[13px] font-bold" style={{ color: t.color }}>{t.price}</span>
-            </div>
-          ))}
-        </div>
-        <p className="text-white/30 text-[10px] mt-3">Только для юр. лиц. Оплата по счёту + акт с НДС.</p>
-      </motion.div>
-
-      {/* How it works */}
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }} className="p-6 rounded-xl bg-white/[0.03] border border-white/[0.06]">
-        <h3 className="text-white font-semibold mb-4">Как это работает</h3>
-        <div className="space-y-3">
-          {[
-            { step: "1", title: "Регистрация организации", desc: "Создаёте workspace, приглашаете сотрудников по email" },
-            { step: "2", title: "Настройка моделей", desc: "Подключаете API-ключи компании или используете наши (безлимит)" },
-            { step: "3", title: "Распределение ролей", desc: "Руководитель → Менеджер → Сотрудник, каждому свои доступы" },
-            { step: "4", title: "Работа с ИИ", desc: "Сотрудники ставят цели, ИИ-команда выполняет, менеджер ревьюит" },
-            { step: "5", title: "Аналитика", desc: "Дашборд с расходами, эффективностью и ROI от использования ИИ" },
-          ].map((s, i) => (
-            <div key={s.step} className="flex items-start gap-3">
-              <div className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 text-[11px] font-bold" style={{ background: "rgba(245,158,11,0.15)", color: "#F59E0B" }}>{s.step}</div>
-              <div>
-                <div className="text-white text-[12px] font-semibold">{s.title}</div>
-                <div className="text-white/30 text-[10px]">{s.desc}</div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </motion.div>
-
-      {/* CTA */}
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.25 }} className="p-6 rounded-xl bg-gradient-to-r from-[#F59E0B]/15 to-[#F59E0B]/5 border border-[#F59E0B]/20 text-center">
-        <h3 className="text-white font-bold text-lg mb-2">Готовы подключить команду?</h3>
-        <p className="text-white/50 text-sm mb-4">Напишите нам — настроим workspace за 1 день</p>
-        <a href="mailto:sales@xerocode.space" className="inline-flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-semibold transition-all hover:scale-105" style={{ background: "#F59E0B", color: "#000" }}>
-          sales@xerocode.space
-        </a>
-      </motion.div>
-    </div>
-  </div>);
-}
-
-function AgentContent() {
-  return (<div className="h-full overflow-y-auto p-8">
-    <motion.h2 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-3xl font-bold text-white mb-2">Десктоп-агент</motion.h2>
-    <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }} className="text-white/50 mb-8">Подключите компьютер к XeroCode — ИИ будет работать с вашими файлами напрямую</motion.p>
-    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="max-w-[500px]">
-      <AgentConnect />
-    </motion.div>
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }} className="mt-8 max-w-[500px] space-y-4">
-      <h3 className="text-white font-semibold text-sm">Что умеет агент</h3>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-        {[
-          { icon: "📝", t: "Создавать и редактировать файлы", d: "write_file, read_file" },
-          { icon: "⚡", t: "Запускать команды", d: "npm install, git commit..." },
-          { icon: "🔍", t: "Искать по коду", d: "grep по паттернам" },
-          { icon: "📁", t: "Навигация по проекту", d: "list_files, структура" },
-          { icon: "🔒", t: "Песочница", d: "38 опасных команд заблокировано" },
-          { icon: "🔄", t: "Авто-переподключение", d: "При обрыве — через 3 сек" },
-        ].map((f) => (
-          <div key={f.t} className="p-3 rounded-xl bg-white/[0.03] border border-white/[0.06]">
-            <div className="flex items-start gap-3">
-              <span className="text-lg">{f.icon}</span>
-              <div>
-                <p className="text-white text-xs font-medium">{f.t}</p>
-                <p className="text-white/30 text-[10px]">{f.d}</p>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-    </motion.div>
-  </div>);
-}
-
-const NAV = [
-  { id: "features" as Section, icon: Sparkles, label: "Возможности" },
-  { id: "pricing" as Section, icon: Star, label: "Тарифы" },
-  { id: "corporate" as Section, icon: Building2, label: "Бизнесу" },
-  { id: "agent" as Section, icon: Monitor, label: "Агент" },
-  { id: "faq" as Section, icon: ChevronDown, label: "FAQ" },
-  { id: "about" as Section, icon: Users, label: "О нас" },
+/* ── Simple AI chat responder ── */
+const CHAT_RESPONSES: Array<{ patterns: RegExp; reply: string }> = [
+  { patterns: /отчёт|отчет|report/i, reply: "Готово! Отчёт сформирован:\n\n• Выручка: 2.4M ₽ (+18%)\n• Новых клиентов: 47\n• Средний чек: 51K ₽\n\nФайл отправлен." },
+  { patterns: /письмо|email|mail|написа/i, reply: "Письмо готово:\n\nТема: Предложение о сотрудничестве\nТон: деловой, дружелюбный\nДлина: 150 слов\n\nОтправить?" },
+  { patterns: /текст|пост|контент|статья|blog/i, reply: "Контент создан:\n\n• SEO-оптимизирован\n• 800 слов, структурирован\n• Tone of voice: профессиональный\n\nМогу адаптировать под площадку." },
+  { patterns: /анализ|данн|csv|excel|аналитик/i, reply: "Анализ завершён:\n\n• 1 247 строк обработано\n• 3 ключевых тренда найдено\n• Визуализация готова\n\nОткрыть дашборд?" },
+  { patterns: /план|задач|стратег|roadmap/i, reply: "План готов:\n\n1. Аудит текущих процессов — 2 дня\n2. Автоматизация рутины — 1 неделя\n3. Внедрение AI — 3 дня\n\nИтого: экономия 15ч/нед." },
+  { patterns: /привет|hello|здравст|хай/i, reply: "Привет! Я XeroCode AI — помогаю делать задачи в 10 раз быстрее.\n\nПопробуйте:\n• «Подготовь отчёт»\n• «Напиши письмо клиенту»\n• «Проанализируй данные»" },
+  { patterns: /что (ты )?(умеешь|можешь)|помо(щь|ги)/i, reply: "Я ускоряю работу с AI:\n\n• Отчёты и документы\n• Ответы клиентам\n• Контент и тексты\n• Анализ данных\n• Автоматизация рутины\n\nПросто опишите задачу!" },
+  { patterns: /цена|стоим|тариф|сколько/i, reply: "Тарифы XeroCode:\n\n• START — 500₽ (разово)\n• PRO — 1 990₽/мес\n• PRO PLUS — 5 490₽/мес\n\n3 дня бесплатно на любом тарифе." },
+  { patterns: /договор|контракт|юрид|документ/i, reply: "Документ подготовлен:\n\n• Шаблон: стандартный договор\n• Реквизиты подставлены\n• Проверка юр. терминов ✓\n\nГотов к подписанию." },
+  { patterns: /клиент|поддержк|support|ответ/i, reply: "Ответ клиенту готов:\n\n• Тон: вежливый и конкретный\n• Решение проблемы включено\n• Время подготовки: 3 сек\n\nОтправить?" },
 ];
 
-const CONTENT: Record<string, React.ReactNode> = { features: <FeaturesContent />, pricing: <PricingContent />, corporate: <CorporateContent />, agent: <AgentContent />, faq: <FAQContent />, about: <AboutContent /> };
+function getAIReply(input: string): string {
+  const trimmed = input.trim();
+  if (!trimmed) return "Опишите задачу — я выполню за секунды.";
+  for (const { patterns, reply } of CHAT_RESPONSES) {
+    if (patterns.test(trimmed)) return reply;
+  }
+  return `Обрабатываю: "${trimmed.slice(0, 40)}${trimmed.length > 40 ? "..." : ""}"\n\nЗадача принята. AI-команда из 430+ моделей выполнит её за секунды.\n\nЗарегистрируйтесь, чтобы получить полный результат.`;
+}
 
-export function LandingPage({ onLogin }: LandingPageProps) {
-  const [section, setSection] = useState<Section>(null);
-  const [showBtns, setShowBtns] = useState(false);
-  const [mob, setMob] = useState(false);
-  const [legalPage, setLegalPage] = useState<"terms" | "privacy" | null>(null);
-  const { displayed: brand, done: brandDone } = useTypewriter("XeroCode", 80);
-  const { displayed: botMsg, done: botDone } = useTypewriter("Привет! Я XeroCode — платформа для командной работы ИИ-моделей.\n430+ моделей, 10 провайдеров, 7 профильных панелей.\n\nКуда хотите перейти?", 20, brandDone);
-  useEffect(() => { if (botDone) setTimeout(() => setShowBtns(true), 200); }, [botDone]);
-  const go = useCallback((s: Section) => { setSection(s); setMob(false); }, []);
+/* ── 1. HERO — Interactive Chat ── */
+function HeroSection({ onLogin }: { onLogin: () => void }) {
+  const [messages, setMessages] = useState<Array<{ role: "user" | "bot"; text: string }>>([]);
+  const [input, setInput] = useState("");
+  const [typing, setTyping] = useState(false);
+  const [demoPlayed, setDemoPlayed] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
-  if (legalPage === "terms") return <TermsPage onBack={() => setLegalPage(null)} />;
-  if (legalPage === "privacy") return <PrivacyPage onBack={() => setLegalPage(null)} />;
+  // Auto-play demo on mount
+  useEffect(() => {
+    if (demoPlayed) return;
+    const t1 = setTimeout(() => {
+      setMessages([{ role: "user", text: "Подготовь отчёт по продажам за март" }]);
+      setTyping(true);
+    }, 800);
+    const t2 = setTimeout(() => {
+      setTyping(false);
+      setMessages(prev => [...prev, {
+        role: "bot",
+        text: "Готово! Отчёт по продажам за март:\n\n• Выручка: 2.4M ₽ (+18%)\n• Новых клиентов: 47\n• Средний чек: 51K ₽\n\nФайл отправлен в Google Sheets."
+      }]);
+      setDemoPlayed(true);
+    }, 2500);
+    return () => { clearTimeout(t1); clearTimeout(t2); };
+  }, [demoPlayed]);
 
-  return (<div className="fixed inset-0 bg-[#0A0A0F] overflow-hidden flex flex-col">
-    <MeshBg />
-    {/* Header */}
-    <div className="relative z-20 flex items-center justify-between px-6 py-4">
-      <button onClick={() => setSection(null)}><LogoFull height={28} /></button>
-      <div className="hidden md:flex items-center gap-4">
-        {NAV.map(n => <button key={n.id} onClick={() => go(n.id)} className={`text-xs transition-colors ${section === n.id ? "text-white" : "text-white/40 hover:text-white/70"}`}>{n.label}</button>)}
-        <button onClick={onLogin} className="flex items-center gap-2 px-4 py-2 rounded-lg border border-white/10 text-white/70 text-xs hover:bg-white/5"><LogIn size={14} />Войти</button>
-      </div>
-      <button onClick={() => setMob(!mob)} className="md:hidden text-white/60"><Menu size={20} /></button>
-    </div>
-    <AnimatePresence>{mob && <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="absolute top-16 left-4 right-4 z-30 p-4 rounded-xl bg-[#1a1a1f]/95 backdrop-blur-xl border border-white/10">
-      {NAV.map(n => <button key={n.id} onClick={() => go(n.id)} className="w-full flex items-center gap-3 px-4 py-3 text-white/60 text-sm hover:text-white"><n.icon size={16} />{n.label}</button>)}
-      <button onClick={() => { onLogin(); setMob(false); }} className="w-full flex items-center gap-3 px-4 py-3 text-purple-400 text-sm"><LogIn size={16} />Войти</button>
-    </motion.div>}</AnimatePresence>
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, typing]);
 
-    {/* Main */}
-    <div className="relative z-10 flex-1 flex overflow-hidden">
-      <AnimatePresence mode="wait">
-        {section === null ? (
-          <motion.div key="home" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, x: -30 }} transition={{ duration: 0.3 }} className="w-full flex items-center justify-center p-6">
-            <div className="max-w-[550px] w-full">
-              <motion.h1 className="text-6xl md:text-7xl font-bold mb-8 bg-gradient-to-r from-white via-purple-200 to-blue-300 bg-clip-text text-transparent">
-                {brand}<motion.span animate={{ opacity: [1, 0] }} transition={{ duration: 0.5, repeat: Infinity }} className="text-purple-400">|</motion.span>
-              </motion.h1>
-              {brandDone && <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="p-5 rounded-2xl bg-white/[0.03] backdrop-blur-xl border border-white/[0.06] mb-6">
-                <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-purple-500/20 flex items-center justify-center flex-shrink-0"><Bot size={16} className="text-purple-400" /></div>
-                  <p className="text-white/70 text-sm leading-relaxed whitespace-pre-line">{botMsg}</p>
-                </div>
-              </motion.div>}
-              {showBtns && <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="grid grid-cols-2 gap-3">
-                <motion.button initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} onClick={onLogin} className="col-span-2 flex items-center justify-center gap-2 p-4 rounded-xl bg-gradient-to-r from-purple-600 to-blue-500 text-white text-sm font-medium hover:from-purple-500 hover:to-blue-400"><Rocket size={16} />Войти в сервис</motion.button>
-                {NAV.map((n, i) => <motion.button key={n.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: (i + 1) * 0.08 }} onClick={() => go(n.id)} className="flex items-center justify-center gap-2 p-3.5 rounded-xl bg-white/[0.03] border border-white/[0.06] text-white/60 text-sm hover:text-white hover:bg-white/[0.06]"><n.icon size={14} />{n.label}</motion.button>)}
-              </motion.div>}
+  const handleSend = useCallback(() => {
+    const text = input.trim();
+    if (!text || typing) return;
+    setInput("");
+    setMessages(prev => [...prev, { role: "user", text }]);
+    setTyping(true);
+    setTimeout(() => {
+      setTyping(false);
+      setMessages(prev => [...prev, { role: "bot", text: getAIReply(text) }]);
+    }, 800 + Math.random() * 700);
+  }, [input, typing]);
+
+  return (
+    <div className="min-h-[100vh] flex items-center py-20 md:py-0">
+      <div className="w-full max-w-[1440px] mx-auto px-6 md:px-16 flex flex-col md:flex-row items-center gap-12 md:gap-16">
+        {/* Left — Copy */}
+        <div className="flex-1 max-w-[600px]">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <h1 className="text-4xl md:text-[56px] font-bold leading-[1.1] tracking-tight text-white mb-6">
+              Делай задачи в{" "}
+              <span className="bg-gradient-to-r from-purple-400 via-blue-400 to-cyan-400 bg-clip-text text-transparent">
+                10 раз быстрее
+              </span>{" "}
+              с XeroCode
+            </h1>
+            <p className="text-lg md:text-xl text-white/50 leading-relaxed mb-8 max-w-[480px]">
+              Автоматизируй рутину, ускоряй процессы и освобождай время для роста
+            </p>
+            <div className="flex flex-wrap gap-3">
+              <motion.button
+                whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
+                onClick={onLogin}
+                className="px-6 py-3.5 rounded-xl bg-gradient-to-r from-purple-600 to-blue-500 text-white font-semibold text-sm hover:from-purple-500 hover:to-blue-400 transition-all shadow-lg shadow-purple-500/20"
+              >
+                Попробовать бесплатно
+              </motion.button>
+              <motion.a
+                href="#how-it-works"
+                whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
+                className="px-6 py-3.5 rounded-xl border border-white/[0.1] text-white/70 font-medium text-sm hover:bg-white/[0.04] transition-all cursor-pointer"
+              >
+                Как это работает
+              </motion.a>
             </div>
           </motion.div>
-        ) : (
-          <motion.div key="split" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="w-full flex">
-            <motion.div initial={{ width: 0, opacity: 0 }} animate={{ width: 260, opacity: 1 }} transition={{ duration: 0.25, ease: "easeOut" }} className="hidden md:flex flex-col h-full border-r border-white/[0.06] bg-white/[0.02] backdrop-blur-xl flex-shrink-0 overflow-hidden">
-              <div className="p-6"><div className="mb-1"><LogoFull height={24} /></div><p className="text-white/30 text-[11px]">ИИ-команда для ваших задач</p></div>
-              <div className="flex-1 px-3 space-y-1">
-                {NAV.map(n => <button key={n.id} onClick={() => go(n.id)} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm transition-all ${section === n.id ? "bg-white/[0.06] text-white" : "text-white/40 hover:text-white/70 hover:bg-white/[0.03]"}`}><n.icon size={16} />{n.label}</button>)}
-                <div className="my-3 border-t border-white/[0.06]" />
-                <button onClick={onLogin} className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-purple-400 hover:bg-purple-500/10"><LogIn size={16} />Войти в сервис</button>
+        </div>
+
+        {/* Right — Interactive Chat */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95, y: 20 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          transition={{ duration: 0.9, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
+          className="w-full max-w-[520px] flex-shrink-0"
+        >
+          <div className="rounded-2xl bg-white/[0.03] backdrop-blur-2xl border border-white/[0.08] shadow-2xl shadow-black/20 overflow-hidden">
+            {/* Chat header */}
+            <div className="flex items-center gap-3 px-5 py-3.5 border-b border-white/[0.06]">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center">
+                <Bot size={16} className="text-white" />
               </div>
-              <div className="p-4"><button onClick={() => setSection(null)} className="flex items-center gap-2 text-white/30 text-xs hover:text-white/60"><ChevronLeft size={14} />Назад</button></div>
-            </motion.div>
-            <div className="flex-1 overflow-hidden">
-              <AnimatePresence mode="wait">
-                <motion.div key={section} initial={{ x: 30, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: -20, opacity: 0 }} transition={{ duration: 0.25, ease: "easeOut" }} className="h-full">
-                  {section && CONTENT[section]}
+              <div>
+                <div className="text-white text-sm font-semibold">XeroCode AI</div>
+                <div className="text-green-400 text-[10px] flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-green-400 inline-block" />
+                  Онлайн
+                </div>
+              </div>
+            </div>
+
+            {/* Messages */}
+            <div className="p-5 space-y-3 min-h-[260px] max-h-[340px] overflow-y-auto">
+              {messages.map((msg, i) => (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className={msg.role === "user" ? "flex justify-end" : "flex gap-2.5"}
+                >
+                  {msg.role === "bot" && (
+                    <div className="w-6 h-6 rounded-md bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <Bot size={11} className="text-white" />
+                    </div>
+                  )}
+                  <div className={`max-w-[85%] px-4 py-2.5 text-sm leading-relaxed whitespace-pre-line ${
+                    msg.role === "user"
+                      ? "rounded-2xl rounded-br-md bg-purple-500/20 border border-purple-500/20 text-white/90"
+                      : "rounded-2xl rounded-bl-md bg-white/[0.04] border border-white/[0.06] text-white/80"
+                  }`}>
+                    {msg.text}
+                  </div>
                 </motion.div>
-              </AnimatePresence>
+              ))}
+
+              {typing && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="flex gap-2.5"
+                >
+                  <div className="w-6 h-6 rounded-md bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center flex-shrink-0">
+                    <Bot size={11} className="text-white" />
+                  </div>
+                  <div className="px-4 py-3 rounded-2xl rounded-bl-md bg-white/[0.04] border border-white/[0.06]">
+                    <span className="inline-flex gap-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-white/40 animate-bounce" style={{ animationDelay: "0ms" }} />
+                      <span className="w-1.5 h-1.5 rounded-full bg-white/40 animate-bounce" style={{ animationDelay: "150ms" }} />
+                      <span className="w-1.5 h-1.5 rounded-full bg-white/40 animate-bounce" style={{ animationDelay: "300ms" }} />
+                    </span>
+                  </div>
+                </motion.div>
+              )}
+              <div ref={messagesEndRef} />
+            </div>
+
+            {/* Interactive input */}
+            <div className="px-5 pb-4">
+              <form
+                onSubmit={(e) => { e.preventDefault(); handleSend(); }}
+                className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/[0.03] border border-white/[0.06] focus-within:border-purple-500/30 transition-colors"
+              >
+                <input
+                  ref={inputRef}
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  placeholder="Напишите задачу..."
+                  className="flex-1 bg-transparent text-white/90 text-sm placeholder:text-white/30 outline-none"
+                  disabled={typing}
+                />
+                <button
+                  type="submit"
+                  disabled={!input.trim() || typing}
+                  className="text-white/20 hover:text-purple-400 disabled:hover:text-white/20 transition-colors"
+                >
+                  <Send size={16} />
+                </button>
+              </form>
+            </div>
+          </div>
+        </motion.div>
+      </div>
+    </div>
+  );
+}
+
+/* ── 3. PAIN POINTS ── */
+function PainPoints() {
+  const cards = [
+    { icon: MessageSquare, title: "Ответы клиентам", desc: "Часы на типовые вопросы, которые AI закрывает мгновенно", color: "#818CF8" },
+    { icon: FileText, title: "Документы и отчёты", desc: "Ручное создание файлов, которые AI генерирует за секунды", color: "#5EEAD4" },
+    { icon: BarChart3, title: "Аналитика данных", desc: "Дни на анализ, который AI делает за минуты", color: "#FBBF24" },
+    { icon: Cog, title: "Рутинные задачи", desc: "Повторяющиеся процессы, которые AI автоматизирует", color: "#FB7185" },
+  ];
+  return (
+    <Section className="py-24 md:py-32">
+      <div className="text-center mb-12 md:mb-16">
+        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs mb-4">
+          <Clock size={12} />
+          Проблема
+        </div>
+        <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+          Ты теряешь часы на рутину каждый день
+        </h2>
+        <p className="text-white/40 text-lg max-w-[500px] mx-auto">
+          Это время можно вернуть прямо сейчас
+        </p>
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+        {cards.map((c, i) => (
+          <motion.div
+            key={c.title}
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.3 }}
+            transition={{ delay: i * 0.1, duration: 0.5 }}
+            whileHover={{ y: -4, borderColor: `${c.color}30` }}
+            className="group p-6 rounded-2xl bg-white/[0.02] border border-white/[0.06] transition-all cursor-default"
+          >
+            <div
+              className="w-12 h-12 rounded-xl flex items-center justify-center mb-4 transition-transform group-hover:scale-110"
+              style={{ background: `${c.color}12` }}
+            >
+              <c.icon size={22} style={{ color: c.color }} />
+            </div>
+            <h3 className="text-white font-semibold text-base mb-2">{c.title}</h3>
+            <p className="text-white/40 text-sm leading-relaxed">{c.desc}</p>
+          </motion.div>
+        ))}
+      </div>
+    </Section>
+  );
+}
+
+/* ── 4. BEFORE/AFTER METRICS ── */
+function MetricsSection() {
+  const ref = useRef<HTMLDivElement>(null);
+  const inView = useInView(ref, { once: true, amount: 0.4 });
+  const metrics = [
+    { before: "2 часа", after: 5, unit: "минут", label: "Ответы клиентам", color: "#818CF8" },
+    { before: "1 день", after: 30, unit: "минут", label: "Отчёты и документы", color: "#5EEAD4" },
+    { before: "3 часа", after: 10, unit: "минут", label: "Анализ данных", color: "#FBBF24" },
+  ];
+  return (
+    <Section className="py-24 md:py-32">
+      <div ref={ref} className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-purple-500/[0.08] via-blue-500/[0.04] to-cyan-500/[0.06] border border-white/[0.06] p-8 md:p-16">
+        <div className="text-center mb-12 md:mb-16">
+          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+            Сократи время выполнения задач в разы
+          </h2>
+          <p className="text-white/40 text-lg">Реальные метрики наших пользователей</p>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">
+          {metrics.map((m, i) => {
+            const count = useCountUp(m.after, 1500, inView);
+            return (
+              <motion.div
+                key={m.label}
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.15 }}
+                className="text-center"
+              >
+                <div className="text-white/30 text-lg line-through mb-2">{m.before}</div>
+                <div className="flex items-baseline justify-center gap-2 mb-2">
+                  <span className="text-5xl md:text-6xl font-bold" style={{ color: m.color }}>
+                    {count}
+                  </span>
+                  <span className="text-xl text-white/50">{m.unit}</span>
+                </div>
+                <div className="text-white/60 text-sm font-medium">{m.label}</div>
+              </motion.div>
+            );
+          })}
+        </div>
+      </div>
+    </Section>
+  );
+}
+
+/* ── 5. USE CASES ── */
+function UseCases() {
+  const cases = [
+    { icon: MessageSquare, title: "Ответы и поддержка", desc: "Мгновенные ответы клиентам на основе вашей базы знаний", color: "#818CF8" },
+    { icon: FileText, title: "Документы", desc: "Договоры, КП, отчёты — AI создаёт за секунды", color: "#5EEAD4" },
+    { icon: Megaphone, title: "Контент", desc: "Посты, рассылки, SEO-тексты — в нужном тоне и стиле", color: "#FB7185" },
+    { icon: PieChart, title: "Анализ данных", desc: "Загрузи CSV — получи инсайты, графики и выводы", color: "#FBBF24" },
+    { icon: Cog, title: "Автоматизация", desc: "Повторяющиеся задачи выполняются без участия человека", color: "#34D399" },
+    { icon: Settings, title: "Процессы", desc: "Онбординг, чек-листы, workflow — AI управляет цепочками", color: "#A78BFA" },
+  ];
+  return (
+    <Section className="py-24 md:py-32">
+      <div className="text-center mb-12 md:mb-16">
+        <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+          Один инструмент — десятки задач
+        </h2>
+        <p className="text-white/40 text-lg max-w-[500px] mx-auto">
+          XeroCode подстраивается под любую бизнес-задачу
+        </p>
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+        {cases.map((c, i) => (
+          <motion.div
+            key={c.title}
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.3 }}
+            transition={{ delay: i * 0.08, duration: 0.5 }}
+            whileHover={{ y: -4 }}
+            className="group p-6 rounded-2xl bg-white/[0.02] border border-white/[0.06] hover:border-white/[0.12] transition-all"
+          >
+            <div
+              className="w-10 h-10 rounded-lg flex items-center justify-center mb-4"
+              style={{ background: `${c.color}12` }}
+            >
+              <c.icon size={20} style={{ color: c.color }} />
+            </div>
+            <h3 className="text-white font-semibold mb-2">{c.title}</h3>
+            <p className="text-white/40 text-sm leading-relaxed">{c.desc}</p>
+          </motion.div>
+        ))}
+      </div>
+    </Section>
+  );
+}
+
+/* ── 6. AI FOR BUSINESS ── */
+function BusinessSection() {
+  const items = [
+    { icon: Headphones, title: "Поддержка", metric: "-60% времени", desc: "Автоматические ответы и маршрутизация обращений", color: "#818CF8" },
+    { icon: ShoppingCart, title: "Продажи", metric: "+35% конверсия", desc: "Персонализация предложений и follow-up писем", color: "#5EEAD4" },
+    { icon: FileCheck, title: "Документооборот", metric: "-80% ручного труда", desc: "Генерация и проверка договоров, актов, КП", color: "#FBBF24" },
+    { icon: PieChart, title: "Аналитика", metric: "x5 быстрее", desc: "Дашборды и отчёты из сырых данных за минуты", color: "#FB7185" },
+    { icon: Megaphone, title: "Маркетинг", metric: "+200% контента", desc: "Посты, рассылки, лендинги — в 3 раза быстрее", color: "#34D399" },
+    { icon: Settings, title: "Операции", metric: "-50% рутины", desc: "Автоматизация внутренних процессов и отчётности", color: "#A78BFA" },
+  ];
+  return (
+    <Section className="py-24 md:py-32">
+      <div className="text-center mb-12 md:mb-16">
+        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs mb-4">
+          <TrendingUp size={12} />
+          Для бизнеса
+        </div>
+        <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+          AI для ускорения бизнеса
+        </h2>
+        <p className="text-white/40 text-lg max-w-[500px] mx-auto">
+          Каждый отдел работает быстрее с AI-командой
+        </p>
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+        {items.map((item, i) => (
+          <motion.div
+            key={item.title}
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.3 }}
+            transition={{ delay: i * 0.08, duration: 0.5 }}
+            whileHover={{ y: -4 }}
+            className="group relative p-6 rounded-2xl bg-white/[0.02] border border-white/[0.06] hover:border-white/[0.12] transition-all overflow-hidden"
+          >
+            <div className="flex items-start justify-between mb-4">
+              <div
+                className="w-10 h-10 rounded-lg flex items-center justify-center"
+                style={{ background: `${item.color}12` }}
+              >
+                <item.icon size={20} style={{ color: item.color }} />
+              </div>
+              <span
+                className="text-xs font-bold px-2.5 py-1 rounded-full"
+                style={{ background: `${item.color}15`, color: item.color }}
+              >
+                {item.metric}
+              </span>
+            </div>
+            <h3 className="text-white font-semibold mb-2">{item.title}</h3>
+            <p className="text-white/40 text-sm leading-relaxed">{item.desc}</p>
+          </motion.div>
+        ))}
+      </div>
+    </Section>
+  );
+}
+
+/* ── 7. HOW IT WORKS ── */
+function HowItWorks() {
+  const steps = [
+    { num: "01", title: "Выбери задачу", desc: "Опиши что нужно — текстом, голосом или файлом. AI поймёт контекст.", color: "#818CF8" },
+    { num: "02", title: "Запусти AI", desc: "Команда из 430+ моделей распределяет работу и выполняет задачу.", color: "#5EEAD4" },
+    { num: "03", title: "Получи результат", desc: "Готовый ответ, документ или анализ — за секунды вместо часов.", color: "#FBBF24" },
+  ];
+  return (
+    <Section className="py-24 md:py-32" id="how-it-works">
+      <div className="text-center mb-12 md:mb-16">
+        <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+          Начать проще, чем кажется
+        </h2>
+        <p className="text-white/40 text-lg">Три шага до результата</p>
+      </div>
+      <div className="relative max-w-[800px] mx-auto">
+        {/* Connection line */}
+        <div className="hidden md:block absolute top-[60px] left-[calc(16.67%+24px)] right-[calc(16.67%+24px)] h-[2px] bg-gradient-to-r from-[#818CF8]/30 via-[#5EEAD4]/30 to-[#FBBF24]/30" />
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">
+          {steps.map((s, i) => (
+            <motion.div
+              key={s.num}
+              initial={{ opacity: 0, y: 24 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.3 }}
+              transition={{ delay: i * 0.15, duration: 0.5 }}
+              className="text-center relative"
+            >
+              <div
+                className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-6 text-lg font-bold relative z-10"
+                style={{ background: `${s.color}15`, color: s.color, boxShadow: `0 0 24px ${s.color}15` }}
+              >
+                {s.num}
+              </div>
+              <h3 className="text-white font-semibold text-lg mb-2">{s.title}</h3>
+              <p className="text-white/40 text-sm leading-relaxed">{s.desc}</p>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+    </Section>
+  );
+}
+
+/* ── 8. WORK FASTER ── */
+function WorkFaster() {
+  const ref = useRef<HTMLDivElement>(null);
+  const inView = useInView(ref, { once: true, amount: 0.3 });
+  return (
+    <Section className="py-24 md:py-32">
+      <div ref={ref} className="flex flex-col md:flex-row items-center gap-12 md:gap-16">
+        <div className="flex-1 max-w-[500px]">
+          <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
+            Работай быстрее,{" "}
+            <span className="text-white/40">не больше</span>
+          </h2>
+          <p className="text-white/50 text-lg leading-relaxed mb-6">
+            AI берёт на себя рутину — ты фокусируешься на стратегии и росте. Скорость выполнения задач напрямую влияет на доход.
+          </p>
+          <div className="space-y-4">
+            {[
+              "Экономия 20+ часов в неделю на типовых задачах",
+              "Результат в секундах — не в часах ожидания",
+              "Масштабируй команду без найма новых сотрудников",
+            ].map((t, i) => (
+              <motion.div
+                key={t}
+                initial={{ opacity: 0, x: -20 }}
+                animate={inView ? { opacity: 1, x: 0 } : {}}
+                transition={{ delay: 0.2 + i * 0.1 }}
+                className="flex items-center gap-3"
+              >
+                <div className="w-5 h-5 rounded-full bg-green-500/15 flex items-center justify-center flex-shrink-0">
+                  <Check size={12} className="text-green-400" />
+                </div>
+                <span className="text-white/70 text-sm">{t}</span>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+        <div className="flex-1 max-w-[450px] w-full">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={inView ? { opacity: 1, scale: 1 } : {}}
+            transition={{ delay: 0.3, duration: 0.6 }}
+            className="p-6 rounded-2xl bg-white/[0.02] border border-white/[0.06]"
+          >
+            <div className="text-white/30 text-xs mb-4 font-medium uppercase tracking-wider">Продуктивность команды</div>
+            <div className="space-y-3">
+              {[
+                { label: "Без AI", w: "30%", color: "#71717A" },
+                { label: "С XeroCode", w: "92%", color: "#818CF8" },
+              ].map(b => (
+                <div key={b.label}>
+                  <div className="flex justify-between text-sm mb-1.5">
+                    <span className="text-white/60">{b.label}</span>
+                    <span style={{ color: b.color }} className="font-semibold">{b.w}</span>
+                  </div>
+                  <div className="h-3 rounded-full bg-white/[0.04] overflow-hidden">
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={inView ? { width: b.w } : {}}
+                      transition={{ duration: 1.2, delay: 0.5, ease: [0.22, 1, 0.36, 1] }}
+                      className="h-full rounded-full"
+                      style={{ background: b.color }}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="mt-6 pt-4 border-t border-white/[0.06] flex items-baseline gap-2">
+              <span className="text-3xl font-bold text-white">x3</span>
+              <span className="text-white/40 text-sm">рост скорости работы</span>
+            </div>
+          </motion.div>
+        </div>
+      </div>
+    </Section>
+  );
+}
+
+/* ── 9. CASE STUDIES ── */
+function CaseStudies() {
+  const [active, setActive] = useState(0);
+  const cases = [
+    { metric: "x5", label: "продуктивность", desc: "Маркетинговое агентство генерирует контент-план на месяц за 30 минут вместо 3 дней", industry: "Маркетинг" },
+    { metric: "20ч", label: "экономия / неделя", desc: "Юридическая фирма автоматизировала подготовку типовых договоров и экспертиз", industry: "Юриспруденция" },
+    { metric: "x3", label: "скорость ответов", desc: "Интернет-магазин снизил время ответа поддержки с 2 часов до 5 минут", industry: "E-commerce" },
+  ];
+  const colors = ["#818CF8", "#5EEAD4", "#FBBF24"];
+
+  useEffect(() => {
+    const iv = setInterval(() => setActive(a => (a + 1) % cases.length), 5000);
+    return () => clearInterval(iv);
+  }, []);
+
+  return (
+    <Section className="py-24 md:py-32">
+      <div className="text-center mb-12 md:mb-16">
+        <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+          Результаты, которые чувствует бизнес
+        </h2>
+        <p className="text-white/40 text-lg">Реальные кейсы наших клиентов</p>
+      </div>
+      <div className="max-w-[700px] mx-auto">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={active}
+            initial={{ opacity: 0, x: 40 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -40 }}
+            transition={{ duration: 0.4 }}
+            className="p-8 md:p-10 rounded-2xl bg-white/[0.02] border border-white/[0.06] text-center"
+          >
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/[0.04] text-white/40 text-xs mb-6">
+              {cases[active].industry}
+            </div>
+            <div className="flex items-baseline justify-center gap-3 mb-4">
+              <span className="text-5xl md:text-6xl font-bold" style={{ color: colors[active] }}>
+                {cases[active].metric}
+              </span>
+              <span className="text-xl text-white/50">{cases[active].label}</span>
+            </div>
+            <p className="text-white/50 text-base leading-relaxed max-w-[500px] mx-auto">
+              {cases[active].desc}
+            </p>
+          </motion.div>
+        </AnimatePresence>
+
+        {/* Dots */}
+        <div className="flex justify-center gap-2 mt-6">
+          {cases.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => setActive(i)}
+              className="relative w-8 h-1.5 rounded-full overflow-hidden bg-white/[0.08] transition-all"
+            >
+              {i === active && (
+                <motion.div
+                  layoutId="case-indicator"
+                  className="absolute inset-0 rounded-full"
+                  style={{ background: colors[i] }}
+                />
+              )}
+            </button>
+          ))}
+        </div>
+      </div>
+    </Section>
+  );
+}
+
+/* ── 10. FINAL CTA ── */
+function FinalCTA({ onLogin }: { onLogin: () => void }) {
+  return (
+    <Section className="py-24 md:py-32">
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-purple-500/[0.1] via-blue-500/[0.06] to-transparent border border-white/[0.06] p-10 md:p-16 text-center">
+        {/* Glow */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[400px] h-[200px] bg-purple-500/10 rounded-full blur-[100px] pointer-events-none" />
+
+        <h2 className="relative text-3xl md:text-4xl font-bold text-white mb-4">
+          Начни экономить время уже сегодня
+        </h2>
+        <p className="relative text-white/40 text-lg mb-8 max-w-[450px] mx-auto">
+          Без сложной настройки. Работает сразу.
+        </p>
+        <motion.button
+          whileHover={{ scale: 1.03 }}
+          whileTap={{ scale: 0.98 }}
+          onClick={onLogin}
+          className="relative inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-gradient-to-r from-purple-600 to-blue-500 text-white font-semibold hover:from-purple-500 hover:to-blue-400 transition-all shadow-lg shadow-purple-500/25"
+        >
+          Попробовать бесплатно
+          <ArrowRight size={18} />
+        </motion.button>
+        <p className="relative text-white/20 text-sm mt-6">
+          Бесплатный доступ · 430+ AI-моделей · Без VPN из России
+        </p>
+      </div>
+    </Section>
+  );
+}
+
+/* ── Page label mapping ── */
+const PAGE_LABELS: Record<string, string> = {
+  pricing: "Тарифы",
+  features: "Возможности",
+  arena: "Арена",
+  business: "Бизнесу",
+  agent: "Агент",
+  faq: "FAQ",
+  about: "О нас",
+  terms: "Оферта",
+  privacy: "Конфиденциальность",
+};
+
+const MAIN_NAV: Array<{ label: string; page: SubPage }> = [
+  { label: "Тарифы", page: "pricing" },
+  { label: "Возможности", page: "features" },
+  { label: "Арена", page: "arena" },
+  { label: "Бизнесу", page: "business" },
+  { label: "Агент", page: "agent" },
+  { label: "FAQ", page: "faq" },
+  { label: "О нас", page: "about" },
+];
+
+/* ── DYNAMIC HEADER ── */
+function DynamicHeader({ currentPage, onLogin, onNavigate }: {
+  currentPage: SubPage;
+  onLogin: () => void;
+  onNavigate: (page: SubPage) => void;
+}) {
+  const [scrolled, setScrolled] = useState(false);
+  const [mob, setMob] = useState(false);
+  const isSubPage = currentPage !== null;
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 40);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  // Close mobile menu on page change
+  useEffect(() => setMob(false), [currentPage]);
+
+  return (
+    <motion.header
+      layout
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
+        scrolled || isSubPage ? "bg-[#0A0A0F]/85 backdrop-blur-2xl border-b border-white/[0.06]" : ""
+      }`}
+    >
+      <div className="max-w-[1440px] mx-auto px-6 md:px-16 flex items-center h-16">
+        {/* Left zone */}
+        <div className="flex items-center gap-3 min-w-0">
+          <AnimatePresence mode="wait">
+            {isSubPage && (
+              <motion.button
+                key="back"
+                initial={{ opacity: 0, x: -12 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -12 }}
+                transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+                onClick={() => onNavigate(null)}
+                className="flex items-center gap-1.5 text-white/35 hover:text-white/70 text-sm transition-colors mr-2 flex-shrink-0"
+              >
+                <ChevronLeft size={16} />
+              </motion.button>
+            )}
+          </AnimatePresence>
+
+          <motion.button
+            layout
+            transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+            onClick={() => { onNavigate(null); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+            className="flex-shrink-0"
+          >
+            <LogoFull height={26} />
+          </motion.button>
+
+          {/* Current page label */}
+          <AnimatePresence mode="wait">
+            {isSubPage && (
+              <motion.div
+                key={currentPage}
+                initial={{ opacity: 0, x: -8 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 8 }}
+                transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+                className="hidden md:flex items-center gap-2 ml-2"
+              >
+                <span className="text-white/15 text-sm">/</span>
+                <span className="text-white/60 text-sm font-medium">{PAGE_LABELS[currentPage!] || ""}</span>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+
+        {/* Center — nav (only on landing) */}
+        <div className="flex-1 flex justify-center">
+          <AnimatePresence mode="wait">
+            {!isSubPage ? (
+              <motion.nav
+                key="main-nav"
+                initial={{ opacity: 0, y: -8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 8 }}
+                transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+                className="hidden md:flex items-center gap-1"
+              >
+                {MAIN_NAV.map((n, i) => (
+                  <motion.button
+                    key={n.label}
+                    initial={{ opacity: 0, y: -6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.03, duration: 0.25 }}
+                    onClick={() => onNavigate(n.page)}
+                    className="px-3 py-1.5 rounded-lg text-white/40 text-sm hover:text-white hover:bg-white/[0.04] transition-all duration-200"
+                  >
+                    {n.label}
+                  </motion.button>
+                ))}
+              </motion.nav>
+            ) : (
+              <motion.nav
+                key="sub-nav"
+                initial={{ opacity: 0, y: -8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 8 }}
+                transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+                className="hidden md:flex items-center gap-1"
+              >
+                {MAIN_NAV.filter(n => n.page !== currentPage).slice(0, 4).map((n, i) => (
+                  <motion.button
+                    key={n.label}
+                    initial={{ opacity: 0, y: -6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.03, duration: 0.25 }}
+                    onClick={() => onNavigate(n.page)}
+                    className="px-3 py-1.5 rounded-lg text-white/25 text-xs hover:text-white/60 hover:bg-white/[0.03] transition-all duration-200"
+                  >
+                    {n.label}
+                  </motion.button>
+                ))}
+              </motion.nav>
+            )}
+          </AnimatePresence>
+        </div>
+
+        {/* Right — login */}
+        <div className="hidden md:flex items-center gap-3 flex-shrink-0">
+          <motion.button
+            layout
+            transition={{ duration: 0.3 }}
+            onClick={onLogin}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/[0.04] border border-white/[0.08] text-white/70 text-sm hover:bg-white/[0.08] transition-all"
+          >
+            <LogIn size={14} />
+            Войти
+          </motion.button>
+        </div>
+
+        {/* Mobile burger */}
+        <button onClick={() => setMob(!mob)} className="md:hidden text-white/60 ml-auto">
+          <AnimatePresence mode="wait">
+            {mob ? (
+              <motion.div key="x" initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: 90, opacity: 0 }} transition={{ duration: 0.2 }}>
+                <X size={20} />
+              </motion.div>
+            ) : (
+              <motion.div key="m" initial={{ rotate: 90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: -90, opacity: 0 }} transition={{ duration: 0.2 }}>
+                <Menu size={20} />
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </button>
+      </div>
+
+      {/* Mobile menu */}
+      <AnimatePresence>
+        {mob && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+            className="md:hidden overflow-hidden border-t border-white/[0.04]"
+          >
+            <div className="p-3 bg-[#0A0A0F]/95 backdrop-blur-2xl">
+              {isSubPage && (
+                <motion.button
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  onClick={() => { onNavigate(null); setMob(false); }}
+                  className="w-full flex items-center gap-2 px-4 py-3 text-white/40 text-sm hover:text-white rounded-lg hover:bg-white/[0.03]"
+                >
+                  <ChevronLeft size={14} />
+                  На главную
+                </motion.button>
+              )}
+              {MAIN_NAV.map((n, i) => (
+                <motion.button
+                  key={n.label}
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: i * 0.03 }}
+                  onClick={() => { onNavigate(n.page); setMob(false); }}
+                  className={`w-full text-left px-4 py-3 text-sm rounded-lg transition-all ${
+                    currentPage === n.page
+                      ? "text-white bg-white/[0.04]"
+                      : "text-white/50 hover:text-white hover:bg-white/[0.02]"
+                  }`}
+                >
+                  {n.label}
+                </motion.button>
+              ))}
+              <motion.button
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.2 }}
+                onClick={() => { onLogin(); setMob(false); }}
+                className="w-full text-left px-4 py-3 text-purple-400 text-sm font-medium rounded-lg hover:bg-purple-500/5"
+              >
+                Войти
+              </motion.button>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
-    </div>
-    <div className="relative z-10 text-center py-3 text-white/20 text-[10px] space-y-1">
-      <div>© 2026 XeroCode — Тирских Владимир Сергеевич · ИНН 503015361714</div>
-      <div>
-        <a href="mailto:support@xerocode.space" className="hover:text-white/40 transition-colors">support@xerocode.space</a> ·{" "}
-        <button onClick={() => setLegalPage("terms")} className="underline hover:text-white/40 transition-colors">Оферта</button> ·{" "}
-        <button onClick={() => setLegalPage("privacy")} className="underline hover:text-white/40 transition-colors">Конфиденциальность</button>
+    </motion.header>
+  );
+}
+
+/* ── FOOTER ── */
+function Footer({ onNavigate }: { onNavigate: (page: SubPage) => void }) {
+  return (
+    <footer className="relative z-10 border-t border-white/[0.04] mt-8">
+      <div className="max-w-[1440px] mx-auto px-6 md:px-16 py-8 flex flex-col md:flex-row items-center justify-between gap-4 text-white/20 text-xs">
+        <div>© 2026 XeroCode — Тирских Владимир Сергеевич · ИНН 503015361714</div>
+        <div className="flex items-center gap-4">
+          <a href="mailto:support@xerocode.space" className="hover:text-white/40 transition-colors">support@xerocode.space</a>
+          <button onClick={() => onNavigate("terms")} className="underline hover:text-white/40 transition-colors">Оферта</button>
+          <button onClick={() => onNavigate("privacy")} className="underline hover:text-white/40 transition-colors">Конфиденциальность</button>
+        </div>
       </div>
+    </footer>
+  );
+}
+
+/* ── Sub-page content renderer ── */
+function SubPageContent({ page, onBack, onLogin, onNavigate }: {
+  page: SubPage;
+  onBack: () => void;
+  onLogin: () => void;
+  onNavigate: (p: SubPage) => void;
+}) {
+  const content = (() => {
+    switch (page) {
+      case "terms": return <TermsPage onBack={onBack} />;
+      case "privacy": return <PrivacyPage onBack={onBack} />;
+      case "pricing": return <PricingPage onBack={onBack} onLogin={onLogin} hideHeader />;
+      case "faq": return <FAQPage onBack={onBack} onLogin={onLogin} hideHeader />;
+      case "about": return <AboutPage onBack={onBack} onLogin={onLogin} hideHeader />;
+      case "agent": return <AgentPage onBack={onBack} onLogin={onLogin} hideHeader />;
+      case "business": return <BusinessPage onBack={onBack} onLogin={onLogin} hideHeader />;
+      case "arena": return <ArenaPage onBack={onBack} onLogin={onLogin} hideHeader />;
+      case "features": return <FeaturesPage onBack={onBack} onLogin={onLogin} onNavigateArena={() => onNavigate("arena")} hideHeader />;
+      default: return null;
+    }
+  })();
+  return <>{content}</>;
+}
+
+/* ── MAIN LANDING PAGE ── */
+export function LandingPage({ onLogin }: LandingPageProps) {
+  const [subPage, setSubPage] = useState<SubPage>(null);
+
+  const goBack = useCallback(() => { setSubPage(null); window.scrollTo({ top: 0, behavior: "smooth" }); }, []);
+  const navigate = useCallback((page: SubPage) => { setSubPage(page); window.scrollTo({ top: 0, behavior: "smooth" }); }, []);
+
+  return (
+    <div className="min-h-screen bg-[#0A0A0F] text-white overflow-x-hidden">
+      <MeshBg />
+      <DynamicHeader currentPage={subPage} onLogin={onLogin} onNavigate={navigate} />
+
+      <AnimatePresence mode="wait">
+        {subPage ? (
+          <motion.div
+            key={subPage}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+            className="relative z-10 pt-16"
+          >
+            <SubPageContent page={subPage} onBack={goBack} onLogin={onLogin} onNavigate={navigate} />
+          </motion.div>
+        ) : (
+          <motion.div
+            key="landing"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+            className="relative z-10"
+          >
+            <main>
+              <HeroSection onLogin={onLogin} />
+              <PainPoints />
+              <MetricsSection />
+              <div id="use-cases"><UseCases /></div>
+              <div id="business"><BusinessSection /></div>
+              <HowItWorks />
+              <WorkFaster />
+              <div id="cases"><CaseStudies /></div>
+              <FinalCTA onLogin={onLogin} />
+            </main>
+            <Footer onNavigate={navigate} />
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
-  </div>);
+  );
 }
