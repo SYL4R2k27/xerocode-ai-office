@@ -14,6 +14,7 @@ import { SettingsPage } from "./components/corporate/SettingsPage";
 import { WorkflowPage } from "./components/corporate/WorkflowPage";
 import { DocumentsPage } from "./components/corporate/DocumentsPage";
 import { SkillsPage } from "./components/corporate/SkillsPage";
+import { KnowledgePage } from "./components/corporate/KnowledgePage";
 import { KanbanBoard } from "./components/corporate/KanbanBoard";
 import { TeamPage } from "./components/corporate/TeamPage";
 import { MobileLayout } from "./components/mobile/MobileLayout";
@@ -638,6 +639,10 @@ export default function App() {
 
           {corporatePage === "skills" && (
             <SkillsPage orgRole={orgRole} />
+          )}
+
+          {corporatePage === "knowledge" && (
+            <KnowledgePage />
           )}
 
           {corporatePage === "team" && (

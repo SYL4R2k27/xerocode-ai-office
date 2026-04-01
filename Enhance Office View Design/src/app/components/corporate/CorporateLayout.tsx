@@ -16,11 +16,12 @@ import {
   GitBranch,
   FileText,
   Zap,
+  BookOpen,
 } from "lucide-react";
 import { CorporateBackground } from "./CorporateBackground";
 import { BackgroundPicker } from "./BackgroundPicker";
 
-export type CorporatePage = "dashboard" | "chat" | "kanban" | "team" | "reports" | "workflows" | "documents" | "skills" | "settings";
+export type CorporatePage = "dashboard" | "chat" | "kanban" | "team" | "reports" | "workflows" | "documents" | "skills" | "knowledge" | "settings";
 
 interface NavItem {
   id: CorporatePage;
@@ -36,6 +37,7 @@ const navItems: NavItem[] = [
   { id: "workflows", icon: GitBranch, label: "Workflows" },
   { id: "documents", icon: FileText, label: "Документы" },
   { id: "skills", icon: Zap, label: "Skills" },
+  { id: "knowledge", icon: BookOpen, label: "База знаний" },
   { id: "team", icon: Users, label: "Команда", managerOnly: true },
   { id: "reports", icon: BarChart3, label: "Отчёты", managerOnly: true },
   { id: "settings", icon: Settings, label: "Настройки" },
