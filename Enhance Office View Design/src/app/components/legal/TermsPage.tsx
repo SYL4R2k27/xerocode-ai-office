@@ -71,7 +71,7 @@ export function TermsPage({ onBack }: TermsPageProps) {
               <p>9.1. Исполнитель вправе изменять условия Оферты, уведомив Пользователей по email не менее чем за 14 дней.</p>
             </section>
             <section><h2 className="text-white font-semibold text-lg mb-3">10. Реквизиты исполнителя</h2>
-              <p>Тирских Владимир Сергеевич</p>
+              <p>Тирских В.С.</p>
               <p>ИНН: 503015361714</p>
               <p>Статус: Самозанятый</p>
               <p>Email: <a href="mailto:support@xerocode.space" className="text-purple-400">support@xerocode.space</a></p>

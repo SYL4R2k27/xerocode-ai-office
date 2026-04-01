@@ -119,7 +119,7 @@ export function AboutPage({ onBack, onLogin, hideHeader }: AboutPageProps) {
           <h2 className="text-xl font-bold text-white mb-6">Контакты</h2>
 
           <div className="mb-6 pb-6 border-b border-white/[0.06]">
-            <div className="text-white font-medium mb-1">Тирских Владимир Сергеевич</div>
+            <div className="text-white font-medium mb-1">Тирских В.С.</div>
             <div className="text-white/30 text-sm">ИП · ИНН 503015361714</div>
           </div>
 
@@ -127,7 +127,6 @@ export function AboutPage({ onBack, onLogin, hideHeader }: AboutPageProps) {
             {[
               { icon: Mail, label: "Поддержка", value: "support@xerocode.space", href: "mailto:support@xerocode.space" },
               { icon: Mail, label: "Коммерческие", value: "sales@xerocode.space", href: "mailto:sales@xerocode.space" },
-              { icon: Phone, label: "Телефон", value: "+7 (916) 685-96-58", href: "tel:+79166859658" },
               { icon: Globe, label: "Сайт", value: "xerocode.space", href: "https://xerocode.space" },
               { icon: Github, label: "GitHub", value: "github.com/SYL4R2k27", href: "https://github.com/SYL4R2k27/xerocode-ai-office" },
               { icon: Package, label: "npm", value: "xerocode-agent", href: "https://npmjs.com/package/xerocode-agent" },

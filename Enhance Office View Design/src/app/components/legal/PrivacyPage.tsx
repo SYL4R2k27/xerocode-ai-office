@@ -56,7 +56,7 @@ export function PrivacyPage({ onBack }: PrivacyPageProps) {
             </section>
             <section><h2 className="text-white font-semibold text-lg mb-3">7. Контакты</h2>
               <p>По вопросам обработки персональных данных:</p>
-              <p className="mt-2">Тирских Владимир Сергеевич</p>
+              <p className="mt-2">Тирских В.С.</p>
               <p>ИНН: 503015361714</p>
               <p>Сайт: <a href="https://xerocode.space" className="text-purple-400">xerocode.space</a></p>
             </section>
