@@ -12,6 +12,7 @@ import { Dashboard } from "./components/corporate/Dashboard";
 import { ReportsPage } from "./components/corporate/ReportsPage";
 import { SettingsPage } from "./components/corporate/SettingsPage";
 import { WorkflowPage } from "./components/corporate/WorkflowPage";
+import { DocumentsPage } from "./components/corporate/DocumentsPage";
 import { KanbanBoard } from "./components/corporate/KanbanBoard";
 import { TeamPage } from "./components/corporate/TeamPage";
 import { MobileLayout } from "./components/mobile/MobileLayout";
@@ -628,6 +629,10 @@ export default function App() {
 
           {corporatePage === "workflows" && (
             <WorkflowPage orgRole={orgRole} />
+          )}
+
+          {corporatePage === "documents" && (
+            <DocumentsPage />
           )}
 
           {corporatePage === "team" && (

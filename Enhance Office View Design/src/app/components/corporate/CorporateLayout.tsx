@@ -14,11 +14,12 @@ import {
   Palette,
   Focus,
   GitBranch,
+  FileText,
 } from "lucide-react";
 import { CorporateBackground } from "./CorporateBackground";
 import { BackgroundPicker } from "./BackgroundPicker";
 
-export type CorporatePage = "dashboard" | "chat" | "kanban" | "team" | "reports" | "workflows" | "settings";
+export type CorporatePage = "dashboard" | "chat" | "kanban" | "team" | "reports" | "workflows" | "documents" | "settings";
 
 interface NavItem {
   id: CorporatePage;
@@ -32,6 +33,7 @@ const navItems: NavItem[] = [
   { id: "chat", icon: MessageSquare, label: "XeroCode AI" },
   { id: "kanban", icon: KanbanSquare, label: "Задачи" },
   { id: "workflows", icon: GitBranch, label: "Workflows" },
+  { id: "documents", icon: FileText, label: "Документы" },
   { id: "team", icon: Users, label: "Команда", managerOnly: true },
   { id: "reports", icon: BarChart3, label: "Отчёты", managerOnly: true },
   { id: "settings", icon: Settings, label: "Настройки" },
