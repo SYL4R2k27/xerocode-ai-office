@@ -11,6 +11,7 @@ import { CorporateLayout, type CorporatePage } from "./components/corporate/Corp
 import { Dashboard } from "./components/corporate/Dashboard";
 import { ReportsPage } from "./components/corporate/ReportsPage";
 import { SettingsPage } from "./components/corporate/SettingsPage";
+import { WorkflowPage } from "./components/corporate/WorkflowPage";
 import { KanbanBoard } from "./components/corporate/KanbanBoard";
 import { TeamPage } from "./components/corporate/TeamPage";
 import { MobileLayout } from "./components/mobile/MobileLayout";
@@ -618,10 +619,15 @@ export default function App() {
 
           {corporatePage === "kanban" && (
             <KanbanBoard
+              orgRole={orgRole}
               onReviewAction={(taskId, action, comment) => {
                 api.tasks.review(taskId, action, comment).catch(console.error);
               }}
             />
+          )}
+
+          {corporatePage === "workflows" && (
+            <WorkflowPage orgRole={orgRole} />
           )}
 
           {corporatePage === "team" && (

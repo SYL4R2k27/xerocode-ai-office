@@ -464,4 +464,53 @@ export const api = {
     use: (id: string) =>
       request(`/templates/${id}/use`, { method: "POST" }),
   },
+
+  // Workflows
+  workflows: {
+    list: () => request<WorkflowData[]>("/workflows/"),
+    templates: () => request<WorkflowTemplate[]>("/workflows/templates"),
+    get: (id: string) => request<WorkflowData>(`/workflows/${id}`),
+    create: (data: { name: string; description?: string; steps: any[]; category?: string }) =>
+      request<WorkflowData>("/workflows/", { method: "POST", body: JSON.stringify(data) }),
+    update: (id: string, data: { name?: string; description?: string; steps?: any[]; category?: string }) =>
+      request<WorkflowData>(`/workflows/${id}`, { method: "PATCH", body: JSON.stringify(data) }),
+    delete: (id: string) => request(`/workflows/${id}`, { method: "DELETE" }),
+    run: (id: string) => request<{ goal_id: string; tasks_created: number; message: string }>(`/workflows/${id}/run`, { method: "POST" }),
+  },
 };
+
+// Workflow types
+export interface WorkflowStep {
+  id: string;
+  title: string;
+  prompt: string;
+  model: string;
+  task_type: string;
+  depends_on: string[];
+  x: number;
+  y: number;
+}
+
+export interface WorkflowData {
+  id: string;
+  name: string;
+  description: string | null;
+  user_id: string;
+  organization_id: string | null;
+  steps: WorkflowStep[];
+  is_template: boolean;
+  category: string | null;
+  run_count: number;
+  last_run_goal_id: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface WorkflowTemplate {
+  id: string;
+  name: string;
+  description: string;
+  category: string;
+  is_template: boolean;
+  steps: WorkflowStep[];
+}
