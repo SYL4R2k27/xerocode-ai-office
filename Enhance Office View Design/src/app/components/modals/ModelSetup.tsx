@@ -103,13 +103,31 @@ const ALL_MODELS: ModelEntry[] = [
   { id: "qwen/qwen3-coder-plus", name: "Qwen3 Coder+", provider: "qwen", providerDisplay: "Qwen", price: "$0.40/$1.20", desc: "Улучшенный кодер", category: "code" },
   { id: "qwen/qwen3-235b-a22b", name: "Qwen3 235B", provider: "qwen", providerDisplay: "Qwen", price: "$0.20/$0.60", desc: "235 млрд параметров", category: "research" },
 
-  // Stability AI
-  { id: "sd3.5-large", name: "SD 3.5 Large", provider: "stability", providerDisplay: "Stability AI", price: "6.5 кр/img", desc: "Топ качество", category: "images" },
-  { id: "sd3.5-large-turbo", name: "SD 3.5 Turbo", provider: "stability", providerDisplay: "Stability AI", price: "4 кр/img", desc: "Быстрый SD", category: "images" },
-  { id: "sd3.5-medium", name: "SD 3.5 Medium", provider: "stability", providerDisplay: "Stability AI", price: "3.5 кр/img", desc: "Средний SD", category: "images" },
-  { id: "stable-image-ultra", name: "Stable Ultra", provider: "stability", providerDisplay: "Stability AI", price: "8 кр/img", desc: "Максимальное качество", category: "images" },
-  { id: "stable-image-core", name: "Stable Core", provider: "stability", providerDisplay: "Stability AI", price: "3 кр/img", desc: "Базовый SD", category: "images" },
-  { id: "flux-2-pro", name: "FLUX 2 Pro", provider: "stability", providerDisplay: "Stability AI", price: "5 кр/img", desc: "FLUX генерация", category: "images" },
+  // Stability AI — Generate
+  { id: "stable-image-ultra", name: "Stable Image Ultra", provider: "stability", providerDisplay: "Stability AI", price: "8 кр", desc: "Флагман, максимальное качество", category: "images" },
+  { id: "sd3.5-large", name: "SD 3.5 Large", provider: "stability", providerDisplay: "Stability AI", price: "6.5 кр", desc: "8B параметров, топ качество", category: "images" },
+  { id: "sd3.5-large-turbo", name: "SD 3.5 Large Turbo", provider: "stability", providerDisplay: "Stability AI", price: "4 кр", desc: "Быстрый SD 3.5 Large", category: "images" },
+  { id: "sd3.5-medium", name: "SD 3.5 Medium", provider: "stability", providerDisplay: "Stability AI", price: "3.5 кр", desc: "2.5B параметров", category: "images" },
+  { id: "sd3.5-flash", name: "SD 3.5 Flash", provider: "stability", providerDisplay: "Stability AI", price: "2.5 кр", desc: "Дистилляция Medium, быстрый", category: "images" },
+  { id: "stable-image-core", name: "Stable Image Core", provider: "stability", providerDisplay: "Stability AI", price: "3 кр", desc: "Быстрый и дешёвый", category: "images" },
+  { id: "sdxl-1.0", name: "SDXL 1.0", provider: "stability", providerDisplay: "Stability AI", price: "от 0.9 кр", desc: "Legacy, базовая генерация", category: "images" },
+  // Stability AI — Upscale
+  { id: "creative-upscaler", name: "Creative Upscaler", provider: "stability", providerDisplay: "Stability AI", price: "60 кр", desc: "Low-res → 4K с prompt guidance", category: "images" },
+  { id: "conservative-upscaler", name: "Conservative Upscaler", provider: "stability", providerDisplay: "Stability AI", price: "40 кр", desc: "Low-res → 4K без изменений", category: "images" },
+  { id: "fast-upscaler", name: "Fast Upscaler", provider: "stability", providerDisplay: "Stability AI", price: "2 кр", desc: "Быстрый upscale ×4", category: "images" },
+  // Stability AI — Edit
+  { id: "erase-object", name: "Erase Object", provider: "stability", providerDisplay: "Stability AI", price: "5 кр", desc: "Удаление объектов с фото", category: "images" },
+  { id: "inpaint", name: "Inpaint", provider: "stability", providerDisplay: "Stability AI", price: "5 кр", desc: "Замена части изображения", category: "images" },
+  { id: "outpaint", name: "Outpaint", provider: "stability", providerDisplay: "Stability AI", price: "4 кр", desc: "Расширение изображения", category: "images" },
+  { id: "remove-background", name: "Remove Background", provider: "stability", providerDisplay: "Stability AI", price: "5 кр", desc: "Удаление фона", category: "images" },
+  { id: "search-and-replace", name: "Search & Replace", provider: "stability", providerDisplay: "Stability AI", price: "5 кр", desc: "Найти и заменить объект", category: "images" },
+  { id: "search-and-recolor", name: "Search & Recolor", provider: "stability", providerDisplay: "Stability AI", price: "5 кр", desc: "Перекрасить объект", category: "images" },
+  { id: "replace-bg-relight", name: "Replace BG & Relight", provider: "stability", providerDisplay: "Stability AI", price: "8 кр", desc: "Замена фона + освещение", category: "images" },
+  // Stability AI — Control
+  { id: "structure-control", name: "Structure Control", provider: "stability", providerDisplay: "Stability AI", price: "5 кр", desc: "Генерация по структуре", category: "images" },
+  { id: "sketch-control", name: "Sketch Control", provider: "stability", providerDisplay: "Stability AI", price: "5 кр", desc: "Генерация по скетчу", category: "images" },
+  { id: "style-guide", name: "Style Guide", provider: "stability", providerDisplay: "Stability AI", price: "5 кр", desc: "Генерация по стилю", category: "images" },
+  { id: "style-transfer", name: "Style Transfer", provider: "stability", providerDisplay: "Stability AI", price: "8 кр", desc: "Перенос стиля", category: "images" },
 
   // Perplexity
   { id: "perplexity/sonar-pro-search", name: "Sonar Pro Search", provider: "perplexity", providerDisplay: "Perplexity", price: "$3/$15", desc: "С поиском в интернете!", category: "research" },
