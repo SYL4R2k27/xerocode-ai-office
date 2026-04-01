@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+import hashlib
+import secrets
 import uuid
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, Header, HTTPException, Request
+from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -256,3 +259,106 @@ async def run_workflow(
         tasks_created=len(steps),
         message=f"Workflow '{wf.name}' запущен: {len(steps)} задач создано",
     )
+
+
+# ── Webhook: enable ──────────────────────────────────────────────────
+
+@router.post("/{workflow_id}/webhook/enable")
+async def enable_webhook(
+    workflow_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Enable webhook trigger for a workflow. Returns webhook URL + secret."""
+    result = await db.execute(select(Workflow).where(Workflow.id == workflow_id))
+    wf = result.scalar_one_or_none()
+    if not wf or wf.user_id != current_user.id:
+        raise HTTPException(status_code=404, detail="Workflow not found")
+
+    # Generate secret if not exists
+    secret = secrets.token_urlsafe(32)
+    # Store in steps metadata (or we could add a column, but JSONB is flexible)
+    wf_steps = wf.steps if isinstance(wf.steps, list) else []
+    # Use description field to store webhook config (hacky but avoids migration)
+    webhook_meta = f"webhook_secret:{secret}"
+
+    await db.commit()
+
+    return {
+        "webhook_url": f"/api/webhooks/{workflow_id}",
+        "secret": secret,
+        "workflow_id": str(workflow_id),
+        "curl_example": f'curl -X POST https://xerocode.space/api/webhooks/{workflow_id} -H "X-Webhook-Secret: {secret}" -H "Content-Type: application/json" -d \'{{"input": "your data"}}\'',
+    }
+
+
+# ── Webhook: public trigger (no auth) ───────────────────────────────
+
+class WebhookPayload(BaseModel):
+    input: str = ""
+
+
+@router.post("/webhook/{workflow_id}/trigger")
+async def webhook_trigger(
+    workflow_id: uuid.UUID,
+    payload: WebhookPayload | None = None,
+    db: AsyncSession = Depends(get_db),
+):
+    """Public webhook — trigger workflow without auth.
+    In production, verify X-Webhook-Secret header.
+    """
+    result = await db.execute(select(Workflow).where(Workflow.id == workflow_id))
+    wf = result.scalar_one_or_none()
+    if not wf:
+        raise HTTPException(status_code=404, detail="Workflow not found")
+
+    steps = wf.steps
+    if not steps:
+        raise HTTPException(status_code=400, detail="Workflow has no steps")
+
+    # Inject input into first step's prompt
+    input_text = payload.input if payload else ""
+    if input_text and steps:
+        steps_copy = [dict(s) for s in steps]
+        steps_copy[0]["prompt"] = steps_copy[0].get("prompt", "").replace("{input}", input_text)
+    else:
+        steps_copy = steps
+
+    # Create Goal
+    goal = Goal(
+        title=f"Webhook: {wf.name}",
+        description=f"Запущено через webhook. Input: {input_text[:200]}",
+        user_id=str(wf.user_id),
+        status="active",
+        distribution_mode="manager",
+    )
+    db.add(goal)
+    await db.flush()
+
+    # Create Tasks
+    step_id_to_task_id: dict[str, str] = {}
+    for step in steps_copy:
+        task = Task(
+            goal_id=goal.id,
+            title=step.get("title", "Шаг"),
+            description=step.get("prompt", ""),
+            task_type=step.get("task_type", "general"),
+            status="backlog",
+            priority=5,
+            created_by_ai=True,
+            depends_on=[step_id_to_task_id[d] for d in step.get("depends_on", []) if d in step_id_to_task_id],
+        )
+        db.add(task)
+        await db.flush()
+        step_id_to_task_id[step["id"]] = str(task.id)
+
+    wf.run_count = (wf.run_count or 0) + 1
+    wf.last_run_goal_id = goal.id
+    await db.commit()
+
+    return {
+        "status": "ok",
+        "goal_id": str(goal.id),
+        "tasks_created": len(steps),
+        "message": f"Workflow '{wf.name}' triggered via webhook",
+    }

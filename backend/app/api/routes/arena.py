@@ -235,6 +235,55 @@ async def get_leaderboard(
     return out
 
 
+@router.get("/leaderboard/public", response_model=list[LeaderboardEntry])
+async def get_public_leaderboard(
+    limit: int = Query(default=50, ge=1, le=100),
+    db: AsyncSession = Depends(get_db),
+):
+    """Public leaderboard — no auth required."""
+    result = await db.execute(
+        select(ArenaLeaderboard).order_by(ArenaLeaderboard.elo_rating.desc()).limit(limit)
+    )
+    entries = result.scalars().all()
+    out = []
+    for e in entries:
+        total = e.wins + e.losses + e.draws
+        win_rate = (e.wins / total * 100) if total > 0 else 0.0
+        out.append(LeaderboardEntry(
+            model_name=e.model_name,
+            wins=e.wins,
+            losses=e.losses,
+            draws=e.draws,
+            elo_rating=round(e.elo_rating, 1),
+            win_rate=round(win_rate, 1),
+        ))
+    return out
+
+
+@router.get("/recommend")
+async def recommend_model(
+    task_type: str = Query(default="general"),
+    db: AsyncSession = Depends(get_db),
+):
+    """Recommend best model based on Elo and win rate."""
+    result = await db.execute(
+        select(ArenaLeaderboard).order_by(ArenaLeaderboard.elo_rating.desc()).limit(5)
+    )
+    entries = result.scalars().all()
+    recommendations = []
+    for e in entries:
+        total = e.wins + e.losses + e.draws
+        win_rate = (e.wins / total * 100) if total > 0 else 0.0
+        recommendations.append({
+            "model_name": e.model_name,
+            "elo_rating": round(e.elo_rating, 1),
+            "win_rate": round(win_rate, 1),
+            "total_battles": total,
+            "reason": f"Elo {round(e.elo_rating)}, {round(win_rate)}% побед в {total} битвах",
+        })
+    return {"task_type": task_type, "recommendations": recommendations}
+
+
 @router.get("/history", response_model=list[BattleResponse])
 async def get_history(
     limit: int = Query(default=50, le=200),
