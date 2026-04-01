@@ -10,6 +10,7 @@ import { LandingPage } from "./components/landing/LandingPage";
 import { CorporateLayout, type CorporatePage } from "./components/corporate/CorporateLayout";
 import { Dashboard } from "./components/corporate/Dashboard";
 import { ReportsPage } from "./components/corporate/ReportsPage";
+import { SettingsPage } from "./components/corporate/SettingsPage";
 import { KanbanBoard } from "./components/corporate/KanbanBoard";
 import { TeamPage } from "./components/corporate/TeamPage";
 import { MobileLayout } from "./components/mobile/MobileLayout";
@@ -637,17 +638,13 @@ export default function App() {
           )}
 
           {corporatePage === "settings" && (
-            <div className="h-full flex items-center justify-center" style={{ backgroundColor: "var(--bg-base)" }}>
-              <div className="text-center">
-                <div className="text-[48px] mb-3">⚙️</div>
-                <h2 className="text-[18px] font-semibold mb-2" style={{ color: "var(--text-primary)" }}>
-                  Настройки
-                </h2>
-                <p className="text-[13px]" style={{ color: "var(--text-secondary)" }}>
-                  Настройки организации в разработке
-                </p>
-              </div>
-            </div>
+            <SettingsPage
+              orgRole={orgRole}
+              orgName={orgName}
+              userName={user?.name || ""}
+              userEmail={user?.email}
+              onLogout={handleLogout}
+            />
           )}
         </CorporateLayout>
 
