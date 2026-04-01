@@ -15,11 +15,12 @@ import {
   Focus,
   GitBranch,
   FileText,
+  Zap,
 } from "lucide-react";
 import { CorporateBackground } from "./CorporateBackground";
 import { BackgroundPicker } from "./BackgroundPicker";
 
-export type CorporatePage = "dashboard" | "chat" | "kanban" | "team" | "reports" | "workflows" | "documents" | "settings";
+export type CorporatePage = "dashboard" | "chat" | "kanban" | "team" | "reports" | "workflows" | "documents" | "skills" | "settings";
 
 interface NavItem {
   id: CorporatePage;
@@ -34,6 +35,7 @@ const navItems: NavItem[] = [
   { id: "kanban", icon: KanbanSquare, label: "Задачи" },
   { id: "workflows", icon: GitBranch, label: "Workflows" },
   { id: "documents", icon: FileText, label: "Документы" },
+  { id: "skills", icon: Zap, label: "Skills" },
   { id: "team", icon: Users, label: "Команда", managerOnly: true },
   { id: "reports", icon: BarChart3, label: "Отчёты", managerOnly: true },
   { id: "settings", icon: Settings, label: "Настройки" },

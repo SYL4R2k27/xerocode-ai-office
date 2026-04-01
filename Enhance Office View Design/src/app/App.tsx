@@ -13,6 +13,7 @@ import { ReportsPage } from "./components/corporate/ReportsPage";
 import { SettingsPage } from "./components/corporate/SettingsPage";
 import { WorkflowPage } from "./components/corporate/WorkflowPage";
 import { DocumentsPage } from "./components/corporate/DocumentsPage";
+import { SkillsPage } from "./components/corporate/SkillsPage";
 import { KanbanBoard } from "./components/corporate/KanbanBoard";
 import { TeamPage } from "./components/corporate/TeamPage";
 import { MobileLayout } from "./components/mobile/MobileLayout";
@@ -633,6 +634,10 @@ export default function App() {
 
           {corporatePage === "documents" && (
             <DocumentsPage />
+          )}
+
+          {corporatePage === "skills" && (
+            <SkillsPage orgRole={orgRole} />
           )}
 
           {corporatePage === "team" && (
