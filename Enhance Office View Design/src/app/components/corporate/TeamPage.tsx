@@ -1,584 +1,310 @@
-import { useState, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
-  UserPlus,
-  Crown,
-  ClipboardList,
-  User,
-  Trash2,
-  ChevronDown,
-  X,
-  Mail,
-  Search,
-  Shield,
+  Users, UserPlus, Shield, ChevronDown, Trash2, Search,
+  Crown, Briefcase, User, Loader2, AlertCircle, X, Check,
 } from "lucide-react";
-
-// ====== Types ======
-
-interface OrgMember {
-  id: string;
-  name: string;
-  email: string;
-  role: "owner" | "manager" | "member";
-  avatar?: string;
-  tasks_count: number;
-  joined_at: string;
-}
-
-// ====== Constants ======
-
-const roleConfig: Record<string, { label: string; icon: React.ElementType; color: string; bgColor: string }> = {
-  owner: {
-    label: "Руководитель",
-    icon: Crown,
-    color: "var(--accent-amber)",
-    bgColor: "color-mix(in srgb, var(--accent-amber) 15%, transparent)",
-  },
-  manager: {
-    label: "Менеджер",
-    icon: ClipboardList,
-    color: "var(--accent-blue)",
-    bgColor: "color-mix(in srgb, var(--accent-blue) 15%, transparent)",
-  },
-  member: {
-    label: "Сотрудник",
-    icon: User,
-    color: "var(--text-tertiary)",
-    bgColor: "var(--bg-elevated)",
-  },
-};
-
-// ====== Mock Data ======
-
-const initialMembers: OrgMember[] = [
-  { id: "1", name: "Иван Петров", email: "ivan@company.ru", role: "owner", tasks_count: 5, joined_at: "2025-01-15" },
-  { id: "2", name: "Алексей Козлов", email: "alexey@company.ru", role: "manager", tasks_count: 8, joined_at: "2025-03-10" },
-  { id: "3", name: "Мария Попова", email: "maria@company.ru", role: "member", tasks_count: 12, joined_at: "2025-04-22" },
-  { id: "4", name: "Дмитрий Смирнов", email: "dmitry@company.ru", role: "member", tasks_count: 6, joined_at: "2025-05-18" },
-  { id: "5", name: "Елена Волкова", email: "elena@company.ru", role: "member", tasks_count: 3, joined_at: "2025-06-01" },
-  { id: "6", name: "Сергей Новиков", email: "sergey@company.ru", role: "member", tasks_count: 7, joined_at: "2025-07-12" },
-];
-
-// ====== Component ======
+import { api, type OrgMember } from "../../lib/api";
 
 interface TeamPageProps {
   orgRole: "owner" | "manager" | "member";
   onInvite?: (email: string, role: string) => void;
-  onChangeRole?: (memberId: string, newRole: string) => void;
-  onRemoveMember?: (memberId: string) => void;
+  onChangeRole?: (userId: string, role: string) => void;
+  onRemoveMember?: (userId: string) => void;
 }
 
-export function TeamPage({ orgRole, onInvite, onChangeRole, onRemoveMember }: TeamPageProps) {
-  const isOwner = orgRole === "owner";
-  const isManagerOrOwner = orgRole === "owner" || orgRole === "manager";
+const roleConfig: Record<string, { label: string; icon: React.ElementType; color: string }> = {
+  owner: { label: "Руководитель", icon: Crown, color: "var(--accent-amber)" },
+  manager: { label: "Менеджер", icon: Briefcase, color: "var(--accent-blue)" },
+  member: { label: "Сотрудник", icon: User, color: "var(--text-tertiary)" },
+};
 
-  const [members, setMembers] = useState<OrgMember[]>(initialMembers);
-  const [showInviteModal, setShowInviteModal] = useState(false);
+export function TeamPage({ orgRole }: TeamPageProps) {
+  const [members, setMembers] = useState<OrgMember[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
+  const [showInvite, setShowInvite] = useState(false);
   const [inviteEmail, setInviteEmail] = useState("");
-  const [inviteRole, setInviteRole] = useState<"manager" | "member">("member");
-  const [searchQuery, setSearchQuery] = useState("");
+  const [inviteRole, setInviteRole] = useState("member");
+  const [inviteLoading, setInviteLoading] = useState(false);
+  const [inviteError, setInviteError] = useState<string | null>(null);
   const [roleDropdownId, setRoleDropdownId] = useState<string | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const isOwner = orgRole === "owner";
 
-  const filteredMembers = members.filter((m) => {
-    const q = searchQuery.toLowerCase();
-    return m.name.toLowerCase().includes(q) || m.email.toLowerCase().includes(q);
-  });
+  const loadMembers = useCallback(async () => {
+    try {
+      const data = await api.org.getMembers();
+      setMembers(data);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
-  const handleInvite = useCallback(() => {
+  useEffect(() => { loadMembers(); }, [loadMembers]);
+
+  const handleInvite = useCallback(async () => {
     if (!inviteEmail.trim()) return;
-    onInvite?.(inviteEmail, inviteRole);
-    // Optimistic add
-    const newMember: OrgMember = {
-      id: Date.now().toString(),
-      name: inviteEmail.split("@")[0],
-      email: inviteEmail,
-      role: inviteRole,
-      tasks_count: 0,
-      joined_at: new Date().toISOString(),
-    };
-    setMembers((prev) => [...prev, newMember]);
-    setInviteEmail("");
-    setInviteRole("member");
-    setShowInviteModal(false);
-  }, [inviteEmail, inviteRole, onInvite]);
+    setInviteLoading(true);
+    setInviteError(null);
+    try {
+      await api.org.invite(inviteEmail.trim(), inviteRole);
+      await loadMembers();
+      setInviteEmail("");
+      setInviteRole("member");
+      setShowInvite(false);
+    } catch (err: any) {
+      setInviteError(err.message);
+    } finally {
+      setInviteLoading(false);
+    }
+  }, [inviteEmail, inviteRole, loadMembers]);
 
-  const handleChangeRole = useCallback((memberId: string, newRole: "owner" | "manager" | "member") => {
-    setMembers((prev) =>
-      prev.map((m) => (m.id === memberId ? { ...m, role: newRole } : m))
-    );
-    onChangeRole?.(memberId, newRole);
+  const handleChangeRole = useCallback(async (userId: string, newRole: string) => {
+    try {
+      await api.org.changeRole(userId, newRole);
+      setMembers(prev => prev.map(m => m.id === userId ? { ...m, org_role: newRole as any } : m));
+    } catch (err: any) {
+      console.error(err);
+    }
     setRoleDropdownId(null);
-  }, [onChangeRole]);
+  }, []);
 
-  const handleDelete = useCallback((memberId: string) => {
-    setMembers((prev) => prev.filter((m) => m.id !== memberId));
-    onRemoveMember?.(memberId);
+  const handleRemove = useCallback(async (userId: string) => {
+    try {
+      await api.org.removeMember(userId);
+      setMembers(prev => prev.filter(m => m.id !== userId));
+    } catch (err: any) {
+      console.error(err);
+    }
     setConfirmDeleteId(null);
-  }, [onRemoveMember]);
+  }, []);
 
-  const formatDate = (dateStr: string) => {
-    const date = new Date(dateStr);
-    const months = ["янв", "фев", "мар", "апр", "мая", "июн", "июл", "авг", "сен", "окт", "ноя", "дек"];
-    return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`;
-  };
+  const filtered = members.filter(m =>
+    (m.name || "").toLowerCase().includes(search.toLowerCase()) ||
+    m.email.toLowerCase().includes(search.toLowerCase())
+  );
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <Loader2 size={24} className="animate-spin" style={{ color: "var(--accent-blue)" }} />
+      </div>
+    );
+  }
 
   return (
-    <div
-      className="h-full overflow-y-auto"
-      style={{ backgroundColor: "var(--bg-base)" }}
-    >
-      <div className="max-w-[900px] mx-auto p-6">
+    <div className="h-full overflow-y-auto p-6 md:p-8">
+      <div className="max-w-[900px] mx-auto">
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex items-center justify-between mb-8"
+        >
           <div>
-            <h1
-              className="text-[22px] font-semibold"
-              style={{ color: "var(--text-primary)" }}
-            >
-              Команда
-            </h1>
-            <p className="text-[13px] mt-1" style={{ color: "var(--text-secondary)" }}>
-              {members.length} участников в организации
-            </p>
+            <h1 className="text-2xl font-bold" style={{ color: "var(--text-primary)" }}>Команда</h1>
+            <p className="text-sm mt-1" style={{ color: "var(--text-tertiary)" }}>{members.length} участников</p>
           </div>
-
-          {isManagerOrOwner && (
-            <button
-              onClick={() => setShowInviteModal(true)}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg text-[13px] font-medium transition-all"
-              style={{
-                backgroundColor: "var(--accent-blue)",
-                color: "#fff",
-              }}
-              onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.9")}
-              onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
+          {isOwner && (
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => setShowInvite(true)}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium"
+              style={{ backgroundColor: "var(--accent-blue)", color: "#fff" }}
             >
-              <UserPlus size={15} />
+              <UserPlus size={16} />
               Пригласить
-            </button>
+            </motion.button>
           )}
-        </div>
+        </motion.div>
 
         {/* Search */}
-        <div className="relative mb-4">
-          <Search
-            size={15}
-            className="absolute left-3 top-1/2 -translate-y-1/2"
-            style={{ color: "var(--text-tertiary)" }}
-          />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Поиск по имени или email..."
-            className="w-full text-[13px] pl-9 pr-4 py-2.5 rounded-xl"
-            style={{
-              backgroundColor: "var(--bg-surface)",
-              color: "var(--text-primary)",
-              border: "1px solid var(--border-default)",
-              outline: "none",
-            }}
-            onFocus={(e) => (e.currentTarget.style.borderColor = "var(--border-focus)")}
-            onBlur={(e) => (e.currentTarget.style.borderColor = "var(--border-default)")}
-          />
-        </div>
-
-        {/* Members List */}
-        <div
-          className="rounded-xl overflow-hidden"
-          style={{
-            backgroundColor: "var(--bg-surface)",
-            border: "1px solid var(--border-default)",
-          }}
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.05 }}
+          className="relative mb-6"
         >
-          {/* Table Header */}
-          <div
-            className="grid items-center px-5 py-3 text-[11px] font-semibold tracking-wider"
-            style={{
-              gridTemplateColumns: "1fr 1fr 120px 80px 100px",
-              color: "var(--text-tertiary)",
-              borderBottom: "1px solid var(--border-default)",
-              backgroundColor: "var(--bg-elevated)",
-            }}
-          >
-            <span>УЧАСТНИК</span>
-            <span>EMAIL</span>
-            <span>РОЛЬ</span>
-            <span>ЗАДАЧ</span>
-            <span></span>
-          </div>
+          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: "var(--text-tertiary)" }} />
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Поиск по имени или email..."
+            className="w-full pl-10 pr-4 py-2.5 rounded-lg text-sm outline-none"
+            style={{ backgroundColor: "var(--bg-surface)", border: "1px solid var(--border-default)", color: "var(--text-primary)" }}
+          />
+        </motion.div>
 
-          {/* Members */}
-          <AnimatePresence>
-            {filteredMembers.map((member, i) => {
-              const role = roleConfig[member.role];
-              const RoleIcon = role.icon;
-              const isCurrentOwner = member.role === "owner";
-
-              return (
-                <motion.div
-                  key={member.id}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0, height: 0 }}
-                  transition={{ duration: 0.2 }}
-                  className="grid items-center px-5 py-3.5 transition-colors relative"
-                  style={{
-                    gridTemplateColumns: "1fr 1fr 120px 80px 100px",
-                    borderBottom:
-                      i < filteredMembers.length - 1
-                        ? "1px solid var(--border-subtle)"
-                        : "none",
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = "var(--bg-elevated)";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = "transparent";
-                  }}
+        {/* Members */}
+        <div className="space-y-2">
+          {filtered.map((m, i) => {
+            const role = roleConfig[m.org_role || "member"];
+            const RoleIcon = role.icon;
+            return (
+              <motion.div
+                key={m.id}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.03 }}
+                className="group flex items-center gap-4 p-4 rounded-xl"
+                style={{ backgroundColor: "var(--bg-surface)", border: "1px solid var(--border-default)" }}
+              >
+                <div
+                  className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0"
+                  style={{ backgroundColor: "var(--bg-elevated)", color: "var(--text-primary)", border: "1px solid var(--border-default)" }}
                 >
-                  {/* Name + Avatar */}
-                  <div className="flex items-center gap-3">
-                    <div
-                      className="w-8 h-8 rounded-full flex items-center justify-center text-[12px] font-bold flex-shrink-0"
-                      style={{
-                        backgroundColor: `hsl(${(member.name.charCodeAt(0) * 37) % 360}, 35%, 35%)`,
-                        color: "#fff",
-                      }}
-                    >
-                      {member.name.charAt(0)}
-                    </div>
-                    <div>
-                      <div
-                        className="text-[13px] font-medium"
-                        style={{ color: "var(--text-primary)" }}
-                      >
-                        {member.name}
-                      </div>
-                      <div
-                        className="text-[11px]"
-                        style={{ color: "var(--text-tertiary)" }}
-                      >
-                        с {formatDate(member.joined_at)}
-                      </div>
-                    </div>
-                  </div>
+                  {(m.name || m.email).charAt(0).toUpperCase()}
+                </div>
 
-                  {/* Email */}
-                  <span
-                    className="text-[12px]"
-                    style={{ color: "var(--text-secondary)" }}
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-medium" style={{ color: "var(--text-primary)" }}>{m.name || "—"}</div>
+                  <div className="text-xs" style={{ color: "var(--text-tertiary)" }}>{m.email}</div>
+                </div>
+
+                {/* Role */}
+                <div className="relative">
+                  <button
+                    onClick={() => isOwner && m.org_role !== "owner" ? setRoleDropdownId(roleDropdownId === m.id ? null : m.id) : null}
+                    className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium"
+                    style={{
+                      color: role.color,
+                      backgroundColor: `color-mix(in srgb, ${role.color} 10%, transparent)`,
+                      cursor: isOwner && m.org_role !== "owner" ? "pointer" : "default",
+                    }}
                   >
-                    {member.email}
-                  </span>
+                    <RoleIcon size={12} />
+                    {role.label}
+                    {isOwner && m.org_role !== "owner" && <ChevronDown size={10} />}
+                  </button>
 
-                  {/* Role Badge */}
-                  <div className="relative">
-                    <button
-                      onClick={() => {
-                        if (isManagerOrOwner && !isCurrentOwner) {
-                          setRoleDropdownId(
-                            roleDropdownId === member.id ? null : member.id
-                          );
-                        }
-                      }}
-                      className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-medium transition-colors"
-                      style={{
-                        backgroundColor: role.bgColor,
-                        color: role.color,
-                        cursor: isManagerOrOwner && !isCurrentOwner ? "pointer" : "default",
-                      }}
-                    >
-                      <RoleIcon size={12} />
-                      {role.label}
-                      {isManagerOrOwner && !isCurrentOwner && (
-                        <ChevronDown size={10} />
-                      )}
-                    </button>
-
-                    {/* Role Dropdown */}
-                    <AnimatePresence>
-                      {roleDropdownId === member.id && (
-                        <motion.div
-                          initial={{ opacity: 0, y: -4 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: -4 }}
-                          className="absolute left-0 top-full mt-1 rounded-lg p-1 z-20 min-w-[140px]"
-                          style={{
-                            backgroundColor: "var(--bg-elevated)",
-                            border: "1px solid var(--border-default)",
-                            boxShadow: "0 4px 16px rgba(0,0,0,0.3)",
-                          }}
-                        >
-                          {(["manager", "member"] as const).map((r) => {
-                            const rc = roleConfig[r];
-                            const Icon = rc.icon;
-                            return (
-                              <button
-                                key={r}
-                                onClick={() => handleChangeRole(member.id, r)}
-                                className="flex items-center gap-2 w-full text-left text-[11px] px-3 py-1.5 rounded-md transition-colors"
-                                style={{
-                                  color: member.role === r ? rc.color : "var(--text-secondary)",
-                                  backgroundColor: member.role === r ? rc.bgColor : "transparent",
-                                }}
-                                onMouseEnter={(e) => {
-                                  if (member.role !== r) {
-                                    e.currentTarget.style.backgroundColor = "var(--bg-surface)";
-                                  }
-                                }}
-                                onMouseLeave={(e) => {
-                                  if (member.role !== r) {
-                                    e.currentTarget.style.backgroundColor = "transparent";
-                                  }
-                                }}
-                              >
-                                <Icon size={12} />
-                                {rc.label}
-                              </button>
-                            );
-                          })}
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
-
-                  {/* Tasks Count */}
-                  <span
-                    className="text-[12px]"
-                    style={{ color: "var(--text-secondary)" }}
-                  >
-                    {member.tasks_count}
-                  </span>
-
-                  {/* Actions */}
-                  <div className="flex items-center justify-end gap-1">
-                    {isOwner && !isCurrentOwner && (
-                      <>
-                        {confirmDeleteId === member.id ? (
-                          <div className="flex items-center gap-1">
-                            <button
-                              onClick={() => handleDelete(member.id)}
-                              className="text-[10px] px-2 py-1 rounded-md font-medium"
-                              style={{
-                                backgroundColor: "color-mix(in srgb, var(--accent-rose) 20%, transparent)",
-                                color: "var(--accent-rose)",
-                              }}
-                            >
-                              Удалить
-                            </button>
-                            <button
-                              onClick={() => setConfirmDeleteId(null)}
-                              className="text-[10px] px-2 py-1 rounded-md"
-                              style={{ color: "var(--text-tertiary)" }}
-                            >
-                              Отмена
-                            </button>
-                          </div>
-                        ) : (
+                  <AnimatePresence>
+                    {roleDropdownId === m.id && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -4 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -4 }}
+                        className="absolute right-0 top-full mt-1 z-10 rounded-lg overflow-hidden"
+                        style={{ backgroundColor: "var(--bg-elevated)", border: "1px solid var(--border-default)", boxShadow: "0 8px 24px rgba(0,0,0,0.3)" }}
+                      >
+                        {["manager", "member"].map(r => (
                           <button
-                            onClick={() => setConfirmDeleteId(member.id)}
-                            className="w-7 h-7 flex items-center justify-center rounded-md transition-colors opacity-0 group-hover:opacity-100"
-                            style={{
-                              color: "var(--text-tertiary)",
-                              opacity: 1,
-                            }}
-                            onMouseEnter={(e) => {
-                              e.currentTarget.style.color = "var(--accent-rose)";
-                              e.currentTarget.style.backgroundColor = "color-mix(in srgb, var(--accent-rose) 10%, transparent)";
-                            }}
-                            onMouseLeave={(e) => {
-                              e.currentTarget.style.color = "var(--text-tertiary)";
-                              e.currentTarget.style.backgroundColor = "transparent";
-                            }}
-                            title="Удалить"
+                            key={r}
+                            onClick={() => handleChangeRole(m.id, r)}
+                            className="w-full px-4 py-2 text-xs text-left flex items-center gap-2"
+                            style={{ color: "var(--text-secondary)" }}
+                            onMouseEnter={e => { e.currentTarget.style.backgroundColor = "var(--bg-surface)"; }}
+                            onMouseLeave={e => { e.currentTarget.style.backgroundColor = "transparent"; }}
                           >
-                            <Trash2 size={14} />
+                            {roleConfig[r].label}
+                            {m.org_role === r && <Check size={12} style={{ color: "var(--accent-green)" }} />}
                           </button>
-                        )}
-                      </>
+                        ))}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+
+                <div className="text-xs text-right hidden sm:block" style={{ color: "var(--text-tertiary)" }}>
+                  {m.tasks_used_this_month} задач
+                </div>
+
+                {isOwner && m.org_role !== "owner" && (
+                  <div>
+                    {confirmDeleteId === m.id ? (
+                      <div className="flex items-center gap-1">
+                        <button onClick={() => handleRemove(m.id)} className="p-1.5 rounded-md" style={{ color: "var(--accent-rose)" }}><Check size={14} /></button>
+                        <button onClick={() => setConfirmDeleteId(null)} className="p-1.5 rounded-md" style={{ color: "var(--text-tertiary)" }}><X size={14} /></button>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => setConfirmDeleteId(m.id)}
+                        className="p-1.5 rounded-md opacity-0 group-hover:opacity-100 transition-opacity"
+                        style={{ color: "var(--text-tertiary)" }}
+                        onMouseEnter={e => { e.currentTarget.style.color = "var(--accent-rose)"; }}
+                        onMouseLeave={e => { e.currentTarget.style.color = "var(--text-tertiary)"; }}
+                      >
+                        <Trash2 size={14} />
+                      </button>
                     )}
                   </div>
-                </motion.div>
-              );
-            })}
-          </AnimatePresence>
-
-          {filteredMembers.length === 0 && (
-            <div
-              className="flex items-center justify-center py-12 text-[13px]"
-              style={{ color: "var(--text-tertiary)" }}
-            >
-              Участники не найдены
-            </div>
-          )}
+                )}
+              </motion.div>
+            );
+          })}
         </div>
-      </div>
 
-      {/* Invite Modal */}
-      <AnimatePresence>
-        {showInviteModal && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center"
-            style={{ backgroundColor: "var(--bg-overlay)" }}
-            onClick={() => setShowInviteModal(false)}
-          >
+        {/* Invite modal */}
+        <AnimatePresence>
+          {showInvite && (
             <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 10 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 10 }}
-              transition={{ duration: 0.2 }}
-              className="w-[420px] rounded-xl p-6"
-              style={{
-                backgroundColor: "var(--bg-surface)",
-                border: "1px solid var(--border-default)",
-                boxShadow: "0 16px 48px rgba(0,0,0,0.4)",
-              }}
-              onClick={(e) => e.stopPropagation()}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-50 flex items-center justify-center p-4"
+              style={{ backgroundColor: "rgba(0,0,0,0.6)" }}
+              onClick={() => setShowInvite(false)}
             >
-              {/* Modal Header */}
-              <div className="flex items-center justify-between mb-5">
-                <div className="flex items-center gap-2">
-                  <div
-                    className="w-8 h-8 rounded-lg flex items-center justify-center"
-                    style={{
-                      backgroundColor: "color-mix(in srgb, var(--accent-blue) 15%, transparent)",
-                      color: "var(--accent-blue)",
-                    }}
-                  >
-                    <UserPlus size={16} />
+              <motion.div
+                initial={{ scale: 0.95, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.95, opacity: 0 }}
+                className="w-full max-w-[400px] rounded-2xl p-6"
+                style={{ backgroundColor: "var(--bg-surface)", border: "1px solid var(--border-default)" }}
+                onClick={e => e.stopPropagation()}
+              >
+                <h3 className="text-lg font-semibold mb-4" style={{ color: "var(--text-primary)" }}>Пригласить участника</h3>
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-xs mb-1.5 block" style={{ color: "var(--text-tertiary)" }}>Email</label>
+                    <input
+                      value={inviteEmail}
+                      onChange={e => setInviteEmail(e.target.value)}
+                      placeholder="user@example.com"
+                      className="w-full px-3 py-2.5 rounded-lg text-sm outline-none"
+                      style={{ backgroundColor: "var(--bg-base)", border: "1px solid var(--border-default)", color: "var(--text-primary)" }}
+                    />
                   </div>
-                  <h3
-                    className="text-[15px] font-semibold"
-                    style={{ color: "var(--text-primary)" }}
-                  >
-                    Пригласить участника
-                  </h3>
+                  <div>
+                    <label className="text-xs mb-1.5 block" style={{ color: "var(--text-tertiary)" }}>Роль</label>
+                    <div className="flex gap-2">
+                      {["member", "manager"].map(r => (
+                        <button
+                          key={r}
+                          onClick={() => setInviteRole(r)}
+                          className="flex-1 py-2 rounded-lg text-xs font-medium"
+                          style={{
+                            backgroundColor: inviteRole === r ? "var(--accent-blue)" : "var(--bg-base)",
+                            color: inviteRole === r ? "#fff" : "var(--text-secondary)",
+                            border: `1px solid ${inviteRole === r ? "var(--accent-blue)" : "var(--border-default)"}`,
+                          }}
+                        >
+                          {roleConfig[r].label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  {inviteError && (
+                    <div className="text-xs flex items-center gap-1" style={{ color: "var(--accent-rose)" }}>
+                      <AlertCircle size={12} />{inviteError}
+                    </div>
+                  )}
+                  <div className="flex gap-2 pt-2">
+                    <button onClick={() => setShowInvite(false)} className="flex-1 py-2.5 rounded-lg text-sm font-medium" style={{ backgroundColor: "var(--bg-base)", color: "var(--text-secondary)", border: "1px solid var(--border-default)" }}>Отмена</button>
+                    <button onClick={handleInvite} disabled={!inviteEmail.trim() || inviteLoading} className="flex-1 py-2.5 rounded-lg text-sm font-medium disabled:opacity-50" style={{ backgroundColor: "var(--accent-blue)", color: "#fff" }}>
+                      {inviteLoading ? <Loader2 size={14} className="animate-spin mx-auto" /> : "Пригласить"}
+                    </button>
+                  </div>
                 </div>
-                <button
-                  onClick={() => setShowInviteModal(false)}
-                  className="w-7 h-7 flex items-center justify-center rounded-md transition-colors"
-                  style={{ color: "var(--text-tertiary)" }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = "var(--bg-elevated)";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = "transparent";
-                  }}
-                >
-                  <X size={16} />
-                </button>
-              </div>
-
-              {/* Email Input */}
-              <div className="mb-4">
-                <label
-                  className="block text-[12px] font-medium mb-1.5"
-                  style={{ color: "var(--text-secondary)" }}
-                >
-                  Email адрес
-                </label>
-                <div className="relative">
-                  <Mail
-                    size={15}
-                    className="absolute left-3 top-1/2 -translate-y-1/2"
-                    style={{ color: "var(--text-tertiary)" }}
-                  />
-                  <input
-                    type="email"
-                    value={inviteEmail}
-                    onChange={(e) => setInviteEmail(e.target.value)}
-                    placeholder="name@company.ru"
-                    className="w-full text-[13px] pl-9 pr-4 py-2.5 rounded-lg"
-                    style={{
-                      backgroundColor: "var(--bg-input)",
-                      color: "var(--text-primary)",
-                      border: "1px solid var(--border-default)",
-                      outline: "none",
-                    }}
-                    onFocus={(e) => (e.currentTarget.style.borderColor = "var(--border-focus)")}
-                    onBlur={(e) => (e.currentTarget.style.borderColor = "var(--border-default)")}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") handleInvite();
-                    }}
-                    autoFocus
-                  />
-                </div>
-              </div>
-
-              {/* Role Select */}
-              <div className="mb-6">
-                <label
-                  className="block text-[12px] font-medium mb-1.5"
-                  style={{ color: "var(--text-secondary)" }}
-                >
-                  Роль
-                </label>
-                <div className="flex gap-2">
-                  {(["member", "manager"] as const).map((r) => {
-                    const rc = roleConfig[r];
-                    const Icon = rc.icon;
-                    const isSelected = inviteRole === r;
-                    return (
-                      <button
-                        key={r}
-                        onClick={() => setInviteRole(r)}
-                        className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-[12px] font-medium transition-all"
-                        style={{
-                          backgroundColor: isSelected ? rc.bgColor : "var(--bg-elevated)",
-                          color: isSelected ? rc.color : "var(--text-tertiary)",
-                          border: `1px solid ${isSelected ? rc.color : "var(--border-default)"}`,
-                        }}
-                      >
-                        <Icon size={14} />
-                        {rc.label}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Actions */}
-              <div className="flex gap-3">
-                <button
-                  onClick={() => setShowInviteModal(false)}
-                  className="flex-1 py-2.5 rounded-lg text-[13px] font-medium transition-colors"
-                  style={{
-                    backgroundColor: "var(--bg-elevated)",
-                    color: "var(--text-secondary)",
-                    border: "1px solid var(--border-default)",
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = "var(--bg-input)";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = "var(--bg-elevated)";
-                  }}
-                >
-                  Отмена
-                </button>
-                <button
-                  onClick={handleInvite}
-                  className="flex-1 py-2.5 rounded-lg text-[13px] font-medium transition-all"
-                  style={{
-                    backgroundColor: inviteEmail.trim()
-                      ? "var(--accent-blue)"
-                      : "var(--bg-elevated)",
-                    color: inviteEmail.trim() ? "#fff" : "var(--text-tertiary)",
-                    cursor: inviteEmail.trim() ? "pointer" : "not-allowed",
-                  }}
-                >
-                  Пригласить
-                </button>
-              </div>
+              </motion.div>
             </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          )}
+        </AnimatePresence>
+      </div>
     </div>
   );
 }

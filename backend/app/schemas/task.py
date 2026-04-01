@@ -14,17 +14,20 @@ class TaskCreate(BaseModel):
     priority: int = Field(default=0, ge=0, le=10)
     depends_on: list[str] | None = None
     assigned_agent_id: uuid.UUID | None = None
+    created_by_ai: bool = False
 
 
 class TaskUpdate(BaseModel):
     title: str | None = None
     description: str | None = None
     status: str | None = Field(
-        default=None, pattern="^(pending|assigned|in_progress|done|failed)$"
+        default=None,
+        pattern="^(pending|assigned|in_progress|done|failed|backlog|review_operator|review_manager)$"
     )
     assigned_agent_id: uuid.UUID | None = None
     result: str | None = None
     result_files: list[str] | None = None
+    review_comment: str | None = None
 
 
 class TaskResponse(BaseModel):
@@ -39,6 +42,13 @@ class TaskResponse(BaseModel):
     depends_on: list[str] | None
     result: str | None
     result_files: list[str] | None
+    created_by_ai: bool = False
+    operator_id: uuid.UUID | None = None
+    reviewer_id: uuid.UUID | None = None
+    operator_approved_at: datetime | None = None
+    manager_approved_at: datetime | None = None
+    ai_result: str | None = None
+    review_comment: str | None = None
     created_at: datetime
     updated_at: datetime
 

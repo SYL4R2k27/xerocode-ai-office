@@ -1,495 +1,343 @@
 import { useState, useEffect } from "react";
 import { motion } from "motion/react";
 import {
-  FolderOpen,
-  ListChecks,
-  CheckCircle2,
-  DollarSign,
-  ArrowRight,
-  Clock,
-  User,
-  Bot,
-  TrendingUp,
+  FolderOpen, ListChecks, CheckCircle2, DollarSign, ArrowRight,
+  Clock, Users, Bot, TrendingUp, AlertCircle, Plus, Sparkles,
+  ClipboardList, Eye, Loader2,
 } from "lucide-react";
-
-// ====== Types ======
-
-interface OrgStats {
-  active_projects: number;
-  tasks_in_progress: number;
-  completed_this_week: number;
-  total_cost_usd: number;
-}
-
-interface ProjectSummary {
-  id: string;
-  name: string;
-  status: "active" | "paused" | "completed";
-  agent_count: number;
-  progress: number; // 0-100
-}
-
-interface TeamMemberSummary {
-  id: string;
-  name: string;
-  avatar?: string;
-  tasks_count: number;
-}
-
-interface ActivityItem {
-  id: string;
-  user_name: string;
-  action: string;
-  target: string;
-  created_at: string;
-}
-
-// ====== Helpers ======
-
-function timeAgo(dateStr: string): string {
-  const now = new Date();
-  const date = new Date(dateStr);
-  const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-
-  if (seconds < 60) return "только что";
-  const minutes = Math.floor(seconds / 60);
-  if (minutes < 60) return `${minutes} мин назад`;
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours} ч назад`;
-  const days = Math.floor(hours / 24);
-  if (days === 1) return "вчера";
-  return `${days} дн назад`;
-}
-
-function statusColor(status: string): string {
-  switch (status) {
-    case "active": return "var(--accent-teal)";
-    case "paused": return "var(--accent-amber)";
-    case "completed": return "var(--accent-blue)";
-    default: return "var(--text-tertiary)";
-  }
-}
-
-function statusLabel(status: string): string {
-  switch (status) {
-    case "active": return "Активный";
-    case "paused": return "Пауза";
-    case "completed": return "Завершён";
-    default: return status;
-  }
-}
-
-// ====== Component ======
+import { api, type OrgStats, type OrgActivity, type OrgMember, type Goal, type OrgTask } from "../../lib/api";
 
 interface DashboardProps {
   orgRole: "owner" | "manager" | "member";
-  onNavigate: (page: string) => void;
+  onNavigate?: (page: string) => void;
 }
 
 export function Dashboard({ orgRole, onNavigate }: DashboardProps) {
-  const isOwner = orgRole === "owner";
+  const [stats, setStats] = useState<OrgStats | null>(null);
+  const [goals, setGoals] = useState<Goal[]>([]);
+  const [members, setMembers] = useState<OrgMember[]>([]);
+  const [activity, setActivity] = useState<OrgActivity[]>([]);
+  const [recentTasks, setRecentTasks] = useState<OrgTask[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const isManager = orgRole === "owner" || orgRole === "manager";
 
-  // Mock data — replace with API calls
-  const [stats] = useState<OrgStats>({
-    active_projects: 12,
-    tasks_in_progress: 34,
-    completed_this_week: 18,
-    total_cost_usd: 247.5,
-  });
+  useEffect(() => {
+    async function load() {
+      try {
+        const promises: Promise<any>[] = [
+          api.goals.list(),
+        ];
+        if (isManager) {
+          promises.push(
+            api.org.getStats(),
+            api.org.getMembers(),
+            api.org.getActivity(20),
+            api.org.getTasks(),
+          );
+        }
+        const results = await Promise.all(promises);
+        setGoals(results[0] || []);
+        if (isManager) {
+          setStats(results[1] || null);
+          setMembers(results[2] || []);
+          setActivity(results[3] || []);
+          setRecentTasks((results[4] || []).slice(0, 8));
+        }
+      } catch (err: any) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    }
+    load();
+  }, [isManager]);
 
-  const [projects] = useState<ProjectSummary[]>([
-    { id: "1", name: "Редизайн лендинга", status: "active", agent_count: 3, progress: 72 },
-    { id: "2", name: "API интеграция CRM", status: "active", agent_count: 2, progress: 45 },
-    { id: "3", name: "Мобильное приложение v2", status: "paused", agent_count: 4, progress: 30 },
-    { id: "4", name: "Аналитика пользователей", status: "active", agent_count: 1, progress: 88 },
-    { id: "5", name: "Чат-бот поддержки", status: "completed", agent_count: 2, progress: 100 },
-  ]);
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <Loader2 size={24} className="animate-spin" style={{ color: "var(--accent-blue)" }} />
+      </div>
+    );
+  }
 
-  const [team] = useState<TeamMemberSummary[]>([
-    { id: "1", name: "Алексей К.", tasks_count: 8 },
-    { id: "2", name: "Мария П.", tasks_count: 5 },
-    { id: "3", name: "Дмитрий С.", tasks_count: 12 },
-    { id: "4", name: "Елена В.", tasks_count: 3 },
-    { id: "5", name: "Сергей Н.", tasks_count: 7 },
-  ]);
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-full gap-2" style={{ color: "var(--accent-rose)" }}>
+        <AlertCircle size={18} />
+        <span className="text-sm">{error}</span>
+      </div>
+    );
+  }
 
-  const [activity] = useState<ActivityItem[]>([
-    { id: "1", user_name: "Алексей К.", action: "завершил задачу", target: "Верстка главной страницы", created_at: new Date(Date.now() - 5 * 60000).toISOString() },
-    { id: "2", user_name: "ИИ Агент", action: "создал отчёт", target: "Анализ конкурентов", created_at: new Date(Date.now() - 32 * 60000).toISOString() },
-    { id: "3", user_name: "Мария П.", action: "добавила комментарий", target: "API интеграция", created_at: new Date(Date.now() - 60 * 60000).toISOString() },
-    { id: "4", user_name: "Дмитрий С.", action: "переместил задачу в", target: "Ревью", created_at: new Date(Date.now() - 2 * 3600000).toISOString() },
-    { id: "5", user_name: "Елена В.", action: "одобрила задачу", target: "Дизайн карточек", created_at: new Date(Date.now() - 3 * 3600000).toISOString() },
-    { id: "6", user_name: "ИИ Агент", action: "начал работу над", target: "Оптимизация запросов", created_at: new Date(Date.now() - 4 * 3600000).toISOString() },
-    { id: "7", user_name: "Сергей Н.", action: "создал проект", target: "Новый дашборд", created_at: new Date(Date.now() - 5 * 3600000).toISOString() },
-    { id: "8", user_name: "Алексей К.", action: "назначил задачу", target: "Мария П.", created_at: new Date(Date.now() - 8 * 3600000).toISOString() },
-    { id: "9", user_name: "ИИ Агент", action: "завершил анализ", target: "Воронка продаж", created_at: new Date(Date.now() - 12 * 3600000).toISOString() },
-    { id: "10", user_name: "Мария П.", action: "обновила статус", target: "Мобильное приложение v2", created_at: new Date(Date.now() - 24 * 3600000).toISOString() },
-  ]);
+  const statCards = stats ? [
+    { icon: FolderOpen, label: "Проекты", value: stats.active_projects, color: "var(--accent-blue)" },
+    { icon: ClipboardList, label: "Бэклог", value: stats.tasks_backlog, color: "var(--accent-amber)" },
+    { icon: ListChecks, label: "В работе", value: stats.tasks_in_progress, color: "var(--accent-teal)" },
+    { icon: Eye, label: "На проверке", value: stats.tasks_review_operator + stats.tasks_review_manager, color: "var(--accent-lavender)" },
+    { icon: CheckCircle2, label: "Выполнено (нед.)", value: stats.completed_this_week, color: "var(--accent-green)" },
+    ...(orgRole === "owner" ? [{ icon: DollarSign, label: "Расходы, $", value: stats.total_cost_usd.toFixed(2), color: "var(--accent-rose)" }] : []),
+  ] : [];
 
-  const statCards = [
-    {
-      label: "Активных проектов",
-      value: stats.active_projects,
-      icon: FolderOpen,
-      color: "var(--accent-blue)",
-    },
-    {
-      label: "Задач в работе",
-      value: stats.tasks_in_progress,
-      icon: ListChecks,
-      color: "var(--accent-amber)",
-    },
-    {
-      label: "Завершено за неделю",
-      value: stats.completed_this_week,
-      icon: CheckCircle2,
-      color: "var(--accent-teal)",
-    },
-    ...(isOwner
-      ? [
-          {
-            label: "Расходы",
-            value: `$${stats.total_cost_usd.toFixed(2)}`,
-            icon: DollarSign,
-            color: "var(--accent-rose)",
-          },
-        ]
-      : []),
-  ];
+  const statusColors: Record<string, string> = {
+    backlog: "var(--text-tertiary)",
+    in_progress: "var(--accent-blue)",
+    review_operator: "var(--accent-amber)",
+    review_manager: "var(--accent-lavender)",
+    done: "var(--accent-green)",
+    failed: "var(--accent-rose)",
+    pending: "var(--text-tertiary)",
+    active: "var(--accent-blue)",
+    paused: "var(--accent-amber)",
+    completed: "var(--accent-green)",
+  };
+
+  const statusLabels: Record<string, string> = {
+    backlog: "Бэклог",
+    in_progress: "В работе",
+    review_operator: "Проверка",
+    review_manager: "Ревью",
+    done: "Готово",
+    failed: "Ошибка",
+    pending: "Ожидание",
+    active: "Активен",
+    paused: "Пауза",
+    completed: "Завершён",
+  };
+
+  const actionLabels: Record<string, string> = {
+    created_organization: "создал организацию",
+    invited_member: "пригласил",
+    changed_member_role: "изменил роль",
+    removed_member: "удалил участника",
+    task_status_changed: "изменил статус задачи",
+  };
 
   return (
-    <div
-      className="h-full overflow-y-auto"
-      style={{ backgroundColor: "transparent" }}
-    >
-      <div className="max-w-[1200px] mx-auto p-6">
-        {/* Page Title */}
-        <div className="mb-6">
-          <h1
-            className="text-[22px] font-semibold"
-            style={{ color: "var(--text-primary)" }}
-          >
-            Главная
-          </h1>
-          <p className="text-[13px] mt-1" style={{ color: "var(--text-secondary)" }}>
-            Обзор активности организации
-          </p>
-        </div>
-
-        {/* Stats Cards */}
-        <div
-          className="grid gap-4 mb-6"
-          style={{
-            gridTemplateColumns: `repeat(${statCards.length}, 1fr)`,
-          }}
+    <div className="h-full overflow-y-auto p-6 md:p-8">
+      <div className="max-w-[1200px] mx-auto">
+        {/* Header */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-8"
         >
-          {statCards.map((card, i) => {
-            const Icon = card.icon;
-            return (
+          <h1 className="text-2xl font-bold" style={{ color: "var(--text-primary)" }}>Дашборд</h1>
+          <p className="text-sm mt-1" style={{ color: "var(--text-tertiary)" }}>
+            {isManager ? `${stats?.total_members || 0} участников · ${stats?.total_tasks || 0} задач` : "Ваше рабочее пространство"}
+          </p>
+        </motion.div>
+
+        {/* Stats row */}
+        {stats && (
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-8">
+            {statCards.map((card, i) => (
               <motion.div
                 key={card.label}
-                initial={{ opacity: 0, y: 12 }}
+                initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3, delay: i * 0.05 }}
-                className="rounded-xl p-5"
+                transition={{ delay: i * 0.05 }}
+                className="p-4 rounded-xl"
                 style={{
-                  backgroundColor: "rgba(36, 36, 38, 0.85)", backdropFilter: "blur(8px)",
+                  backgroundColor: "var(--bg-surface)",
                   border: "1px solid var(--border-default)",
                 }}
               >
-                <div className="flex items-center justify-between mb-3">
-                  <div
-                    className="w-9 h-9 rounded-lg flex items-center justify-center"
-                    style={{
-                      backgroundColor: `color-mix(in srgb, ${card.color} 15%, transparent)`,
-                      color: card.color,
-                    }}
-                  >
-                    <Icon size={18} />
-                  </div>
-                  <TrendingUp size={14} style={{ color: "var(--accent-teal)" }} />
+                <div className="flex items-center gap-2 mb-2">
+                  <card.icon size={16} style={{ color: card.color }} />
+                  <span className="text-[11px]" style={{ color: "var(--text-tertiary)" }}>{card.label}</span>
                 </div>
-                <div
-                  className="text-[24px] font-bold"
-                  style={{ color: "var(--text-primary)" }}
-                >
-                  {card.value}
-                </div>
-                <div
-                  className="text-[12px] mt-1"
-                  style={{ color: "var(--text-secondary)" }}
-                >
-                  {card.label}
-                </div>
+                <div className="text-xl font-bold" style={{ color: "var(--text-primary)" }}>{card.value}</div>
               </motion.div>
-            );
-          })}
-        </div>
+            ))}
+          </div>
+        )}
 
-        {/* Grid: Projects + Team + Activity */}
-        <div className="grid grid-cols-3 gap-4">
-          {/* Recent Projects — spans 2 cols */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Recent tasks */}
           <motion.div
-            className="col-span-2 rounded-xl p-5"
-            style={{
-              backgroundColor: "rgba(36, 36, 38, 0.85)", backdropFilter: "blur(8px)",
-              border: "1px solid var(--border-default)",
-            }}
-            initial={{ opacity: 0, y: 12 }}
+            initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: 0.2 }}
+            transition={{ delay: 0.2 }}
+            className="lg:col-span-2 rounded-xl p-5"
+            style={{ backgroundColor: "var(--bg-surface)", border: "1px solid var(--border-default)" }}
           >
             <div className="flex items-center justify-between mb-4">
-              <h2
-                className="text-[15px] font-semibold"
-                style={{ color: "var(--text-primary)" }}
-              >
-                Последние проекты
-              </h2>
-              <button
-                onClick={() => onNavigate("chat")}
-                className="text-[12px] flex items-center gap-1 transition-colors"
-                style={{ color: "var(--accent-blue)" }}
-                onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.8")}
-                onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
-              >
-                Все проекты <ArrowRight size={12} />
-              </button>
-            </div>
-
-            <div className="flex flex-col gap-3">
-              {projects.map((project) => (
+              <h2 className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>Последние задачи</h2>
+              {onNavigate && (
                 <button
-                  key={project.id}
-                  onClick={() => onNavigate("chat")}
-                  className="flex items-center gap-4 p-3 rounded-lg transition-colors text-left w-full"
-                  style={{ backgroundColor: "transparent" }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = "var(--bg-elevated)";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = "transparent";
-                  }}
+                  onClick={() => onNavigate("kanban")}
+                  className="flex items-center gap-1 text-xs transition-colors"
+                  style={{ color: "var(--accent-blue)" }}
                 >
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span
-                        className="text-[13px] font-medium truncate"
-                        style={{ color: "var(--text-primary)" }}
-                      >
-                        {project.name}
-                      </span>
-                      <span
-                        className="text-[10px] px-2 py-0.5 rounded-full font-medium flex-shrink-0"
-                        style={{
-                          backgroundColor: `color-mix(in srgb, ${statusColor(project.status)} 15%, transparent)`,
-                          color: statusColor(project.status),
-                        }}
-                      >
-                        {statusLabel(project.status)}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <span
-                        className="text-[11px] flex items-center gap-1"
-                        style={{ color: "var(--text-tertiary)" }}
-                      >
-                        <Bot size={11} /> {project.agent_count} агентов
-                      </span>
-                      <div className="flex-1 max-w-[200px]">
-                        <div
-                          className="h-1.5 rounded-full overflow-hidden"
-                          style={{ backgroundColor: "var(--bg-elevated)" }}
-                        >
-                          <motion.div
-                            className="h-full rounded-full"
-                            style={{ backgroundColor: statusColor(project.status) }}
-                            initial={{ width: 0 }}
-                            animate={{ width: `${project.progress}%` }}
-                            transition={{ duration: 0.8, delay: 0.3 }}
-                          />
-                        </div>
-                      </div>
-                      <span
-                        className="text-[11px] flex-shrink-0"
-                        style={{ color: "var(--text-tertiary)" }}
-                      >
-                        {project.progress}%
-                      </span>
-                    </div>
-                  </div>
-                  <ArrowRight size={14} style={{ color: "var(--text-tertiary)" }} />
+                  Kanban <ArrowRight size={12} />
                 </button>
-              ))}
+              )}
             </div>
-          </motion.div>
-
-          {/* Team Summary */}
-          <motion.div
-            className="rounded-xl p-5"
-            style={{
-              backgroundColor: "rgba(36, 36, 38, 0.85)", backdropFilter: "blur(8px)",
-              border: "1px solid var(--border-default)",
-            }}
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: 0.25 }}
-          >
-            <div className="flex items-center justify-between mb-4">
-              <h2
-                className="text-[15px] font-semibold"
-                style={{ color: "var(--text-primary)" }}
-              >
-                Команда
-              </h2>
-              <button
-                onClick={() => onNavigate("team")}
-                className="text-[12px] flex items-center gap-1 transition-colors"
-                style={{ color: "var(--accent-blue)" }}
-                onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.8")}
-                onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
-              >
-                Подробнее <ArrowRight size={12} />
-              </button>
-            </div>
-
-            {/* Avatars row */}
-            <div className="flex items-center mb-4">
-              <div className="flex -space-x-2">
-                {team.slice(0, 5).map((member, i) => (
+            {recentTasks.length === 0 ? (
+              <div className="text-center py-8" style={{ color: "var(--text-tertiary)" }}>
+                <ClipboardList size={24} className="mx-auto mb-2 opacity-40" />
+                <p className="text-sm">Задач пока нет</p>
+                <p className="text-xs mt-1">Создайте цель — AI разобьёт её на задачи</p>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {recentTasks.map((task) => (
                   <div
-                    key={member.id}
-                    className="w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-bold"
-                    style={{
-                      backgroundColor: `hsl(${i * 60 + 200}, 40%, 35%)`,
-                      color: "#fff",
-                      border: "2px solid var(--bg-surface)",
-                      zIndex: 5 - i,
-                    }}
-                    title={member.name}
+                    key={task.id}
+                    className="flex items-center gap-3 p-3 rounded-lg transition-colors"
+                    style={{ backgroundColor: "var(--bg-base)" }}
                   >
-                    {member.name.charAt(0)}
+                    <div
+                      className="w-2 h-2 rounded-full flex-shrink-0"
+                      style={{ backgroundColor: statusColors[task.status] || "var(--text-tertiary)" }}
+                    />
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-medium truncate" style={{ color: "var(--text-primary)" }}>{task.title}</div>
+                      <div className="text-[11px] flex items-center gap-2 mt-0.5" style={{ color: "var(--text-tertiary)" }}>
+                        {task.goal_title && <span>{task.goal_title}</span>}
+                        {task.created_by_ai && (
+                          <span className="flex items-center gap-0.5">
+                            <Bot size={10} /> AI
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <span
+                      className="text-[10px] px-2 py-0.5 rounded-full font-medium"
+                      style={{
+                        color: statusColors[task.status],
+                        backgroundColor: `color-mix(in srgb, ${statusColors[task.status] || "gray"} 15%, transparent)`,
+                      }}
+                    >
+                      {statusLabels[task.status] || task.status}
+                    </span>
                   </div>
                 ))}
               </div>
-              {team.length > 5 && (
-                <span
-                  className="text-[11px] ml-2"
-                  style={{ color: "var(--text-tertiary)" }}
-                >
-                  +{team.length - 5}
-                </span>
-              )}
-            </div>
-
-            {/* Member list */}
-            <div className="flex flex-col gap-2">
-              {team.map((member) => (
-                <div
-                  key={member.id}
-                  className="flex items-center justify-between py-1.5"
-                >
-                  <div className="flex items-center gap-2">
-                    <div
-                      className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold flex-shrink-0"
-                      style={{
-                        backgroundColor: "var(--bg-elevated)",
-                        color: "var(--text-secondary)",
-                        border: "1px solid var(--border-default)",
-                      }}
-                    >
-                      {member.name.charAt(0)}
-                    </div>
-                    <span
-                      className="text-[12px]"
-                      style={{ color: "var(--text-primary)" }}
-                    >
-                      {member.name}
-                    </span>
-                  </div>
-                  <span
-                    className="text-[11px] px-2 py-0.5 rounded-full"
-                    style={{
-                      backgroundColor: "var(--bg-elevated)",
-                      color: "var(--text-secondary)",
-                    }}
-                  >
-                    {member.tasks_count} задач
-                  </span>
-                </div>
-              ))}
-            </div>
+            )}
           </motion.div>
 
-          {/* Activity Feed — full width */}
-          <motion.div
-            className="col-span-3 rounded-xl p-5"
-            style={{
-              backgroundColor: "rgba(36, 36, 38, 0.85)", backdropFilter: "blur(8px)",
-              border: "1px solid var(--border-default)",
-            }}
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: 0.3 }}
-          >
-            <h2
-              className="text-[15px] font-semibold mb-4"
-              style={{ color: "var(--text-primary)" }}
-            >
-              Лента активности
-            </h2>
-
-            <div className="flex flex-col gap-0">
-              {activity.map((item, i) => {
-                const isAI = item.user_name.includes("ИИ");
-                return (
-                  <div
-                    key={item.id}
-                    className="flex items-center gap-3 py-2.5"
-                    style={{
-                      borderBottom:
-                        i < activity.length - 1
-                          ? "1px solid var(--border-subtle)"
-                          : "none",
-                    }}
-                  >
-                    <div
-                      className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0"
-                      style={{
-                        backgroundColor: isAI
-                          ? "color-mix(in srgb, var(--accent-lavender) 20%, transparent)"
-                          : "var(--bg-elevated)",
-                        color: isAI ? "var(--accent-lavender)" : "var(--text-secondary)",
-                        border: "1px solid var(--border-default)",
-                      }}
+          {/* Right column */}
+          <div className="space-y-6">
+            {/* Team */}
+            {isManager && (
+              <motion.div
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                className="rounded-xl p-5"
+                style={{ backgroundColor: "var(--bg-surface)", border: "1px solid var(--border-default)" }}
+              >
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>Команда</h2>
+                  {onNavigate && (
+                    <button
+                      onClick={() => onNavigate("team")}
+                      className="flex items-center gap-1 text-xs transition-colors"
+                      style={{ color: "var(--accent-blue)" }}
                     >
-                      {isAI ? <Bot size={13} /> : <User size={13} />}
+                      Все <ArrowRight size={12} />
+                    </button>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  {members.slice(0, 5).map((m) => (
+                    <div key={m.id} className="flex items-center gap-2.5">
+                      <div
+                        className="w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-bold flex-shrink-0"
+                        style={{
+                          backgroundColor: "var(--bg-elevated)",
+                          color: "var(--text-primary)",
+                          border: "1px solid var(--border-default)",
+                        }}
+                      >
+                        {(m.name || m.email).charAt(0).toUpperCase()}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-xs font-medium truncate" style={{ color: "var(--text-primary)" }}>
+                          {m.name || m.email}
+                        </div>
+                        <div className="text-[10px]" style={{ color: "var(--text-tertiary)" }}>
+                          {m.org_role === "owner" ? "Руководитель" : m.org_role === "manager" ? "Менеджер" : "Сотрудник"}
+                          {m.tasks_used_this_month > 0 && ` · ${m.tasks_used_this_month} задач`}
+                        </div>
+                      </div>
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <span className="text-[12px]">
-                        <span style={{ color: "var(--text-primary)", fontWeight: 500 }}>
-                          {item.user_name}
-                        </span>{" "}
-                        <span style={{ color: "var(--text-secondary)" }}>
-                          {item.action}
-                        </span>{" "}
-                        <span style={{ color: "var(--accent-blue)", fontWeight: 500 }}>
-                          {item.target}
-                        </span>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+
+            {/* Activity */}
+            {isManager && (
+              <motion.div
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
+                className="rounded-xl p-5"
+                style={{ backgroundColor: "var(--bg-surface)", border: "1px solid var(--border-default)" }}
+              >
+                <h2 className="text-sm font-semibold mb-4" style={{ color: "var(--text-primary)" }}>Активность</h2>
+                {activity.length === 0 ? (
+                  <p className="text-xs text-center py-4" style={{ color: "var(--text-tertiary)" }}>Нет активности</p>
+                ) : (
+                  <div className="space-y-3">
+                    {activity.slice(0, 8).map((a) => (
+                      <div key={a.id} className="flex items-start gap-2">
+                        <div className="w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0" style={{ backgroundColor: "var(--accent-blue)" }} />
+                        <div>
+                          <div className="text-xs" style={{ color: "var(--text-secondary)" }}>
+                            <span style={{ color: "var(--text-primary)" }} className="font-medium">{a.user_name}</span>{" "}
+                            {actionLabels[a.action] || a.action}
+                            {a.target && <> · <span style={{ color: "var(--text-primary)" }}>{a.target}</span></>}
+                          </div>
+                          {a.created_at && (
+                            <div className="text-[10px] mt-0.5" style={{ color: "var(--text-tertiary)" }}>
+                              {new Date(a.created_at).toLocaleString("ru")}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </motion.div>
+            )}
+
+            {/* Projects */}
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
+              className="rounded-xl p-5"
+              style={{ backgroundColor: "var(--bg-surface)", border: "1px solid var(--border-default)" }}
+            >
+              <h2 className="text-sm font-semibold mb-4" style={{ color: "var(--text-primary)" }}>Проекты</h2>
+              {goals.length === 0 ? (
+                <p className="text-xs text-center py-4" style={{ color: "var(--text-tertiary)" }}>Нет проектов</p>
+              ) : (
+                <div className="space-y-2">
+                  {goals.slice(0, 5).map((g) => (
+                    <div
+                      key={g.id}
+                      className="flex items-center gap-2 p-2 rounded-lg"
+                      style={{ backgroundColor: "var(--bg-base)" }}
+                    >
+                      <div
+                        className="w-2 h-2 rounded-full flex-shrink-0"
+                        style={{ backgroundColor: statusColors[g.status] || "var(--text-tertiary)" }}
+                      />
+                      <span className="text-xs font-medium truncate" style={{ color: "var(--text-primary)" }}>{g.title}</span>
+                      <span className="text-[10px] ml-auto flex-shrink-0" style={{ color: statusColors[g.status] }}>
+                        {statusLabels[g.status] || g.status}
                       </span>
                     </div>
-                    <span
-                      className="text-[11px] flex items-center gap-1 flex-shrink-0"
-                      style={{ color: "var(--text-tertiary)" }}
-                    >
-                      <Clock size={11} />
-                      {timeAgo(item.created_at)}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-          </motion.div>
+                  ))}
+                </div>
+              )}
+            </motion.div>
+          </div>
         </div>
       </div>
     </div>

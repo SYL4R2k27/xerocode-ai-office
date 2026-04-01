@@ -89,18 +89,24 @@ export interface Org {
 
 export interface OrgMember {
   id: string;
-  user_id: string;
-  name: string;
   email: string;
-  role: "owner" | "manager" | "member";
-  avatar?: string;
-  tasks_count: number;
-  joined_at: string;
+  name: string;
+  org_role: "owner" | "manager" | "member" | null;
+  tasks_used_this_month: number;
+  created_at: string | null;
 }
 
 export interface OrgStats {
+  total_members: number;
+  total_goals: number;
   active_projects: number;
+  total_tasks: number;
+  tasks_done: number;
   tasks_in_progress: number;
+  tasks_pending: number;
+  tasks_backlog: number;
+  tasks_review_operator: number;
+  tasks_review_manager: number;
   completed_this_week: number;
   total_cost_usd: number;
 }
@@ -110,7 +116,31 @@ export interface OrgActivity {
   user_name: string;
   action: string;
   target: string;
+  details?: Record<string, any>;
+  created_at: string | null;
+}
+
+export interface OrgTask {
+  id: string;
+  title: string;
+  description: string | null;
+  task_type: string;
+  status: string;
+  priority: number;
+  goal_id: string;
+  goal_title: string | null;
+  assigned_agent_id: string | null;
+  agent_name: string | null;
+  created_by_ai: boolean;
+  operator_id: string | null;
+  operator_name: string | null;
+  reviewer_id: string | null;
+  ai_result: string | null;
+  review_comment: string | null;
+  operator_approved_at: string | null;
+  manager_approved_at: string | null;
   created_at: string;
+  updated_at: string;
 }
 
 export interface Template {
@@ -202,7 +232,7 @@ export interface Task {
   title: string;
   description: string | null;
   task_type: string;
-  status: "pending" | "assigned" | "in_progress" | "done" | "failed";
+  status: "pending" | "assigned" | "in_progress" | "done" | "failed" | "backlog" | "review_operator" | "review_manager";
   priority: number;
   assigned_agent_id: string | null;
   depends_on: string[] | null;
@@ -394,8 +424,24 @@ export const api = {
         method: "POST",
         body: JSON.stringify({ email, role }),
       }),
+    changeRole: (userId: string, role: string) =>
+      request(`/org/members/${userId}/role`, {
+        method: "PATCH",
+        body: JSON.stringify({ role }),
+      }),
+    removeMember: (userId: string) =>
+      request(`/org/members/${userId}`, { method: "DELETE" }),
     getStats: () => request<OrgStats>("/org/stats"),
-    getActivity: () => request<OrgActivity[]>("/org/activity"),
+    getActivity: (limit = 50) => request<OrgActivity[]>(`/org/activity?limit=${limit}`),
+    getTasks: (status?: string) => {
+      const q = status ? `?status=${status}` : "";
+      return request<OrgTask[]>(`/org/tasks${q}`);
+    },
+    transitionTask: (taskId: string, status: string, comment?: string) =>
+      request(`/org/tasks/${taskId}/status`, {
+        method: "PATCH",
+        body: JSON.stringify({ status, comment }),
+      }),
   },
 
   // Autoprompt

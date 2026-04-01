@@ -4,7 +4,7 @@ import uuid
 from datetime import datetime
 from typing import List, Optional
 
-from sqlalchemy import DateTime, ForeignKey, Integer, String, Text, func
+from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, Text, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
@@ -24,7 +24,8 @@ class Task(Base):
         String(30), default="general"  # research | code | design | analysis | general
     )
     status: Mapped[str] = mapped_column(
-        String(20), default="pending"  # pending | assigned | in_progress | done | failed
+        String(30), default="backlog"
+        # backlog | in_progress | review_operator | review_manager | done | failed
     )
     priority: Mapped[int] = mapped_column(Integer, default=0)
 
@@ -39,6 +40,15 @@ class Task(Base):
     # Result
     result: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     result_files: Mapped[Optional[List[str]]] = mapped_column(StringArray(), nullable=True)
+
+    # Workflow fields
+    created_by_ai: Mapped[bool] = mapped_column(Boolean, default=False)
+    operator_id: Mapped[Optional[uuid.UUID]] = mapped_column(GUID(), nullable=True)
+    reviewer_id: Mapped[Optional[uuid.UUID]] = mapped_column(GUID(), nullable=True)
+    operator_approved_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    manager_approved_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    ai_result: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    review_comment: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
 
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
