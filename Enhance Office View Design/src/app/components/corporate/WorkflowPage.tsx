@@ -269,20 +269,66 @@ function WorkflowBuilder({ workflow, onSave, onBack, onRun }: {
   const [steps, setSteps] = useState<WorkflowStep[]>(workflow?.steps || []);
   const [selectedStep, setSelectedStep] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
   const canvasRef = useRef<HTMLDivElement>(null);
+  const dragRef = useRef<{ id: string; startX: number; startY: number; origX: number; origY: number } | null>(null);
+  const autoSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const addStep = useCallback(() => {
+  // Autosave: debounced 2s after any change
+  useEffect(() => {
+    if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current);
+    autoSaveTimer.current = setTimeout(async () => {
+      if (name.trim() && steps.length > 0) {
+        try {
+          await onSave({ name, description: description || undefined, steps });
+          setSaved(true);
+          setTimeout(() => setSaved(false), 1500);
+        } catch {}
+      }
+    }, 2000);
+    return () => { if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current); };
+  }, [name, description, steps]);
+
+  // Native drag for nodes
+  useEffect(() => {
+    const onMouseMove = (e: MouseEvent) => {
+      if (!dragRef.current) return;
+      const dx = e.clientX - dragRef.current.startX;
+      const dy = e.clientY - dragRef.current.startY;
+      setSteps(prev => prev.map(s =>
+        s.id === dragRef.current!.id
+          ? { ...s, x: Math.max(0, dragRef.current!.origX + dx), y: Math.max(0, dragRef.current!.origY + dy) }
+          : s
+      ));
+    };
+    const onMouseUp = () => { dragRef.current = null; };
+    window.addEventListener("mousemove", onMouseMove);
+    window.addEventListener("mouseup", onMouseUp);
+    return () => { window.removeEventListener("mousemove", onMouseMove); window.removeEventListener("mouseup", onMouseUp); };
+  }, []);
+
+  const startDrag = useCallback((e: React.MouseEvent, stepId: string) => {
+    const step = steps.find(s => s.id === stepId);
+    if (!step) return;
+    e.preventDefault();
+    dragRef.current = { id: stepId, startX: e.clientX, startY: e.clientY, origX: step.x, origY: step.y };
+  }, [steps]);
+
+  const addStep = useCallback((parentId?: string) => {
     const id = `s${Date.now()}`;
-    const lastStep = steps[steps.length - 1];
+    const parent = parentId ? steps.find(s => s.id === parentId) : steps[steps.length - 1];
+    // For branching: place below-right of parent, or next in line
+    const offsetX = parentId ? 0 : 280;
+    const offsetY = parentId ? 140 : 0;
     setSteps(prev => [...prev, {
       id,
       title: `Шаг ${prev.length + 1}`,
       prompt: "",
       model: "auto",
       task_type: "general",
-      depends_on: lastStep ? [lastStep.id] : [],
-      x: (lastStep?.x || 0) + 280,
-      y: lastStep?.y || 200,
+      depends_on: parent ? [parent.id] : [],
+      x: (parent?.x || 0) + offsetX,
+      y: (parent?.y || 200) + offsetY,
     }]);
     setSelectedStep(id);
   }, [steps]);
@@ -346,6 +392,9 @@ function WorkflowBuilder({ workflow, onSave, onBack, onRun }: {
               <Play size={14} /> Запустить
             </button>
           )}
+          <span className="text-[10px]" style={{ color: saved ? "var(--accent-green)" : "var(--text-tertiary)" }}>
+            {saving ? "Сохранение..." : saved ? "✓ Сохранено" : "Автосохранение"}
+          </span>
           <button
             onClick={handleSave}
             disabled={saving}
@@ -421,24 +470,15 @@ function WorkflowBuilder({ workflow, onSave, onBack, onRun }: {
 
           {/* Nodes */}
           {steps.map((step, i) => (
-            <motion.div
+            <div
               key={step.id}
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="absolute cursor-pointer"
+              className="absolute select-none group"
               style={{ left: step.x, top: step.y, width: 220 }}
-              drag
-              dragMomentum={false}
-              onDragEnd={(_, info) => {
-                updateStep(step.id, {
-                  x: step.x + info.offset.x,
-                  y: step.y + info.offset.y,
-                });
-              }}
               onClick={(e) => { e.stopPropagation(); setSelectedStep(step.id); }}
             >
               <div
-                className="rounded-xl p-3 transition-all"
+                className="rounded-xl p-3 transition-all cursor-grab active:cursor-grabbing"
+                onMouseDown={(e) => startDrag(e, step.id)}
                 style={{
                   backgroundColor: "var(--bg-surface)",
                   border: `2px solid ${selectedStep === step.id ? "var(--accent-blue)" : "var(--border-default)"}`,
@@ -449,31 +489,49 @@ function WorkflowBuilder({ workflow, onSave, onBack, onRun }: {
                   <div className="flex items-center gap-1.5">
                     <div
                       className="w-5 h-5 rounded flex items-center justify-center text-[10px] font-bold"
-                      style={{ backgroundColor: "var(--accent-blue)", color: "#fff" }}
+                      style={{ backgroundColor: step.depends_on.length === 0 ? "var(--accent-green)" : "var(--accent-blue)", color: "#fff" }}
                     >
                       {i + 1}
                     </div>
                     <span className="text-xs font-semibold truncate" style={{ color: "var(--text-primary)" }}>{step.title}</span>
                   </div>
-                  <button
-                    onClick={(e) => { e.stopPropagation(); removeStep(step.id); }}
-                    className="p-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity"
-                    style={{ color: "var(--text-tertiary)" }}
-                    onMouseEnter={e => { (e.target as HTMLElement).style.color = "var(--accent-rose)"; }}
-                    onMouseLeave={e => { (e.target as HTMLElement).style.color = "var(--text-tertiary)"; }}
-                  >
-                    <X size={12} />
-                  </button>
+                  <div className="flex items-center gap-0.5">
+                    {/* Branch button */}
+                    <button
+                      onClick={(e) => { e.stopPropagation(); addStep(step.id); }}
+                      className="p-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity"
+                      style={{ color: "var(--accent-teal)" }}
+                      title="Добавить ветку от этого шага"
+                    >
+                      <GitBranch size={11} />
+                    </button>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); removeStep(step.id); }}
+                      className="p-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity"
+                      style={{ color: "var(--text-tertiary)" }}
+                      onMouseEnter={e => { (e.target as HTMLElement).style.color = "var(--accent-rose)"; }}
+                      onMouseLeave={e => { (e.target as HTMLElement).style.color = "var(--text-tertiary)"; }}
+                    >
+                      <X size={11} />
+                    </button>
+                  </div>
                 </div>
                 <p className="text-[10px] line-clamp-2 mb-1.5" style={{ color: "var(--text-tertiary)" }}>
-                  {step.prompt || "Без промпта"}
+                  {step.prompt || "Кликните чтобы добавить промпт →"}
                 </p>
-                <div className="flex items-center gap-1">
-                  <Bot size={9} style={{ color: "var(--accent-lavender)" }} />
-                  <span className="text-[9px]" style={{ color: "var(--text-tertiary)" }}>{step.model}</span>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1">
+                    <Bot size={9} style={{ color: "var(--accent-lavender)" }} />
+                    <span className="text-[9px]" style={{ color: "var(--text-tertiary)" }}>{step.model}</span>
+                  </div>
+                  {step.depends_on.length > 1 && (
+                    <span className="text-[8px] px-1 rounded" style={{ backgroundColor: "var(--bg-elevated)", color: "var(--accent-amber)" }}>
+                      merge
+                    </span>
+                  )}
                 </div>
               </div>
-            </motion.div>
+            </div>
           ))}
         </div>
 
