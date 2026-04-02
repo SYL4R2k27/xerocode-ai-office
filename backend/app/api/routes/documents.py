@@ -158,91 +158,153 @@ def _generate_pptx_from_structure(slides_data: list[dict], theme_name: str = "bu
     return buf
 
 
-async def _ai_generate_slides(prompt: str, count: int) -> list[dict]:
-    """Use AI (Groq) to generate slide structure."""
+async def _call_ai(system_prompt: str, user_prompt: str, prefer_premium: bool = False) -> str | None:
+    """Call AI model with fallback chain: OpenRouter (Claude/GPT) → Groq (Llama)."""
     import httpx
     from app.core.config import settings
 
-    api_key = settings.groq_api_key
-    if not api_key:
-        return _generate_default_slides(prompt, count)
+    proxy = getattr(settings, "api_proxy", None)
 
-    system_prompt = f"""Ты — генератор презентаций. Создай JSON-массив из {count} слайдов по запросу.
-Каждый слайд: {{"title": "...", "subtitle": "...", "bullets": ["...", "..."], "notes": "..."}}
-Отвечай ТОЛЬКО JSON-массивом, без markdown, без ```."""
+    # Provider chain: direct keys first → OpenRouter → Groq fallback
+    providers = []
 
-    try:
-        proxy = getattr(settings, "api_proxy", None)
-        transport = httpx.AsyncHTTPTransport(proxy=proxy) if proxy else None
-        async with httpx.AsyncClient(transport=transport, timeout=30) as client:
-            resp = await client.post(
-                "https://api.groq.com/openai/v1/chat/completions",
-                headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
-                json={
-                    "model": "llama-3.3-70b-versatile",
-                    "messages": [
-                        {"role": "system", "content": system_prompt},
-                        {"role": "user", "content": prompt},
-                    ],
-                    "temperature": 0.7,
-                    "max_tokens": 4000,
-                },
-            )
-            if resp.status_code == 200:
-                content = resp.json()["choices"][0]["message"]["content"]
-                # Parse JSON from response
-                content = content.strip()
-                if content.startswith("```"):
-                    content = content.split("\n", 1)[1].rsplit("```", 1)[0]
-                slides = json.loads(content)
-                if isinstance(slides, list) and len(slides) > 0:
-                    return slides[:count]
-    except Exception as e:
-        print(f"AI slide generation failed: {e}")
+    # 1. Anthropic direct (Claude Sonnet — лучший для структурированного JSON)
+    if prefer_premium and getattr(settings, "anthropic_api_key", None):
+        providers.append({
+            "url": "https://api.anthropic.com/v1/messages",
+            "key": settings.anthropic_api_key,
+            "model": "claude-sonnet-4-20250514",
+            "name": "Anthropic/Claude",
+            "is_anthropic": True,
+        })
+
+    # 2. OpenAI direct (GPT-4.1)
+    if prefer_premium and getattr(settings, "openai_api_key", None):
+        providers.append({
+            "url": "https://api.openai.com/v1/chat/completions",
+            "key": settings.openai_api_key,
+            "model": "gpt-5.4",
+            "name": "OpenAI/GPT-5.4",
+        })
+
+    # 3. OpenRouter (fallback premium)
+    if getattr(settings, "openrouter_api_key", None):
+        providers.append({
+            "url": "https://openrouter.ai/api/v1/chat/completions",
+            "key": settings.openrouter_api_key,
+            "model": "anthropic/claude-sonnet-4-20250514",
+            "name": "OpenRouter/Claude",
+        })
+
+    # 4. Groq (free fallback)
+    if getattr(settings, "groq_api_key", None):
+        providers.append({
+            "url": "https://api.groq.com/openai/v1/chat/completions",
+            "key": settings.groq_api_key,
+            "model": "llama-3.3-70b-versatile",
+            "name": "Groq/Llama",
+        })
+
+    for provider in providers:
+        try:
+            use_proxy = proxy and "groq" not in provider["url"]
+            transport = httpx.AsyncHTTPTransport(proxy=proxy) if use_proxy else None
+            async with httpx.AsyncClient(transport=transport, timeout=45) as client:
+
+                # Anthropic has a different API format
+                if provider.get("is_anthropic"):
+                    resp = await client.post(
+                        provider["url"],
+                        headers={
+                            "x-api-key": provider["key"],
+                            "anthropic-version": "2023-06-01",
+                            "Content-Type": "application/json",
+                        },
+                        json={
+                            "model": provider["model"],
+                            "max_tokens": 4000,
+                            "system": system_prompt,
+                            "messages": [{"role": "user", "content": user_prompt}],
+                        },
+                    )
+                    if resp.status_code == 200:
+                        content = resp.json()["content"][0]["text"]
+                        print(f"[Documents] Generated via {provider['name']}")
+                        return content
+                else:
+                    # OpenAI-compatible (OpenAI, OpenRouter, Groq)
+                    resp = await client.post(
+                        provider["url"],
+                        headers={
+                            "Authorization": f"Bearer {provider['key']}",
+                            "Content-Type": "application/json",
+                            "HTTP-Referer": "https://xerocode.space",
+                        },
+                        json={
+                            "model": provider["model"],
+                            "messages": [
+                                {"role": "system", "content": system_prompt},
+                                {"role": "user", "content": user_prompt},
+                            ],
+                            "temperature": 0.7,
+                            "max_tokens": 4000,
+                        },
+                    )
+                    if resp.status_code == 200:
+                        content = resp.json()["choices"][0]["message"]["content"]
+                        print(f"[Documents] Generated via {provider['name']}")
+                        return content
+
+                print(f"[Documents] {provider['name']} failed: {resp.status_code}")
+        except Exception as e:
+            print(f"[Documents] {provider['name']} error: {e}")
+
+    return None
+
+
+def _parse_ai_json(content: str) -> any:
+    """Parse JSON from AI response, handling markdown fences."""
+    content = content.strip()
+    if content.startswith("```"):
+        content = content.split("\n", 1)[1].rsplit("```", 1)[0].strip()
+    return json.loads(content)
+
+
+async def _ai_generate_slides(prompt: str, count: int) -> list[dict]:
+    """Generate presentation slides via AI (Claude/GPT preferred)."""
+    system_prompt = f"""Ты — эксперт по созданию презентаций. Создай JSON-массив из ровно {count} слайдов.
+Каждый слайд: {{"title": "заголовок", "subtitle": "подзаголовок или пусто", "bullets": ["пункт 1", "пункт 2", "пункт 3"], "notes": "заметки для спикера"}}
+Первый слайд — титульный. Последний — контакты/CTA.
+Текст на русском. Пиши конкретно, с цифрами и фактами где возможно.
+Отвечай ТОЛЬКО JSON-массивом."""
+
+    content = await _call_ai(system_prompt, prompt, prefer_premium=True)
+    if content:
+        try:
+            slides = _parse_ai_json(content)
+            if isinstance(slides, list) and len(slides) > 0:
+                return slides[:count]
+        except Exception as e:
+            print(f"[Documents] JSON parse error for slides: {e}")
 
     return _generate_default_slides(prompt, count)
 
 
 async def _ai_generate_doc(prompt: str) -> tuple[str, list[dict]]:
-    """Use AI (Groq) to generate document structure."""
-    import httpx
-    from app.core.config import settings
+    """Generate document structure via AI (Claude/GPT preferred)."""
+    system_prompt = """Ты — эксперт по созданию документов. Создай JSON:
+{"title": "Название документа", "sections": [{"title": "Раздел", "content": "Подробный текст раздела...", "bullets": ["пункт если нужен"]}]}
+Минимум 4 раздела. Текст на русском, профессиональный тон.
+Отвечай ТОЛЬКО JSON."""
 
-    api_key = settings.groq_api_key
-    if not api_key:
-        return _generate_default_doc(prompt)
-
-    system_prompt = """Ты — генератор документов. Создай JSON-объект:
-{"title": "...", "sections": [{"title": "...", "content": "...", "bullets": ["..."]}]}
-Отвечай ТОЛЬКО JSON, без markdown, без ```."""
-
-    try:
-        proxy = getattr(settings, "api_proxy", None)
-        transport = httpx.AsyncHTTPTransport(proxy=proxy) if proxy else None
-        async with httpx.AsyncClient(transport=transport, timeout=30) as client:
-            resp = await client.post(
-                "https://api.groq.com/openai/v1/chat/completions",
-                headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
-                json={
-                    "model": "llama-3.3-70b-versatile",
-                    "messages": [
-                        {"role": "system", "content": system_prompt},
-                        {"role": "user", "content": prompt},
-                    ],
-                    "temperature": 0.7,
-                    "max_tokens": 4000,
-                },
-            )
-            if resp.status_code == 200:
-                content = resp.json()["choices"][0]["message"]["content"]
-                content = content.strip()
-                if content.startswith("```"):
-                    content = content.split("\n", 1)[1].rsplit("```", 1)[0]
-                data = json.loads(content)
-                if isinstance(data, dict) and "sections" in data:
-                    return data.get("title", prompt[:100]), data["sections"]
-    except Exception as e:
-        print(f"AI doc generation failed: {e}")
+    content = await _call_ai(system_prompt, prompt, prefer_premium=True)
+    if content:
+        try:
+            data = _parse_ai_json(content)
+            if isinstance(data, dict) and "sections" in data:
+                return data.get("title", prompt[:100]), data["sections"]
+        except Exception as e:
+            print(f"[Documents] JSON parse error for doc: {e}")
 
     return _generate_default_doc(prompt)
 
@@ -389,14 +451,32 @@ async def generate_xlsx(
     current_user: User = Depends(get_current_user),
 ):
     """Generate an XLSX spreadsheet from a prompt."""
-    # Default example data
+    # Try AI generation
+    system_prompt = """Ты — эксперт по таблицам. Создай JSON:
+{"title": "Название", "headers": ["Колонка1", "Колонка2"], "rows": [["значение1", "значение2"], ...]}
+Минимум 5 строк данных. Числовые значения — числами, не строками.
+Отвечай ТОЛЬКО JSON."""
+
     headers = ["#", "Задача", "Статус", "Приоритет", "Ответственный"]
     rows = [
         [1, "Исследование рынка", "Готово", "Высокий", "AI Agent"],
         [2, "Анализ конкурентов", "В работе", "Средний", "AI Agent"],
         [3, "Подготовка отчёта", "Бэклог", "Высокий", "Оператор"],
     ]
-    buf = _generate_xlsx(data.prompt[:31], headers, rows)
+    title = data.prompt[:31]
+
+    content = await _call_ai(system_prompt, data.prompt, prefer_premium=True)
+    if content:
+        try:
+            table_data = _parse_ai_json(content)
+            if isinstance(table_data, dict) and "headers" in table_data and "rows" in table_data:
+                headers = table_data["headers"]
+                rows = table_data["rows"]
+                title = table_data.get("title", title)[:31]
+        except Exception as e:
+            print(f"[Documents] XLSX JSON parse error: {e}")
+
+    buf = _generate_xlsx(title, headers, rows)
 
     filename = f"XeroCode_Data_{datetime.now().strftime('%Y%m%d_%H%M')}.xlsx"
     return StreamingResponse(
