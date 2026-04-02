@@ -24,7 +24,7 @@ PLANS = [
     {
         "id": "pro",
         "name": "PRO",
-        "price_rub": 990,
+        "price_rub": 1990,
         "billing": "monthly",
         "features": [
             "500 задач в месяц",
@@ -38,7 +38,7 @@ PLANS = [
     {
         "id": "pro_plus",
         "name": "PRO PLUS",
-        "price_rub": 2490,
+        "price_rub": 5490,
         "billing": "monthly",
         "features": [
             "2 000 задач в месяц",
@@ -68,7 +68,7 @@ PLANS = [
     {
         "id": "corporate_5",
         "name": "CORPORATE (5 профилей)",
-        "price_rub": 179990,
+        "price_rub": 89990,
         "billing": "monthly",
         "features": [
             "5 профилей",

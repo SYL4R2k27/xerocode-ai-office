@@ -243,7 +243,7 @@ function ChatInterface({
     return <div className="flex-1" style={{ backgroundColor: "var(--bg-base)" }} />;
   }
 
-  const isCorporateEmbed = !!authStore.user?.organization_id;
+  const isCorporateEmbed = false; // Показываем sidebar всегда, в т.ч. в корп. режиме
 
   return (
     <>
@@ -411,6 +411,7 @@ export default function App() {
   const [corporatePage, setCorporatePage] = useState<CorporatePage>("dashboard");
   // Admin: кнопка переключения профиля для тестов
   const [adminTestCorporate, setAdminTestCorporate] = useState(false);
+  const [adminForceNonCorp, setAdminForceNonCorp] = useState(false);
 
   // Landing page state (must be before any conditional returns — React hooks rule)
   const [showLanding, setShowLanding] = useState(true);
@@ -535,7 +536,7 @@ export default function App() {
   // Проверяем, корпоративный ли пользователь
   const isRealCorporate = !!(user.organization_id && user.org_role);
   const isAdmin = user.plan === "admin" || user.is_admin;
-  const isCorporate = isRealCorporate || (isAdmin && adminTestCorporate);
+  const isCorporate = (isRealCorporate || (isAdmin && adminTestCorporate)) && !adminForceNonCorp;
   const orgRole = isRealCorporate
     ? (user.org_role || "member") as "owner" | "manager" | "member"
     : "owner";
@@ -680,12 +681,9 @@ export default function App() {
             onClick={() => {
               if (isCorporate) {
                 setAdminTestCorporate(false);
-                // Если реальная организация — временно "отключаем" корп вид
-                if (isRealCorporate) {
-                  // Перезагрузка уберёт тест-флаг, но для моментального переключения:
-                  window.location.reload();
-                }
+                setAdminForceNonCorp(true);
               } else {
+                setAdminForceNonCorp(false);
                 setAdminTestCorporate(true);
               }
             }}
@@ -698,7 +696,7 @@ export default function App() {
             }}
             title={isCorporate ? "Переключить на обычный вид" : "Переключить на корпоративный вид"}
           >
-            {isCorporate ? "← Обычный вид" : "🏢 Corp View"}
+            {isCorporate ? "← Обычный вид" : "Corp View"}
           </button>
         )}
 
@@ -738,7 +736,7 @@ export default function App() {
       {/* Админ: универсальная кнопка переключения (корп ↔ обычный) */}
       {isAdmin && !isCorporate && (
         <button
-          onClick={() => setAdminTestCorporate(true)}
+          onClick={() => { setAdminTestCorporate(true); setAdminForceNonCorp(false); }}
           className="fixed bottom-4 right-4 z-50 flex items-center gap-2 px-3 py-2 rounded-xl text-[11px] font-medium transition-all hover:scale-105"
           style={{
             backgroundColor: "rgba(147,51,234,0.15)",
@@ -746,7 +744,7 @@ export default function App() {
             color: "#9333ea",
             backdropFilter: "blur(8px)",
           }}
-          title="Переключить на корпоративный вид (тест)"
+          title="Переключить на корпоративный вид"
         >
           Corp View
         </button>

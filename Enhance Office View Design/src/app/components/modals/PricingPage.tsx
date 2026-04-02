@@ -49,7 +49,7 @@ const plans = [
   {
     id: "pro",
     name: "PRO",
-    price: "990 ₽",
+    price: "1 990 ₽",
     priceNote: "/ месяц",
     icon: Sparkles,
     features: [
@@ -68,7 +68,7 @@ const plans = [
   {
     id: "pro_plus",
     name: "PRO PLUS",
-    price: "2 490 ₽",
+    price: "5 490 ₽",
     priceNote: "/ месяц",
     badge: "Популярный",
     icon: Rocket,
@@ -110,7 +110,7 @@ const plans = [
   {
     id: "corporate",
     name: "CORPORATE",
-    price: "от 179 990 ₽",
+    price: "от 89 990 ₽",
     priceNote: "/ месяц, счёт + НДС",
     icon: Building2,
     features: [

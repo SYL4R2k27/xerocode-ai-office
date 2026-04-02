@@ -505,7 +505,7 @@ export function ChatMessage({ message, agents, isGrouped, onOpenInPreview }: Cha
                   onClick={() => handleImageClick(part.value)}
                 />
               ) : (
-                <div key={i} style={{ color: "#E5E5E7" }}>
+                <div key={i} style={{ color: "var(--text-primary)" }}>
                   <MarkdownContent
                     content={part.value}
                     onOpenInPreview={onOpenInPreview}

@@ -197,7 +197,7 @@ export function ReportsPage({ orgRole }: ReportsPageProps) {
           style={{ backgroundColor: "var(--bg-surface)", border: "1px solid var(--border-default)" }}
         >
           <h2 className="text-sm font-semibold mb-4" style={{ color: "var(--text-primary)" }}>Воронка Workflow</h2>
-          <div className="flex items-end gap-2 h-[120px]">
+          <div className="flex items-end gap-3 h-[140px]">
             {[
               { label: "Бэклог", value: tasksByStatus.backlog, color: "var(--text-tertiary)" },
               { label: "В работе", value: tasksByStatus.in_progress, color: "var(--accent-blue)" },
@@ -205,16 +205,16 @@ export function ReportsPage({ orgRole }: ReportsPageProps) {
               { label: "Готово", value: tasksByStatus.done, color: "var(--accent-green)" },
             ].map((s, i) => {
               const maxVal = Math.max(1, tasksByStatus.backlog, tasksByStatus.in_progress, tasksByStatus.review, tasksByStatus.done);
-              const h = Math.max(8, (s.value / maxVal) * 100);
+              const hPx = Math.max(6, Math.round((s.value / maxVal) * 100));
               return (
                 <div key={s.label} className="flex-1 flex flex-col items-center gap-1">
                   <span className="text-xs font-bold" style={{ color: s.color }}>{s.value}</span>
                   <motion.div
                     initial={{ height: 0 }}
-                    animate={{ height: `${h}%` }}
-                    transition={{ duration: 0.6, delay: 0.5 + i * 0.1 }}
+                    animate={{ height: hPx }}
+                    transition={{ duration: 0.8, delay: 0.3 + i * 0.1, ease: [0.22, 1, 0.36, 1] }}
                     className="w-full rounded-t-lg"
-                    style={{ backgroundColor: s.color, minHeight: 4 }}
+                    style={{ backgroundColor: s.color }}
                   />
                   <span className="text-[10px] mt-1" style={{ color: "var(--text-tertiary)" }}>{s.label}</span>
                 </div>
