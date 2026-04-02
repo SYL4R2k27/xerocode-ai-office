@@ -158,6 +158,95 @@ def _generate_pptx_from_structure(slides_data: list[dict], theme_name: str = "bu
     return buf
 
 
+async def _ai_generate_slides(prompt: str, count: int) -> list[dict]:
+    """Use AI (Groq) to generate slide structure."""
+    import httpx
+    from app.core.config import settings
+
+    api_key = settings.groq_api_key
+    if not api_key:
+        return _generate_default_slides(prompt, count)
+
+    system_prompt = f"""Ты — генератор презентаций. Создай JSON-массив из {count} слайдов по запросу.
+Каждый слайд: {{"title": "...", "subtitle": "...", "bullets": ["...", "..."], "notes": "..."}}
+Отвечай ТОЛЬКО JSON-массивом, без markdown, без ```."""
+
+    try:
+        proxy = getattr(settings, "api_proxy", None)
+        transport = httpx.AsyncHTTPTransport(proxy=proxy) if proxy else None
+        async with httpx.AsyncClient(transport=transport, timeout=30) as client:
+            resp = await client.post(
+                "https://api.groq.com/openai/v1/chat/completions",
+                headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
+                json={
+                    "model": "llama-3.3-70b-versatile",
+                    "messages": [
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": prompt},
+                    ],
+                    "temperature": 0.7,
+                    "max_tokens": 4000,
+                },
+            )
+            if resp.status_code == 200:
+                content = resp.json()["choices"][0]["message"]["content"]
+                # Parse JSON from response
+                content = content.strip()
+                if content.startswith("```"):
+                    content = content.split("\n", 1)[1].rsplit("```", 1)[0]
+                slides = json.loads(content)
+                if isinstance(slides, list) and len(slides) > 0:
+                    return slides[:count]
+    except Exception as e:
+        print(f"AI slide generation failed: {e}")
+
+    return _generate_default_slides(prompt, count)
+
+
+async def _ai_generate_doc(prompt: str) -> tuple[str, list[dict]]:
+    """Use AI (Groq) to generate document structure."""
+    import httpx
+    from app.core.config import settings
+
+    api_key = settings.groq_api_key
+    if not api_key:
+        return _generate_default_doc(prompt)
+
+    system_prompt = """Ты — генератор документов. Создай JSON-объект:
+{"title": "...", "sections": [{"title": "...", "content": "...", "bullets": ["..."]}]}
+Отвечай ТОЛЬКО JSON, без markdown, без ```."""
+
+    try:
+        proxy = getattr(settings, "api_proxy", None)
+        transport = httpx.AsyncHTTPTransport(proxy=proxy) if proxy else None
+        async with httpx.AsyncClient(transport=transport, timeout=30) as client:
+            resp = await client.post(
+                "https://api.groq.com/openai/v1/chat/completions",
+                headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
+                json={
+                    "model": "llama-3.3-70b-versatile",
+                    "messages": [
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": prompt},
+                    ],
+                    "temperature": 0.7,
+                    "max_tokens": 4000,
+                },
+            )
+            if resp.status_code == 200:
+                content = resp.json()["choices"][0]["message"]["content"]
+                content = content.strip()
+                if content.startswith("```"):
+                    content = content.split("\n", 1)[1].rsplit("```", 1)[0]
+                data = json.loads(content)
+                if isinstance(data, dict) and "sections" in data:
+                    return data.get("title", prompt[:100]), data["sections"]
+    except Exception as e:
+        print(f"AI doc generation failed: {e}")
+
+    return _generate_default_doc(prompt)
+
+
 def _generate_default_slides(prompt: str, count: int) -> list[dict]:
     """Generate slide structure without AI (fallback)."""
     slides = [
@@ -266,7 +355,7 @@ async def generate_pptx(
     current_user: User = Depends(get_current_user),
 ):
     """Generate a PPTX presentation from a prompt."""
-    slides_data = _generate_default_slides(data.prompt, data.slides_count)
+    slides_data = await _ai_generate_slides(data.prompt, data.slides_count)
     buf = _generate_pptx_from_structure(slides_data, data.template)
 
     filename = f"XeroCode_Slides_{datetime.now().strftime('%Y%m%d_%H%M')}.pptx"
@@ -283,7 +372,7 @@ async def generate_docx(
     current_user: User = Depends(get_current_user),
 ):
     """Generate a DOCX document from a prompt."""
-    title, sections = _generate_default_doc(data.prompt)
+    title, sections = await _ai_generate_doc(data.prompt)
     buf = _generate_docx(title, sections)
 
     filename = f"XeroCode_Doc_{datetime.now().strftime('%Y%m%d_%H%M')}.docx"
