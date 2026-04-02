@@ -22,6 +22,7 @@ class User(Base):
     email: Mapped[str] = mapped_column(String(320), unique=True, index=True, nullable=False)
     password_hash: Mapped[str] = mapped_column(String(256), nullable=False)
     name: Mapped[str] = mapped_column(String(200), nullable=False)
+    avatar: Mapped[Optional[str]] = mapped_column(String(10), nullable=True)  # emoji avatar
     plan: Mapped[str] = mapped_column(String(20), default="free")  # free / pro / ultima
     tasks_used_this_month: Mapped[int] = mapped_column(Integer, default=0)
     tasks_reset_at: Mapped[Optional[datetime]] = mapped_column(

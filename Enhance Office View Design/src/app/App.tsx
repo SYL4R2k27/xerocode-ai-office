@@ -91,7 +91,7 @@ function ChatInterface({
   // Resizable panel refs
   const contextPanelRef = useRef<ImperativePanelHandle>(null);
   const sidebarPanelRef = useRef<ImperativePanelHandle>(null);
-  const [contextPanelOpen, setContextPanelOpen] = useState(true);
+  const [contextPanelOpen, setContextPanelOpen] = useState(false);
 
   // Auto-collapse sidebar on tablet, auto-hide on mobile
   useEffect(() => {

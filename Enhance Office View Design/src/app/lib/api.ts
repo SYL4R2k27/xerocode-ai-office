@@ -293,10 +293,10 @@ export const api = {
         body: JSON.stringify({ email, password }),
       }),
     me: () => request<User>("/auth/me"),
-    updateProfile: (name: string) =>
+    updateProfile: (name: string, avatar?: string) =>
       request<User>("/auth/profile", {
         method: "PATCH",
-        body: JSON.stringify({ name }),
+        body: JSON.stringify({ name, ...(avatar !== undefined ? { avatar } : {}) }),
       }),
     changePassword: (oldPassword: string, newPassword: string) =>
       request<{ message: string }>("/auth/change-password", {

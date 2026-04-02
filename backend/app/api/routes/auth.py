@@ -152,6 +152,7 @@ async def me(current_user: User = Depends(get_current_user)):
         "is_active": current_user.is_active,
         "tasks_used_this_month": current_user.tasks_used_this_month,
         "created_at": str(current_user.created_at),
+        "avatar": getattr(current_user, "avatar", None),
         "organization_id": str(current_user.organization_id) if current_user.organization_id else None,
         "org_role": current_user.org_role,
         "limits": get_user_limits(current_user),
@@ -167,6 +168,8 @@ async def update_profile(
 ):
     """Update user profile."""
     current_user.name = data.name
+    if data.avatar is not None:
+        current_user.avatar = data.avatar
     await db.commit()
     return {"status": "ok"}
 
