@@ -489,6 +489,13 @@ export function PricingPage({ open, onClose, currentPlan }: PricingPageProps) {
                           </div>
                         ) : (
                           <motion.button
+                            onClick={() => {
+                              if (plan.id === "corporate") {
+                                window.open("mailto:sales@xerocode.space?subject=Corporate%20план", "_blank");
+                              } else {
+                                alert(`Оплата тарифа "${plan.name}" будет доступна в ближайшем обновлении.\n\nПо вопросам: sales@xerocode.space`);
+                              }
+                            }}
                             className="w-full py-2.5 rounded-xl text-[13px] font-semibold text-white transition-all"
                             style={{
                               background: isUltima || isProPlus ? plan.gradient : "rgba(255,255,255,0.08)",

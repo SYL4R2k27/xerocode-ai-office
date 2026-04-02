@@ -33,7 +33,11 @@ interface ModelEntry {
   desc: string;
   category: string;
   free?: boolean;
+  platformKey?: boolean; // доступна с ключами платформы (без BYOK)
 }
+
+// Провайдеры с ключами платформы (доступны всем пользователям)
+const PLATFORM_PROVIDERS = ["openai", "anthropic", "google", "xai", "stability", "free"];
 
 const ALL_MODELS: ModelEntry[] = [
   // OpenAI — Flagship
@@ -709,6 +713,7 @@ export function ModelSetup({ agents, onAddAgent, onRemoveAgent, onClose }: Model
                         <div className="flex items-center gap-2">
                           <span className="text-[12px] font-semibold" style={{ color: "var(--text-primary)" }}>{m.name}</span>
                           {m.free && <span className="text-[8px] px-1.5 py-0.5 rounded" style={{ backgroundColor: "rgba(34,197,94,0.15)", color: "#22c55e" }}>FREE</span>}
+                          {PLATFORM_PROVIDERS.includes(m.provider) && !m.free && <span className="text-[8px] px-1.5 py-0.5 rounded" style={{ backgroundColor: "rgba(129,140,248,0.12)", color: "var(--accent-blue)" }}>Наш ключ</span>}
                         </div>
                         <div className="text-[10px]" style={{ color: "var(--text-tertiary)" }}>
                           <span style={{ color: provColor }}>{m.providerDisplay}</span>
