@@ -92,6 +92,34 @@ def _chunk_text(text: str, chunk_size: int = 500, overlap: int = 50) -> list[str
     return chunks if chunks else [text[:2000]]  # fallback
 
 
+async def _generate_embeddings(texts: list[str]) -> list[list[float]] | None:
+    """Generate embeddings via OpenAI text-embedding-3-small."""
+    import httpx
+    from app.core.config import settings
+
+    api_key = getattr(settings, "openai_api_key", None)
+    if not api_key:
+        return None
+
+    proxy = getattr(settings, "api_proxy", None)
+    transport = httpx.AsyncHTTPTransport(proxy=proxy) if proxy else None
+
+    try:
+        async with httpx.AsyncClient(transport=transport, timeout=30) as client:
+            resp = await client.post(
+                "https://api.openai.com/v1/embeddings",
+                headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
+                json={"model": "text-embedding-3-small", "input": texts[:50]},  # max 50 at a time
+            )
+            if resp.status_code == 200:
+                data = resp.json()["data"]
+                return [d["embedding"] for d in data]
+    except Exception as e:
+        print(f"[KB] Embedding error: {e}")
+
+    return None
+
+
 # ── Upload Document ──────────────────────────────────────────────────
 
 @router.post("/upload", response_model=DocumentResponse)
@@ -142,12 +170,17 @@ async def upload_document(
         "chunks_count": len(chunks),
     })
 
-    # Insert chunks (without embeddings for now — embedding requires API call)
+    # Generate embeddings
+    embeddings = await _generate_embeddings(chunks)
+
+    # Insert chunks with embeddings
     for i, chunk in enumerate(chunks):
         chunk_id = uuid.uuid4()
-        await db.execute(text("""
-            INSERT INTO kb_chunks (id, document_id, content, chunk_index, metadata)
-            VALUES (:id, :doc_id, :content, :idx, :meta)
+        embedding_val = embeddings[i] if embeddings and i < len(embeddings) else None
+        embedding_sql = f"'{embedding_val}'" if embedding_val else "NULL"
+        await db.execute(text(f"""
+            INSERT INTO kb_chunks (id, document_id, content, chunk_index, embedding, metadata)
+            VALUES (:id, :doc_id, :content, :idx, {embedding_sql}, :meta)
         """), {
             "id": str(chunk_id),
             "doc_id": str(doc_id),
@@ -220,26 +253,33 @@ async def search_knowledge(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """Search knowledge base using text similarity (full-text search)."""
-    # For now: ILIKE search (when embeddings are added, switch to vector similarity)
-    search_term = f"%{q}%"
-    result = await db.execute(text("""
-        SELECT c.id, c.document_id, d.filename, c.content, c.chunk_index,
-               similarity(c.content, :query) as sim
-        FROM kb_chunks c
-        JOIN kb_documents d ON c.document_id = d.id
-        WHERE d.user_id = :uid AND c.content ILIKE :search
-        ORDER BY length(c.content) ASC
-        LIMIT :lim
-    """), {
-        "uid": str(current_user.id),
-        "query": q,
-        "search": search_term,
-        "lim": limit,
-    })
-    rows = result.fetchall()
+    """Search knowledge base — vector similarity if embeddings available, ILIKE fallback."""
+    # Try vector search first
+    query_embedding = await _generate_embeddings([q])
+    if query_embedding and query_embedding[0]:
+        emb_str = str(query_embedding[0])
+        result = await db.execute(text(f"""
+            SELECT c.id, c.document_id, d.filename, c.content, c.chunk_index,
+                   1 - (c.embedding <=> '{emb_str}'::vector) as sim
+            FROM kb_chunks c
+            JOIN kb_documents d ON c.document_id = d.id
+            WHERE d.user_id = :uid AND c.embedding IS NOT NULL
+            ORDER BY c.embedding <=> '{emb_str}'::vector
+            LIMIT :lim
+        """), {"uid": str(current_user.id), "lim": limit})
+    else:
+        # Fallback: text search
+        search_term = f"%{q}%"
+        result = await db.execute(text("""
+            SELECT c.id, c.document_id, d.filename, c.content, c.chunk_index, 0.5 as sim
+            FROM kb_chunks c
+            JOIN kb_documents d ON c.document_id = d.id
+            WHERE d.user_id = :uid AND c.content ILIKE :search
+            ORDER BY c.chunk_index
+            LIMIT :lim
+        """), {"uid": str(current_user.id), "search": search_term, "lim": limit})
 
-    # Fallback if similarity() function not available
+    rows = result.fetchall()
     results = []
     for r in rows:
         results.append(SearchResult(
@@ -263,15 +303,27 @@ async def get_rag_context(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """Get relevant chunks for RAG (to inject into AI prompt)."""
-    search_term = f"%{q}%"
-    result = await db.execute(text("""
-        SELECT c.content, d.filename, c.chunk_index
-        FROM kb_chunks c
-        JOIN kb_documents d ON c.document_id = d.id
-        WHERE d.user_id = :uid AND c.content ILIKE :search
-        LIMIT :lim
-    """), {"uid": str(current_user.id), "search": search_term, "lim": limit})
+    """Get relevant chunks for RAG (to inject into AI prompt). Uses vector search."""
+    query_embedding = await _generate_embeddings([q])
+    if query_embedding and query_embedding[0]:
+        emb_str = str(query_embedding[0])
+        result = await db.execute(text(f"""
+            SELECT c.content, d.filename, c.chunk_index
+            FROM kb_chunks c
+            JOIN kb_documents d ON c.document_id = d.id
+            WHERE d.user_id = :uid AND c.embedding IS NOT NULL
+            ORDER BY c.embedding <=> '{emb_str}'::vector
+            LIMIT :lim
+        """), {"uid": str(current_user.id), "lim": limit})
+    else:
+        search_term = f"%{q}%"
+        result = await db.execute(text("""
+            SELECT c.content, d.filename, c.chunk_index
+            FROM kb_chunks c
+            JOIN kb_documents d ON c.document_id = d.id
+            WHERE d.user_id = :uid AND c.content ILIKE :search
+            LIMIT :lim
+        """), {"uid": str(current_user.id), "search": search_term, "lim": limit})
     rows = result.fetchall()
 
     context_parts = []
