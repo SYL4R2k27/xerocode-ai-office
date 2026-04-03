@@ -137,6 +137,31 @@ class CommunicationBus:
 
         # Build context
         messages = list(chat_history or [])
+
+        # Knowledge Base auto-inject: retrieve relevant chunks for RAG
+        try:
+            from sqlalchemy import text as sql_text
+            user_id = goal.user_id
+            # Check if user has KB documents
+            kb_result = await self.db.execute(sql_text("""
+                SELECT c.content, d.filename, c.chunk_index
+                FROM kb_chunks c
+                JOIN kb_documents d ON c.document_id = d.id
+                WHERE d.user_id = :uid AND c.content ILIKE :search
+                LIMIT 5
+            """), {"uid": str(user_id), "search": f"%{prompt[:100]}%"})
+            kb_rows = kb_result.fetchall()
+            if kb_rows:
+                kb_context = "\n\n".join(
+                    f"[Источник: {r[1]}, часть {r[2]+1}]\n{r[0][:500]}" for r in kb_rows
+                )
+                messages.append({
+                    "role": "user",
+                    "content": f"КОНТЕКСТ ИЗ БАЗЫ ЗНАНИЙ (используй для ответа, цитируй источники):\n\n{kb_context}"
+                })
+        except Exception:
+            pass  # KB not available or no documents — skip silently
+
         messages.append({"role": "user", "content": prompt})
 
         # Attach uploaded images as base64 (for vision-capable models)

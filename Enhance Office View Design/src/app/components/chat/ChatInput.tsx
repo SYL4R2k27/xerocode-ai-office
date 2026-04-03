@@ -155,6 +155,7 @@ export function ChatInput({ hasActiveGoal, activeGoal, goalStarted, onCreateGoal
   const [attachedFiles, setAttachedFiles] = useState<File[]>([]);
   const [isEnhancing, setIsEnhancing] = useState(false);
   const [panelOpen, setPanelOpen] = useState(false);
+  const [useKnowledgeBase, setUseKnowledgeBase] = useState(false);
   const [designParams, setDesignParams] = useState<DesignParams>(DEFAULT_DESIGN_PARAMS);
   const [codeParams, setCodeParams] = useState<CodeParams>(DEFAULT_CODE_PARAMS);
   const [researchParams, setResearchParams] = useState<ResearchParams>(DEFAULT_RESEARCH_PARAMS);
@@ -593,6 +594,18 @@ export function ChatInput({ hasActiveGoal, activeGoal, goalStarted, onCreateGoal
             className="flex items-end gap-2 rounded-xl px-3 py-2 min-w-0 overflow-hidden"
             style={{ backgroundColor: "var(--bg-surface)", border: "1px solid var(--border-default)" }}
           >
+            {/* KB toggle */}
+            <button
+              onClick={() => setUseKnowledgeBase(!useKnowledgeBase)}
+              className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-all"
+              style={{
+                backgroundColor: useKnowledgeBase ? "rgba(129,140,248,0.15)" : "transparent",
+                color: useKnowledgeBase ? "var(--accent-blue)" : "var(--text-tertiary)",
+              }}
+              title={useKnowledgeBase ? "База знаний: ВКЛ" : "База знаний: ВЫКЛ"}
+            >
+              <Archive size={14} />
+            </button>
             {/* Paperclip button */}
             <button
               onClick={() => fileInputRef.current?.click()}
