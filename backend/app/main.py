@@ -37,8 +37,8 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[o.strip() for o in settings.allowed_origins.split(",") if o.strip()],
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
+    allow_headers=["Authorization", "Content-Type", "X-Webhook-Secret"],
 )
 
 # Global error handler — hide stack traces

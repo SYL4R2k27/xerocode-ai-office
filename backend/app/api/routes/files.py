@@ -8,10 +8,32 @@ from pathlib import Path
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, status
 from fastapi.responses import FileResponse, StreamingResponse
 
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.core.auth import get_current_user
+from app.core.database import get_db
+from app.models.goal import Goal
 from app.models.user import User
 
 router = APIRouter(prefix="/files", tags=["Files"])
+
+
+async def _verify_goal_owner(goal_id: uuid_mod.UUID, user: User, db: AsyncSession) -> None:
+    """Verify goal belongs to current user or their organization."""
+    result = await db.execute(select(Goal).where(Goal.id == goal_id))
+    goal = result.scalar_one_or_none()
+    if not goal:
+        raise HTTPException(status_code=404, detail="Goal not found")
+    # Check: goal belongs to user, or user is in same org
+    if str(goal.user_id) != str(user.id):
+        if not user.organization_id:
+            raise HTTPException(status_code=403, detail="Access denied")
+        # Check if goal owner is in same org
+        owner_result = await db.execute(select(User).where(User.id == uuid_mod.UUID(str(goal.user_id))))
+        owner = owner_result.scalar_one_or_none()
+        if not owner or owner.organization_id != user.organization_id:
+            raise HTTPException(status_code=403, detail="Access denied")
 
 BASE_DIR = Path("/tmp/ai-office")
 MAX_FILE_SIZE = 50 * 1024 * 1024  # 50 MB
@@ -100,8 +122,10 @@ async def upload_file(
 async def list_files(
     goal_id: uuid_mod.UUID,
     _user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
 ):
     """List all files in a goal workspace."""
+    await _verify_goal_owner(goal_id, _user, db)
     workspace = _workspace(goal_id)
     if not workspace.exists():
         return {"files": []}
@@ -122,8 +146,10 @@ async def list_files(
 async def download_zip(
     goal_id: uuid_mod.UUID,
     _user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
 ):
     """Download all files in a goal workspace as a ZIP archive."""
+    await _verify_goal_owner(goal_id, _user, db)
     workspace = _workspace(goal_id)
     if not workspace.exists() or not any(workspace.iterdir()):
         raise HTTPException(
@@ -150,8 +176,10 @@ async def download_file(
     goal_id: uuid_mod.UUID,
     path: str,
     _user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
 ):
     """Download a specific file from a goal workspace."""
+    await _verify_goal_owner(goal_id, _user, db)
     workspace = _workspace(goal_id)
     file_path = (workspace / path).resolve()
 

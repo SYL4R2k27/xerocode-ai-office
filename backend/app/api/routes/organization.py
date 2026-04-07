@@ -389,8 +389,8 @@ async def org_tasks(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """Get all tasks across all organization members."""
-    _require_org(current_user)
+    """Get all tasks across all organization members. Manager+ only."""
+    _require_manager(current_user)
     org_id = current_user.organization_id
     goal_ids_subq = _org_member_goal_ids(org_id)
 

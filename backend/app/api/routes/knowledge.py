@@ -4,6 +4,7 @@ Knowledge Base — загрузка документов, парсинг, embedd
 from __future__ import annotations
 
 import io
+import json
 import uuid
 from datetime import datetime
 from typing import Optional
@@ -173,21 +174,33 @@ async def upload_document(
     # Generate embeddings
     embeddings = await _generate_embeddings(chunks)
 
-    # Insert chunks with embeddings
+    # Insert chunks with embeddings (parameterized — no SQL injection)
     for i, chunk in enumerate(chunks):
         chunk_id = uuid.uuid4()
         embedding_val = embeddings[i] if embeddings and i < len(embeddings) else None
-        embedding_sql = f"'{embedding_val}'" if embedding_val else "NULL"
-        await db.execute(text(f"""
-            INSERT INTO kb_chunks (id, document_id, content, chunk_index, embedding, metadata)
-            VALUES (:id, :doc_id, :content, :idx, {embedding_sql}, :meta)
-        """), {
-            "id": str(chunk_id),
-            "doc_id": str(doc_id),
-            "content": chunk,
-            "idx": i,
-            "meta": f'{{"filename": "{file.filename}", "chunk": {i}}}',
-        })
+        if embedding_val:
+            await db.execute(text("""
+                INSERT INTO kb_chunks (id, document_id, content, chunk_index, embedding, metadata)
+                VALUES (:id, :doc_id, :content, :idx, CAST(:embedding AS vector), :meta)
+            """), {
+                "id": str(chunk_id),
+                "doc_id": str(doc_id),
+                "content": chunk,
+                "idx": i,
+                "embedding": str(embedding_val),
+                "meta": json.dumps({"filename": file.filename, "chunk": i}),
+            })
+        else:
+            await db.execute(text("""
+                INSERT INTO kb_chunks (id, document_id, content, chunk_index, metadata)
+                VALUES (:id, :doc_id, :content, :idx, :meta)
+            """), {
+                "id": str(chunk_id),
+                "doc_id": str(doc_id),
+                "content": chunk,
+                "idx": i,
+                "meta": json.dumps({"filename": file.filename, "chunk": i}),
+            })
 
     await db.commit()
 
@@ -257,16 +270,15 @@ async def search_knowledge(
     # Try vector search first
     query_embedding = await _generate_embeddings([q])
     if query_embedding and query_embedding[0]:
-        emb_str = str(query_embedding[0])
-        result = await db.execute(text(f"""
+        result = await db.execute(text("""
             SELECT c.id, c.document_id, d.filename, c.content, c.chunk_index,
-                   1 - (c.embedding <=> '{emb_str}'::vector) as sim
+                   1 - (c.embedding <=> CAST(:qvec AS vector)) as sim
             FROM kb_chunks c
             JOIN kb_documents d ON c.document_id = d.id
             WHERE d.user_id = :uid AND c.embedding IS NOT NULL
-            ORDER BY c.embedding <=> '{emb_str}'::vector
+            ORDER BY c.embedding <=> CAST(:qvec AS vector)
             LIMIT :lim
-        """), {"uid": str(current_user.id), "lim": limit})
+        """), {"uid": str(current_user.id), "qvec": str(query_embedding[0]), "lim": limit})
     else:
         # Fallback: text search
         search_term = f"%{q}%"
@@ -306,15 +318,14 @@ async def get_rag_context(
     """Get relevant chunks for RAG (to inject into AI prompt). Uses vector search."""
     query_embedding = await _generate_embeddings([q])
     if query_embedding and query_embedding[0]:
-        emb_str = str(query_embedding[0])
-        result = await db.execute(text(f"""
+        result = await db.execute(text("""
             SELECT c.content, d.filename, c.chunk_index
             FROM kb_chunks c
             JOIN kb_documents d ON c.document_id = d.id
             WHERE d.user_id = :uid AND c.embedding IS NOT NULL
-            ORDER BY c.embedding <=> '{emb_str}'::vector
+            ORDER BY c.embedding <=> CAST(:qvec AS vector)
             LIMIT :lim
-        """), {"uid": str(current_user.id), "lim": limit})
+        """), {"uid": str(current_user.id), "qvec": str(query_embedding[0]), "lim": limit})
     else:
         search_term = f"%{q}%"
         result = await db.execute(text("""
