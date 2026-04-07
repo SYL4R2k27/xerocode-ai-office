@@ -17,29 +17,30 @@ import {
   FileText,
   Zap,
   BookOpen,
+  TrendingUp,
 } from "lucide-react";
 import { CorporateBackground } from "./CorporateBackground";
 import { BackgroundPicker } from "./BackgroundPicker";
 
-export type CorporatePage = "dashboard" | "chat" | "kanban" | "team" | "reports" | "workflows" | "documents" | "skills" | "knowledge" | "settings";
+export type CorporatePage = "dashboard" | "chat" | "crm" | "kanban" | "team" | "reports" | "workflows" | "documents" | "skills" | "knowledge" | "settings";
 
 interface NavItem {
   id: CorporatePage;
   icon: React.ElementType;
   label: string;
-  managerOnly?: boolean;
 }
 
-const navItems: NavItem[] = [
+const ALL_NAV_ITEMS: NavItem[] = [
   { id: "dashboard", icon: Home, label: "Главная" },
   { id: "chat", icon: MessageSquare, label: "XeroCode AI" },
+  { id: "crm", icon: TrendingUp, label: "CRM" },
   { id: "kanban", icon: KanbanSquare, label: "Задачи" },
   { id: "workflows", icon: GitBranch, label: "Workflows" },
   { id: "documents", icon: FileText, label: "Документы" },
   { id: "skills", icon: Zap, label: "Skills" },
   { id: "knowledge", icon: BookOpen, label: "База знаний" },
-  { id: "team", icon: Users, label: "Команда", managerOnly: true },
-  { id: "reports", icon: BarChart3, label: "Отчёты", managerOnly: true },
+  { id: "team", icon: Users, label: "Команда" },
+  { id: "reports", icon: BarChart3, label: "Отчёты" },
   { id: "settings", icon: Settings, label: "Настройки" },
 ];
 
@@ -49,6 +50,9 @@ interface CorporateLayoutProps {
   orgRole: "owner" | "manager" | "member";
   orgName: string;
   userName: string;
+  professionalRole?: string;
+  professionalRoleLabel?: string;
+  userModules?: string[];
   onLogout: () => void;
   onFocusMode?: () => void;
   children: React.ReactNode;
@@ -60,6 +64,9 @@ export function CorporateLayout({
   orgRole,
   orgName,
   userName,
+  professionalRole,
+  professionalRoleLabel,
+  userModules,
   onLogout,
   onFocusMode,
   children,
@@ -68,9 +75,10 @@ export function CorporateLayout({
   const [bgPickerOpen, setBgPickerOpen] = useState(false);
   const isManagerOrOwner = orgRole === "owner" || orgRole === "manager";
 
-  const filteredNav = navItems.filter(
-    (item) => !item.managerOnly || isManagerOrOwner
-  );
+  // Filter sidebar by user's modules (from professional role)
+  const filteredNav = userModules && userModules.length > 0
+    ? ALL_NAV_ITEMS.filter(item => userModules.includes(item.id))
+    : ALL_NAV_ITEMS; // show all if no modules specified (owner/admin)
 
   const roleLabels: Record<string, { label: string; color: string }> = {
     owner: { label: "Руководитель", color: "var(--accent-amber)" },
@@ -122,7 +130,7 @@ export function CorporateLayout({
                   {orgName}
                 </div>
                 <div className="text-[11px] truncate" style={{ color: currentRole.color }}>
-                  {currentRole.label}
+                  {professionalRoleLabel || currentRole.label}
                 </div>
               </div>
             </motion.div>

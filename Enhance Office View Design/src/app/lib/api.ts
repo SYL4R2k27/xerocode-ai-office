@@ -73,10 +73,56 @@ export interface User {
   plan: string;
   tasks_used_this_month: number;
   created_at: string;
+  avatar?: string;
+  is_admin?: boolean;
   // Corporate fields
   organization_id?: string;
   organization_name?: string;
   org_role?: "owner" | "manager" | "member";
+  // Professional role
+  professional_role?: string;
+  professional_role_label?: string;
+  permissions?: string[];
+  modules?: string[];
+}
+
+export type ProfessionalRole = "director" | "chief_accountant" | "accountant" | "sales_manager" | "project_manager" | "logistics" | "hr_manager" | "legal" | "marketer" | "operator";
+
+export interface RoleInfo {
+  id: ProfessionalRole;
+  label: string;
+  permissions_count: number;
+  modules: string[];
+}
+
+export interface CRMContact {
+  id: string;
+  name: string;
+  email: string | null;
+  phone: string | null;
+  company: string | null;
+  position: string | null;
+  notes: string | null;
+  created_at: string;
+}
+
+export interface CRMDeal {
+  id: string;
+  title: string;
+  amount: number;
+  currency: string;
+  stage: string;
+  contact_id: string | null;
+  assignee_id: string | null;
+  description: string | null;
+  contact_name?: string | null;
+  assignee_name?: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PipelineStats {
+  stages: Record<string, { count: number; total_amount: number; label: string }>;
 }
 
 export interface Org {
@@ -441,6 +487,35 @@ export const api = {
       request(`/org/tasks/${taskId}/status`, {
         method: "PATCH",
         body: JSON.stringify({ status, comment }),
+      }),
+  },
+
+  // CRM
+  crm: {
+    contacts: {
+      list: (search?: string) => request<CRMContact[]>(`/crm/contacts${search ? `?search=${encodeURIComponent(search)}` : ""}`),
+      create: (data: { name: string; email?: string; phone?: string; company?: string; position?: string; notes?: string }) =>
+        request<CRMContact>("/crm/contacts", { method: "POST", body: JSON.stringify(data) }),
+      delete: (id: string) => request(`/crm/contacts/${id}`, { method: "DELETE" }),
+    },
+    deals: {
+      list: (stage?: string) => request<CRMDeal[]>(`/crm/deals${stage ? `?stage=${stage}` : ""}`),
+      create: (data: { title: string; amount?: number; stage?: string; contact_id?: string; description?: string }) =>
+        request<CRMDeal>("/crm/deals", { method: "POST", body: JSON.stringify(data) }),
+      update: (id: string, data: Record<string, any>) =>
+        request(`/crm/deals/${id}`, { method: "PATCH", body: JSON.stringify(data) }),
+      delete: (id: string) => request(`/crm/deals/${id}`, { method: "DELETE" }),
+    },
+    pipeline: () => request<PipelineStats>("/crm/pipeline"),
+  },
+
+  // Roles
+  roles: {
+    list: () => request<RoleInfo[]>("/org/roles"),
+    setProfessionalRole: (userId: string, role: string) =>
+      request(`/org/members/${userId}/professional-role`, {
+        method: "PATCH",
+        body: JSON.stringify({ professional_role: role }),
       }),
   },
 

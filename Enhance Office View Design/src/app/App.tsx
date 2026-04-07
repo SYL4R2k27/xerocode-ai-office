@@ -14,6 +14,7 @@ import { SettingsPage } from "./components/corporate/SettingsPage";
 import { WorkflowPage } from "./components/corporate/WorkflowPage";
 import { DocumentsPage } from "./components/corporate/DocumentsPage";
 import { SkillsPage } from "./components/corporate/SkillsPage";
+import { CRMPage } from "./components/corporate/CRMPage";
 import { KnowledgePage } from "./components/corporate/KnowledgePage";
 import { KanbanBoard } from "./components/corporate/KanbanBoard";
 import { TeamPage } from "./components/corporate/TeamPage";
@@ -598,6 +599,9 @@ export default function App() {
           orgRole={orgRole}
           orgName={orgName}
           userName={user.name}
+          professionalRole={(user as any).professional_role}
+          professionalRoleLabel={(user as any).professional_role_label}
+          userModules={(user as any).modules}
           onLogout={authStore.logout}
           onFocusMode={() => setFocusMode(true)}
         >
@@ -619,6 +623,10 @@ export default function App() {
                 setShowPricing={setShowPricing}
               />
             </div>
+          )}
+
+          {corporatePage === "crm" && (
+            <CRMPage orgRole={orgRole} />
           )}
 
           {corporatePage === "kanban" && (
