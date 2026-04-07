@@ -4,11 +4,11 @@ import uuid
 from datetime import datetime
 from typing import Optional
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, func
+from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, Text, func
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.core.database import Base
-from app.core.db_types import GUID
+from app.core.db_types import GUID, JSONB
 
 
 class User(Base):
@@ -19,6 +19,8 @@ class User(Base):
         GUID(), ForeignKey("organizations.id", ondelete="SET NULL"), nullable=True
     )
     org_role: Mapped[Optional[str]] = mapped_column(String(20), nullable=True)  # owner / manager / member
+    professional_role: Mapped[Optional[str]] = mapped_column(String(30), nullable=True)  # director/accountant/sales/pm/logistics/hr/legal/marketer/operator
+    permissions: Mapped[Optional[dict]] = mapped_column(JSONB(), nullable=True)  # granular permissions
     email: Mapped[str] = mapped_column(String(320), unique=True, index=True, nullable=False)
     password_hash: Mapped[str] = mapped_column(String(256), nullable=False)
     name: Mapped[str] = mapped_column(String(200), nullable=False)

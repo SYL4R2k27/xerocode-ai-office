@@ -230,6 +230,55 @@ async def change_member_role(
     return {"detail": f"Role updated to {data.role}"}
 
 
+# ── Set professional role ───────────────────────────────────────────
+
+@router.patch("/members/{user_id}/professional-role")
+async def set_professional_role(
+    user_id: uuid.UUID,
+    data: dict,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Set professional role for a team member (owner only)."""
+    _require_owner(current_user)
+    from app.core.roles import ROLE_LABELS
+
+    role = data.get("professional_role", "operator")
+    if role not in ROLE_LABELS:
+        raise HTTPException(status_code=400, detail=f"Invalid role: {role}. Valid: {list(ROLE_LABELS.keys())}")
+
+    result = await db.execute(select(User).where(User.id == user_id))
+    target = result.scalar_one_or_none()
+    if not target or target.organization_id != current_user.organization_id:
+        raise HTTPException(status_code=404, detail="Member not found")
+
+    target.professional_role = role
+
+    await _log_action(
+        db, current_user.organization_id, current_user.id, "set_professional_role",
+        {"target_user_id": str(user_id), "role": role, "target": target.name or target.email},
+    )
+    await db.commit()
+    return {"detail": f"Professional role set to {ROLE_LABELS[role]}", "role": role}
+
+
+# ── Get roles list ──────────────────────────────────────────────────
+
+@router.get("/roles")
+async def list_roles():
+    """List all available professional roles."""
+    from app.core.roles import ROLE_LABELS, ROLE_PERMISSIONS, ROLE_MODULES
+    return [
+        {
+            "id": role_id,
+            "label": label,
+            "permissions_count": len(ROLE_PERMISSIONS.get(role_id, [])),
+            "modules": ROLE_MODULES.get(role_id, []),
+        }
+        for role_id, label in ROLE_LABELS.items()
+    ]
+
+
 # ── Remove member ────────────────────────────────────────────────────
 
 @router.delete("/members/{user_id}", status_code=200)

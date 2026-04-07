@@ -142,7 +142,9 @@ async def refresh_tokens(data: RefreshRequest, db: AsyncSession = Depends(get_db
 async def me(current_user: User = Depends(get_current_user)):
     """Get current user profile with subscription limits."""
     from app.core.subscription import get_user_limits
+    from app.core.roles import get_user_permissions, get_user_modules, ROLE_LABELS
 
+    prof_role = getattr(current_user, "professional_role", None)
     user_data = {
         "id": str(current_user.id),
         "email": current_user.email,
@@ -155,6 +157,10 @@ async def me(current_user: User = Depends(get_current_user)):
         "avatar": getattr(current_user, "avatar", None),
         "organization_id": str(current_user.organization_id) if current_user.organization_id else None,
         "org_role": current_user.org_role,
+        "professional_role": prof_role,
+        "professional_role_label": ROLE_LABELS.get(prof_role or "", ""),
+        "permissions": get_user_permissions(current_user),
+        "modules": get_user_modules(current_user),
         "limits": get_user_limits(current_user),
     }
     return user_data
