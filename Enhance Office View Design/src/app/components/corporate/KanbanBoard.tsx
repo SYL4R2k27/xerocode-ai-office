@@ -93,7 +93,7 @@ export function KanbanBoard({ orgRole }: KanbanBoardProps) {
     setCreating(true);
     try {
       const API_BASE = window.location.hostname === "localhost" ? "http://localhost:8000/api" : `${window.location.origin}/api`;
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem("ai_office_token");
       const resp = await fetch(`${API_BASE}/org/tasks`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },

@@ -23,8 +23,10 @@ import { DocumentRegistryPage } from "./components/corporate/DocumentRegistryPag
 import { HRPage } from "./components/corporate/HRPage";
 import { AnalyticsPage } from "./components/corporate/AnalyticsPage";
 import { IntegrationsPage } from "./components/corporate/IntegrationsPage";
+import { EDOPage } from "./components/corporate/EDOPage";
 import { AICopilot } from "./components/corporate/AICopilot";
 import { KanbanBoard } from "./components/corporate/KanbanBoard";
+import { GanttPage } from "./components/corporate/GanttPage";
 import { TeamPage } from "./components/corporate/TeamPage";
 import { MobileLayout } from "./components/mobile/MobileLayout";
 // Arena components imported inside ChatInterface
@@ -647,6 +649,10 @@ export default function App() {
             />
           )}
 
+          {corporatePage === "gantt" && (
+            <GanttPage onOpenTask={(taskId) => { /* could navigate to task detail */ }} />
+          )}
+
           {corporatePage === "workflows" && (
             <WorkflowPage orgRole={orgRole} />
           )}
@@ -689,6 +695,10 @@ export default function App() {
 
           {corporatePage === "integrations" && (
             <IntegrationsPage />
+          )}
+
+          {corporatePage === "edo" && (
+            <EDOPage />
           )}
 
           {corporatePage === "team" && (

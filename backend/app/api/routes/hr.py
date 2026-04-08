@@ -65,7 +65,17 @@ async def create_time_off(data: dict, user=Depends(get_current_user), db: AsyncS
 
 @router.patch("/time-off/{request_id}/decide")
 async def decide_time_off(request_id: str, data: dict, user=Depends(get_current_user), db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(TimeOffRequest).where(TimeOffRequest.id == request_id))
+    org_id = user.organization_id
+    if not org_id:
+        raise HTTPException(400, "Not in organization")
+    # Manager+ only
+    if user.org_role not in ("owner", "manager"):
+        raise HTTPException(403, "Only managers can approve time-off requests")
+    # Verify request belongs to same org
+    result = await db.execute(
+        select(TimeOffRequest).join(Employee, TimeOffRequest.employee_id == Employee.id)
+        .where(TimeOffRequest.id == request_id, Employee.organization_id == org_id)
+    )
     req = result.scalar_one_or_none()
     if not req:
         raise HTTPException(404, "Request not found")

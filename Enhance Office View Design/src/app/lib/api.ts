@@ -620,7 +620,7 @@ export const api = {
   // Voice
   voice: {
     transcribe: async (audioBlob: Blob, language: string = "ru"): Promise<{ text: string }> => {
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem("ai_office_token");
       const formData = new FormData();
       formData.append("file", audioBlob, "recording.webm");
       formData.append("language", language);

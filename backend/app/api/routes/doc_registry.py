@@ -92,7 +92,10 @@ async def create_document(
 
 @router.get("/registry/{doc_id}")
 async def get_document(doc_id: str, user=Depends(get_current_user), db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(DocumentRecord).where(DocumentRecord.id == doc_id))
+    org_id = user.organization_id
+    if not org_id:
+        raise HTTPException(400, "Not in organization")
+    result = await db.execute(select(DocumentRecord).where(DocumentRecord.id == doc_id, DocumentRecord.organization_id == org_id))
     doc = result.scalar_one_or_none()
     if not doc:
         raise HTTPException(404, "Document not found")
@@ -107,7 +110,10 @@ async def get_document(doc_id: str, user=Depends(get_current_user), db: AsyncSes
 
 @router.post("/registry/{doc_id}/submit-approval")
 async def submit_for_approval(doc_id: str, data: dict, user=Depends(get_current_user), db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(DocumentRecord).where(DocumentRecord.id == doc_id))
+    org_id = user.organization_id
+    if not org_id:
+        raise HTTPException(400, "Not in organization")
+    result = await db.execute(select(DocumentRecord).where(DocumentRecord.id == doc_id, DocumentRecord.organization_id == org_id))
     doc = result.scalar_one_or_none()
     if not doc:
         raise HTTPException(404, "Document not found")
@@ -124,7 +130,14 @@ async def submit_for_approval(doc_id: str, data: dict, user=Depends(get_current_
 
 @router.post("/approval/{step_id}/decide")
 async def decide_approval(step_id: str, data: dict, user=Depends(get_current_user), db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(ApprovalStep).where(ApprovalStep.id == step_id))
+    org_id = user.organization_id
+    if not org_id:
+        raise HTTPException(400, "Not in organization")
+    # Verify step belongs to user's org via document
+    result = await db.execute(
+        select(ApprovalStep).join(DocumentRecord, ApprovalStep.document_id == DocumentRecord.id)
+        .where(ApprovalStep.id == step_id, DocumentRecord.organization_id == org_id)
+    )
     step = result.scalar_one_or_none()
     if not step:
         raise HTTPException(404, "Approval step not found")
@@ -136,7 +149,7 @@ async def decide_approval(step_id: str, data: dict, user=Depends(get_current_use
     step.approver_id = user.id
 
     # Update document status if rejected or all approved
-    doc_result = await db.execute(select(DocumentRecord).where(DocumentRecord.id == step.document_id))
+    doc_result = await db.execute(select(DocumentRecord).where(DocumentRecord.id == step.document_id, DocumentRecord.organization_id == org_id))
     doc = doc_result.scalar_one_or_none()
     if doc:
         if action == "rejected":

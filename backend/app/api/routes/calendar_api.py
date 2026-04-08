@@ -67,7 +67,10 @@ async def create_event(data: dict, user=Depends(get_current_user), db: AsyncSess
 
 @router.patch("/events/{event_id}")
 async def update_event(event_id: str, data: dict, user=Depends(get_current_user), db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(CalendarEvent).where(CalendarEvent.id == event_id))
+    org_id = user.organization_id
+    if not org_id:
+        raise HTTPException(400, "Not in organization")
+    result = await db.execute(select(CalendarEvent).where(CalendarEvent.id == event_id, CalendarEvent.organization_id == org_id))
     event = result.scalar_one_or_none()
     if not event:
         raise HTTPException(404, "Event not found")
@@ -80,7 +83,10 @@ async def update_event(event_id: str, data: dict, user=Depends(get_current_user)
 
 @router.delete("/events/{event_id}")
 async def delete_event(event_id: str, user=Depends(get_current_user), db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(CalendarEvent).where(CalendarEvent.id == event_id))
+    org_id = user.organization_id
+    if not org_id:
+        raise HTTPException(400, "Not in organization")
+    result = await db.execute(select(CalendarEvent).where(CalendarEvent.id == event_id, CalendarEvent.organization_id == org_id))
     event = result.scalar_one_or_none()
     if not event:
         raise HTTPException(404, "Event not found")

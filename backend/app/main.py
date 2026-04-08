@@ -8,19 +8,55 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from app.api.routes import admin, agents, analytics, arena, audit, auth, autoprompt, calendar_api, channels, connectors, crm, custom_pools, doc_registry, documents, files, goals, hr, knowledge, messages, orchestration, organization, payments, research, tasks, telegram, templates, voice, workflow
+from app.api.routes import admin, agents, ai_slides, analytics, arena, audit, auth, autoprompt, calendar_api, channels, companies, connectors, crm, custom_pools, doc_registry, documents, edo, files, goals, google_integration, hr, i18n, knowledge, messages, orchestration, organization, payments, research, slack, tasks, task_templates_api, telegram, templates, voice, workflow
 from app.api.websocket import setup_websocket
 from app.core.config import settings
-from app.core.database import Base, engine
+from app.core.database import Base, engine, async_session
+
+
+async def _monthly_usage_reset():
+    """Reset monthly usage counters on 1st of each month."""
+    import asyncio
+    from datetime import datetime, timezone
+    from sqlalchemy import update, text
+
+    while True:
+        now = datetime.now(timezone.utc)
+        if now.day == 1 and now.hour == 0:
+            try:
+                async with async_session() as db:
+                    await db.execute(text("UPDATE users SET tasks_used_this_month = 0"))
+                    await db.commit()
+                    logging.getLogger("uvicorn.error").info("[Cron] Monthly usage reset completed")
+            except Exception as e:
+                logging.getLogger("uvicorn.error").error(f"[Cron] Reset failed: {e}")
+        await asyncio.sleep(3600)  # check every hour
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    import asyncio
     # Startup: create tables (dev only, use Alembic in production)
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+
+    # Start monthly reset cron
+    reset_task = asyncio.create_task(_monthly_usage_reset())
+
+    # Init Sentry if configured
+    try:
+        from app.core.config import settings
+        sentry_dsn = getattr(settings, "sentry_dsn", None)
+        if sentry_dsn:
+            import sentry_sdk
+            sentry_sdk.init(dsn=sentry_dsn, traces_sample_rate=0.2, environment="production")
+            logging.getLogger("uvicorn.error").info("[Sentry] Initialized")
+    except Exception:
+        pass
+
     yield
     # Shutdown
+    reset_task.cancel()
     await engine.dispose()
 
 
@@ -77,6 +113,13 @@ app.include_router(calendar_api.router, prefix="/api")
 app.include_router(hr.router, prefix="/api")
 app.include_router(analytics.router, prefix="/api")
 app.include_router(connectors.router, prefix="/api")
+app.include_router(companies.router, prefix="/api")
+app.include_router(edo.router, prefix="/api")
+app.include_router(task_templates_api.router, prefix="/api")
+app.include_router(ai_slides.router, prefix="/api")
+app.include_router(i18n.router, prefix="/api")
+app.include_router(slack.router, prefix="/api")
+app.include_router(google_integration.router, prefix="/api")
 
 # WebSocket
 setup_websocket(app)
