@@ -16,6 +16,14 @@ import { DocumentsPage } from "./components/corporate/DocumentsPage";
 import { SkillsPage } from "./components/corporate/SkillsPage";
 import { CRMPage } from "./components/corporate/CRMPage";
 import { KnowledgePage } from "./components/corporate/KnowledgePage";
+import { ResearchPage } from "./components/corporate/ResearchPage";
+import { CalendarPage } from "./components/corporate/CalendarPage";
+import { ChannelsPage } from "./components/corporate/ChannelsPage";
+import { DocumentRegistryPage } from "./components/corporate/DocumentRegistryPage";
+import { HRPage } from "./components/corporate/HRPage";
+import { AnalyticsPage } from "./components/corporate/AnalyticsPage";
+import { IntegrationsPage } from "./components/corporate/IntegrationsPage";
+import { AICopilot } from "./components/corporate/AICopilot";
 import { KanbanBoard } from "./components/corporate/KanbanBoard";
 import { TeamPage } from "./components/corporate/TeamPage";
 import { MobileLayout } from "./components/mobile/MobileLayout";
@@ -608,6 +616,7 @@ export default function App() {
           {corporatePage === "dashboard" && (
             <Dashboard
               orgRole={orgRole}
+              professionalRole={(user as any).professional_role}
               onNavigate={(page) => setCorporatePage(page as CorporatePage)}
             />
           )}
@@ -654,6 +663,34 @@ export default function App() {
             <KnowledgePage />
           )}
 
+          {corporatePage === "research" && (
+            <ResearchPage />
+          )}
+
+          {corporatePage === "calendar" && (
+            <CalendarPage />
+          )}
+
+          {corporatePage === "channels" && (
+            <ChannelsPage />
+          )}
+
+          {corporatePage === "doc_registry" && (
+            <DocumentRegistryPage />
+          )}
+
+          {corporatePage === "hr" && (
+            <HRPage />
+          )}
+
+          {corporatePage === "analytics" && (
+            <AnalyticsPage />
+          )}
+
+          {corporatePage === "integrations" && (
+            <IntegrationsPage />
+          )}
+
           {corporatePage === "team" && (
             <TeamPage
               orgRole={orgRole}
@@ -676,6 +713,9 @@ export default function App() {
               onLogout={authStore.logout}
             />
           )}
+
+          {/* AI Copilot floating widget */}
+          <AICopilot currentPage={corporatePage} />
         </CorporateLayout>
 
         {/* Onboarding Wizard (corporate) */}

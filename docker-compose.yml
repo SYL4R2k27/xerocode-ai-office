@@ -1,0 +1,86 @@
+version: "3.9"
+
+services:
+  backend:
+    build: ./backend
+    container_name: xerocode-backend
+    restart: always
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./backend/.env
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://ai_office:ai_office_2024@postgres:5432/ai_office
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - uploads:/var/www/ai-office/uploads
+    networks:
+      - xerocode
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: xerocode-postgres
+    restart: always
+    environment:
+      POSTGRES_DB: ai_office
+      POSTGRES_USER: ai_office
+      POSTGRES_PASSWORD: ai_office_2024
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ai_office"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - xerocode
+
+  redis:
+    image: redis:7-alpine
+    container_name: xerocode-redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - xerocode
+
+  nginx:
+    image: nginx:alpine
+    container_name: xerocode-nginx
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - frontend:/var/www/ai-office
+      - uploads:/var/www/ai-office/uploads
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+    depends_on:
+      - backend
+    networks:
+      - xerocode
+
+volumes:
+  pgdata:
+  redisdata:
+  uploads:
+  frontend:
+
+networks:
+  xerocode:
+    driver: bridge

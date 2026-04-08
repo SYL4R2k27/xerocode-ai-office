@@ -8,15 +8,15 @@ from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, Text, fun
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
-from app.core.db_types import GUID, StringArray
+from app.core.db_types import GUID, JSONB, StringArray
 
 
 class Task(Base):
     __tablename__ = "tasks"
 
     id: Mapped[uuid.UUID] = mapped_column(GUID(), primary_key=True, default=uuid.uuid4)
-    goal_id: Mapped[uuid.UUID] = mapped_column(
-        GUID(), ForeignKey("goals.id", ondelete="CASCADE"), nullable=False
+    goal_id: Mapped[Optional[uuid.UUID]] = mapped_column(
+        GUID(), ForeignKey("goals.id", ondelete="CASCADE"), nullable=True
     )
     title: Mapped[str] = mapped_column(String(500), nullable=False)
     description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
@@ -25,9 +25,46 @@ class Task(Base):
     )
     status: Mapped[str] = mapped_column(
         String(30), default="backlog"
-        # backlog | in_progress | review_operator | review_manager | done | failed
+        # backlog | in_progress | review_operator | review_manager | done | failed | on_hold
     )
     priority: Mapped[int] = mapped_column(Integer, default=0)
+
+    # People
+    assignee_user_id: Mapped[Optional[uuid.UUID]] = mapped_column(GUID(), ForeignKey("users.id"), nullable=True)
+    created_by_user_id: Mapped[Optional[uuid.UUID]] = mapped_column(GUID(), ForeignKey("users.id"), nullable=True)
+    participant_ids = mapped_column(JSONB, default=list)  # co-executors [user_id, ...]
+    observer_ids = mapped_column(JSONB, default=list)  # watchers [user_id, ...]
+
+    # Dates
+    due_date: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    start_date: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    completed_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+
+    # Checklists: [{text, done, assignee_id?}]
+    checklist = mapped_column(JSONB, default=list)
+
+    # Subtasks
+    parent_task_id: Mapped[Optional[uuid.UUID]] = mapped_column(GUID(), ForeignKey("tasks.id"), nullable=True)
+
+    # Files: [{id, filename, url, size}]
+    attachments = mapped_column(JSONB, default=list)
+
+    # Tags & metadata
+    tags: Mapped[Optional[List[str]]] = mapped_column(StringArray(), nullable=True)
+    crm_deal_id: Mapped[Optional[uuid.UUID]] = mapped_column(GUID(), nullable=True)  # link to CRM deal
+
+    # Comments: [{user_id, user_name, text, created_at}]
+    comments = mapped_column(JSONB, default=list)
+
+    # Recurrence
+    is_recurring: Mapped[bool] = mapped_column(Boolean, default=False)
+    recurrence_rule: Mapped[Optional[str]] = mapped_column(String(200), nullable=True)  # cron expression
+    template_id: Mapped[Optional[uuid.UUID]] = mapped_column(GUID(), nullable=True)
+
+    # Time tracking
+    planned_hours: Mapped[Optional[float]] = mapped_column(nullable=True)
+    actual_hours: Mapped[Optional[float]] = mapped_column(nullable=True, default=0)
+    time_entries = mapped_column(JSONB, default=list)  # [{user_id, start, end, hours}]
 
     # Which agent/model is assigned
     assigned_agent_id: Mapped[Optional[uuid.UUID]] = mapped_column(

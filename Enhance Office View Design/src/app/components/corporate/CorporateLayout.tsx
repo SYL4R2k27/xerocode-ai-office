@@ -18,31 +18,78 @@ import {
   Zap,
   BookOpen,
   TrendingUp,
+  Bell,
+  Search,
+  ChevronRight,
+  Plus,
+  Command,
+  MessagesSquare,
+  Calendar,
+  UserCheck,
+  FileStack,
+  PieChart,
+  Plug,
 } from "lucide-react";
 import { CorporateBackground } from "./CorporateBackground";
 import { BackgroundPicker } from "./BackgroundPicker";
 
-export type CorporatePage = "dashboard" | "chat" | "crm" | "kanban" | "team" | "reports" | "workflows" | "documents" | "skills" | "knowledge" | "settings";
+export type CorporatePage = "dashboard" | "chat" | "crm" | "kanban" | "team" | "reports" | "workflows" | "documents" | "skills" | "knowledge" | "research" | "channels" | "calendar" | "hr" | "doc_registry" | "analytics" | "integrations" | "settings";
 
 interface NavItem {
   id: CorporatePage;
   icon: React.ElementType;
   label: string;
+  group: "main" | "work" | "ai" | "admin";
 }
 
 const ALL_NAV_ITEMS: NavItem[] = [
-  { id: "dashboard", icon: Home, label: "Главная" },
-  { id: "chat", icon: MessageSquare, label: "XeroCode AI" },
-  { id: "crm", icon: TrendingUp, label: "CRM" },
-  { id: "kanban", icon: KanbanSquare, label: "Задачи" },
-  { id: "workflows", icon: GitBranch, label: "Workflows" },
-  { id: "documents", icon: FileText, label: "Документы" },
-  { id: "skills", icon: Zap, label: "Skills" },
-  { id: "knowledge", icon: BookOpen, label: "База знаний" },
-  { id: "team", icon: Users, label: "Команда" },
-  { id: "reports", icon: BarChart3, label: "Отчёты" },
-  { id: "settings", icon: Settings, label: "Настройки" },
+  { id: "dashboard", icon: Home, label: "Главная", group: "main" },
+  { id: "chat", icon: MessageSquare, label: "XeroCode AI", group: "ai" },
+  { id: "crm", icon: TrendingUp, label: "CRM", group: "work" },
+  { id: "kanban", icon: KanbanSquare, label: "Задачи", group: "work" },
+  { id: "workflows", icon: GitBranch, label: "Workflows", group: "ai" },
+  { id: "documents", icon: FileText, label: "Документы", group: "work" },
+  { id: "skills", icon: Zap, label: "Skills", group: "ai" },
+  { id: "knowledge", icon: BookOpen, label: "База знаний", group: "ai" },
+  { id: "research", icon: Search, label: "Исследования", group: "ai" },
+  { id: "analytics", icon: PieChart, label: "AI Аналитика", group: "ai" },
+  { id: "channels", icon: MessagesSquare, label: "Каналы", group: "work" },
+  { id: "calendar", icon: Calendar, label: "Календарь", group: "work" },
+  { id: "doc_registry", icon: FileStack, label: "Реестр док.", group: "work" },
+  { id: "integrations", icon: Plug, label: "Интеграции", group: "admin" },
+  { id: "hr", icon: UserCheck, label: "HR", group: "admin" },
+  { id: "team", icon: Users, label: "Команда", group: "admin" },
+  { id: "reports", icon: BarChart3, label: "Отчёты", group: "admin" },
+  { id: "settings", icon: Settings, label: "Настройки", group: "admin" },
 ];
+
+const GROUP_LABELS: Record<string, string> = {
+  main: "",
+  work: "Работа",
+  ai: "AI-инструменты",
+  admin: "Управление",
+};
+
+const PAGE_LABELS: Record<CorporatePage, string> = {
+  dashboard: "Главная",
+  chat: "XeroCode AI",
+  crm: "CRM",
+  kanban: "Задачи",
+  workflows: "Workflows",
+  documents: "Документы",
+  skills: "Skills",
+  knowledge: "База знаний",
+  research: "Исследования",
+  analytics: "AI Аналитика",
+  integrations: "Интеграции",
+  channels: "Каналы",
+  calendar: "Календарь",
+  doc_registry: "Реестр документов",
+  hr: "HR",
+  team: "Команда",
+  reports: "Отчёты",
+  settings: "Настройки",
+};
 
 interface CorporateLayoutProps {
   activePage: CorporatePage;
@@ -73,12 +120,21 @@ export function CorporateLayout({
 }: CorporateLayoutProps) {
   const [collapsed, setCollapsed] = useState(false);
   const [bgPickerOpen, setBgPickerOpen] = useState(false);
-  const isManagerOrOwner = orgRole === "owner" || orgRole === "manager";
+  const [searchOpen, setSearchOpen] = useState(false);
 
   // Filter sidebar by user's modules (from professional role)
   const filteredNav = userModules && userModules.length > 0
     ? ALL_NAV_ITEMS.filter(item => userModules.includes(item.id))
-    : ALL_NAV_ITEMS; // show all if no modules specified (owner/admin)
+    : ALL_NAV_ITEMS;
+
+  // Group items
+  const groups = ["main", "work", "ai", "admin"]
+    .map(g => ({
+      key: g,
+      label: GROUP_LABELS[g],
+      items: filteredNav.filter(item => item.group === g),
+    }))
+    .filter(g => g.items.length > 0);
 
   const roleLabels: Record<string, { label: string; color: string }> = {
     owner: { label: "Руководитель", color: "var(--accent-amber)" },
@@ -97,7 +153,7 @@ export function CorporateLayout({
           backgroundColor: "var(--bg-surface)",
           borderRight: "1px solid var(--border-default)",
         }}
-        animate={{ width: collapsed ? 60 : 240 }}
+        animate={{ width: collapsed ? 60 : 248 }}
         transition={{ duration: 0.2, ease: "easeInOut" }}
       >
         {/* Header */}
@@ -107,7 +163,7 @@ export function CorporateLayout({
         >
           {!collapsed && (
             <motion.div
-              className="flex items-center gap-2 flex-1 min-w-0"
+              className="flex items-center gap-2.5 flex-1 min-w-0"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -151,77 +207,120 @@ export function CorporateLayout({
           </button>
         </div>
 
-        {/* Navigation Items */}
-        <div className="flex-1 py-2 px-2 flex flex-col gap-1 overflow-y-auto">
-          {filteredNav.map((item) => {
-            const isActive = activePage === item.id;
-            const Icon = item.icon;
-
-            return (
-              <button
-                key={item.id}
-                onClick={() => onNavigate(item.id)}
-                className="flex items-center gap-3 rounded-lg transition-all duration-150 relative group"
-                style={{
-                  padding: collapsed ? "10px 0" : "10px 12px",
-                  justifyContent: collapsed ? "center" : "flex-start",
-                  backgroundColor: isActive ? "var(--bg-elevated)" : "transparent",
-                  color: isActive ? "var(--accent-blue)" : "var(--text-secondary)",
-                }}
-                onMouseEnter={(e) => {
-                  if (!isActive) {
-                    e.currentTarget.style.backgroundColor = "var(--bg-elevated)";
-                    e.currentTarget.style.color = "var(--text-primary)";
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (!isActive) {
-                    e.currentTarget.style.backgroundColor = "transparent";
-                    e.currentTarget.style.color = "var(--text-secondary)";
-                  }
-                }}
-                title={collapsed ? item.label : undefined}
+        {/* Quick search button */}
+        {!collapsed && (
+          <div className="px-3 pt-3 pb-1">
+            <button
+              onClick={() => setSearchOpen(true)}
+              className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs transition-colors"
+              style={{
+                backgroundColor: "var(--bg-base)",
+                border: "1px solid var(--border-default)",
+                color: "var(--text-tertiary)",
+              }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = "var(--accent-blue)"; }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = "var(--border-default)"; }}
+            >
+              <Search size={13} />
+              <span className="flex-1 text-left">Поиск...</span>
+              <kbd
+                className="text-[10px] px-1.5 py-0.5 rounded"
+                style={{ backgroundColor: "var(--bg-elevated)", color: "var(--text-tertiary)" }}
               >
-                {isActive && (
-                  <motion.div
-                    layoutId="nav-indicator"
-                    className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] rounded-r-full"
-                    style={{
-                      height: "60%",
-                      backgroundColor: "var(--accent-blue)",
-                    }}
-                    transition={{ duration: 0.2 }}
-                  />
-                )}
-                <Icon size={20} className="flex-shrink-0" />
-                {!collapsed && (
-                  <motion.span
-                    className="text-[13px] font-medium truncate"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ duration: 0.15, delay: 0.05 }}
-                  >
-                    {item.label}
-                  </motion.span>
-                )}
+                /
+              </kbd>
+            </button>
+          </div>
+        )}
 
-                {/* Tooltip when collapsed */}
-                {collapsed && (
-                  <div
-                    className="absolute left-full ml-2 px-2 py-1 rounded-md text-[12px] font-medium whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50"
+        {/* Navigation Items — grouped */}
+        <div className="flex-1 py-2 px-2 flex flex-col gap-0.5 overflow-y-auto">
+          {groups.map((group, gi) => (
+            <div key={group.key}>
+              {/* Group label */}
+              {group.label && !collapsed && (
+                <div
+                  className="px-3 pt-4 pb-1.5 text-[10px] font-semibold uppercase tracking-wider"
+                  style={{ color: "var(--text-tertiary)" }}
+                >
+                  {group.label}
+                </div>
+              )}
+              {group.label && collapsed && gi > 0 && (
+                <div className="mx-3 my-2" style={{ borderTop: "1px solid var(--border-default)" }} />
+              )}
+
+              {group.items.map((item) => {
+                const isActive = activePage === item.id;
+                const Icon = item.icon;
+
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => onNavigate(item.id)}
+                    className="flex items-center gap-3 rounded-lg transition-all duration-150 relative group w-full"
                     style={{
-                      backgroundColor: "var(--bg-elevated)",
-                      color: "var(--text-primary)",
-                      border: "1px solid var(--border-default)",
-                      boxShadow: "0 4px 12px rgba(0,0,0,0.3)",
+                      padding: collapsed ? "10px 0" : "9px 12px",
+                      justifyContent: collapsed ? "center" : "flex-start",
+                      backgroundColor: isActive ? "var(--bg-elevated)" : "transparent",
+                      color: isActive ? "var(--accent-blue)" : "var(--text-secondary)",
                     }}
+                    onMouseEnter={(e) => {
+                      if (!isActive) {
+                        e.currentTarget.style.backgroundColor = "var(--bg-elevated)";
+                        e.currentTarget.style.color = "var(--text-primary)";
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!isActive) {
+                        e.currentTarget.style.backgroundColor = "transparent";
+                        e.currentTarget.style.color = "var(--text-secondary)";
+                      }
+                    }}
+                    title={collapsed ? item.label : undefined}
                   >
-                    {item.label}
-                  </div>
-                )}
-              </button>
-            );
-          })}
+                    {isActive && (
+                      <motion.div
+                        layoutId="nav-indicator"
+                        className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] rounded-r-full"
+                        style={{
+                          height: "60%",
+                          backgroundColor: "var(--accent-blue)",
+                        }}
+                        transition={{ duration: 0.2 }}
+                      />
+                    )}
+                    <Icon size={19} className="flex-shrink-0" />
+                    {!collapsed && (
+                      <motion.span
+                        className="text-[13px] font-medium truncate"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ duration: 0.15, delay: 0.05 }}
+                      >
+                        {item.label}
+                      </motion.span>
+                    )}
+
+                    {/* Tooltip when collapsed */}
+                    {collapsed && (
+                      <div
+                        className="absolute left-full ml-2 px-2 py-1 rounded-md text-[12px] font-medium whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50"
+                        style={{
+                          backgroundColor: "var(--bg-elevated)",
+                          color: "var(--text-primary)",
+                          border: "1px solid var(--border-default)",
+                          boxShadow: "0 4px 12px rgba(0,0,0,0.3)",
+                        }}
+                      >
+                        {item.label}
+                      </div>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          ))}
         </div>
 
         {/* User section at bottom */}
@@ -259,7 +358,7 @@ export function CorporateLayout({
                     e.currentTarget.style.color = "var(--text-tertiary)";
                     e.currentTarget.style.backgroundColor = "transparent";
                   }}
-                  title="🎯 Фокус-режим — только чат"
+                  title="Фокус-режим — только чат"
                 >
                   <Focus size={15} />
                 </button>
@@ -312,7 +411,7 @@ export function CorporateLayout({
                     e.currentTarget.style.color = "var(--text-tertiary)";
                     e.currentTarget.style.backgroundColor = "transparent";
                   }}
-                  title="🎯 Фокус-режим"
+                  title="Фокус-режим"
                 >
                   <Focus size={18} />
                 </button>
@@ -355,14 +454,156 @@ export function CorporateLayout({
       </motion.nav>
 
       {/* Main Content Area */}
-      <div className="flex-1 min-w-0 overflow-hidden">
-        <CorporateBackground>
-          {children}
-        </CorporateBackground>
+      <div className="flex-1 min-w-0 flex flex-col overflow-hidden">
+        {/* Top header bar — Bitrix24 style */}
+        <div
+          className="h-12 flex items-center px-4 gap-3 flex-shrink-0"
+          style={{
+            backgroundColor: "var(--bg-surface)",
+            borderBottom: "1px solid var(--border-default)",
+          }}
+        >
+          {/* Breadcrumbs */}
+          <div className="flex items-center gap-1.5 text-xs min-w-0">
+            <button
+              onClick={() => onNavigate("dashboard")}
+              className="transition-colors"
+              style={{ color: "var(--text-tertiary)" }}
+              onMouseEnter={e => { e.currentTarget.style.color = "var(--accent-blue)"; }}
+              onMouseLeave={e => { e.currentTarget.style.color = "var(--text-tertiary)"; }}
+            >
+              {orgName}
+            </button>
+            <ChevronRight size={12} style={{ color: "var(--text-tertiary)" }} />
+            <span className="font-medium" style={{ color: "var(--text-primary)" }}>
+              {PAGE_LABELS[activePage]}
+            </span>
+          </div>
+
+          <div className="flex-1" />
+
+          {/* Quick actions */}
+          <button
+            onClick={() => onNavigate("chat")}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
+            style={{
+              backgroundColor: "var(--bg-base)",
+              border: "1px solid var(--border-default)",
+              color: "var(--text-secondary)",
+            }}
+            onMouseEnter={e => {
+              e.currentTarget.style.borderColor = "var(--accent-blue)";
+              e.currentTarget.style.color = "var(--accent-blue)";
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.borderColor = "var(--border-default)";
+              e.currentTarget.style.color = "var(--text-secondary)";
+            }}
+          >
+            <Plus size={13} />
+            Новая задача
+          </button>
+
+          {/* Notifications bell */}
+          <button
+            className="relative w-8 h-8 flex items-center justify-center rounded-lg transition-colors"
+            style={{ color: "var(--text-tertiary)" }}
+            onMouseEnter={e => {
+              e.currentTarget.style.backgroundColor = "var(--bg-elevated)";
+              e.currentTarget.style.color = "var(--text-primary)";
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.backgroundColor = "transparent";
+              e.currentTarget.style.color = "var(--text-tertiary)";
+            }}
+            title="Уведомления"
+          >
+            <Bell size={17} />
+            {/* Notification dot */}
+            <div
+              className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full"
+              style={{ backgroundColor: "var(--accent-rose)" }}
+            />
+          </button>
+        </div>
+
+        {/* Content */}
+        <div className="flex-1 min-w-0 overflow-hidden">
+          <CorporateBackground>
+            {children}
+          </CorporateBackground>
+        </div>
       </div>
 
       {/* Background Picker Modal */}
       <BackgroundPicker open={bgPickerOpen} onClose={() => setBgPickerOpen(false)} />
+
+      {/* Quick search overlay */}
+      <AnimatePresence>
+        {searchOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-start justify-center pt-[15vh]"
+            style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
+            onClick={() => setSearchOpen(false)}
+          >
+            <motion.div
+              initial={{ y: -20, opacity: 0, scale: 0.97 }}
+              animate={{ y: 0, opacity: 1, scale: 1 }}
+              exit={{ y: -20, opacity: 0, scale: 0.97 }}
+              className="w-full max-w-[520px] rounded-2xl overflow-hidden"
+              style={{
+                backgroundColor: "var(--bg-surface)",
+                border: "1px solid var(--border-default)",
+                boxShadow: "0 20px 60px rgba(0,0,0,0.4)",
+              }}
+              onClick={e => e.stopPropagation()}
+            >
+              <div className="flex items-center gap-3 px-4 py-3" style={{ borderBottom: "1px solid var(--border-default)" }}>
+                <Search size={18} style={{ color: "var(--text-tertiary)" }} />
+                <input
+                  autoFocus
+                  placeholder="Поиск по модулям, задачам, документам..."
+                  className="flex-1 text-sm outline-none bg-transparent"
+                  style={{ color: "var(--text-primary)" }}
+                  onKeyDown={e => {
+                    if (e.key === "Escape") setSearchOpen(false);
+                  }}
+                />
+                <kbd
+                  className="text-[10px] px-1.5 py-0.5 rounded"
+                  style={{ backgroundColor: "var(--bg-elevated)", color: "var(--text-tertiary)" }}
+                >
+                  ESC
+                </kbd>
+              </div>
+              <div className="px-4 py-3">
+                <div className="text-[11px] font-medium mb-2" style={{ color: "var(--text-tertiary)" }}>Быстрый переход</div>
+                <div className="space-y-0.5">
+                  {filteredNav.slice(0, 6).map(item => {
+                    const Icon = item.icon;
+                    return (
+                      <button
+                        key={item.id}
+                        onClick={() => { onNavigate(item.id); setSearchOpen(false); }}
+                        className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors"
+                        style={{ color: "var(--text-secondary)" }}
+                        onMouseEnter={e => { e.currentTarget.style.backgroundColor = "var(--bg-elevated)"; }}
+                        onMouseLeave={e => { e.currentTarget.style.backgroundColor = "transparent"; }}
+                      >
+                        <Icon size={16} />
+                        {item.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

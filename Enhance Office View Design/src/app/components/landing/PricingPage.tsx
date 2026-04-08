@@ -15,7 +15,7 @@ const plans = [
   {
     id: "start",
     name: "START",
-    price: "500₽",
+    price: "290₽",
     period: "единоразово",
     desc: "Для знакомства с платформой",
     icon: Rocket,
@@ -27,12 +27,10 @@ const plans = [
       "Свои модели (BYOK)",
       "Tool-calling",
       "Локальный агент",
-      "3 дня триал",
     ],
     excluded: [
       "Бесплатный пул моделей",
       "Генерация изображений",
-      "Премиум модели",
     ],
   },
   {
@@ -50,9 +48,7 @@ const plans = [
       "Бесплатный пул моделей",
       "100 изображений / мес",
       "Готовые пулы моделей",
-      "Конструктор пулов",
-      "Fallback через OpenRouter",
-      "3 дня триал",
+      "Deep Research + Sparkpage",
     ],
     excluded: [
       "Премиум модели (GPT-5, Claude Opus)",
@@ -75,7 +71,6 @@ const plans = [
       "500 изображений / мес",
       "Кастомные пулы",
       "Всё из PRO",
-      "3 дня триал",
     ],
     excluded: [
       "Безлимитные задачи",
@@ -84,20 +79,19 @@ const plans = [
   {
     id: "ultima",
     name: "ULTIMA",
-    price: "34 990₽",
+    price: "19 990₽",
     period: "/ месяц",
     desc: "Без ограничений",
     icon: Crown,
     color: "#A855F7",
     popular: false,
     features: [
-      "Безлимитные задачи",
-      "Безлимитные агенты",
+      "Безлимитные задачи и агенты",
       "ВСЕ премиум модели",
-      "GPT-5, Claude Opus 4.6, Grok 4",
+      "GPT-5.4, Claude Opus 4.6, o3-pro",
       "Безлимитные изображения",
+      "Model Council + AI Analytics",
       "Docker Sandbox",
-      "Приоритетная поддержка",
       "Всё из PRO PLUS",
     ],
     excluded: [],
@@ -105,21 +99,58 @@ const plans = [
   {
     id: "corp",
     name: "CORPORATE",
-    price: "от 89 990₽",
+    price: "от 14 990₽",
     period: "/ месяц",
-    desc: "Для команд 3-20 человек",
+    desc: "Корпоративная платформа для команд",
     icon: Building2,
     color: "#F59E0B",
     popular: false,
+    hasSubmenu: true,
     features: [
       "3-20 профилей сотрудников",
-      "Роли: руководитель / менеджер / сотрудник",
-      "Командный дашборд",
-      "Kanban + Ревью задач",
-      "Аналитика расходов",
-      "SSO, Webhook, Audit log",
-      "Всё из ULTIMA",
+      "CRM, Kanban, Документы, HR, Календарь",
+      "Роли и права + Ревью workflow",
+      "Интеграции: 1С, Битрикс24",
+      "Deep Research + AI Analytics",
       "Оплата по счёту + акт с НДС",
+    ],
+    excluded: [],
+  },
+];
+
+const corpSubPlans = [
+  {
+    id: "corp",
+    name: "CORPORATE",
+    price: "от 14 990₽",
+    period: "/ месяц",
+    desc: "Бесплатные AI модели",
+    color: "#F59E0B",
+    features: [
+      "Бесплатные AI модели (Llama, DeepSeek, Qwen)",
+      "CRM, Kanban, Документы, HR, Календарь",
+      "Роли и права (10+ ролей)",
+      "Интеграции: 1С, Битрикс24",
+      "Ревью workflow (approve/reject)",
+      "Всё из PRO PLUS (кроме премиум AI)",
+    ],
+    excluded: ["Премиум модели (GPT-5, Claude, o3)"],
+  },
+  {
+    id: "corp_plus",
+    name: "CORPORATE PLUS",
+    price: "от 49 990₽",
+    period: "/ месяц",
+    desc: "Максимум для бизнеса",
+    color: "#9333EA",
+    badge: "Максимум",
+    features: [
+      "Всё из CORPORATE",
+      "ВСЕ премиум модели без ограничений",
+      "GPT-5.4, Claude Opus 4.6, o3-pro, Grok 4",
+      "Deep Research + Model Council",
+      "Приоритетная поддержка 24/7",
+      "SSO, Webhook, Audit log",
     ],
     excluded: [],
   },
@@ -127,6 +158,7 @@ const plans = [
 
 export function PricingPage({ onBack, onLogin, hideHeader }: PricingPageProps) {
   const [expanded, setExpanded] = useState<string | null>(null);
+  const [corpExpanded, setCorpExpanded] = useState(false);
 
   return (
     <div className="min-h-screen bg-[#0A0A0F] text-white">
@@ -216,18 +248,85 @@ export function PricingPage({ onBack, onLogin, hideHeader }: PricingPageProps) {
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                onClick={onLogin}
+                onClick={() => (plan as any).hasSubmenu ? setCorpExpanded(!corpExpanded) : onLogin()}
                 className={`w-full py-3 rounded-xl text-sm font-semibold transition-all ${
                   plan.popular
                     ? "bg-gradient-to-r from-purple-600 to-blue-500 text-white"
+                    : (plan as any).hasSubmenu
+                    ? "bg-gradient-to-r from-amber-500 to-purple-600 text-white"
                     : "bg-white/[0.04] border border-white/[0.08] text-white/70 hover:bg-white/[0.08]"
                 }`}
               >
-                {plan.id === "corp" ? "Связаться" : "Начать"}
+                {(plan as any).hasSubmenu ? (corpExpanded ? "Скрыть" : "Подробнее") : "Начать"}
               </motion.button>
             </motion.div>
           ))}
         </div>
+
+        {/* Corporate submenu */}
+        <AnimatePresence>
+          {corpExpanded && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              className="overflow-hidden mt-8"
+            >
+              <div className="text-center mb-6">
+                <h2 className="text-xl font-bold text-white">Корпоративные тарифы</h2>
+                <p className="text-white/30 text-sm mt-1">Полный набор корп.функций — выбери уровень AI</p>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-[700px] mx-auto">
+                {corpSubPlans.map((sub, i) => (
+                  <motion.div
+                    key={sub.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.1 }}
+                    className="rounded-2xl border p-6"
+                    style={{ borderColor: `${sub.color}33`, background: `${sub.color}08` }}
+                  >
+                    {sub.badge && (
+                      <div className="inline-block text-[10px] font-bold px-2.5 py-1 rounded-full mb-3" style={{ background: sub.color, color: "#fff" }}>
+                        {sub.badge}
+                      </div>
+                    )}
+                    <h3 className="text-white font-bold text-lg">{sub.name}</h3>
+                    <p className="text-white/30 text-xs mt-0.5 mb-3">{sub.desc}</p>
+                    <div className="mb-5">
+                      <span className="text-2xl font-bold" style={{ color: sub.color }}>{sub.price}</span>
+                      <span className="text-white/30 text-sm ml-1">{sub.period}</span>
+                    </div>
+                    <div className="space-y-2 mb-5">
+                      {sub.features.map(f => (
+                        <div key={f} className="flex items-start gap-2 text-sm">
+                          <Check size={14} className="text-green-400 flex-shrink-0 mt-0.5" />
+                          <span className="text-white/60">{f}</span>
+                        </div>
+                      ))}
+                      {sub.excluded.map(f => (
+                        <div key={f} className="flex items-start gap-2 text-sm">
+                          <X size={14} className="text-white/15 flex-shrink-0 mt-0.5" />
+                          <span className="text-white/20 line-through">{f}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => window.open(`mailto:sales@xerocode.space?subject=${encodeURIComponent(sub.name)}`, "_blank")}
+                      className="w-full py-3 rounded-xl text-sm font-semibold text-white"
+                      style={{ background: sub.color }}
+                    >
+                      Связаться с нами
+                    </motion.button>
+                  </motion.div>
+                ))}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Comparison toggle */}
         <motion.div

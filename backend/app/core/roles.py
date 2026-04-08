@@ -3,7 +3,30 @@ Professional roles & permissions system.
 Each role has a set of default permissions. Custom overrides via user.permissions JSONB.
 """
 
-# All available permissions
+# Structured permission matrix: module → available actions
+PERMISSION_MATRIX: dict[str, list[str]] = {
+    "dashboard": ["view", "finance", "sales", "projects"],
+    "crm": ["view", "full"],
+    "kanban": ["view", "manage"],
+    "workflows": ["view", "manage", "run"],
+    "documents": ["view", "create", "sign"],
+    "edo": ["view", "send", "sign"],
+    "skills": ["view", "manage"],
+    "kb": ["view", "upload"],
+    "research": ["view", "start", "council"],
+    "team": ["view", "manage"],
+    "reports": ["view", "finance", "sales", "projects"],
+    "settings": ["view", "manage"],
+    "chat": ["full"],
+    "budget": ["view", "manage"],
+    "channels": ["view", "create", "manage"],
+    "calendar": ["view", "create", "manage"],
+    "hr": ["view", "manage"],
+    "files": ["view", "upload", "manage"],
+    "integrations": ["view", "manage"],
+}
+
+# All available permissions (auto-generated from matrix)
 ALL_PERMISSIONS = [
     "dashboard_view", "dashboard_finance", "dashboard_sales", "dashboard_projects",
     "crm_view", "crm_full",
@@ -142,16 +165,46 @@ ROLE_LABELS: dict[str, str] = {
 
 # Which sidebar modules each role sees
 ROLE_MODULES: dict[str, list[str]] = {
-    "director": ["dashboard", "chat", "crm", "kanban", "workflows", "documents", "skills", "knowledge", "team", "reports", "settings"],
-    "chief_accountant": ["dashboard", "chat", "documents", "knowledge", "reports", "settings"],
-    "accountant": ["dashboard", "chat", "documents", "knowledge", "reports"],
-    "sales_manager": ["dashboard", "chat", "crm", "kanban", "documents", "knowledge", "reports"],
-    "project_manager": ["dashboard", "chat", "kanban", "workflows", "documents", "skills", "knowledge", "team", "reports"],
-    "logistics": ["dashboard", "chat", "kanban", "documents", "knowledge"],
-    "hr_manager": ["dashboard", "chat", "team", "documents", "knowledge", "reports"],
-    "legal": ["dashboard", "chat", "documents", "knowledge"],
-    "marketer": ["dashboard", "chat", "crm", "kanban", "workflows", "documents", "skills", "knowledge", "reports"],
-    "operator": ["chat", "kanban", "skills", "knowledge"],
+    "director": ["dashboard", "chat", "crm", "kanban", "workflows", "documents", "doc_registry", "skills", "knowledge", "research", "analytics", "channels", "calendar", "hr", "team", "reports", "settings"],
+    "chief_accountant": ["dashboard", "chat", "documents", "doc_registry", "knowledge", "research", "analytics", "calendar", "reports", "settings"],
+    "accountant": ["dashboard", "chat", "documents", "doc_registry", "knowledge", "calendar", "reports"],
+    "sales_manager": ["dashboard", "chat", "crm", "kanban", "documents", "knowledge", "research", "analytics", "channels", "calendar", "reports"],
+    "project_manager": ["dashboard", "chat", "kanban", "workflows", "documents", "doc_registry", "skills", "knowledge", "research", "analytics", "channels", "calendar", "team", "reports"],
+    "logistics": ["dashboard", "chat", "kanban", "documents", "doc_registry", "knowledge", "channels", "calendar"],
+    "hr_manager": ["dashboard", "chat", "team", "hr", "documents", "doc_registry", "knowledge", "channels", "calendar", "reports"],
+    "legal": ["dashboard", "chat", "documents", "doc_registry", "knowledge", "research", "calendar"],
+    "marketer": ["dashboard", "chat", "crm", "kanban", "workflows", "documents", "skills", "knowledge", "research", "analytics", "channels", "calendar", "reports"],
+    "operator": ["chat", "kanban", "skills", "knowledge", "channels"],
+}
+
+
+# Industry role templates
+INDUSTRY_TEMPLATES: dict[str, dict] = {
+    "it": {
+        "label": "IT-компания",
+        "roles": [
+            {"name": "tech_lead", "label": "Техлид", "permissions": ["dashboard_view", "dashboard_projects", "kanban_view", "kanban_manage", "workflows_view", "workflows_manage", "workflows_run", "documents_view", "documents_create", "skills_view", "skills_manage", "kb_view", "kb_upload", "chat_full", "research_view", "research_start", "reports_view", "reports_projects", "team_view"], "modules": ["dashboard", "chat", "kanban", "workflows", "documents", "skills", "knowledge", "research", "team", "reports"]},
+            {"name": "developer", "label": "Разработчик", "permissions": ["kanban_view", "kanban_manage", "chat_full", "skills_view", "kb_view", "kb_upload", "research_view", "research_start", "workflows_run"], "modules": ["chat", "kanban", "skills", "knowledge", "research"]},
+            {"name": "qa_engineer", "label": "QA-инженер", "permissions": ["kanban_view", "kanban_manage", "chat_full", "kb_view", "documents_view", "reports_view"], "modules": ["chat", "kanban", "knowledge", "documents", "reports"]},
+            {"name": "designer", "label": "Дизайнер", "permissions": ["kanban_view", "chat_full", "skills_view", "skills_manage", "kb_view", "documents_view", "documents_create"], "modules": ["chat", "kanban", "skills", "knowledge", "documents"]},
+        ],
+    },
+    "retail": {
+        "label": "Торговля",
+        "roles": [
+            {"name": "store_manager", "label": "Управляющий магазином", "permissions": ["dashboard_view", "dashboard_sales", "crm_view", "crm_full", "kanban_view", "kanban_manage", "documents_view", "documents_create", "reports_view", "reports_sales", "team_view", "team_manage", "chat_full", "kb_view"], "modules": ["dashboard", "chat", "crm", "kanban", "documents", "team", "reports"]},
+            {"name": "cashier", "label": "Кассир", "permissions": ["crm_view", "chat_full", "documents_view"], "modules": ["chat", "crm", "documents"]},
+            {"name": "warehouse", "label": "Кладовщик", "permissions": ["kanban_view", "kanban_manage", "documents_view", "documents_create", "chat_full"], "modules": ["chat", "kanban", "documents"]},
+        ],
+    },
+    "manufacturing": {
+        "label": "Производство",
+        "roles": [
+            {"name": "production_manager", "label": "Начальник производства", "permissions": ["dashboard_view", "dashboard_projects", "kanban_view", "kanban_manage", "workflows_view", "workflows_manage", "workflows_run", "documents_view", "documents_create", "reports_view", "reports_projects", "team_view", "team_manage", "chat_full", "kb_view", "kb_upload"], "modules": ["dashboard", "chat", "kanban", "workflows", "documents", "team", "reports", "knowledge"]},
+            {"name": "engineer", "label": "Инженер", "permissions": ["kanban_view", "kanban_manage", "documents_view", "documents_create", "kb_view", "kb_upload", "chat_full", "workflows_run"], "modules": ["chat", "kanban", "documents", "knowledge"]},
+            {"name": "quality_control", "label": "Контроль качества", "permissions": ["kanban_view", "documents_view", "documents_create", "reports_view", "chat_full", "kb_view"], "modules": ["chat", "kanban", "documents", "reports", "knowledge"]},
+        ],
+    },
 }
 
 

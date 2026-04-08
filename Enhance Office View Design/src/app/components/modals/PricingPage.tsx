@@ -29,7 +29,7 @@ const plans = [
   {
     id: "free",
     name: "FREE",
-    price: "500 ₽",
+    price: "290 ₽",
     priceNote: "единоразово",
     icon: Zap,
     features: [
@@ -89,7 +89,7 @@ const plans = [
   {
     id: "ultima",
     name: "ULTIMA",
-    price: "34 990 ₽",
+    price: "19 990 ₽",
     priceNote: "/ месяц",
     badge: "Безлимит",
     icon: Crown,
@@ -110,21 +110,64 @@ const plans = [
   {
     id: "corporate",
     name: "CORPORATE",
-    price: "от 89 990 ₽",
+    price: "от 14 990 ₽",
     priceNote: "/ месяц, счёт + НДС",
     icon: Building2,
     features: [
-      "3-20 профилей",
-      "Командный дашборд",
-      "Роли: руководитель / менеджер / сотрудник",
-      "Общие пулы на команду",
-      "Ревью workflow (approve/reject)",
-      "SSO, Audit log, Webhook",
-      "Всё из ULTIMA",
+      "3-20 профилей сотрудников",
+      "CRM, Kanban, Документы, HR, Календарь",
+      "Роли и права + Ревью workflow",
+      "Интеграции: 1С, Битрикс24",
+      "Deep Research + AI Analytics",
+      "Оплата по счёту + акт с НДС",
     ],
     color: "#F59E0B",
+    gradient: "linear-gradient(135deg, #F59E0B, #9333EA)",
+    glowColor: "rgba(245,158,11,0.2)",
+    cta: "Подробнее",
+    hasSubmenu: true,
+  },
+];
+
+// Corporate sub-plans (shown on expand)
+const corpSubPlans = [
+  {
+    id: "corporate",
+    name: "CORPORATE",
+    price: "от 14 990 ₽",
+    priceNote: "/ месяц",
+    icon: Building2,
+    features: [
+      "3-20 профилей сотрудников",
+      "Бесплатные AI модели (Llama, DeepSeek, Qwen)",
+      "CRM, Kanban, Документы, HR, Календарь",
+      "Роли и права + Ревью workflow",
+      "Интеграции: 1С, Битрикс24",
+      "Всё из PRO PLUS (кроме премиум AI)",
+    ],
+    excluded: ["Премиум модели (GPT-5, Claude, o3)"],
+    color: "#F59E0B",
     gradient: "linear-gradient(135deg, #F59E0B, #D97706)",
-    glowColor: "rgba(245,158,11,0.15)",
+    cta: "Связаться с нами",
+  },
+  {
+    id: "corporate_plus",
+    name: "CORPORATE PLUS",
+    price: "от 49 990 ₽",
+    priceNote: "/ месяц",
+    badge: "Максимум",
+    icon: Building2,
+    features: [
+      "Всё из CORPORATE",
+      "ВСЕ премиум модели без ограничений",
+      "GPT-5.4, Claude Opus 4.6, o3-pro, Grok 4",
+      "Безлимитные изображения",
+      "Deep Research + Model Council",
+      "Приоритетная поддержка 24/7",
+    ],
+    excluded: [],
+    color: "#9333EA",
+    gradient: "linear-gradient(135deg, #9333EA, #7C3AED)",
     cta: "Связаться с нами",
   },
 ];
@@ -136,7 +179,7 @@ type CellValue = boolean | string;
 
 interface ComparisonRow {
   label: string;
-  values: [CellValue, CellValue, CellValue, CellValue, CellValue];
+  values: CellValue[];
 }
 
 interface ComparisonSection {
@@ -152,8 +195,8 @@ const comparisonSections: ComparisonSection[] = [
       { label: "Бесплатный пул моделей", values: [false, true, true, true, true] },
       { label: "Готовые пулы под задачи", values: [false, true, true, true, true] },
       { label: "Кастомные пулы", values: [false, false, true, true, true] },
-      { label: "Средние модели (Haiku, GPT-4.1 mini)", values: [false, false, true, true, true] },
-      { label: "Премиум модели (GPT-5.4 Pro, Opus 4.6, o3-pro)", values: [false, false, false, true, true] },
+      { label: "Средние модели (Haiku, GPT-4.1 mini)", values: [false, false, true, true, "CORP+"] },
+      { label: "Премиум модели (GPT-5.4, Opus 4.6, o3)", values: [false, false, false, true, "CORP+"] },
       { label: "Fallback OpenRouter", values: [true, true, true, true, true] },
     ],
   },
@@ -163,28 +206,31 @@ const comparisonSections: ComparisonSection[] = [
       { label: "Задачи в месяц", values: ["50", "500", "2 000", "∞", "∞"] },
       { label: "Агенты", values: ["3", "10", "15", "∞", "∞"] },
       { label: "Изображения в месяц", values: [false, "100", "500", "∞", "∞"] },
-      { label: "Премиум токены / день", values: [false, false, "100K", "∞", "∞"] },
+      { label: "Премиум токены / день", values: [false, false, "100K", "∞", "CORP+"] },
     ],
   },
   {
-    title: "Инструменты",
+    title: "AI-инструменты",
     rows: [
       { label: "Tool-calling", values: [true, true, true, true, true] },
-      { label: "Конструктор пулов", values: [true, true, true, true, true] },
-      { label: "Локальный агент", values: [true, true, true, true, true] },
+      { label: "Deep Research + Sparkpage", values: [false, false, true, true, true] },
+      { label: "Model Council", values: [false, false, false, true, "CORP+"] },
+      { label: "AI Analytics", values: [false, false, false, true, true] },
+      { label: "AI Copilot", values: [false, false, false, true, true] },
       { label: "Генерация изображений", values: [false, true, true, true, true] },
-      { label: "Nano Banana 2", values: [false, false, true, true, true] },
-      { label: "Nano Banana Pro", values: [false, false, false, true, true] },
       { label: "Docker Sandbox", values: [false, false, false, true, true] },
     ],
   },
   {
-    title: "Команда",
+    title: "Корпоративные функции",
     rows: [
-      { label: "Профили", values: ["1", "1", "1", "1", "3-20"] },
-      { label: "Командный дашборд", values: [false, false, false, false, true] },
-      { label: "Роли (руководитель / менеджер / сотрудник)", values: [false, false, false, false, true] },
-      { label: "Общие пулы на команду", values: [false, false, false, false, true] },
+      { label: "Профили сотрудников", values: ["1", "1", "1", "1", "3-20"] },
+      { label: "CRM (pipeline, контакты, аналитика)", values: [false, false, false, false, true] },
+      { label: "Kanban + 3 вида задач", values: [false, false, false, false, true] },
+      { label: "Документооборот + реестр", values: [false, false, false, false, true] },
+      { label: "HR, Календарь, Каналы", values: [false, false, false, false, true] },
+      { label: "Роли и права (10+ ролей)", values: [false, false, false, false, true] },
+      { label: "Интеграции: 1С, Битрикс24", values: [false, false, false, false, true] },
       { label: "Ревью workflow (approve/reject)", values: [false, false, false, false, true] },
     ],
   },
@@ -193,7 +239,8 @@ const comparisonSections: ComparisonSection[] = [
     rows: [
       { label: "SSO", values: [false, false, false, false, true] },
       { label: "Audit log", values: [false, false, false, false, true] },
-      { label: "Webhook", values: [false, false, false, false, true] },
+      { label: "Webhook + API", values: [false, false, false, false, true] },
+      { label: "Счёт + акт с НДС", values: [false, false, false, false, true] },
     ],
   },
 ];
@@ -256,7 +303,7 @@ function ComparisonSectionBlock({ section }: { section: ComparisonSection }) {
             className="overflow-hidden"
           >
             {/* Table header - plan names */}
-            <div className="grid items-center px-4 py-2" style={{ gridTemplateColumns: "1fr repeat(5, 64px)", borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
+            <div className="grid items-center px-4 py-2" style={{ gridTemplateColumns: "1fr repeat(5, 60px)", borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
               <div />
               {planHeaders.map((h) => (
                 <div key={h} className="text-center text-[10px] font-bold tracking-wider" style={{ color: "var(--text-tertiary)" }}>
@@ -270,7 +317,7 @@ function ComparisonSectionBlock({ section }: { section: ComparisonSection }) {
                 key={i}
                 className="grid items-center px-4 py-2.5"
                 style={{
-                  gridTemplateColumns: "1fr repeat(5, 64px)",
+                  gridTemplateColumns: "1fr repeat(5, 60px)",
                   backgroundColor: i % 2 === 0 ? "transparent" : "rgba(255,255,255,0.01)",
                 }}
               >
@@ -295,6 +342,8 @@ function ComparisonSectionBlock({ section }: { section: ComparisonSection }) {
 /*  PricingPage Component                                              */
 /* ------------------------------------------------------------------ */
 export function PricingPage({ open, onClose, currentPlan }: PricingPageProps) {
+  const [corpExpanded, setCorpExpanded] = useState(false);
+
   if (!open) return null;
 
   return (
@@ -360,7 +409,7 @@ export function PricingPage({ open, onClose, currentPlan }: PricingPageProps) {
 
             {/* Plan cards */}
             <div className="px-4 md:px-10 pb-12">
-              <div className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory md:snap-none md:grid md:grid-cols-5 md:overflow-visible max-w-[1400px] mx-auto">
+              <div className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory md:snap-none md:grid md:grid-cols-5 md:overflow-visible max-w-[1300px] mx-auto">
                 {plans.map((plan, index) => {
                   const Icon = plan.icon;
                   const isCurrent = currentPlan === plan.id;
@@ -490,7 +539,9 @@ export function PricingPage({ open, onClose, currentPlan }: PricingPageProps) {
                         ) : (
                           <motion.button
                             onClick={() => {
-                              if (plan.id === "corporate") {
+                              if ((plan as any).hasSubmenu) {
+                                setCorpExpanded(!corpExpanded);
+                              } else if (plan.id === "corporate" || plan.id === "corporate_plus") {
                                 window.open("mailto:sales@xerocode.space?subject=Corporate%20план", "_blank");
                               } else {
                                 alert(`Оплата тарифа "${plan.name}" будет доступна в ближайшем обновлении.\n\nПо вопросам: sales@xerocode.space`);
@@ -517,6 +568,91 @@ export function PricingPage({ open, onClose, currentPlan }: PricingPageProps) {
                 })}
               </div>
             </div>
+
+            {/* Corporate submenu */}
+            <AnimatePresence>
+              {corpExpanded && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="overflow-hidden px-4 md:px-10 pb-8"
+                >
+                  <div className="max-w-[800px] mx-auto">
+                    <div className="text-center mb-6">
+                      <h2 className="text-lg font-bold" style={{ color: "var(--text-primary)" }}>
+                        Выберите корпоративный тариф
+                      </h2>
+                      <p className="text-xs mt-1" style={{ color: "var(--text-tertiary)" }}>
+                        Оба тарифа включают полный корпоративный функционал
+                      </p>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {corpSubPlans.map((sub, i) => (
+                        <motion.div
+                          key={sub.id}
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: i * 0.1 }}
+                          className="rounded-2xl p-5 relative"
+                          style={{
+                            backgroundColor: "#18181D",
+                            border: `1px solid ${sub.color}33`,
+                          }}
+                        >
+                          {sub.badge && (
+                            <div
+                              className="absolute top-4 right-4 text-[10px] font-bold px-2.5 py-1 rounded-full"
+                              style={{ background: sub.gradient, color: "#fff" }}
+                            >
+                              {sub.badge}
+                            </div>
+                          )}
+                          <div className="flex items-center gap-3 mb-4">
+                            <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: sub.gradient }}>
+                              <Building2 size={20} color="#fff" />
+                            </div>
+                            <div>
+                              <div className="text-[14px] font-bold" style={{ color: "var(--text-primary)" }}>{sub.name}</div>
+                              <div className="text-[11px]" style={{ color: "var(--text-tertiary)" }}>{sub.priceNote}</div>
+                            </div>
+                          </div>
+                          <div className="text-[24px] font-extrabold mb-4" style={{ color: "var(--text-primary)" }}>{sub.price}</div>
+                          <div className="space-y-2 mb-5">
+                            {sub.features.map((f, j) => (
+                              <div key={j} className="flex items-start gap-2">
+                                <div className="w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5" style={{ backgroundColor: `${sub.color}20` }}>
+                                  <Check size={9} style={{ color: sub.color }} />
+                                </div>
+                                <span className="text-[12px]" style={{ color: "var(--text-secondary)" }}>{f}</span>
+                              </div>
+                            ))}
+                            {(sub.excluded || []).map((f, j) => (
+                              <div key={`ex-${j}`} className="flex items-start gap-2">
+                                <div className="w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5" style={{ backgroundColor: "rgba(239,68,68,0.1)" }}>
+                                  <XIcon size={9} style={{ color: "#ef4444" }} />
+                                </div>
+                                <span className="text-[12px] line-through" style={{ color: "var(--text-tertiary)" }}>{f}</span>
+                              </div>
+                            ))}
+                          </div>
+                          <motion.button
+                            onClick={() => window.open(`mailto:sales@xerocode.space?subject=${encodeURIComponent(sub.name)}`, "_blank")}
+                            className="w-full py-2.5 rounded-xl text-[13px] font-semibold"
+                            style={{ background: sub.gradient, color: "#fff" }}
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                          >
+                            {sub.cta}
+                          </motion.button>
+                        </motion.div>
+                      ))}
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             {/* Comparison table */}
             <motion.div

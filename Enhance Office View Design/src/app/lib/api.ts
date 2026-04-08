@@ -95,6 +95,39 @@ export interface RoleInfo {
   modules: string[];
 }
 
+// Deep Research
+export interface ResearchSession {
+  id: string;
+  query: string;
+  status: "pending" | "searching" | "analyzing" | "council" | "generating" | "completed" | "failed";
+  progress: number;
+  progress_message: string;
+  result_summary?: string;
+  sources_count: number;
+  sections_count: number;
+  iterations_count: number;
+  total_tokens: number;
+  total_cost_usd: number;
+  model_council_votes?: { model: string; overall: number; reasoning: string }[];
+  created_at: string;
+  completed_at?: string | null;
+}
+
+export interface ResearchResult {
+  id: string;
+  query: string;
+  status: string;
+  summary: string;
+  sections: { title: string; content: string; source_indices?: number[] }[];
+  sources: { url: string; title: string; snippet: string; relevance?: number }[];
+  model_council_votes?: { model: string; overall: number; accuracy: number; completeness: number; clarity: number; usefulness: number; reasoning: string }[];
+  iterations_count: number;
+  total_tokens: number;
+  total_cost_usd: number;
+  created_at: string;
+  completed_at?: string | null;
+}
+
 export interface CRMContact {
   id: string;
   name: string;
@@ -103,7 +136,10 @@ export interface CRMContact {
   company: string | null;
   position: string | null;
   notes: string | null;
+  source?: string | null;
+  tags?: any;
   created_at: string;
+  deals?: { id: string; title: string; amount: number; stage: string }[];
 }
 
 export interface CRMDeal {
@@ -115,14 +151,48 @@ export interface CRMDeal {
   contact_id: string | null;
   assignee_id: string | null;
   description: string | null;
+  source?: string | null;
+  priority?: string;
+  qualification_score?: number;
+  next_action?: string | null;
+  next_action_date?: string | null;
+  expected_close?: string | null;
+  lost_reason?: string | null;
+  won_date?: string | null;
+  linked_task_ids?: string[];
+  linked_doc_ids?: string[];
   contact_name?: string | null;
   assignee_name?: string | null;
+  activities?: CRMActivity[];
   created_at: string;
   updated_at: string;
 }
 
+export interface CRMActivity {
+  id: string;
+  activity_type: string;
+  description: string | null;
+  metadata?: any;
+  user_name: string;
+  created_at: string;
+}
+
 export interface PipelineStats {
   stages: Record<string, { count: number; total_amount: number; label: string }>;
+}
+
+export interface CRMAnalytics {
+  total_deals: number;
+  won_deals: number;
+  lost_deals: number;
+  won_revenue: number;
+  avg_deal_size: number;
+  conversion_rate: number;
+  pipeline_value: number;
+  funnel: { stage: string; label: string; count: number; amount: number }[];
+  by_source: Record<string, { label: string; count: number }>;
+  new_this_month: number;
+  won_this_month: number;
 }
 
 export interface Org {
@@ -138,6 +208,8 @@ export interface OrgMember {
   email: string;
   name: string;
   org_role: "owner" | "manager" | "member" | null;
+  professional_role?: ProfessionalRole | null;
+  professional_role_label?: string | null;
   tasks_used_this_month: number;
   created_at: string | null;
 }
@@ -494,6 +566,9 @@ export const api = {
   crm: {
     contacts: {
       list: (search?: string) => request<CRMContact[]>(`/crm/contacts${search ? `?search=${encodeURIComponent(search)}` : ""}`),
+      get: (id: string) => request<CRMContact>(`/crm/contacts/${id}`),
+      update: (id: string, data: Record<string, any>) =>
+        request(`/crm/contacts/${id}`, { method: "PATCH", body: JSON.stringify(data) }),
       create: (data: { name: string; email?: string; phone?: string; company?: string; position?: string; notes?: string }) =>
         request<CRMContact>("/crm/contacts", { method: "POST", body: JSON.stringify(data) }),
       delete: (id: string) => request(`/crm/contacts/${id}`, { method: "DELETE" }),
@@ -507,6 +582,13 @@ export const api = {
       delete: (id: string) => request(`/crm/deals/${id}`, { method: "DELETE" }),
     },
     pipeline: () => request<PipelineStats>("/crm/pipeline"),
+    analytics: () => request<CRMAnalytics>("/crm/analytics"),
+    dealDetail: (id: string) => request<CRMDeal>(`/crm/deals/${id}`),
+    activities: {
+      list: (dealId: string) => request<CRMActivity[]>(`/crm/deals/${dealId}/activities`),
+      create: (dealId: string, data: { activity_type: string; description?: string; metadata?: any }) =>
+        request(`/crm/deals/${dealId}/activities`, { method: "POST", body: JSON.stringify(data) }),
+    },
   },
 
   // Roles
@@ -517,6 +599,53 @@ export const api = {
         method: "PATCH",
         body: JSON.stringify({ professional_role: role }),
       }),
+  },
+
+  // Deep Research
+  research: {
+    start: (query: string, depth: string = "standard", language: string = "ru", use_council: boolean = true) =>
+      request<{ id: string; status: string }>("/research/start", {
+        method: "POST",
+        body: JSON.stringify({ query, depth, language, use_council }),
+      }),
+    sessions: (limit: number = 20) =>
+      request<ResearchSession[]>(`/research/sessions?limit=${limit}`),
+    status: (id: string) =>
+      request<{ id: string; status: string; progress: number; progress_message: string }>(`/research/${id}/status`),
+    result: (id: string) =>
+      request<ResearchResult>(`/research/${id}/result`),
+    sparkpageUrl: (id: string) => `${API_BASE}/research/${id}/sparkpage`,
+  },
+
+  // Voice
+  voice: {
+    transcribe: async (audioBlob: Blob, language: string = "ru"): Promise<{ text: string }> => {
+      const token = localStorage.getItem("token");
+      const formData = new FormData();
+      formData.append("file", audioBlob, "recording.webm");
+      formData.append("language", language);
+      const resp = await fetch(`${API_BASE}/voice/transcribe`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData,
+      });
+      if (!resp.ok) throw new Error(`Voice API error: ${resp.status}`);
+      return resp.json();
+    },
+  },
+
+  // Custom Roles
+  customRoles: {
+    list: () => request<any[]>("/org/roles/custom"),
+    create: (data: { name: string; label: string; description?: string; permissions: string[]; modules: string[] }) =>
+      request("/org/roles/custom", { method: "POST", body: JSON.stringify(data) }),
+    update: (id: string, data: Record<string, any>) =>
+      request(`/org/roles/custom/${id}`, { method: "PATCH", body: JSON.stringify(data) }),
+    delete: (id: string) =>
+      request(`/org/roles/custom/${id}`, { method: "DELETE" }),
+    matrix: () => request<{ matrix: Record<string, string[]>; roles: Record<string, { label: string; permissions: string[] }> }>("/org/roles/matrix"),
+    templates: () => request<Record<string, { label: string; roles_count: number }>>("/org/roles/templates"),
+    templateDetail: (id: string) => request<{ label: string; roles: any[] }>(`/org/roles/templates/${id}`),
   },
 
   // Autoprompt

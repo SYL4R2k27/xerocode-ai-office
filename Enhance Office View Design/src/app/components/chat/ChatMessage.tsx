@@ -82,6 +82,48 @@ function parseContent(content: string): Array<{ type: "text" | "code" | "image";
     return parts;
   }
 
+  // Check for bare filename.png (from image generator) — e.g. "Файлы: abc123.png"
+  const bareFileMatch = content.match(/(?:Файлы?:\s*|файлы?:\s*|Files?:\s*)([a-zA-Z0-9_.-]+\.(png|jpg|jpeg|gif|webp))/i);
+  if (bareFileMatch) {
+    const filename = bareFileMatch[1];
+    const idx = content.indexOf(bareFileMatch[0]);
+    const textBefore = content.slice(0, idx).trim();
+    if (textBefore) parts.push({ type: "text", value: textBefore });
+    parts.push({ type: "image", value: `/uploads/${filename}` });
+    const after = content.slice(idx + bareFileMatch[0].length).trim();
+    if (after) {
+      // Check for more filenames in the remaining text
+      const moreFiles = after.match(/([a-zA-Z0-9_.-]+\.(png|jpg|jpeg|gif|webp))/g);
+      if (moreFiles) {
+        let remaining = after;
+        for (const f of moreFiles) {
+          const fIdx = remaining.indexOf(f);
+          const before = remaining.slice(0, fIdx).replace(/[,\s]+/g, "").trim();
+          if (before) parts.push({ type: "text", value: before });
+          parts.push({ type: "image", value: `/uploads/${f}` });
+          remaining = remaining.slice(fIdx + f.length);
+        }
+        if (remaining.trim()) parts.push({ type: "text", value: remaining.trim() });
+      } else {
+        parts.push({ type: "text", value: after });
+      }
+    }
+    return parts;
+  }
+
+  // Fallback: any standalone hash-like filename (e.g. "ad72d5f74b5240a28148164ee4cbfc36.png")
+  const hashFileMatch = content.match(/\b([a-f0-9]{24,64}\.(png|jpg|jpeg|gif|webp))\b/);
+  if (hashFileMatch) {
+    const filename = hashFileMatch[1];
+    const idx = content.indexOf(filename);
+    const textBefore = content.slice(0, idx).trim();
+    if (textBefore) parts.push({ type: "text", value: textBefore });
+    parts.push({ type: "image", value: `/uploads/${filename}` });
+    const after = content.slice(idx + filename.length).trim();
+    if (after) parts.push({ type: "text", value: after });
+    return parts;
+  }
+
   // Check for base64 image data
   const base64Match = content.match(/data:image\/(png|jpeg|jpg|gif|webp);base64,[A-Za-z0-9+/=]+/);
   if (base64Match) {
