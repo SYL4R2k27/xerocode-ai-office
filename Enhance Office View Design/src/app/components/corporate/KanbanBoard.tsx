@@ -3,9 +3,13 @@ import { motion, AnimatePresence } from "motion/react";
 import {
   Bot, Play, Check, RotateCcw, Eye, Loader2,
   Plus, Filter, Search, GripVertical, AlertCircle,
-  Sparkles, ClipboardList, ArrowRight, X,
+  Sparkles, ClipboardList, ArrowRight, X, User, Calendar,
+  List, Clock, KanbanSquare,
 } from "lucide-react";
-import { api, type OrgTask } from "../../lib/api";
+import { api, type OrgTask, type OrgMember } from "../../lib/api";
+import { TaskListView } from "./TaskListView";
+import { TaskDeadlineView } from "./TaskDeadlineView";
+import { TaskDetailPanel } from "./TaskDetailPanel";
 
 /* ── Column definitions ── */
 const COLUMNS = [
@@ -53,6 +57,16 @@ export function KanbanBoard({ orgRole }: KanbanBoardProps) {
   const [transitioning, setTransitioning] = useState<string | null>(null);
   const [dragTask, setDragTask] = useState<string | null>(null);
   const [dragOver, setDragOver] = useState<string | null>(null);
+  const [showCreate, setShowCreate] = useState(false);
+  const [viewMode, setViewMode] = useState<"kanban" | "list" | "deadlines">("kanban");
+  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
+  const [members, setMembers] = useState<OrgMember[]>([]);
+  const [newTitle, setNewTitle] = useState("");
+  const [newDesc, setNewDesc] = useState("");
+  const [newAssignee, setNewAssignee] = useState("");
+  const [newPriority, setNewPriority] = useState(0);
+  const [newDueDate, setNewDueDate] = useState("");
+  const [creating, setCreating] = useState(false);
   const isManager = orgRole === "owner" || orgRole === "manager";
 
   const loadTasks = useCallback(async () => {
@@ -67,6 +81,40 @@ export function KanbanBoard({ orgRole }: KanbanBoardProps) {
   }, []);
 
   useEffect(() => { loadTasks(); }, [loadTasks]);
+
+  useEffect(() => {
+    if ((showCreate || selectedTaskId) && members.length === 0) {
+      api.org.getMembers().then(setMembers).catch(console.error);
+    }
+  }, [showCreate, selectedTaskId, members.length]);
+
+  const handleCreateTask = useCallback(async () => {
+    if (!newTitle.trim()) return;
+    setCreating(true);
+    try {
+      const API_BASE = window.location.hostname === "localhost" ? "http://localhost:8000/api" : `${window.location.origin}/api`;
+      const token = localStorage.getItem("token");
+      const resp = await fetch(`${API_BASE}/org/tasks`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: newTitle.trim(),
+          description: newDesc.trim() || undefined,
+          assignee_user_id: newAssignee || undefined,
+          priority: newPriority,
+          due_date: newDueDate || undefined,
+          status: "backlog",
+        }),
+      });
+      if (resp.ok) {
+        const task = await resp.json();
+        setTasks(prev => [task, ...prev]);
+        setShowCreate(false);
+        setNewTitle(""); setNewDesc(""); setNewAssignee(""); setNewPriority(0); setNewDueDate("");
+      }
+    } catch (err) { console.error(err); }
+    finally { setCreating(false); }
+  }, [newTitle, newDesc, newAssignee, newPriority, newDueDate]);
 
   /* ── Workflow transition ── */
   const transition = useCallback(async (taskId: string, newStatus: string, comment?: string) => {
@@ -149,11 +197,27 @@ export function KanbanBoard({ orgRole }: KanbanBoardProps) {
         className="flex items-center justify-between px-6 py-4 flex-shrink-0"
         style={{ borderBottom: "1px solid var(--border-default)" }}
       >
-        <div>
-          <h1 className="text-xl font-bold" style={{ color: "var(--text-primary)" }}>Kanban</h1>
-          <p className="text-xs mt-0.5" style={{ color: "var(--text-tertiary)" }}>
-            {tasks.length} задач · Перетаскивайте карточки между колонками
-          </p>
+        <div className="flex items-center gap-4">
+          <div>
+            <h1 className="text-xl font-bold" style={{ color: "var(--text-primary)" }}>Задачи</h1>
+            <p className="text-xs mt-0.5" style={{ color: "var(--text-tertiary)" }}>{tasks.length} задач</p>
+          </div>
+          <div className="flex gap-0.5 p-0.5 rounded-lg" style={{ backgroundColor: "var(--bg-elevated)" }}>
+            {([["kanban", "Канбан", KanbanSquare], ["list", "Список", List], ["deadlines", "Сроки", Clock]] as const).map(([id, label, Icon]) => (
+              <button
+                key={id}
+                onClick={() => setViewMode(id as any)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all"
+                style={{
+                  backgroundColor: viewMode === id ? "var(--bg-surface)" : "transparent",
+                  color: viewMode === id ? "var(--text-primary)" : "var(--text-tertiary)",
+                  boxShadow: viewMode === id ? "0 1px 3px rgba(0,0,0,0.2)" : "none",
+                }}
+              >
+                <Icon size={12} /> {label}
+              </button>
+            ))}
+          </div>
         </div>
         <div className="flex items-center gap-3">
           <div className="relative">
@@ -166,11 +230,43 @@ export function KanbanBoard({ orgRole }: KanbanBoardProps) {
               style={{ backgroundColor: "var(--bg-surface)", border: "1px solid var(--border-default)", color: "var(--text-primary)" }}
             />
           </div>
+          <button
+            onClick={() => setShowCreate(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold"
+            style={{ backgroundColor: "var(--accent-blue)", color: "#fff" }}
+          >
+            <Plus size={13} /> Задача
+          </button>
         </div>
       </motion.div>
 
-      {/* Board */}
-      <div className="flex-1 overflow-x-auto overflow-y-hidden px-4 py-4">
+      {/* Views */}
+      {viewMode === "list" && (
+        <div className="flex-1 overflow-hidden">
+          <TaskListView tasks={tasks} onOpenTask={(id) => setSelectedTaskId(id)} />
+        </div>
+      )}
+
+      {viewMode === "deadlines" && (
+        <div className="flex-1 overflow-y-auto px-4 py-4">
+          <TaskDeadlineView tasks={tasks} onOpenTask={(id) => setSelectedTaskId(id)} />
+        </div>
+      )}
+
+      {/* Task Detail Panel */}
+      <AnimatePresence>
+        {selectedTaskId && (
+          <TaskDetailPanel
+            taskId={selectedTaskId}
+            onClose={() => setSelectedTaskId(null)}
+            onUpdate={loadTasks}
+            members={members.map(m => ({ id: m.id, name: m.name || m.email, email: m.email }))}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Kanban Board */}
+      {viewMode === "kanban" && <div className="flex-1 overflow-x-auto overflow-y-hidden px-4 py-4">
         <div className="flex gap-3 h-full min-w-max">
           {COLUMNS.map((col, ci) => {
             const colTasks = grouped[col.id];
@@ -231,7 +327,66 @@ export function KanbanBoard({ orgRole }: KanbanBoardProps) {
             );
           })}
         </div>
-      </div>
+      </div>}
+
+      {/* Create Task Modal */}
+      <AnimatePresence>
+        {showCreate && (
+          <motion.div
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4"
+            style={{ backgroundColor: "rgba(0,0,0,0.6)" }}
+            onClick={() => setShowCreate(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
+              className="w-full max-w-[460px] rounded-2xl p-6"
+              style={{ backgroundColor: "var(--bg-surface)", border: "1px solid var(--border-default)" }}
+              onClick={e => e.stopPropagation()}
+            >
+              <h3 className="text-lg font-semibold mb-4" style={{ color: "var(--text-primary)" }}>Новая задача</h3>
+              <div className="space-y-3">
+                <div>
+                  <label className="text-xs mb-1 block" style={{ color: "var(--text-tertiary)" }}>Название *</label>
+                  <input value={newTitle} onChange={e => setNewTitle(e.target.value)} placeholder="Что нужно сделать?" className="w-full px-3 py-2.5 rounded-lg text-sm outline-none" style={{ backgroundColor: "var(--bg-base)", border: "1px solid var(--border-default)", color: "var(--text-primary)" }} />
+                </div>
+                <div>
+                  <label className="text-xs mb-1 block" style={{ color: "var(--text-tertiary)" }}>Описание</label>
+                  <textarea value={newDesc} onChange={e => setNewDesc(e.target.value)} placeholder="Подробности..." rows={3} className="w-full px-3 py-2.5 rounded-lg text-sm outline-none resize-none" style={{ backgroundColor: "var(--bg-base)", border: "1px solid var(--border-default)", color: "var(--text-primary)" }} />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-xs mb-1 block" style={{ color: "var(--text-tertiary)" }}>Исполнитель</label>
+                    <select value={newAssignee} onChange={e => setNewAssignee(e.target.value)} className="w-full px-3 py-2.5 rounded-lg text-sm outline-none" style={{ backgroundColor: "var(--bg-base)", border: "1px solid var(--border-default)", color: "var(--text-primary)" }}>
+                      <option value="">Не назначен</option>
+                      {members.map(m => <option key={m.id} value={m.id}>{m.name || m.email}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-xs mb-1 block" style={{ color: "var(--text-tertiary)" }}>Приоритет</label>
+                    <select value={newPriority} onChange={e => setNewPriority(Number(e.target.value))} className="w-full px-3 py-2.5 rounded-lg text-sm outline-none" style={{ backgroundColor: "var(--bg-base)", border: "1px solid var(--border-default)", color: "var(--text-primary)" }}>
+                      <option value={0}>Низкий</option>
+                      <option value={5}>Средний</option>
+                      <option value={8}>Высокий</option>
+                      <option value={10}>Критичный</option>
+                    </select>
+                  </div>
+                </div>
+                <div>
+                  <label className="text-xs mb-1 block" style={{ color: "var(--text-tertiary)" }}>Срок</label>
+                  <input type="date" value={newDueDate} onChange={e => setNewDueDate(e.target.value)} className="w-full px-3 py-2.5 rounded-lg text-sm outline-none" style={{ backgroundColor: "var(--bg-base)", border: "1px solid var(--border-default)", color: "var(--text-primary)" }} />
+                </div>
+                <div className="flex gap-2 pt-2">
+                  <button onClick={() => setShowCreate(false)} className="flex-1 py-2.5 rounded-lg text-sm font-medium" style={{ backgroundColor: "var(--bg-base)", color: "var(--text-secondary)", border: "1px solid var(--border-default)" }}>Отмена</button>
+                  <button onClick={handleCreateTask} disabled={!newTitle.trim() || creating} className="flex-1 py-2.5 rounded-lg text-sm font-medium disabled:opacity-50" style={{ backgroundColor: "var(--accent-blue)", color: "#fff" }}>
+                    {creating ? <Loader2 size={14} className="animate-spin mx-auto" /> : "Создать"}
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

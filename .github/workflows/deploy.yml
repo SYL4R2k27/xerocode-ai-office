@@ -1,0 +1,58 @@
+name: Deploy XeroCode
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Build frontend
+        working-directory: ./Enhance Office View Design
+        run: |
+          npm ci
+          npx vite build
+
+      - name: Deploy frontend
+        uses: burnett01/rsync-deployments@7.0.1
+        with:
+          switches: -avz --delete
+          path: ./Enhance Office View Design/dist/
+          remote_path: /var/www/ai-office/
+          remote_host: ${{ secrets.SERVER_HOST }}
+          remote_user: ${{ secrets.SERVER_USER }}
+          remote_key: ${{ secrets.SSH_KEY }}
+
+      - name: Deploy backend
+        uses: burnett01/rsync-deployments@7.0.1
+        with:
+          switches: -avz --exclude='.env' --exclude='.venv' --exclude='__pycache__' --exclude='*.db' --exclude='*.pyc' --exclude='alembic'
+          path: ./backend/app/
+          remote_path: ~/ai-office/backend/app/
+          remote_host: ${{ secrets.SERVER_HOST }}
+          remote_user: ${{ secrets.SERVER_USER }}
+          remote_key: ${{ secrets.SSH_KEY }}
+
+      - name: Restart backend
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            sudo systemctl restart ai-office
+            sleep 3
+            curl -sf http://127.0.0.1:8000/health || exit 1
+
+      - name: Health check
+        run: |
+          sleep 5
+          curl -sf https://xerocode.space/health || echo "Warning: health check failed"

@@ -6,6 +6,7 @@ import {
   CreditCard, ChevronRight, LogOut, Trash2, Crown,
 } from "lucide-react";
 import { api, type Org, type OrgMember } from "../../lib/api";
+import { RolesManager } from "./RolesManager";
 
 interface SettingsPageProps {
   orgRole: "owner" | "manager" | "member";
@@ -159,6 +160,13 @@ export function SettingsPage({ orgRole, orgName, userName, userEmail, onLogout }
                   </div>
                 )}
               </div>
+            </SettingsSection>
+          )}
+
+          {/* ── Roles & Permissions ── */}
+          {isOwner && (
+            <SettingsSection icon={Shield} title="Роли и права" delay={0.13}>
+              <RolesManager isOwner={isOwner} />
             </SettingsSection>
           )}
 

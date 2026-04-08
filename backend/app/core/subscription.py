@@ -34,6 +34,11 @@ PLAN_LIMITS: dict[str, dict] = {
     },
     "corporate": {
         "max_agents": 999, "max_tasks_month": 999999, "max_images_month": 999999,
+        "can_use_pools": True, "can_use_premium": False, "premium_daily_tokens": 0,
+        "can_use_custom_pools": True, "can_use_images": True, "can_upload_files": True,
+    },
+    "corporate_plus": {
+        "max_agents": 999, "max_tasks_month": 999999, "max_images_month": 999999,
         "can_use_pools": True, "can_use_premium": True, "premium_daily_tokens": 999999999,
         "can_use_custom_pools": True, "can_use_images": True, "can_upload_files": True,
     },
@@ -64,7 +69,11 @@ POOL_ACCESS = {
         "coding_pro", "coding_fullstack", "data_analysis", "automation", "solo_grok",
     ],
     "ultima": "all",
-    "corporate": "all",
+    "corporate": [
+        "coding_start", "design_start", "research", "copywriting", "solo_deepseek", "solo_fast",
+        "coding_pro", "coding_fullstack", "data_analysis", "automation",
+    ],
+    "corporate_plus": "all",
     "admin": "all",
 }
 
@@ -86,6 +95,8 @@ def _get_effective_plan(user: User) -> str:
         return user.trial_plan
 
     plan = user.plan or "free"
+    if plan == "corporate_plus" or plan.startswith("corporate_plus"):
+        return "corporate_plus"
     if plan.startswith("corporate"):
         return "corporate"
     return plan

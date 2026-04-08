@@ -3,16 +3,80 @@ import { motion } from "motion/react";
 import {
   FolderOpen, ListChecks, CheckCircle2, DollarSign, ArrowRight,
   Clock, Users, Bot, TrendingUp, AlertCircle, Plus, Sparkles,
-  ClipboardList, Eye, Loader2,
+  ClipboardList, Eye, Loader2, BarChart3, PhoneCall, FileText,
+  Target, Briefcase, Calculator, Truck, UserCheck, Scale, Megaphone, Headphones,
 } from "lucide-react";
-import { api, type OrgStats, type OrgActivity, type OrgMember, type Goal, type OrgTask } from "../../lib/api";
+import { api, type OrgStats, type OrgActivity, type OrgMember, type Goal, type OrgTask, type ProfessionalRole } from "../../lib/api";
 
 interface DashboardProps {
   orgRole: "owner" | "manager" | "member";
+  professionalRole?: ProfessionalRole | string;
   onNavigate?: (page: string) => void;
 }
 
-export function Dashboard({ orgRole, onNavigate }: DashboardProps) {
+// Quick action cards per professional role
+const ROLE_QUICK_ACTIONS: Record<string, { icon: React.ElementType; label: string; description: string; page: string; color: string }[]> = {
+  director: [
+    { icon: BarChart3, label: "Отчёты", description: "Аналитика и метрики", page: "reports", color: "var(--accent-blue)" },
+    { icon: Users, label: "Команда", description: "Управление сотрудниками", page: "team", color: "var(--accent-teal)" },
+    { icon: TrendingUp, label: "CRM", description: "Воронка продаж", page: "crm", color: "var(--accent-green)" },
+  ],
+  sales_manager: [
+    { icon: TrendingUp, label: "CRM", description: "Сделки и контакты", page: "crm", color: "var(--accent-green)" },
+    { icon: PhoneCall, label: "Контакты", description: "База клиентов", page: "crm", color: "var(--accent-blue)" },
+    { icon: FileText, label: "Документы", description: "КП и договоры", page: "documents", color: "var(--accent-lavender)" },
+  ],
+  project_manager: [
+    { icon: ClipboardList, label: "Задачи", description: "Kanban-доска", page: "kanban", color: "var(--accent-blue)" },
+    { icon: Target, label: "Workflows", description: "Автоматизация", page: "workflows", color: "var(--accent-teal)" },
+    { icon: BarChart3, label: "Отчёты", description: "Прогресс проектов", page: "reports", color: "var(--accent-amber)" },
+  ],
+  chief_accountant: [
+    { icon: Calculator, label: "Документы", description: "Счета и акты", page: "documents", color: "var(--accent-blue)" },
+    { icon: BarChart3, label: "Отчёты", description: "Финансы", page: "reports", color: "var(--accent-green)" },
+    { icon: FileText, label: "База знаний", description: "Нормативы", page: "knowledge", color: "var(--accent-lavender)" },
+  ],
+  accountant: [
+    { icon: Calculator, label: "Документы", description: "Счета и акты", page: "documents", color: "var(--accent-blue)" },
+    { icon: BarChart3, label: "Отчёты", description: "Финансы", page: "reports", color: "var(--accent-green)" },
+  ],
+  hr_manager: [
+    { icon: Users, label: "Команда", description: "Сотрудники", page: "team", color: "var(--accent-blue)" },
+    { icon: FileText, label: "Документы", description: "Кадровые документы", page: "documents", color: "var(--accent-teal)" },
+  ],
+  logistics: [
+    { icon: Truck, label: "Задачи", description: "Логистика", page: "kanban", color: "var(--accent-blue)" },
+    { icon: FileText, label: "Документы", description: "Накладные", page: "documents", color: "var(--accent-green)" },
+  ],
+  legal: [
+    { icon: Scale, label: "Документы", description: "Договоры", page: "documents", color: "var(--accent-blue)" },
+    { icon: FileText, label: "База знаний", description: "Нормативы", page: "knowledge", color: "var(--accent-lavender)" },
+  ],
+  marketer: [
+    { icon: Megaphone, label: "Skills", description: "AI-генерация", page: "skills", color: "var(--accent-blue)" },
+    { icon: TrendingUp, label: "CRM", description: "Лиды", page: "crm", color: "var(--accent-green)" },
+    { icon: FileText, label: "Документы", description: "Презентации", page: "documents", color: "var(--accent-lavender)" },
+  ],
+  operator: [
+    { icon: Headphones, label: "AI Чат", description: "Обработка запросов", page: "chat", color: "var(--accent-blue)" },
+    { icon: ClipboardList, label: "Задачи", description: "Текущие задачи", page: "kanban", color: "var(--accent-teal)" },
+  ],
+};
+
+const ROLE_GREETINGS: Record<string, string> = {
+  director: "Обзор бизнеса",
+  chief_accountant: "Финансовый обзор",
+  accountant: "Бухгалтерия",
+  sales_manager: "Продажи",
+  project_manager: "Проекты",
+  logistics: "Логистика",
+  hr_manager: "Кадры",
+  legal: "Юридический отдел",
+  marketer: "Маркетинг",
+  operator: "Рабочее место оператора",
+};
+
+export function Dashboard({ orgRole, professionalRole, onNavigate }: DashboardProps) {
   const [stats, setStats] = useState<OrgStats | null>(null);
   const [goals, setGoals] = useState<Goal[]>([]);
   const [members, setMembers] = useState<OrgMember[]>([]);
@@ -113,6 +177,14 @@ export function Dashboard({ orgRole, onNavigate }: DashboardProps) {
     task_status_changed: "изменил статус задачи",
   };
 
+  const quickActions = professionalRole
+    ? ROLE_QUICK_ACTIONS[professionalRole] || ROLE_QUICK_ACTIONS.director || []
+    : ROLE_QUICK_ACTIONS.director || [];
+
+  const greeting = professionalRole
+    ? ROLE_GREETINGS[professionalRole] || "Дашборд"
+    : "Дашборд";
+
   return (
     <div className="h-full overflow-y-auto p-6 md:p-8">
       <div className="max-w-[1200px] mx-auto">
@@ -120,23 +192,66 @@ export function Dashboard({ orgRole, onNavigate }: DashboardProps) {
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-8"
+          className="mb-6"
         >
-          <h1 className="text-2xl font-bold" style={{ color: "var(--text-primary)" }}>Дашборд</h1>
+          <h1 className="text-2xl font-bold" style={{ color: "var(--text-primary)" }}>{greeting}</h1>
           <p className="text-sm mt-1" style={{ color: "var(--text-tertiary)" }}>
             {isManager ? `${stats?.total_members || 0} участников · ${stats?.total_tasks || 0} задач` : "Ваше рабочее пространство"}
           </p>
         </motion.div>
 
+        {/* Role-based quick actions */}
+        {quickActions.length > 0 && (
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-6">
+            {quickActions.map((action, i) => {
+              const Icon = action.icon;
+              return (
+                <motion.button
+                  key={action.label + i}
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.05 }}
+                  onClick={() => onNavigate?.(action.page)}
+                  className="group flex items-center gap-3 p-4 rounded-xl text-left transition-all"
+                  style={{
+                    backgroundColor: "var(--bg-surface)",
+                    border: "1px solid var(--border-default)",
+                  }}
+                  onMouseEnter={e => {
+                    e.currentTarget.style.borderColor = action.color;
+                    e.currentTarget.style.transform = "translateY(-1px)";
+                  }}
+                  onMouseLeave={e => {
+                    e.currentTarget.style.borderColor = "var(--border-default)";
+                    e.currentTarget.style.transform = "translateY(0)";
+                  }}
+                >
+                  <div
+                    className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
+                    style={{ backgroundColor: `color-mix(in srgb, ${action.color} 12%, transparent)` }}
+                  >
+                    <Icon size={20} style={{ color: action.color }} />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>{action.label}</div>
+                    <div className="text-[11px]" style={{ color: "var(--text-tertiary)" }}>{action.description}</div>
+                  </div>
+                  <ArrowRight size={14} className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" style={{ color: action.color }} />
+                </motion.button>
+              );
+            })}
+          </div>
+        )}
+
         {/* Stats row */}
         {stats && (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-8">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">
             {statCards.map((card, i) => (
               <motion.div
                 key={card.label}
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.05 }}
+                transition={{ delay: 0.15 + i * 0.04 }}
                 className="p-4 rounded-xl"
                 style={{
                   backgroundColor: "var(--bg-surface)",
@@ -259,7 +374,7 @@ export function Dashboard({ orgRole, onNavigate }: DashboardProps) {
                           {m.name || m.email}
                         </div>
                         <div className="text-[10px]" style={{ color: "var(--text-tertiary)" }}>
-                          {m.org_role === "owner" ? "Руководитель" : m.org_role === "manager" ? "Менеджер" : "Сотрудник"}
+                          {m.professional_role_label || (m.org_role === "owner" ? "Руководитель" : m.org_role === "manager" ? "Менеджер" : "Сотрудник")}
                           {m.tasks_used_this_month > 0 && ` · ${m.tasks_used_this_month} задач`}
                         </div>
                       </div>

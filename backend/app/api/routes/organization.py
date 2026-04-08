@@ -443,10 +443,15 @@ async def org_tasks(
     org_id = current_user.organization_id
     goal_ids_subq = _org_member_goal_ids(org_id)
 
+    # Get goal-based tasks
     query = (
         select(Task, Goal.title.label("goal_title"))
-        .join(Goal, Task.goal_id == Goal.id)
-        .where(Goal.id.in_(goal_ids_subq))
+        .join(Goal, Task.goal_id == Goal.id, isouter=True)
+        .where(
+            (Goal.id.in_(goal_ids_subq)) | (Task.created_by_user_id.in_(
+                select(User.id).where(User.organization_id == org_id)
+            ))
+        )
         .order_by(Task.priority.desc(), Task.created_at.desc())
     )
     if status:
@@ -478,6 +483,294 @@ async def org_tasks(
             updated_at=task.updated_at,
         ))
     return tasks
+
+
+# ── Manual task creation ───────────────────────────────────────────
+
+@router.post("/tasks", status_code=201)
+async def create_manual_task(
+    data: dict,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Create a manual task (not via AI). Assign to team member."""
+    org_id = current_user.organization_id
+    if not org_id:
+        raise HTTPException(status_code=400, detail="Not in organization")
+
+    title = data.get("title", "").strip()
+    if not title:
+        raise HTTPException(status_code=400, detail="Title is required")
+
+    # Validate assignee belongs to org
+    assignee_id = data.get("assignee_user_id")
+    if assignee_id:
+        assignee = (await db.execute(
+            select(User).where(User.id == assignee_id, User.organization_id == org_id)
+        )).scalar_one_or_none()
+        if not assignee:
+            raise HTTPException(status_code=400, detail="Assignee not in organization")
+
+    due_date = None
+    if data.get("due_date"):
+        from datetime import datetime as dt
+        try:
+            due_date = dt.fromisoformat(data["due_date"])
+        except ValueError:
+            pass
+
+    task = Task(
+        title=title,
+        description=data.get("description"),
+        task_type=data.get("task_type", "general"),
+        status=data.get("status", "backlog"),
+        priority=data.get("priority", 0),
+        assignee_user_id=assignee_id,
+        created_by_user_id=current_user.id,
+        created_by_ai=False,
+        due_date=due_date,
+        tags=data.get("tags"),
+        goal_id=None,
+    )
+    db.add(task)
+    await _log_action(
+        db, org_id, current_user.id, "task_created",
+        {"target": title, "assignee": str(assignee_id) if assignee_id else None},
+    )
+    await db.commit()
+    await db.refresh(task)
+
+    # Get assignee name
+    assignee_name = None
+    if task.assignee_user_id:
+        res = await db.execute(select(User.name).where(User.id == task.assignee_user_id))
+        assignee_name = res.scalar_one_or_none()
+
+    return {
+        "id": str(task.id), "title": task.title, "description": task.description,
+        "task_type": task.task_type, "status": task.status, "priority": task.priority,
+        "assignee_user_id": str(task.assignee_user_id) if task.assignee_user_id else None,
+        "assignee_name": assignee_name,
+        "created_by_user_id": str(task.created_by_user_id) if task.created_by_user_id else None,
+        "due_date": task.due_date.isoformat() if task.due_date else None,
+        "tags": task.tags,
+        "goal_id": None, "goal_title": None,
+        "created_by_ai": False,
+        "created_at": task.created_at.isoformat() if task.created_at else "",
+        "updated_at": task.updated_at.isoformat() if task.updated_at else "",
+    }
+
+
+# ── Task detail (full card) ────────────────────────────────────────
+
+@router.get("/tasks/{task_id}/detail")
+async def get_task_detail(
+    task_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Get full task card with all B24-level fields."""
+    result = await db.execute(select(Task).where(Task.id == task_id))
+    task = result.scalar_one_or_none()
+    if not task:
+        raise HTTPException(404, "Task not found")
+
+    # Get subtasks
+    subtasks_result = await db.execute(
+        select(Task).where(Task.parent_task_id == task_id).order_by(Task.created_at)
+    )
+    subtasks = subtasks_result.scalars().all()
+
+    # Get names for assignee/creator
+    assignee_name, creator_name = None, None
+    if task.assignee_user_id:
+        r = await db.execute(select(User.name).where(User.id == task.assignee_user_id))
+        assignee_name = r.scalar_one_or_none()
+    if task.created_by_user_id:
+        r = await db.execute(select(User.name).where(User.id == task.created_by_user_id))
+        creator_name = r.scalar_one_or_none()
+
+    # Get participant/observer names
+    async def _get_names(ids):
+        if not ids:
+            return []
+        names = []
+        for uid in ids:
+            r = await db.execute(select(User.name, User.email).where(User.id == uid))
+            row = r.first()
+            if row:
+                names.append({"id": str(uid), "name": row[0] or row[1]})
+        return names
+
+    goal_title = None
+    if task.goal_id:
+        from app.models.goal import Goal
+        r = await db.execute(select(Goal.title).where(Goal.id == task.goal_id))
+        goal_title = r.scalar_one_or_none()
+
+    return {
+        "id": str(task.id), "title": task.title, "description": task.description,
+        "task_type": task.task_type, "status": task.status, "priority": task.priority,
+        "assignee_user_id": str(task.assignee_user_id) if task.assignee_user_id else None,
+        "assignee_name": assignee_name,
+        "created_by_user_id": str(task.created_by_user_id) if task.created_by_user_id else None,
+        "creator_name": creator_name,
+        "participants": await _get_names(task.participant_ids or []),
+        "observers": await _get_names(task.observer_ids or []),
+        "due_date": task.due_date.isoformat() if task.due_date else None,
+        "start_date": task.start_date.isoformat() if task.start_date else None,
+        "completed_at": task.completed_at.isoformat() if task.completed_at else None,
+        "checklist": task.checklist or [],
+        "parent_task_id": str(task.parent_task_id) if task.parent_task_id else None,
+        "subtasks": [
+            {"id": str(s.id), "title": s.title, "status": s.status, "priority": s.priority}
+            for s in subtasks
+        ],
+        "attachments": task.attachments or [],
+        "tags": task.tags or [],
+        "comments": task.comments or [],
+        "crm_deal_id": str(task.crm_deal_id) if task.crm_deal_id else None,
+        "is_recurring": task.is_recurring,
+        "planned_hours": task.planned_hours,
+        "actual_hours": task.actual_hours,
+        "time_entries": task.time_entries or [],
+        "goal_id": str(task.goal_id) if task.goal_id else None,
+        "goal_title": goal_title,
+        "created_by_ai": task.created_by_ai,
+        "review_comment": task.review_comment,
+        "created_at": task.created_at.isoformat() if task.created_at else "",
+        "updated_at": task.updated_at.isoformat() if task.updated_at else "",
+    }
+
+
+# ── Update task (full) ──
+
+@router.patch("/tasks/{task_id}")
+async def update_task_full(
+    task_id: uuid.UUID, data: dict,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Update any task field."""
+    result = await db.execute(select(Task).where(Task.id == task_id))
+    task = result.scalar_one_or_none()
+    if not task:
+        raise HTTPException(404, "Task not found")
+
+    allowed_fields = [
+        "title", "description", "task_type", "status", "priority",
+        "assignee_user_id", "participant_ids", "observer_ids",
+        "due_date", "start_date", "checklist", "tags", "attachments",
+        "crm_deal_id", "planned_hours", "actual_hours",
+    ]
+    for field in allowed_fields:
+        if field in data:
+            val = data[field]
+            if field in ("due_date", "start_date") and isinstance(val, str):
+                try:
+                    val = datetime.fromisoformat(val)
+                except ValueError:
+                    val = None
+            setattr(task, field, val)
+
+    if data.get("status") == "done" and not task.completed_at:
+        task.completed_at = datetime.utcnow()
+
+    await db.commit()
+    return {"detail": "Task updated"}
+
+
+# ── Add comment ──
+
+@router.post("/tasks/{task_id}/comments")
+async def add_task_comment(
+    task_id: uuid.UUID, data: dict,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Add a comment to a task."""
+    result = await db.execute(select(Task).where(Task.id == task_id))
+    task = result.scalar_one_or_none()
+    if not task:
+        raise HTTPException(404, "Task not found")
+
+    text = data.get("text", "").strip()
+    if not text:
+        raise HTTPException(400, "Comment text required")
+
+    comments = list(task.comments or [])
+    comments.append({
+        "id": str(uuid.uuid4()),
+        "user_id": str(current_user.id),
+        "user_name": current_user.name or current_user.email,
+        "text": text,
+        "created_at": datetime.utcnow().isoformat(),
+    })
+    task.comments = comments
+    await db.commit()
+    return {"detail": "Comment added", "comments_count": len(comments)}
+
+
+# ── Create subtask ──
+
+@router.post("/tasks/{task_id}/subtasks", status_code=201)
+async def create_subtask(
+    task_id: uuid.UUID, data: dict,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Create a subtask under a parent task."""
+    parent = (await db.execute(select(Task).where(Task.id == task_id))).scalar_one_or_none()
+    if not parent:
+        raise HTTPException(404, "Parent task not found")
+
+    subtask = Task(
+        title=data.get("title", "Subtask"),
+        description=data.get("description"),
+        parent_task_id=task_id,
+        status="backlog",
+        priority=data.get("priority", parent.priority),
+        assignee_user_id=data.get("assignee_user_id") or parent.assignee_user_id,
+        created_by_user_id=current_user.id,
+        due_date=parent.due_date,
+        created_by_ai=False,
+    )
+    db.add(subtask)
+    await db.commit()
+    await db.refresh(subtask)
+    return {"id": str(subtask.id), "title": subtask.title, "status": subtask.status}
+
+
+# ── Time tracking ──
+
+@router.post("/tasks/{task_id}/time")
+async def log_time(
+    task_id: uuid.UUID, data: dict,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Log time spent on a task."""
+    result = await db.execute(select(Task).where(Task.id == task_id))
+    task = result.scalar_one_or_none()
+    if not task:
+        raise HTTPException(404, "Task not found")
+
+    hours = float(data.get("hours", 0))
+    if hours <= 0:
+        raise HTTPException(400, "Hours must be positive")
+
+    entries = list(task.time_entries or [])
+    entries.append({
+        "id": str(uuid.uuid4()),
+        "user_id": str(current_user.id),
+        "hours": hours,
+        "comment": data.get("comment", ""),
+        "created_at": datetime.utcnow().isoformat(),
+    })
+    task.time_entries = entries
+    task.actual_hours = sum(e.get("hours", 0) for e in entries)
+    await db.commit()
+    return {"detail": "Time logged", "actual_hours": task.actual_hours}
 
 
 # ── Workflow: change task status ─────────────────────────────────────
@@ -553,3 +846,172 @@ async def transition_task(
     )
     await db.commit()
     return {"detail": f"Task status changed to {new_status}", "status": new_status}
+
+
+# ── Permission matrix ─────────────────────────────────────────────────
+
+@router.get("/roles/matrix")
+async def get_permission_matrix():
+    """Get the full permission matrix (module → actions)."""
+    from app.core.roles import PERMISSION_MATRIX, ROLE_PERMISSIONS, ROLE_LABELS
+    return {
+        "matrix": PERMISSION_MATRIX,
+        "roles": {
+            role_id: {
+                "label": ROLE_LABELS.get(role_id, role_id),
+                "permissions": perms,
+            }
+            for role_id, perms in ROLE_PERMISSIONS.items()
+        },
+    }
+
+
+# ── Custom roles CRUD ─────────────────────────────────────────────────
+
+@router.get("/roles/custom")
+async def list_custom_roles(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """List custom roles for the organization."""
+    from app.models.organization import CustomRole
+    _require_manager(current_user)
+    org_id = current_user.organization_id
+    result = await db.execute(
+        select(CustomRole).where(CustomRole.organization_id == org_id)
+    )
+    roles = result.scalars().all()
+    return [
+        {
+            "id": str(r.id),
+            "name": r.name,
+            "label": r.label,
+            "description": r.description,
+            "permissions": r.permissions or [],
+            "modules": r.modules or [],
+            "is_system": r.is_system,
+            "industry_template": r.industry_template,
+        }
+        for r in roles
+    ]
+
+
+@router.post("/roles/custom", status_code=201)
+async def create_custom_role(
+    data: dict,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Create a custom role for the organization."""
+    from app.models.organization import CustomRole
+    _require_owner(current_user)
+    org_id = current_user.organization_id
+
+    name = data.get("name", "").strip().lower().replace(" ", "_")
+    label = data.get("label", "").strip()
+    if not name or not label:
+        raise HTTPException(status_code=400, detail="Name and label are required")
+
+    # Check uniqueness
+    existing = await db.execute(
+        select(CustomRole).where(CustomRole.organization_id == org_id, CustomRole.name == name)
+    )
+    if existing.scalar_one_or_none():
+        raise HTTPException(status_code=409, detail="Role with this name already exists")
+
+    role = CustomRole(
+        organization_id=org_id,
+        name=name,
+        label=label,
+        description=data.get("description", ""),
+        permissions=data.get("permissions", []),
+        modules=data.get("modules", []),
+        industry_template=data.get("industry_template"),
+        created_by=current_user.id,
+    )
+    db.add(role)
+    await db.commit()
+    await db.refresh(role)
+
+    return {"id": str(role.id), "name": role.name, "label": role.label}
+
+
+@router.patch("/roles/custom/{role_id}")
+async def update_custom_role(
+    role_id: uuid.UUID,
+    data: dict,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Update a custom role."""
+    from app.models.organization import CustomRole
+    _require_owner(current_user)
+
+    result = await db.execute(
+        select(CustomRole).where(
+            CustomRole.id == role_id,
+            CustomRole.organization_id == current_user.organization_id,
+        )
+    )
+    role = result.scalar_one_or_none()
+    if not role:
+        raise HTTPException(status_code=404, detail="Custom role not found")
+
+    if "label" in data:
+        role.label = data["label"]
+    if "description" in data:
+        role.description = data["description"]
+    if "permissions" in data:
+        role.permissions = data["permissions"]
+    if "modules" in data:
+        role.modules = data["modules"]
+
+    await db.commit()
+    return {"detail": "Role updated"}
+
+
+@router.delete("/roles/custom/{role_id}")
+async def delete_custom_role(
+    role_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Delete a custom role."""
+    from app.models.organization import CustomRole
+    _require_owner(current_user)
+
+    result = await db.execute(
+        select(CustomRole).where(
+            CustomRole.id == role_id,
+            CustomRole.organization_id == current_user.organization_id,
+        )
+    )
+    role = result.scalar_one_or_none()
+    if not role:
+        raise HTTPException(status_code=404, detail="Custom role not found")
+
+    await db.delete(role)
+    await db.commit()
+    return {"detail": "Role deleted"}
+
+
+# ── Industry templates ────────────────────────────────────────────────
+
+@router.get("/roles/templates")
+async def list_industry_templates():
+    """List available industry role templates."""
+    from app.core.roles import INDUSTRY_TEMPLATES
+    return {
+        tid: {"label": tpl["label"], "roles_count": len(tpl["roles"])}
+        for tid, tpl in INDUSTRY_TEMPLATES.items()
+    }
+
+
+@router.get("/roles/templates/{template_id}")
+async def get_industry_template(template_id: str):
+    """Get roles from an industry template."""
+    from app.core.roles import INDUSTRY_TEMPLATES
+    tpl = INDUSTRY_TEMPLATES.get(template_id)
+    if not tpl:
+        raise HTTPException(status_code=404, detail="Template not found")
+    return tpl

@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback } from "react";
-import { Send, Zap, Edit3, Lightbulb, ChevronDown, Wand2, Code, Palette, Search, FileText, MoreHorizontal, Paperclip, X, Image, Code2, Archive, File, Loader2, Play, BarChart3, ClipboardList, GraduationCap } from "lucide-react";
+import { Send, Zap, Edit3, Lightbulb, ChevronDown, Wand2, Code, Palette, Search, FileText, MoreHorizontal, Paperclip, X, Image, Code2, Archive, File, Loader2, Play, BarChart3, ClipboardList, GraduationCap, Mic, MicOff } from "lucide-react";
 import { api } from "../../lib/api";
 import { DesignPanel, DEFAULT_DESIGN_PARAMS, serializeDesignParams } from "./DesignPanel";
 import type { DesignParams } from "./DesignPanel";
@@ -156,6 +156,10 @@ export function ChatInput({ hasActiveGoal, activeGoal, goalStarted, onCreateGoal
   const [isEnhancing, setIsEnhancing] = useState(false);
   const [panelOpen, setPanelOpen] = useState(false);
   const [useKnowledgeBase, setUseKnowledgeBase] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const [isTranscribing, setIsTranscribing] = useState(false);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
   const [designParams, setDesignParams] = useState<DesignParams>(DEFAULT_DESIGN_PARAMS);
   const [codeParams, setCodeParams] = useState<CodeParams>(DEFAULT_CODE_PARAMS);
   const [researchParams, setResearchParams] = useState<ResearchParams>(DEFAULT_RESEARCH_PARAMS);
@@ -328,6 +332,49 @@ export function ChatInput({ hasActiveGoal, activeGoal, goalStarted, onCreateGoal
       textareaRef.current.style.height = "44px";
     }
   }, [text, mode, goalMode, hasActiveGoal, goalStarted, activeGoal, onCreateGoal, onStartGoal, onSendMessage, allFiles, onClearExternalFiles, selectedCategory, panelOpen, designParams, codeParams, researchParams, textParams, dataParams, managementParams, educationParams]);
+
+  const handleVoiceToggle = useCallback(async () => {
+    if (isRecording) {
+      // Stop recording
+      mediaRecorderRef.current?.stop();
+      setIsRecording(false);
+      return;
+    }
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream, { mimeType: "audio/webm" });
+      mediaRecorderRef.current = mediaRecorder;
+      audioChunksRef.current = [];
+
+      mediaRecorder.ondataavailable = (e) => {
+        if (e.data.size > 0) audioChunksRef.current.push(e.data);
+      };
+
+      mediaRecorder.onstop = async () => {
+        stream.getTracks().forEach(t => t.stop());
+        const audioBlob = new Blob(audioChunksRef.current, { type: "audio/webm" });
+        if (audioBlob.size < 1000) return; // too short
+
+        setIsTranscribing(true);
+        try {
+          const result = await api.voice.transcribe(audioBlob);
+          if (result.text) {
+            setText(prev => prev ? `${prev} ${result.text}` : result.text);
+          }
+        } catch (err) {
+          console.error("Transcription error:", err);
+        } finally {
+          setIsTranscribing(false);
+        }
+      };
+
+      mediaRecorder.start();
+      setIsRecording(true);
+    } catch (err) {
+      console.error("Microphone access denied:", err);
+    }
+  }, [isRecording]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -685,16 +732,30 @@ export function ChatInput({ hasActiveGoal, activeGoal, goalStarted, onCreateGoal
                 {isStarting ? "Запуск..." : "Запустить"}
               </button>
             ) : (
-              <button
-                onClick={handleSubmit}
-                disabled={(!text.trim() && allFiles.length === 0) || isStarting}
-                className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-all disabled:opacity-30"
-                style={{
-                  backgroundColor: (text.trim() || allFiles.length > 0) ? "var(--accent-blue)" : "transparent",
-                }}
-              >
-                <Send size={14} style={{ color: (text.trim() || allFiles.length > 0) ? "#fff" : "var(--text-tertiary)" }} />
-              </button>
+              <>
+                <button
+                  onClick={handleVoiceToggle}
+                  disabled={isTranscribing}
+                  className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-all"
+                  style={{
+                    backgroundColor: isRecording ? "var(--accent-rose)" : "transparent",
+                    color: isRecording ? "#fff" : "var(--text-tertiary)",
+                  }}
+                  title={isRecording ? "Остановить запись" : isTranscribing ? "Распознавание..." : "Голосовой ввод"}
+                >
+                  {isTranscribing ? <Loader2 size={14} className="animate-spin" /> : isRecording ? <MicOff size={14} /> : <Mic size={14} />}
+                </button>
+                <button
+                  onClick={handleSubmit}
+                  disabled={(!text.trim() && allFiles.length === 0) || isStarting}
+                  className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-all disabled:opacity-30"
+                  style={{
+                    backgroundColor: (text.trim() || allFiles.length > 0) ? "var(--accent-blue)" : "transparent",
+                  }}
+                >
+                  <Send size={14} style={{ color: (text.trim() || allFiles.length > 0) ? "#fff" : "var(--text-tertiary)" }} />
+                </button>
+              </>
             )}
           </div>
 
