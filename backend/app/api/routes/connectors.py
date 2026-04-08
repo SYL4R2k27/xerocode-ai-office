@@ -63,8 +63,24 @@ async def setup_connector(data: dict, user=Depends(get_current_user), db: AsyncS
         )
     )).scalar_one_or_none()
 
+    from app.core.encryption import encrypt_api_key
+    import json as _json
+
+    def _encrypt_config(cfg: dict) -> dict:
+        """Encrypt sensitive fields in auth_config."""
+        encrypted = {}
+        for k, v in cfg.items():
+            if k in ("webhook_url", "base_url"):
+                encrypted[k] = v  # URLs not encrypted (needed for SSRF validation)
+            elif v and isinstance(v, str):
+                encrypted[k] = encrypt_api_key(v)
+            else:
+                encrypted[k] = v
+        return encrypted
+
     if existing:
-        existing.auth_config = data.get("auth_config", existing.auth_config)
+        raw_auth = data.get("auth_config", {})
+        existing.auth_config = _encrypt_config(raw_auth) if raw_auth else existing.auth_config
         existing.sync_config = data.get("sync_config", existing.sync_config)
         existing.field_mapping = data.get("field_mapping", existing.field_mapping)
         existing.name = data.get("name", existing.name)
@@ -77,7 +93,7 @@ async def setup_connector(data: dict, user=Depends(get_current_user), db: AsyncS
         connector_type=connector_type,
         name=data.get("name", connector_type),
         status="connected",
-        auth_config=data.get("auth_config", {}),
+        auth_config=_encrypt_config(data.get("auth_config", {})),
         sync_config=data.get("sync_config", {"entities": ["deals", "contacts", "tasks"], "direction": "import"}),
         field_mapping=data.get("field_mapping", {}),
         created_by=user.id,
@@ -99,18 +115,36 @@ async def test_connector(connector_id: str, user=Depends(get_current_user), db: 
     if not config:
         raise HTTPException(404, "Connector not found")
 
+    from app.core.encryption import decrypt_api_key
+
+    def _decrypt_config(cfg: dict) -> dict:
+        decrypted = {}
+        for k, v in (cfg or {}).items():
+            if k in ("webhook_url", "base_url"):
+                decrypted[k] = v
+            elif v and isinstance(v, str):
+                try:
+                    decrypted[k] = decrypt_api_key(v)
+                except Exception:
+                    decrypted[k] = v
+            else:
+                decrypted[k] = v
+        return decrypted
+
+    auth = _decrypt_config(config.auth_config)
+
     if config.connector_type == "bitrix24":
         from app.services.connector_bitrix import BitrixConnector
-        webhook_url = config.auth_config.get("webhook_url", "")
+        webhook_url = auth.get("webhook_url", "")
         if not webhook_url:
             raise HTTPException(400, "Webhook URL not configured")
         connector = BitrixConnector(webhook_url)
         result = await connector.test_connection()
     elif config.connector_type == "1c":
         from app.services.connector_bitrix import OneCConnector
-        base_url = config.auth_config.get("base_url", "")
-        username = config.auth_config.get("username", "")
-        password = config.auth_config.get("password", "")
+        base_url = auth.get("base_url", "")
+        username = auth.get("username", "")
+        password = auth.get("password", "")
         connector = OneCConnector(base_url, username, password)
         result = await connector.test_connection()
     else:
@@ -163,6 +197,11 @@ async def start_import(connector_id: str, data: dict = None, user=Depends(get_cu
 @router.get("/{connector_id}/status")
 async def import_status(connector_id: str, user=Depends(get_current_user), db: AsyncSession = Depends(get_db)):
     """Get latest import status."""
+    org_id = _require_org(user)
+    # Verify connector belongs to org
+    config = (await db.execute(select(ConnectorConfig).where(ConnectorConfig.id == connector_id, ConnectorConfig.organization_id == org_id))).scalar_one_or_none()
+    if not config:
+        raise HTTPException(404, "Connector not found")
     result = await db.execute(
         select(SyncLog).where(SyncLog.connector_id == connector_id).order_by(desc(SyncLog.started_at)).limit(1)
     )
@@ -183,8 +222,12 @@ async def import_status(connector_id: str, user=Depends(get_current_user), db: A
 @router.get("/{connector_id}/logs")
 async def sync_logs(connector_id: str, limit: int = 20, user=Depends(get_current_user), db: AsyncSession = Depends(get_db)):
     """List sync history."""
+    org_id = _require_org(user)
+    config = (await db.execute(select(ConnectorConfig).where(ConnectorConfig.id == connector_id, ConnectorConfig.organization_id == org_id))).scalar_one_or_none()
+    if not config:
+        raise HTTPException(404, "Connector not found")
     result = await db.execute(
-        select(SyncLog).where(SyncLog.connector_id == connector_id).order_by(desc(SyncLog.started_at)).limit(limit)
+        select(SyncLog).where(SyncLog.connector_id == connector_id).order_by(desc(SyncLog.started_at)).limit(min(limit, 100))
     )
     return [
         {

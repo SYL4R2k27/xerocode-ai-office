@@ -17,6 +17,37 @@ import httpx
 logger = logging.getLogger(__name__)
 
 
+def _validate_url(url: str) -> str:
+    """Validate URL is not pointing to internal/private networks (SSRF protection)."""
+    from urllib.parse import urlparse
+    import ipaddress
+
+    parsed = urlparse(url)
+    if parsed.scheme not in ("http", "https"):
+        raise ValueError(f"Invalid URL scheme: {parsed.scheme}. Only http/https allowed.")
+
+    hostname = parsed.hostname or ""
+    # Block localhost
+    if hostname in ("localhost", "127.0.0.1", "::1", "0.0.0.0"):
+        raise ValueError("URLs pointing to localhost are not allowed")
+
+    # Try to resolve and check IP
+    try:
+        ip = ipaddress.ip_address(hostname)
+        if ip.is_private or ip.is_loopback or ip.is_link_local or ip.is_reserved:
+            raise ValueError(f"URLs pointing to private/reserved IP ranges are not allowed: {hostname}")
+    except ValueError as e:
+        if "not allowed" in str(e):
+            raise
+        # hostname is a domain, not an IP — that's fine
+
+    # Block common cloud metadata endpoints
+    if hostname in ("169.254.169.254", "metadata.google.internal"):
+        raise ValueError("Cloud metadata endpoints are not allowed")
+
+    return url
+
+
 class BitrixConnector:
     """Bitrix24 REST API client for data import/export."""
 
@@ -24,7 +55,7 @@ class BitrixConnector:
         """
         webhook_url: e.g. https://b24-xxx.bitrix24.ru/rest/1/xxxxxxx/
         """
-        self.webhook_url = webhook_url.rstrip("/")
+        self.webhook_url = _validate_url(webhook_url.rstrip("/"))
 
     async def _call(self, method: str, params: dict | None = None) -> dict:
         """Call Bitrix24 REST API method."""
@@ -221,7 +252,7 @@ class OneCConnector:
         """
         base_url: e.g. http://server/base/odata/standard.odata
         """
-        self.base_url = base_url.rstrip("/")
+        self.base_url = _validate_url(base_url.rstrip("/"))
         self.auth = (username, password)
 
     async def _get(self, entity: str, params: dict | None = None) -> list[dict]:

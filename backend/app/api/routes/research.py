@@ -49,6 +49,14 @@ async def start_research(
     db: AsyncSession = Depends(get_db),
 ):
     """Start a new deep research session."""
+    from app.core.subscription import check_research_limit
+    check_research_limit(user)
+
+    # Rate limit: 3 per hour
+    from app.core.redis_client import check_research_rate
+    if not await check_research_rate(str(user.id)):
+        raise HTTPException(status_code=429, detail="Слишком много запросов Deep Research. Подождите.")
+
     session = ResearchSession(
         id=uuid.uuid4(),
         user_id=str(user.id),

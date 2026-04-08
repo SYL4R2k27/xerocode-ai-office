@@ -561,6 +561,32 @@ async def create_manual_task(
     }
 
 
+async def _verify_task_org(task_id: uuid.UUID, current_user: User, db: AsyncSession) -> Task:
+    """Verify task belongs to user's organization."""
+    org_id = current_user.organization_id
+    if not org_id:
+        raise HTTPException(400, "Not in organization")
+    # Task belongs to org if created_by_user_id or assignee_user_id is in the org, or goal is owned by org member
+    result = await db.execute(select(Task).where(Task.id == task_id))
+    task = result.scalar_one_or_none()
+    if not task:
+        raise HTTPException(404, "Task not found")
+    # Check org membership via creator or assignee
+    org_user_ids = (await db.execute(
+        select(User.id).where(User.organization_id == org_id)
+    )).scalars().all()
+    org_ids_set = set(str(uid) for uid in org_user_ids)
+    task_owner_ids = [str(task.created_by_user_id), str(task.assignee_user_id)]
+    if task.goal_id:
+        from app.models.goal import Goal
+        goal = (await db.execute(select(Goal).where(Goal.id == task.goal_id))).scalar_one_or_none()
+        if goal:
+            task_owner_ids.append(str(goal.user_id))
+    if not any(tid in org_ids_set for tid in task_owner_ids if tid and tid != "None"):
+        raise HTTPException(404, "Task not found")
+    return task
+
+
 # ── Task detail (full card) ────────────────────────────────────────
 
 @router.get("/tasks/{task_id}/detail")
@@ -570,8 +596,7 @@ async def get_task_detail(
     current_user: User = Depends(get_current_user),
 ):
     """Get full task card with all B24-level fields."""
-    result = await db.execute(select(Task).where(Task.id == task_id))
-    task = result.scalar_one_or_none()
+    task = await _verify_task_org(task_id, current_user, db)
     if not task:
         raise HTTPException(404, "Task not found")
 
@@ -652,10 +677,7 @@ async def update_task_full(
     current_user: User = Depends(get_current_user),
 ):
     """Update any task field."""
-    result = await db.execute(select(Task).where(Task.id == task_id))
-    task = result.scalar_one_or_none()
-    if not task:
-        raise HTTPException(404, "Task not found")
+    task = await _verify_task_org(task_id, current_user, db)
 
     allowed_fields = [
         "title", "description", "task_type", "status", "priority",
@@ -689,10 +711,7 @@ async def add_task_comment(
     current_user: User = Depends(get_current_user),
 ):
     """Add a comment to a task."""
-    result = await db.execute(select(Task).where(Task.id == task_id))
-    task = result.scalar_one_or_none()
-    if not task:
-        raise HTTPException(404, "Task not found")
+    task = await _verify_task_org(task_id, current_user, db)
 
     text = data.get("text", "").strip()
     if not text:
@@ -720,9 +739,7 @@ async def create_subtask(
     current_user: User = Depends(get_current_user),
 ):
     """Create a subtask under a parent task."""
-    parent = (await db.execute(select(Task).where(Task.id == task_id))).scalar_one_or_none()
-    if not parent:
-        raise HTTPException(404, "Parent task not found")
+    parent = await _verify_task_org(task_id, current_user, db)
 
     subtask = Task(
         title=data.get("title", "Subtask"),
@@ -750,10 +767,7 @@ async def log_time(
     current_user: User = Depends(get_current_user),
 ):
     """Log time spent on a task."""
-    result = await db.execute(select(Task).where(Task.id == task_id))
-    task = result.scalar_one_or_none()
-    if not task:
-        raise HTTPException(404, "Task not found")
+    task = await _verify_task_org(task_id, current_user, db)
 
     hours = float(data.get("hours", 0))
     if hours <= 0:

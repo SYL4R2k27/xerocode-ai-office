@@ -7,7 +7,7 @@ import {
 
 const API_BASE = window.location.hostname === "localhost" ? "http://localhost:8000/api" : `${window.location.origin}/api`;
 const authHeaders = () => ({
-  Authorization: `Bearer ${localStorage.getItem("token")}`,
+  Authorization: `Bearer ${localStorage.getItem("ai_office_token")}`,
   "Content-Type": "application/json",
 });
 

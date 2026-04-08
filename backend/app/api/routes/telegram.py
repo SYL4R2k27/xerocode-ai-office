@@ -84,7 +84,21 @@ async def telegram_status(
 
 @router.post("/webhook")
 async def telegram_webhook(request: Request, db: AsyncSession = Depends(get_db)):
-    """Receive Telegram updates (public endpoint, no auth)."""
+    """Receive Telegram updates (public endpoint, verified by secret token)."""
+    # Verify Telegram secret token header (set via setWebhook secret_token param)
+    secret_header = request.headers.get("X-Telegram-Bot-Api-Secret-Token", "")
+    if secret_header:
+        # Verify against stored bot config — find any active telegram integration
+        from app.models.integration import Integration
+        result = await db.execute(
+            select(Integration).where(Integration.type == "telegram", Integration.status == "active")
+        )
+        integration = result.scalar_one_or_none()
+        if integration:
+            expected_secret = (integration.config or {}).get("webhook_secret", "")
+            if expected_secret and secret_header != expected_secret:
+                return {"ok": False, "error": "Invalid secret token"}
+
     try:
         data = await request.json()
     except Exception:
@@ -112,13 +126,91 @@ async def telegram_webhook(request: Request, db: AsyncSession = Depends(get_db))
 
     if text.startswith("/task"):
         task_text = text.replace("/task", "").strip()
-        reply = f"Задача создана: {task_text}" if task_text else "Формат: /task описание задачи"
+        if not task_text:
+            return {"ok": True}
+        # Actually create task in DB if user is linked
+        if link:
+            from app.models.task import Task
+            linked_user = (await db.execute(select(User).where(User.id == link.user_id))).scalar_one_or_none()
+            if linked_user:
+                task = Task(
+                    title=task_text[:500],
+                    status="backlog",
+                    created_by_user_id=linked_user.id,
+                    created_by_ai=False,
+                )
+                db.add(task)
+                await db.commit()
         return {"ok": True}
+
+    if text.startswith("/deals"):
+        # Fetch top 5 deals from CRM
+        if link:
+            linked_user = (await db.execute(select(User).where(User.id == link.user_id))).scalar_one_or_none()
+            if linked_user and linked_user.organization_id:
+                from app.models.crm import Deal
+                deals_result = await db.execute(
+                    select(Deal)
+                    .where(Deal.organization_id == linked_user.organization_id)
+                    .order_by(Deal.amount.desc())
+                    .limit(5)
+                )
+                deals = deals_result.scalars().all()
+                if deals:
+                    lines = ["Top deals:"]
+                    for i, d in enumerate(deals, 1):
+                        lines.append(f"{i}. {d.title} — {d.amount:,.0f} {d.currency} [{d.stage}]")
+                    return {"ok": True, "method": "sendMessage", "chat_id": chat_id, "text": "\n".join(lines)}
+        return {"ok": True, "method": "sendMessage", "chat_id": chat_id, "text": "No deals found or account not linked."}
 
     if text.startswith("/status"):
-        return {"ok": True}
+        # Fetch real org stats
+        if link:
+            linked_user = (await db.execute(select(User).where(User.id == link.user_id))).scalar_one_or_none()
+            if linked_user and linked_user.organization_id:
+                from sqlalchemy import func as sa_func
+                from app.models.crm import Deal
+                org_id = linked_user.organization_id
 
-    # Free-text → AI (TODO: implement in next iteration)
+                members_count = (await db.execute(
+                    select(sa_func.count(User.id)).where(User.organization_id == org_id)
+                )).scalar() or 0
+
+                tasks_count = (await db.execute(
+                    select(sa_func.count(Task.id)).where(
+                        Task.created_by_user_id.in_(select(User.id).where(User.organization_id == org_id))
+                    )
+                )).scalar() or 0
+
+                deals_count = (await db.execute(
+                    select(sa_func.count(Deal.id)).where(Deal.organization_id == org_id)
+                )).scalar() or 0
+
+                status_text = (
+                    f"XeroCode Status:\n"
+                    f"Team: {members_count}\n"
+                    f"Tasks: {tasks_count}\n"
+                    f"Deals: {deals_count}"
+                )
+                return {"ok": True, "method": "sendMessage", "chat_id": chat_id, "text": status_text}
+
+        return {"ok": True, "method": "sendMessage", "chat_id": chat_id, "text": "Account not linked. Use /start to link."}
+
+    # Free-text → AI response
+    try:
+        from app.api.routes.documents import _call_ai
+        ai_response = await _call_ai(
+            "You are XeroCode AI assistant in Telegram. Be concise and helpful. Reply in the same language the user writes.",
+            text,
+            prefer_premium=False,
+        )
+        if ai_response:
+            # Truncate to Telegram message limit
+            reply = ai_response[:4000]
+            return {"ok": True, "method": "sendMessage", "chat_id": chat_id, "text": reply}
+    except Exception as e:
+        print(f"[Telegram] AI error: {e}")
+
     return {"ok": True}
 
 

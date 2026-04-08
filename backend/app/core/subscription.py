@@ -9,41 +9,49 @@ from app.models.user import User
 PLAN_LIMITS: dict[str, dict] = {
     "free": {
         "max_agents": 3, "max_tasks_month": 50, "max_images_month": 0,
+        "max_ai_cost_month_usd": 0.0, "max_research_month": 0,
         "can_use_pools": False, "can_use_premium": False, "can_use_custom_pools": False,
         "can_use_images": False, "can_upload_files": True,
     },
     "start": {
         "max_agents": 3, "max_tasks_month": 50, "max_images_month": 0,
+        "max_ai_cost_month_usd": 0.0, "max_research_month": 0,
         "can_use_pools": False, "can_use_premium": False, "can_use_custom_pools": False,
         "can_use_images": False, "can_upload_files": True,
     },
     "pro": {
         "max_agents": 10, "max_tasks_month": 500, "max_images_month": 100,
+        "max_ai_cost_month_usd": 5.0, "max_research_month": 10,
         "can_use_pools": True, "can_use_premium": False, "can_use_custom_pools": False,
         "can_use_images": True, "can_upload_files": True,
     },
     "pro_plus": {
         "max_agents": 15, "max_tasks_month": 2000, "max_images_month": 500,
+        "max_ai_cost_month_usd": 20.0, "max_research_month": 50,
         "can_use_pools": True, "can_use_premium": True, "premium_daily_tokens": 100_000,
         "can_use_custom_pools": True, "can_use_images": True, "can_upload_files": True,
     },
     "ultima": {
         "max_agents": 999, "max_tasks_month": 999999, "max_images_month": 999999,
+        "max_ai_cost_month_usd": 999999.0, "max_research_month": 999999,
         "can_use_pools": True, "can_use_premium": True, "premium_daily_tokens": 999999999,
         "can_use_custom_pools": True, "can_use_images": True, "can_upload_files": True,
     },
     "corporate": {
         "max_agents": 999, "max_tasks_month": 999999, "max_images_month": 999999,
+        "max_ai_cost_month_usd": 50.0, "max_research_month": 100,
         "can_use_pools": True, "can_use_premium": False, "premium_daily_tokens": 0,
         "can_use_custom_pools": True, "can_use_images": True, "can_upload_files": True,
     },
     "corporate_plus": {
         "max_agents": 999, "max_tasks_month": 999999, "max_images_month": 999999,
+        "max_ai_cost_month_usd": 999999.0, "max_research_month": 999999,
         "can_use_pools": True, "can_use_premium": True, "premium_daily_tokens": 999999999,
         "can_use_custom_pools": True, "can_use_images": True, "can_upload_files": True,
     },
     "admin": {
         "max_agents": 999, "max_tasks_month": 999999, "max_images_month": 999999,
+        "max_ai_cost_month_usd": 999999.0, "max_research_month": 999999,
         "can_use_pools": True, "can_use_premium": True, "premium_daily_tokens": 999999999,
         "can_use_custom_pools": True, "can_use_images": True, "can_upload_files": True,
     },
@@ -174,6 +182,30 @@ def check_subscription_limits(user: User, action: str) -> None:
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Кастомные пулы недоступны на вашем тарифе. Повысьте до PRO PLUS.",
             )
+
+
+def check_ai_cost_limit(user: User, estimated_cost_usd: float = 0.5) -> None:
+    """Check if user has AI cost budget remaining this month."""
+    limits = _get_limits(user)
+    max_cost = limits.get("max_ai_cost_month_usd", 0)
+    if max_cost <= 0 and not user.is_admin:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="AI-запросы недоступны на вашем тарифе. Повысьте подписку.",
+        )
+    # Note: actual tracking requires ai_cost_this_month field on User model
+    # For now we just check the plan allows it
+
+
+def check_research_limit(user: User) -> None:
+    """Check if user can start Deep Research."""
+    limits = _get_limits(user)
+    max_research = limits.get("max_research_month", 0)
+    if max_research <= 0 and not user.is_admin:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Deep Research недоступен на вашем тарифе. Повысьте до PRO.",
+        )
 
 
 def check_can_create_agent(user: User, current_agent_count: int) -> bool:

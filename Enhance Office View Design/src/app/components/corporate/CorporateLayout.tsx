@@ -29,11 +29,12 @@ import {
   FileStack,
   PieChart,
   Plug,
+  FileCheck,
 } from "lucide-react";
 import { CorporateBackground } from "./CorporateBackground";
 import { BackgroundPicker } from "./BackgroundPicker";
 
-export type CorporatePage = "dashboard" | "chat" | "crm" | "kanban" | "team" | "reports" | "workflows" | "documents" | "skills" | "knowledge" | "research" | "channels" | "calendar" | "hr" | "doc_registry" | "analytics" | "integrations" | "settings";
+export type CorporatePage = "dashboard" | "chat" | "crm" | "kanban" | "gantt" | "team" | "reports" | "workflows" | "documents" | "skills" | "knowledge" | "research" | "channels" | "calendar" | "hr" | "doc_registry" | "analytics" | "integrations" | "edo" | "settings";
 
 interface NavItem {
   id: CorporatePage;
@@ -47,6 +48,7 @@ const ALL_NAV_ITEMS: NavItem[] = [
   { id: "chat", icon: MessageSquare, label: "XeroCode AI", group: "ai" },
   { id: "crm", icon: TrendingUp, label: "CRM", group: "work" },
   { id: "kanban", icon: KanbanSquare, label: "Задачи", group: "work" },
+  { id: "gantt", icon: BarChart3, label: "Гант", group: "work" },
   { id: "workflows", icon: GitBranch, label: "Workflows", group: "ai" },
   { id: "documents", icon: FileText, label: "Документы", group: "work" },
   { id: "skills", icon: Zap, label: "Skills", group: "ai" },
@@ -56,6 +58,7 @@ const ALL_NAV_ITEMS: NavItem[] = [
   { id: "channels", icon: MessagesSquare, label: "Каналы", group: "work" },
   { id: "calendar", icon: Calendar, label: "Календарь", group: "work" },
   { id: "doc_registry", icon: FileStack, label: "Реестр док.", group: "work" },
+  { id: "edo", icon: FileCheck, label: "ЭДО", group: "work" },
   { id: "integrations", icon: Plug, label: "Интеграции", group: "admin" },
   { id: "hr", icon: UserCheck, label: "HR", group: "admin" },
   { id: "team", icon: Users, label: "Команда", group: "admin" },
@@ -75,6 +78,7 @@ const PAGE_LABELS: Record<CorporatePage, string> = {
   chat: "XeroCode AI",
   crm: "CRM",
   kanban: "Задачи",
+  gantt: "Диаграмма Ганта",
   workflows: "Workflows",
   documents: "Документы",
   skills: "Skills",
@@ -85,6 +89,7 @@ const PAGE_LABELS: Record<CorporatePage, string> = {
   channels: "Каналы",
   calendar: "Календарь",
   doc_registry: "Реестр документов",
+  edo: "ЭДО",
   hr: "HR",
   team: "Команда",
   reports: "Отчёты",
