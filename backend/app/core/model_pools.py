@@ -8,13 +8,13 @@ POOLS: dict[str, dict] = {
     # ============ FLAGSHIP ============
     "flagship": {
         "name": "🏆 Флагман",
-        "description": "Лучшие модели для максимального качества",
+        "description": "Claude Opus + GPT-5.4 + Grok 4 — максимальное качество",
         "tier": "ultima",
         "agents": [
-            {"name": "Архитектор", "role": "Планирование и декомпозиция", "avatar": "🏗️", "provider": "openrouter", "model_name": "x-ai/grok-4", "skills": ["planning", "analysis"]},
-            {"name": "Кодер", "role": "Разработка", "avatar": "⌨️", "provider": "openrouter", "model_name": "deepseek/deepseek-chat-v3.1", "skills": ["code"]},
-            {"name": "Ревьюер", "role": "Проверка качества", "avatar": "🔍", "provider": "openrouter", "model_name": "qwen/qwen3-coder", "skills": ["review", "testing"]},
-            {"name": "Дизайнер", "role": "Визуализация", "avatar": "🎨", "provider": "openrouter", "model_name": "meta-llama/llama-4-maverick", "skills": ["design", "image"]},
+            {"name": "Архитектор", "role": "Планирование и архитектура", "avatar": "🏗️", "provider": "openrouter", "model_name": "anthropic/claude-opus-4-20250514", "skills": ["planning", "analysis", "code"]},
+            {"name": "Кодер", "role": "Разработка и код", "avatar": "⌨️", "provider": "openrouter", "model_name": "openai/gpt-5.4", "skills": ["code", "text"]},
+            {"name": "Аналитик", "role": "Reasoning и анализ", "avatar": "🧠", "provider": "openrouter", "model_name": "x-ai/grok-4", "skills": ["research", "analysis"]},
+            {"name": "Ревьюер", "role": "Code review и тесты", "avatar": "🔍", "provider": "openrouter", "model_name": "deepseek/deepseek-r1-0528", "skills": ["review", "testing", "code"]},
         ],
     },
 

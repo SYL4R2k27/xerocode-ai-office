@@ -10,6 +10,30 @@
   --font-body: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
 
+  /* Typography scale */
+  --font-size-xs: 11px;
+  --font-size-sm: 13px;
+  --font-size-base: 15px;
+  --font-size-md: 16px;
+  --font-size-lg: 18px;
+  --font-size-xl: 22px;
+  --font-size-2xl: 28px;
+
+  /* Spacing scale (8px grid) */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+
+  /* Chat specific */
+  --chat-max-width: 720px;
+  --sidebar-width: 260px;
+  --team-bar-height: auto;
+
   /* ── Dark theme (default) ── */
   --bg-base: #0F0F11;
   --bg-surface: #18181B;
@@ -106,6 +130,30 @@
 
 /* ── Light theme ── */
 [data-theme="light"] {
+  /* Typography scale */
+  --font-size-xs: 11px;
+  --font-size-sm: 13px;
+  --font-size-base: 15px;
+  --font-size-md: 16px;
+  --font-size-lg: 18px;
+  --font-size-xl: 22px;
+  --font-size-2xl: 28px;
+
+  /* Spacing scale (8px grid) */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+
+  /* Chat specific */
+  --chat-max-width: 720px;
+  --sidebar-width: 260px;
+  --team-bar-height: auto;
+
   --bg-base: #F8F9FB;
   --bg-surface: #FFFFFF;
   --bg-elevated: #F0F2F5;
