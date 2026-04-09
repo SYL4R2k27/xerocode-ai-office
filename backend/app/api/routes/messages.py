@@ -45,6 +45,36 @@ async def list_messages(
     return result.scalars().all()
 
 
+@router.get("/after", response_model=list[MessageResponse])
+async def messages_after(
+    goal_id: uuid.UUID,
+    after: str,
+    limit: int = 50,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Get messages created after a specific timestamp (for WebSocket reconnect catch-up)."""
+    from datetime import datetime
+    if not current_user.is_admin:
+        goal_result = await db.execute(
+            select(Goal).where(Goal.id == goal_id, Goal.user_id == str(current_user.id))
+        )
+        if not goal_result.scalar_one_or_none():
+            raise HTTPException(status_code=404, detail="Goal not found")
+    try:
+        after_dt = datetime.fromisoformat(after.replace("Z", "+00:00"))
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid timestamp format")
+    query = (
+        select(Message)
+        .where(Message.goal_id == goal_id, Message.created_at > after_dt)
+        .order_by(Message.created_at)
+        .limit(limit)
+    )
+    result = await db.execute(query)
+    return result.scalars().all()
+
+
 @router.post("/", response_model=MessageResponse, status_code=201)
 async def create_message(data: MessageCreate, db: AsyncSession = Depends(get_db), current_user: User = Depends(get_current_user)):
     """Добавить сообщение в чат (используется агентами и системой)."""

@@ -19,6 +19,43 @@ export function useWebSocket(goalId: string | null) {
   const [lastEvent, setLastEvent] = useState<WSEvent | null>(null);
   const listenersRef = useRef<Map<string, Set<(data: any) => void>>>(new Map());
   const reconnectTimerRef = useRef<NodeJS.Timeout>();
+  const lastMessageTimeRef = useRef<string | null>(null);
+
+  // Catch-up missed messages after reconnect
+  const catchUpMessages = useCallback(async () => {
+    if (!goalId || !lastMessageTimeRef.current) return;
+    try {
+      const token = getToken();
+      const API_BASE = import.meta.env.DEV ? "http://localhost:8000/api" : `${window.location.origin}/api`;
+      const resp = await fetch(
+        `${API_BASE}/messages/after?goal_id=${goalId}&after=${encodeURIComponent(lastMessageTimeRef.current)}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (resp.ok) {
+        const messages = await resp.json();
+        if (messages.length > 0) {
+          console.log(`[WS] Catch-up: ${messages.length} missed messages`);
+          const handlers = listenersRef.current.get("new_message");
+          if (handlers) {
+            messages.forEach((msg: any) => {
+              handlers.forEach(fn => fn({
+                sender_type: msg.sender_type,
+                sender_name: msg.sender_name,
+                content: msg.content,
+                id: msg.id,
+                created_at: msg.created_at,
+              }));
+            });
+          }
+          // Update last message time
+          const lastMsg = messages[messages.length - 1];
+          if (lastMsg?.created_at) lastMessageTimeRef.current = lastMsg.created_at;
+        }
+      }
+    } catch (e) {
+      console.error("[WS] Catch-up failed:", e);
+    }
+  }, [goalId]);
 
   const connect = useCallback(() => {
     if (!goalId) return;
@@ -33,12 +70,21 @@ export function useWebSocket(goalId: string | null) {
     ws.onopen = () => {
       setConnected(true);
       console.log(`[WS] Connected to goal ${goalId}`);
+      // Catch up any missed messages during disconnect
+      catchUpMessages();
     };
 
     ws.onmessage = (event) => {
       try {
         const parsed: WSEvent = JSON.parse(event.data);
         setLastEvent(parsed);
+
+        // Track last message time for reconnect catch-up
+        if (parsed.event === "new_message" && parsed.data?.created_at) {
+          lastMessageTimeRef.current = parsed.data.created_at;
+        } else if (!lastMessageTimeRef.current) {
+          lastMessageTimeRef.current = new Date().toISOString();
+        }
 
         // Notify listeners
         const handlers = listenersRef.current.get(parsed.event);

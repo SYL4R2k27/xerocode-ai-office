@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback, useRef, Component, type ReactNode, useSyncExternalStore } from "react";
 import { Sidebar } from "./components/layout/Sidebar";
+import { SidebarV2 } from "./components/layout/SidebarV2";
 import { ContextPanel } from "./components/layout/ContextPanel";
 import { ChatArea } from "./components/chat/ChatArea";
 import { ModelSetup } from "./components/modals/ModelSetup";
@@ -89,6 +90,11 @@ function ChatInterface({
 
   const [isStarting, setIsStarting] = useState(false);
   const [previewCode, setPreviewCode] = useState<string | null>(null);
+
+  // V2 UI flag — enable new clean interface
+  const [useV2UI, setUseV2UI] = useState(() => {
+    return localStorage.getItem("xerocode_ui_v2") === "true";
+  });
   const [previewLanguage, setPreviewLanguage] = useState("text");
 
   // Arena / Evolution mode
@@ -295,25 +301,40 @@ function ChatInterface({
               collapsedSize={0}
               className="min-w-0"
             >
-              <Sidebar
-                agents={agentStore.agents}
-                goals={goalStore.goals}
-                tasks={taskStore.tasks}
-                activeGoal={goalStore.activeGoal}
-                status={statusStore.status}
-                connected={ws.connected}
-                onSelectGoal={(g: any) => { setArenaMode(null); goalStore.setActiveGoal(g); }}
-                onAddModel={() => setShowModelSetup(true)}
-                onRemoveAgent={async (id) => { await agentStore.removeAgent(id); }}
-                onNewGoal={() => { setArenaMode(null); goalStore.setActiveGoal(null as any); }}
-                user={authStore.user}
-                onLogout={authStore.logout}
-                onOpenProfile={() => setShowProfileSettings(true)}
-                arenaMode={arenaMode}
-                onToggleArena={() => setArenaMode(arenaMode ? null : "battle")}
-                toggleTheme={toggleTheme}
-                resolvedTheme={resolvedTheme}
-              />
+              {useV2UI ? (
+                <SidebarV2
+                  goals={goalStore.goals.map(g => ({ id: g.id, title: g.title, status: g.status, created_at: g.created_at || "" }))}
+                  activeGoalId={goalStore.activeGoal?.id || null}
+                  onSelectGoal={(id) => { setArenaMode(null); const g = goalStore.goals.find(g => g.id === id); if (g) goalStore.setActiveGoal(g); }}
+                  onNewChat={() => { setArenaMode(null); goalStore.setActiveGoal(null as any); }}
+                  userName={authStore.user?.name || "User"}
+                  userPlan={authStore.user?.plan || "free"}
+                  onSettings={() => setShowProfileSettings(true)}
+                  onPricing={() => setShowPricing(true)}
+                  onLogout={authStore.logout}
+                  onArena={() => setArenaMode(arenaMode ? null : "battle")}
+                />
+              ) : (
+                <Sidebar
+                  agents={agentStore.agents}
+                  goals={goalStore.goals}
+                  tasks={taskStore.tasks}
+                  activeGoal={goalStore.activeGoal}
+                  status={statusStore.status}
+                  connected={ws.connected}
+                  onSelectGoal={(g: any) => { setArenaMode(null); goalStore.setActiveGoal(g); }}
+                  onAddModel={() => setShowModelSetup(true)}
+                  onRemoveAgent={async (id) => { await agentStore.removeAgent(id); }}
+                  onNewGoal={() => { setArenaMode(null); goalStore.setActiveGoal(null as any); }}
+                  user={authStore.user}
+                  onLogout={authStore.logout}
+                  onOpenProfile={() => setShowProfileSettings(true)}
+                  arenaMode={arenaMode}
+                  onToggleArena={() => setArenaMode(arenaMode ? null : "battle")}
+                  toggleTheme={toggleTheme}
+                  resolvedTheme={resolvedTheme}
+                />
+              )}
             </ResizablePanel>
 
             <ResizableHandle withHandle />
