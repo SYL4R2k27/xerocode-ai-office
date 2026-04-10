@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Play, Upload, Users } from "lucide-react";
+import { Play, Upload, Users, Sparkles, Code, Palette, Search, FileText, Settings, Swords, Square, ArrowLeft } from "lucide-react";
+import { ArenaView } from "../arena/ArenaView";
 import { ChatMessageV2 } from "./ChatMessageV2";
 import { ChatInputV2 } from "./ChatInputV2";
-import { MessageSkeleton } from "../shared/LoadingSkeleton";
+import TeamBar from "./TeamBar";
 
 /* ── Types ── */
 interface GoalInfo {
@@ -18,6 +19,7 @@ interface ChatAreaV2Props {
   messages: any[];
   agents: any[];
   onSendMessage: (content: string) => void;
+  onCreateGoal?: (title: string, mode: string) => any;
   onStartGoal: () => void;
   isStarting: boolean;
   goalStarted: boolean;
@@ -31,6 +33,8 @@ interface ChatAreaV2Props {
   setShowModelSetup: (v: boolean) => void;
   messagesLoading?: boolean;
   isAdmin?: boolean;
+  arenaMode?: "battle" | "leaderboard" | null;
+  onSetArenaMode?: (mode: "battle" | "leaderboard" | null) => void;
 }
 
 const modeLabels: Record<string, string> = {
@@ -39,59 +43,62 @@ const modeLabels: Record<string, string> = {
   auto: "Авто",
 };
 
-/* ── Empty state ── */
-function EmptyState({
-  hasGoal,
-  goalStarted,
-  isStarting,
-  onStartGoal,
-}: {
-  hasGoal: boolean;
-  goalStarted: boolean;
-  isStarting: boolean;
-  onStartGoal: () => void;
-}) {
+/* ── Quick Actions (Empty State) ── */
+const QUICK_ACTIONS = [
+  { icon: Code, label: "Код", desc: "Написать функцию или приложение", color: "#3B82F6", prompt: "Напиши на Python функцию которая " },
+  { icon: Palette, label: "Дизайн", desc: "Создать макет или изображение", color: "#EC4899", prompt: "Создай дизайн лендинга для " },
+  { icon: Search, label: "Ресёрч", desc: "Исследовать тему", color: "#10B981", prompt: "Проведи исследование на тему " },
+  { icon: FileText, label: "Текст", desc: "Написать статью или документ", color: "#F59E0B", prompt: "Напиши статью о " },
+];
+
+/* ── Empty State ── */
+function EmptyStateView({ onQuickAction }: { onQuickAction: (prompt: string) => void }) {
   return (
-    <div className="flex flex-col items-center justify-center h-full gap-4">
+    <div className="flex flex-col items-center justify-center h-full gap-6 px-4">
+      {/* Logo */}
       <div
         className="w-16 h-16 rounded-2xl flex items-center justify-center"
-        style={{ backgroundColor: "var(--bg-surface)" }}
+        style={{ background: "linear-gradient(135deg, var(--accent-blue), var(--accent-lavender))" }}
       >
-        <Users size={24} style={{ color: "var(--text-tertiary)" }} />
+        <Sparkles size={28} color="#fff" />
       </div>
+
       <div className="text-center">
-        <p
-          className="font-medium"
-          style={{ color: "var(--text-secondary)", fontSize: "var(--font-size-base)" }}
-        >
-          {!hasGoal ? "Опиши задачу для ИИ-команды" : "Готово к запуску"}
-        </p>
-        <p
-          className="mt-1"
-          style={{ color: "var(--text-tertiary)", fontSize: "var(--font-size-sm)" }}
-        >
-          {!hasGoal
-            ? "Напиши цель и модели начнут работу"
-            : "Сообщения от моделей появятся здесь"}
+        <h2 className="text-xl font-bold" style={{ color: "var(--text-primary)" }}>
+          XeroCode AI
+        </h2>
+        <p className="mt-1" style={{ color: "var(--text-tertiary)", fontSize: "var(--font-size-base)" }}>
+          Чем могу помочь сегодня?
         </p>
       </div>
-      {hasGoal && !goalStarted && (
-        <motion.button
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          onClick={onStartGoal}
-          disabled={isStarting}
-          className="flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all hover:brightness-110 disabled:opacity-50"
-          style={{
-            backgroundColor: "var(--accent-blue)",
-            color: "#fff",
-            fontSize: "var(--font-size-sm)",
-          }}
-        >
-          <Play size={14} />
-          {isStarting ? "Запуск..." : "Запустить команду"}
-        </motion.button>
-      )}
+
+      {/* Quick action cards */}
+      <div className="grid grid-cols-2 gap-3 w-full" style={{ maxWidth: "440px" }}>
+        {QUICK_ACTIONS.map((action) => {
+          const Icon = action.icon;
+          return (
+            <motion.button
+              key={action.label}
+              whileHover={{ y: -2, borderColor: action.color }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => onQuickAction(action.prompt)}
+              className="flex flex-col items-start p-4 rounded-xl text-left transition-all"
+              style={{
+                backgroundColor: "var(--bg-surface)",
+                border: "1px solid var(--border-default)",
+              }}
+            >
+              <Icon size={20} style={{ color: action.color }} className="mb-2" />
+              <span className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
+                {action.label}
+              </span>
+              <span className="text-xs mt-0.5" style={{ color: "var(--text-tertiary)" }}>
+                {action.desc}
+              </span>
+            </motion.button>
+          );
+        })}
+      </div>
     </div>
   );
 }
@@ -102,6 +109,7 @@ export function ChatAreaV2({
   messages,
   agents,
   onSendMessage,
+  onCreateGoal,
   onStartGoal,
   isStarting,
   goalStarted,
@@ -115,6 +123,8 @@ export function ChatAreaV2({
   setShowModelSetup,
   messagesLoading,
   isAdmin,
+  arenaMode,
+  onSetArenaMode,
 }: ChatAreaV2Props) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -134,33 +144,54 @@ export function ChatAreaV2({
     }
   }, [goal?.id]);
 
-  /* Drag & Drop handlers */
+  /* Drag & Drop */
   const handleDragEnter = useCallback((e: React.DragEvent) => {
     e.preventDefault();
-    e.stopPropagation();
     dragCounter.current++;
     if (e.dataTransfer.types.includes("Files")) setIsDragging(true);
   }, []);
 
   const handleDragLeave = useCallback((e: React.DragEvent) => {
     e.preventDefault();
-    e.stopPropagation();
     dragCounter.current--;
     if (dragCounter.current === 0) setIsDragging(false);
   }, []);
 
-  const handleDragOver = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-  }, []);
-
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
-    e.stopPropagation();
     dragCounter.current = 0;
     setIsDragging(false);
-    // Files are handled by ChatInputV2 via its own drop zone
   }, []);
+
+  /* Arena mode */
+  if (arenaMode) {
+    return (
+      <div className="flex flex-col h-full" style={{ backgroundColor: "var(--bg-base)" }}>
+        {/* Arena header with back button */}
+        <div className="flex items-center gap-3 px-5 h-12 flex-shrink-0" style={{ borderBottom: "1px solid var(--border-default)", backgroundColor: "var(--bg-surface)" }}>
+          <button
+            onClick={() => onSetArenaMode?.(null)}
+            className="flex items-center gap-1.5 text-xs font-medium transition-colors"
+            style={{ color: "var(--text-secondary)" }}
+            onMouseEnter={e => { e.currentTarget.style.color = "var(--text-primary)"; }}
+            onMouseLeave={e => { e.currentTarget.style.color = "var(--text-secondary)"; }}
+          >
+            <ArrowLeft size={14} /> Назад к чату
+          </button>
+          <div className="flex items-center gap-2">
+            <Swords size={16} style={{ color: "var(--accent-arena, var(--accent-amber))" }} />
+            <h3 className="font-semibold" style={{ color: "var(--text-primary)", fontSize: "var(--font-size-base, 15px)" }}>
+              Арена
+            </h3>
+          </div>
+        </div>
+        {/* Arena content */}
+        <div className="flex-1 overflow-hidden">
+          <ArenaView onStartBattle={() => {}} />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div
@@ -168,7 +199,7 @@ export function ChatAreaV2({
       style={{ backgroundColor: "var(--bg-base)" }}
       onDragEnter={handleDragEnter}
       onDragLeave={handleDragLeave}
-      onDragOver={handleDragOver}
+      onDragOver={(e) => e.preventDefault()}
       onDrop={handleDrop}
     >
       {/* ── Drag overlay ── */}
@@ -178,137 +209,90 @@ export function ChatAreaV2({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.15 }}
             className="absolute inset-0 z-50 flex flex-col items-center justify-center gap-3 pointer-events-none"
-            style={{ backgroundColor: "rgba(0, 0, 0, 0.6)", backdropFilter: "blur(4px)" }}
+            style={{ backgroundColor: "rgba(0,0,0,0.6)", backdropFilter: "blur(4px)" }}
           >
-            <div
-              className="w-16 h-16 rounded-2xl flex items-center justify-center"
-              style={{ backgroundColor: "var(--accent-blue)" }}
-            >
-              <Upload size={28} style={{ color: "#fff" }} />
+            <div className="w-16 h-16 rounded-2xl flex items-center justify-center" style={{ backgroundColor: "var(--accent-blue)" }}>
+              <Upload size={28} color="#fff" />
             </div>
-            <p className="text-[15px] font-medium" style={{ color: "#fff" }}>
-              Перетащи файлы сюда
-            </p>
+            <p className="text-[15px] font-medium text-white">Перетащи файлы сюда</p>
           </motion.div>
         )}
       </AnimatePresence>
 
       {/* ── Header ── */}
       <div
-        className="flex items-center justify-between px-4 h-12 flex-shrink-0"
-        style={{
-          borderBottom: "1px solid var(--border-default)",
-          backgroundColor: "var(--bg-surface)",
-        }}
+        className="flex items-center justify-between px-5 h-12 flex-shrink-0"
+        style={{ borderBottom: "1px solid var(--border-default)", backgroundColor: "var(--bg-surface)" }}
       >
         <div className="flex items-center gap-3 min-w-0 flex-1">
-          {goal ? (
-            <>
-              <h3
-                className="font-semibold truncate max-w-[50vw]"
-                style={{ color: "var(--text-primary)", fontSize: "var(--font-size-base)" }}
-              >
-                {goal.title}
-              </h3>
-              <span
-                className="font-medium px-2 py-0.5 rounded-full flex-shrink-0"
-                style={{
-                  fontSize: "var(--font-size-xs)",
-                  backgroundColor: "var(--bg-elevated)",
-                  color: "var(--text-secondary)",
-                  border: "1px solid var(--border-subtle)",
-                }}
-              >
-                {modeLabels[goal.distribution_mode] || goal.distribution_mode}
-              </span>
-              {/* Agent avatars */}
-              <div className="flex -space-x-1.5 ml-2">
-                {agents.slice(0, 4).map((agent: any) => (
-                  <div
-                    key={agent.id}
-                    className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] border-2"
-                    style={{
-                      backgroundColor: "var(--bg-elevated)",
-                      borderColor: "var(--bg-surface)",
-                      color: "var(--text-secondary)",
-                    }}
-                    title={agent.name}
-                  >
-                    {agent.name.charAt(0)}
-                  </div>
-                ))}
-                {agents.length > 4 && (
-                  <div
-                    className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] border-2"
-                    style={{
-                      backgroundColor: "var(--bg-elevated)",
-                      borderColor: "var(--bg-surface)",
-                      color: "var(--text-tertiary)",
-                    }}
-                  >
-                    +{agents.length - 4}
-                  </div>
-                )}
-              </div>
-            </>
-          ) : (
-            <h3
-              className="font-semibold"
-              style={{ color: "var(--text-secondary)", fontSize: "var(--font-size-base)" }}
-            >
-              Новый проект
-            </h3>
+          <h3 className="font-semibold truncate" style={{ color: "var(--text-primary)", fontSize: "var(--font-size-base, 15px)", maxWidth: "50vw" }}>
+            {goal?.title || "Новый проект"}
+          </h3>
+          {goal && (
+            <span className="font-medium px-2 py-0.5 rounded-full flex-shrink-0 text-xs" style={{ backgroundColor: "var(--bg-elevated)", color: "var(--text-secondary)", border: "1px solid var(--border-default)" }}>
+              {modeLabels[goal.distribution_mode] || "Менеджер"}
+            </span>
           )}
         </div>
 
-        {/* Start button */}
-        {goal && !goalStarted && (
-          <button
-            onClick={onStartGoal}
-            disabled={isStarting}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-medium transition-all hover:brightness-110 disabled:opacity-50"
-            style={{
-              fontSize: "var(--font-size-sm)",
-              backgroundColor: "var(--accent-blue)",
-              color: "#fff",
-            }}
-          >
-            <Play size={14} />
-            {isStarting ? "Запуск..." : "Запустить"}
-          </button>
-        )}
+        <div className="flex items-center gap-2">
+          {/* Start/Stop button */}
+          {goal && !goalStarted && (
+            <button
+              onClick={onStartGoal}
+              disabled={isStarting}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all hover:brightness-110 disabled:opacity-50"
+              style={{ backgroundColor: "var(--accent-blue)", color: "#fff" }}
+            >
+              <Play size={12} />
+              {isStarting ? "Запуск..." : "Запустить"}
+            </button>
+          )}
+          {goal && goalStarted && goal.status === "active" && (
+            <span className="flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-medium" style={{ backgroundColor: "color-mix(in srgb, var(--accent-green) 15%, transparent)", color: "var(--accent-green)" }}>
+              <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" /> В работе
+            </span>
+          )}
+        </div>
       </div>
 
+      {/* ── Team Bar ── */}
+      {goal && agents.length > 0 && (
+        <TeamBar
+          agents={agents.map((a: any) => ({
+            id: a.id,
+            name: a.name,
+            role: a.role || "",
+            provider: a.provider || "openrouter",
+            model_name: a.model_name || "",
+            status: a.status || "idle",
+            avatar: a.avatar,
+          }))}
+          mode={(goal.distribution_mode as any) || "manager"}
+          onModeChange={onModeChange}
+          onRemoveAgent={onRemoveAgent}
+          onAddAgent={onAddAgent}
+          useKnowledgeBase={useKnowledgeBase}
+          onToggleKB={onToggleKB}
+        />
+      )}
+
       {/* ── Messages ── */}
-      <div ref={scrollRef} className="flex-1 overflow-y-auto py-4">
+      <div ref={scrollRef} className="flex-1 overflow-y-auto py-6 px-4">
         <AnimatePresence mode="wait">
           <motion.div
             key={goal?.id || "empty"}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
+            transition={{ duration: 0.15 }}
             className="h-full"
           >
-            {messagesLoading ? (
-              <div className="space-y-2 py-2" style={{ maxWidth: "var(--chat-max-width)", margin: "0 auto" }}>
-                <MessageSkeleton />
-                <MessageSkeleton />
-                <MessageSkeleton />
-              </div>
-            ) : messages.length === 0 ? (
-              <EmptyState
-                hasGoal={!!goal}
-                goalStarted={goalStarted}
-                isStarting={isStarting}
-                onStartGoal={onStartGoal}
-              />
+            {messages.length === 0 ? (
+              <EmptyStateView onQuickAction={(prompt) => onSendMessage(prompt)} />
             ) : (
-              <div
-                style={{ maxWidth: "var(--chat-max-width)", margin: "0 auto" }}
-              >
+              <div style={{ maxWidth: "var(--chat-max-width, 720px)", margin: "0 auto" }}>
                 {messages.map((msg: any) => (
                   <ChatMessageV2 key={msg.id} message={msg} isAdmin={isAdmin} />
                 ))}
@@ -319,16 +303,16 @@ export function ChatAreaV2({
       </div>
 
       {/* ── Input ── */}
-      <div style={{ maxWidth: "var(--chat-max-width)", margin: "0 auto", width: "100%", padding: "0 var(--space-4)" }}>
+      <div style={{ maxWidth: "var(--chat-max-width, 720px)", margin: "0 auto", width: "100%", padding: "0 var(--space-4, 16px)" }}>
         <ChatInputV2
           onSend={onSendMessage}
-          disabled={!goal}
+          disabled={false}
           placeholder={
             !goal
               ? "Опиши задачу для создания нового проекта..."
               : goalStarted
-              ? "Сообщение для команды..."
-              : "Опиши задачу..."
+              ? "Сообщение для команды... (@claude, @gpt)"
+              : "Опиши задачу и нажми Запустить..."
           }
         />
       </div>
