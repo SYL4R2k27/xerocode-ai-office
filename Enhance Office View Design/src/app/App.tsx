@@ -289,25 +289,62 @@ function ChatInterface({
           )}
 
           {/* V2 Chat Area */}
-          <div className="flex-1 min-w-0">
-            <ChatAreaV2
-              goal={goalStore.activeGoal ? { id: goalStore.activeGoal.id, title: goalStore.activeGoal.title, status: goalStore.activeGoal.status, distribution_mode: (goalStore.activeGoal as any).distribution_mode || "manager" } : null}
-              messages={messageStore.messages}
-              agents={agentStore.agents}
-              onSendMessage={(content) => handleUserInput(content, "command")}
-              onStartGoal={handleStartGoal}
-              isStarting={isStarting}
-              goalStarted={messageStore.messages.length > 0}
-              useKnowledgeBase={useKnowledgeBase}
-              onToggleKB={() => setUseKnowledgeBase(!useKnowledgeBase)}
-              onModeChange={() => {}}
-              onAddAgent={() => setShowModelSetup(true)}
-              onRemoveAgent={async (id) => { await agentStore.removeAgent(id); }}
-              onOpenModelSetup={() => setShowModelSetup(true)}
-              showModelSetup={showModelSetup}
-              setShowModelSetup={setShowModelSetup}
-              isAdmin={authStore.user?.is_admin}
-            />
+          <div className="flex-1 min-w-0 flex">
+            <div className="flex-1 min-w-0">
+              <ChatAreaV2
+                goal={goalStore.activeGoal ? { id: goalStore.activeGoal.id, title: goalStore.activeGoal.title, status: goalStore.activeGoal.status, distribution_mode: (goalStore.activeGoal as any).distribution_mode || "manager" } : null}
+                messages={messageStore.messages}
+                agents={agentStore.agents}
+                onSendMessage={async (content) => {
+                  if (!goalStore.activeGoal) {
+                    // Create goal + auto-start
+                    const goal = await handleCreateGoal(content, "manager");
+                    if (goal?.id) {
+                      await messageStore.fetchMessages(goal.id);
+                    }
+                  } else {
+                    handleUserInput(content, "command");
+                  }
+                }}
+                onCreateGoal={handleCreateGoal}
+                onStartGoal={handleStartGoal}
+                isStarting={isStarting}
+                goalStarted={messageStore.messages.length > 0 || (goalStore.activeGoal?.status === "active")}
+                useKnowledgeBase={useKnowledgeBase}
+                onToggleKB={() => setUseKnowledgeBase(!useKnowledgeBase)}
+                onModeChange={() => {}}
+                onAddAgent={() => setShowModelSetup(true)}
+                onRemoveAgent={async (id) => { await agentStore.removeAgent(id); }}
+                onOpenModelSetup={() => setShowModelSetup(true)}
+                showModelSetup={showModelSetup}
+                setShowModelSetup={setShowModelSetup}
+                isAdmin={authStore.user?.is_admin}
+                arenaMode={arenaMode}
+                onSetArenaMode={setArenaMode}
+              />
+            </div>
+
+            {/* V2 Context Panel (slide-in) */}
+            {previewCode && (
+              <div
+                className="flex-shrink-0 overflow-hidden"
+                style={{
+                  width: "400px",
+                  borderLeft: "1px solid var(--border-default)",
+                  backgroundColor: "var(--bg-surface)",
+                }}
+              >
+                <ContextPanel
+                  tasks={taskStore.tasks}
+                  agents={agentStore.agents}
+                  messages={messageStore.messages}
+                  activeGoal={goalStore.activeGoal}
+                  previewCode={previewCode}
+                  previewLanguage={previewLanguage}
+                  arenaMode={null}
+                />
+              </div>
+            )}
           </div>
         </div>
       ) : (
