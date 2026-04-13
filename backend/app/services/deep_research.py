@@ -57,7 +57,7 @@ async def _call_ai(system_prompt: str, user_prompt: str, model: str | None = Non
 
     for provider in providers:
         try:
-            use_proxy = proxy and "groq" not in provider["url"]
+            use_proxy = bool(proxy)
             transport = httpx.AsyncHTTPTransport(proxy=proxy) if use_proxy else None
             async with httpx.AsyncClient(transport=transport, timeout=60) as client:
                 resp = await client.post(

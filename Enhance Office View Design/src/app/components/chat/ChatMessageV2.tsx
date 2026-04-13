@@ -21,6 +21,7 @@ interface MessageData {
 interface ChatMessageV2Props {
   message: MessageData;
   isAdmin?: boolean;
+  onOpenInPreview?: (code: string, language: string) => void;
 }
 
 /* ── Provider colors ── */
@@ -73,7 +74,7 @@ function sanitizeContent(text: string): string {
 }
 
 /* ── Code block with copy ── */
-function CodeBlock({ code, language }: { code: string; language: string }) {
+function CodeBlock({ code, language, onOpenInPreview }: { code: string; language: string; onOpenInPreview?: (code: string, language: string) => void }) {
   const [copied, setCopied] = useState(false);
 
   const handleCopy = async () => {
@@ -96,17 +97,31 @@ function CodeBlock({ code, language }: { code: string; language: string }) {
         }}
       >
         <span className="font-medium uppercase">{language}</span>
-        <button
-          onClick={handleCopy}
-          className="flex items-center gap-1 p-1 rounded opacity-0 group-hover:opacity-100 transition-opacity"
-          style={{ color: "var(--text-tertiary)" }}
-          onMouseEnter={(e) => (e.currentTarget.style.color = "var(--text-secondary)")}
-          onMouseLeave={(e) => (e.currentTarget.style.color = "var(--text-tertiary)")}
-          title="Копировать"
-        >
-          {copied ? <Check size={12} style={{ color: "var(--accent-teal)" }} /> : <Copy size={12} />}
-          <span style={{ fontSize: "var(--font-size-xs)" }}>{copied ? "Скопировано" : "Копировать"}</span>
-        </button>
+        <div className="flex items-center gap-1">
+          {onOpenInPreview && (
+            <button
+              onClick={() => onOpenInPreview(code, language)}
+              className="flex items-center gap-1 p-1 rounded opacity-0 group-hover:opacity-100 transition-opacity"
+              style={{ color: "var(--text-tertiary)" }}
+              onMouseEnter={(e) => (e.currentTarget.style.color = "var(--accent-blue)")}
+              onMouseLeave={(e) => (e.currentTarget.style.color = "var(--text-tertiary)")}
+              title="Превью"
+            >
+              <ExternalLink size={12} />
+            </button>
+          )}
+          <button
+            onClick={handleCopy}
+            className="flex items-center gap-1 p-1 rounded opacity-0 group-hover:opacity-100 transition-opacity"
+            style={{ color: "var(--text-tertiary)" }}
+            onMouseEnter={(e) => (e.currentTarget.style.color = "var(--text-secondary)")}
+            onMouseLeave={(e) => (e.currentTarget.style.color = "var(--text-tertiary)")}
+            title="Копировать"
+          >
+            {copied ? <Check size={12} style={{ color: "var(--accent-teal)" }} /> : <Copy size={12} />}
+            <span style={{ fontSize: "var(--font-size-xs)" }}>{copied ? "Скопировано" : "Копировать"}</span>
+          </button>
+        </div>
       </div>
       <SyntaxHighlighter
         language={language === "text" ? undefined : language}
@@ -132,9 +147,11 @@ function CodeBlock({ code, language }: { code: string; language: string }) {
 function MarkdownContent({
   content,
   onImageClick,
+  onOpenInPreview,
 }: {
   content: string;
   onImageClick?: (src: string) => void;
+  onOpenInPreview?: (code: string, language: string) => void;
 }) {
   return (
     <ReactMarkdown
@@ -161,7 +178,7 @@ function MarkdownContent({
             );
           }
 
-          return <CodeBlock code={codeString} language={match[1]} />;
+          return <CodeBlock code={codeString} language={match[1]} onOpenInPreview={onOpenInPreview} />;
         },
         pre({ children }) {
           return <>{children}</>;
@@ -297,7 +314,7 @@ function MarkdownContent({
 }
 
 /* ── Main Component ── */
-export function ChatMessageV2({ message, isAdmin }: ChatMessageV2Props) {
+export function ChatMessageV2({ message, isAdmin, onOpenInPreview }: ChatMessageV2Props) {
   const { sender_type, sender_name, content, created_at, cost_usd, tokens_used } = message;
   const [viewerSrc, setViewerSrc] = useState<string | null>(null);
 
@@ -357,7 +374,7 @@ export function ChatMessageV2({ message, isAdmin }: ChatMessageV2Props) {
               style={{ backgroundColor: "var(--user-bubble)" }}
             >
               <div style={{ color: "var(--text-primary)" }}>
-                <MarkdownContent content={sanitized} onImageClick={handleImageClick} />
+                <MarkdownContent content={sanitized} onImageClick={handleImageClick} onOpenInPreview={onOpenInPreview} />
               </div>
             </div>
           </div>
@@ -414,7 +431,7 @@ export function ChatMessageV2({ message, isAdmin }: ChatMessageV2Props) {
             }}
           >
             <div style={{ color: "var(--text-primary)" }}>
-              <MarkdownContent content={sanitized} onImageClick={handleImageClick} />
+              <MarkdownContent content={sanitized} onImageClick={handleImageClick} onOpenInPreview={onOpenInPreview} />
             </div>
           </div>
 

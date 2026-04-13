@@ -57,6 +57,12 @@ async def stream_chat(
         model = "llama-3.3-70b-versatile"
         provider = "groq"
 
+    # Security: validate model against registry + check subscription
+    from app.core.subscription import is_premium_model, check_subscription_limits
+    if is_premium_model(model or ""):
+        check_subscription_limits(user, "use_premium_model")
+    check_subscription_limits(user, "create_task")
+
     # Build provider config
     proxy = getattr(settings, "api_proxy", None)
     providers = []
@@ -87,7 +93,7 @@ async def stream_chat(
 
         for prov in providers:
             try:
-                use_proxy = proxy and "groq" not in prov["url"]
+                use_proxy = bool(proxy)
                 transport = httpx.AsyncHTTPTransport(proxy=proxy) if use_proxy else None
 
                 async with httpx.AsyncClient(transport=transport, timeout=120) as client:

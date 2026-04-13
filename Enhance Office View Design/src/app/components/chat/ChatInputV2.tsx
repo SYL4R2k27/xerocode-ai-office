@@ -13,7 +13,9 @@ import {
   File,
   Image,
   Loader2,
+  Wand2,
 } from "lucide-react";
+import { api } from "../../lib/api";
 
 /* ── Types ── */
 interface ChatInputV2Props {
@@ -21,6 +23,8 @@ interface ChatInputV2Props {
   disabled?: boolean;
   placeholder?: string;
   agents?: { id: string; name: string }[];
+  initialText?: string;
+  onTextChange?: () => void;
 }
 
 /* ── File icon helper ── */
@@ -43,14 +47,27 @@ export function ChatInputV2({
   disabled = false,
   placeholder = "Сообщение...",
   agents = [],
+  initialText,
+  onTextChange,
 }: ChatInputV2Props) {
   /* State: only 6 variables */
   const [text, setText] = useState("");
+
+  /* Handle initialText from quick actions */
+  useEffect(() => {
+    if (initialText && initialText.length > 0) {
+      setText(initialText);
+      onTextChange?.();
+      // Focus textarea
+      setTimeout(() => textareaRef.current?.focus(), 100);
+    }
+  }, [initialText]);
   const [attachedFiles, setAttachedFiles] = useState<File[]>([]);
   const [isRecording, setIsRecording] = useState(false);
   const [isTranscribing, setIsTranscribing] = useState(false);
   const [showPlusMenu, setShowPlusMenu] = useState(false);
   const [showMentionDropdown, setShowMentionDropdown] = useState(false);
+  const [isEnhancing, setIsEnhancing] = useState(false);
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -96,6 +113,28 @@ export function ChatInputV2({
   }, [showMentionDropdown]);
 
   /* ── Send handler ── */
+  /* Auto-prompt enhance */
+  const handleEnhance = useCallback(async () => {
+    if (!text.trim() || isEnhancing) return;
+    setIsEnhancing(true);
+    try {
+      const result = await api.autoprompt.enhance(text.trim(), "general");
+      if (result?.enhanced) {
+        setText(result.enhanced);
+        setTimeout(() => {
+          if (textareaRef.current) {
+            textareaRef.current.style.height = "auto";
+            textareaRef.current.style.height = Math.min(textareaRef.current.scrollHeight, 160) + "px";
+          }
+        }, 50);
+      }
+    } catch (e) {
+      console.error("Enhance error:", e);
+    } finally {
+      setIsEnhancing(false);
+    }
+  }, [text, isEnhancing]);
+
   const handleSend = useCallback(() => {
     const trimmed = text.trim();
     if (!trimmed && attachedFiles.length === 0) return;
@@ -418,6 +457,21 @@ export function ChatInputV2({
             )}
           </AnimatePresence>
         </div>
+
+        {/* Auto-prompt enhance */}
+        {text.trim().length > 5 && (
+          <button
+            onClick={handleEnhance}
+            disabled={isEnhancing}
+            className="p-2 rounded-lg transition-colors flex-shrink-0 disabled:opacity-50"
+            style={{ color: isEnhancing ? "var(--accent-lavender)" : "var(--text-tertiary)" }}
+            onMouseEnter={e => { if (!isEnhancing) e.currentTarget.style.color = "var(--accent-lavender)"; }}
+            onMouseLeave={e => { if (!isEnhancing) e.currentTarget.style.color = "var(--text-tertiary)"; }}
+            title="✨ Улучшить промпт с AI"
+          >
+            {isEnhancing ? <Loader2 size={16} className="animate-spin" /> : <Wand2 size={16} />}
+          </button>
+        )}
 
         {/* Mic button */}
         <button
