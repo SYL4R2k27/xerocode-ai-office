@@ -12,6 +12,10 @@ import {
   PanelLeft,
   MessageSquare,
   DollarSign,
+  Sun,
+  Moon,
+  Wifi,
+  WifiOff,
 } from "lucide-react";
 import { LogoIcon } from "../shared/Logo";
 
@@ -46,6 +50,9 @@ interface SidebarV2Props {
   onArena: () => void;
   collapsed?: boolean;
   onToggleCollapse?: () => void;
+  connected?: boolean;
+  toggleTheme?: () => void;
+  resolvedTheme?: string;
 }
 
 /* ── Date grouping helpers ── */
@@ -475,6 +482,20 @@ export function SidebarV2({
           >
             <Settings size={14} />
           </button>
+
+          {/* Theme toggle */}
+          {toggleTheme && (
+            <button
+              onClick={toggleTheme}
+              className="p-1.5 rounded-lg transition-colors"
+              style={{ color: "var(--text-tertiary)" }}
+              onMouseEnter={(e) => (e.currentTarget.style.background = "var(--bg-elevated)")}
+              onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+              title={resolvedTheme === "dark" ? "Светлая тема" : "Тёмная тема"}
+            >
+              {resolvedTheme === "dark" ? <Sun size={14} /> : <Moon size={14} />}
+            </button>
+          )}
 
           {/* Pricing */}
           <button

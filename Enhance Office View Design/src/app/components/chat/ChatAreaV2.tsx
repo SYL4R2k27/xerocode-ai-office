@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Play, Upload, Users, Sparkles, Code, Palette, Search, FileText, Settings, Swords, Square, ArrowLeft } from "lucide-react";
 import { ArenaView } from "../arena/ArenaView";
+import { TaskPlanPanel } from "./TaskPlanPanel";
 import { ChatMessageV2 } from "./ChatMessageV2";
 import { ChatInputV2 } from "./ChatInputV2";
 import TeamBar from "./TeamBar";
@@ -32,9 +33,13 @@ interface ChatAreaV2Props {
   showModelSetup: boolean;
   setShowModelSetup: (v: boolean) => void;
   messagesLoading?: boolean;
+  onOpenInPreview?: (code: string, language: string) => void;
+  onToggleContextPanel?: () => void;
   isAdmin?: boolean;
   arenaMode?: "battle" | "leaderboard" | null;
   onSetArenaMode?: (mode: "battle" | "leaderboard" | null) => void;
+  tasks?: any[];
+  onExecuteTask?: (taskId: string, prompt: string) => void;
 }
 
 const modeLabels: Record<string, string> = {
@@ -51,8 +56,12 @@ const QUICK_ACTIONS = [
   { icon: FileText, label: "Текст", desc: "Написать статью или документ", color: "#F59E0B", prompt: "Напиши статью о " },
 ];
 
+// Ref for ChatInputV2 to set text from outside
+let _inputSetText: ((text: string) => void) | null = null;
+export function setInputText(fn: (text: string) => void) { _inputSetText = fn; }
+
 /* ── Empty State ── */
-function EmptyStateView({ onQuickAction }: { onQuickAction: (prompt: string) => void }) {
+function EmptyStateView({ onQuickAction }: { onQuickAction: (prompt: string, insertOnly?: boolean) => void }) {
   return (
     <div className="flex flex-col items-center justify-center h-full gap-6 px-4">
       {/* Logo */}
@@ -81,7 +90,7 @@ function EmptyStateView({ onQuickAction }: { onQuickAction: (prompt: string) => 
               key={action.label}
               whileHover={{ y: -2, borderColor: action.color }}
               whileTap={{ scale: 0.98 }}
-              onClick={() => onQuickAction(action.prompt)}
+              onClick={() => onQuickAction(action.prompt, true)}
               className="flex flex-col items-start p-4 rounded-xl text-left transition-all"
               style={{
                 backgroundColor: "var(--bg-surface)",
@@ -125,9 +134,14 @@ export function ChatAreaV2({
   isAdmin,
   arenaMode,
   onSetArenaMode,
+  tasks = [],
+  onExecuteTask,
+  onOpenInPreview,
+  onToggleContextPanel,
 }: ChatAreaV2Props) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [inputText, setInputTextState] = useState("");
   const dragCounter = useRef(0);
 
   /* Auto-scroll on new messages */
@@ -254,6 +268,19 @@ export function ChatAreaV2({
               <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" /> В работе
             </span>
           )}
+          {/* Context panel toggle */}
+          {onToggleContextPanel && goal && (
+            <button
+              onClick={onToggleContextPanel}
+              className="p-1.5 rounded-lg transition-colors"
+              style={{ color: "var(--text-tertiary)" }}
+              onMouseEnter={e => { e.currentTarget.style.backgroundColor = "var(--bg-elevated)"; }}
+              onMouseLeave={e => { e.currentTarget.style.backgroundColor = "transparent"; }}
+              title="План / Превью / Лог"
+            >
+              <Eye size={15} />
+            </button>
+          )}
         </div>
       </div>
 
@@ -278,32 +305,52 @@ export function ChatAreaV2({
         />
       )}
 
-      {/* ── Messages ── */}
-      <div ref={scrollRef} className="flex-1 overflow-y-auto py-6 px-4">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={goal?.id || "empty"}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.15 }}
-            className="h-full"
-          >
-            {messages.length === 0 ? (
-              <EmptyStateView onQuickAction={(prompt) => onSendMessage(prompt)} />
-            ) : (
-              <div style={{ maxWidth: "var(--chat-max-width, 720px)", margin: "0 auto" }}>
-                {messages.map((msg: any) => (
-                  <ChatMessageV2 key={msg.id} message={msg} isAdmin={isAdmin} />
-                ))}
-              </div>
-            )}
-          </motion.div>
-        </AnimatePresence>
+      {/* ── Content area (messages + task panel) ── */}
+      <div className="flex-1 flex overflow-hidden">
+        {/* Messages */}
+        <div ref={scrollRef} className="flex-1 overflow-y-auto py-6 px-4">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={goal?.id || "empty"}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.15 }}
+              className="h-full"
+            >
+              {messages.length === 0 ? (
+                <EmptyStateView onQuickAction={(prompt, insertOnly) => {
+                  if (insertOnly) {
+                    setInputTextState(prompt);
+                  } else {
+                    onSendMessage(prompt);
+                  }
+                }} />
+              ) : (
+                <div style={{ maxWidth: tasks.length > 0 ? "none" : "var(--chat-max-width, 720px)", margin: tasks.length > 0 ? "0" : "0 auto" }}>
+                  {messages.map((msg: any) => (
+                    <ChatMessageV2 key={msg.id} message={msg} isAdmin={isAdmin} onOpenInPreview={onOpenInPreview} />
+                  ))}
+                </div>
+              )}
+            </motion.div>
+          </AnimatePresence>
+        </div>
+
+        {/* Task Plan Panel (right side) */}
+        {goal && tasks.length > 0 && (
+          <TaskPlanPanel
+            tasks={tasks}
+            agents={agents}
+            onExecuteTask={(taskId, prompt) => {
+              onSendMessage(`[Выполни задачу ${taskId}]: ${prompt}`);
+            }}
+          />
+        )}
       </div>
 
       {/* ── Input ── */}
-      <div style={{ maxWidth: "var(--chat-max-width, 720px)", margin: "0 auto", width: "100%", padding: "0 var(--space-4, 16px)" }}>
+      <div style={{ maxWidth: tasks.length > 0 ? "none" : "var(--chat-max-width, 720px)", margin: tasks.length > 0 ? "0" : "0 auto", width: "100%", padding: "0 var(--space-4, 16px)" }}>
         <ChatInputV2
           onSend={onSendMessage}
           disabled={false}
@@ -314,6 +361,8 @@ export function ChatAreaV2({
               ? "Сообщение для команды... (@claude, @gpt)"
               : "Опиши задачу и нажми Запустить..."
           }
+          initialText={inputText}
+          onTextChange={() => setInputTextState("")}
         />
       </div>
     </div>

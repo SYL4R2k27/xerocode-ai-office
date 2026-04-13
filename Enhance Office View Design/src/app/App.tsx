@@ -3,8 +3,10 @@ import { Sidebar } from "./components/layout/Sidebar";
 import { SidebarV2 } from "./components/layout/SidebarV2";
 import { ChatAreaV2 } from "./components/chat/ChatAreaV2";
 import { ContextPanel } from "./components/layout/ContextPanel";
+import { ContextPanelV2 } from "./components/layout/ContextPanelV2";
 import { ChatArea } from "./components/chat/ChatArea";
 import { ModelSetup } from "./components/modals/ModelSetup";
+import { ModelSetupV2 } from "./components/modals/ModelSetupV2";
 import { ProfileSettings } from "./components/modals/ProfileSettings";
 import { PricingPage } from "./components/modals/PricingPage";
 import { AuthPage } from "./components/auth/AuthPage";
@@ -92,9 +94,9 @@ function ChatInterface({
   const [isStarting, setIsStarting] = useState(false);
   const [previewCode, setPreviewCode] = useState<string | null>(null);
 
-  // V2 UI flag — enable new clean interface
-  const [useV2UI, setUseV2UI] = useState(() => {
-    return localStorage.getItem("xerocode_ui_v2") === "true";
+  // V2 UI is now default. Set xerocode_ui_v1=true to use legacy.
+  const [useV2UI] = useState(() => {
+    return localStorage.getItem("xerocode_ui_v1") !== "true";
   });
   const [useKnowledgeBase, setUseKnowledgeBase] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -184,8 +186,20 @@ function ChatInterface({
 
   // Handlers
   const handleCreateGoal = useCallback(async (title: string, mode: "manager" | "discussion" | "auto") => {
+    // Shorten title to meaningful summary (first sentence or 60 chars)
+    let shortTitle = title.trim();
+    const firstSentenceEnd = shortTitle.search(/[.!?\n]/);
+    if (firstSentenceEnd > 0 && firstSentenceEnd < 80) {
+      shortTitle = shortTitle.substring(0, firstSentenceEnd);
+    } else if (shortTitle.length > 60) {
+      shortTitle = shortTitle.substring(0, 57) + "...";
+    }
+
+    // Clear previous messages before creating new goal
+    messageStore.setMessages([]);
+
     const goal = await goalStore.createGoal({
-      title,
+      title: shortTitle,
       distribution_mode: mode,
     });
     if (goal?.id) {
@@ -276,7 +290,7 @@ function ChatInterface({
               goals={goalStore.goals.map(g => ({ id: g.id, title: g.title, status: g.status, created_at: g.created_at || "" }))}
               activeGoalId={goalStore.activeGoal?.id || null}
               onSelectGoal={(id) => { setArenaMode(null); const g = goalStore.goals.find(g => g.id === id); if (g) goalStore.setActiveGoal(g); }}
-              onNewChat={() => { setArenaMode(null); goalStore.setActiveGoal(null as any); }}
+              onNewChat={() => { setArenaMode(null); goalStore.setActiveGoal(null as any); messageStore.setMessages([]); taskStore.setTasks?.([]); }}
               userName={authStore.user?.name || "User"}
               userPlan={authStore.user?.plan || "free"}
               onSettings={() => setShowProfileSettings(true)}
@@ -285,6 +299,9 @@ function ChatInterface({
               onArena={() => setArenaMode(arenaMode ? null : "battle")}
               collapsed={sidebarCollapsed}
               onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
+              connected={ws.connected}
+              toggleTheme={toggleTheme}
+              resolvedTheme={resolvedTheme}
             />
           )}
 
@@ -321,30 +338,25 @@ function ChatInterface({
                 isAdmin={authStore.user?.is_admin}
                 arenaMode={arenaMode}
                 onSetArenaMode={setArenaMode}
+                tasks={taskStore.tasks}
+                onExecuteTask={(taskId, prompt) => {
+                  if (goalStore.activeGoal) handleUserInput(prompt, "command");
+                }}
+                onOpenInPreview={handleOpenInPreview}
+                onToggleContextPanel={() => setContextPanelOpen(!contextPanelOpen)}
               />
             </div>
 
             {/* V2 Context Panel (slide-in) */}
-            {previewCode && (
-              <div
-                className="flex-shrink-0 overflow-hidden"
-                style={{
-                  width: "400px",
-                  borderLeft: "1px solid var(--border-default)",
-                  backgroundColor: "var(--bg-surface)",
-                }}
-              >
-                <ContextPanel
-                  tasks={taskStore.tasks}
-                  agents={agentStore.agents}
-                  messages={messageStore.messages}
-                  activeGoal={goalStore.activeGoal}
-                  previewCode={previewCode}
-                  previewLanguage={previewLanguage}
-                  arenaMode={null}
-                />
-              </div>
-            )}
+            <ContextPanelV2
+              open={contextPanelOpen || !!previewCode}
+              onClose={() => { setContextPanelOpen(false); setPreviewCode(null); }}
+              tasks={taskStore.tasks}
+              messages={messageStore.messages}
+              activeGoal={goalStore.activeGoal}
+              previewCode={previewCode}
+              previewLanguage={previewLanguage}
+            />
           </div>
         </div>
       ) : (
@@ -462,12 +474,21 @@ function ChatInterface({
 
       {/* Model Setup Modal */}
       {showModelSetup && (
-        <ModelSetup
-          agents={agentStore.agents}
-          onAddAgent={agentStore.addAgent}
-          onRemoveAgent={agentStore.removeAgent}
-          onClose={() => { setShowModelSetup(false); agentStore.fetchAgents(); }}
-        />
+        useV2UI ? (
+          <ModelSetupV2
+            agents={agentStore.agents}
+            onAddAgent={agentStore.addAgent}
+            onRemoveAgent={agentStore.removeAgent}
+            onClose={() => { setShowModelSetup(false); agentStore.fetchAgents(); }}
+          />
+        ) : (
+          <ModelSetup
+            agents={agentStore.agents}
+            onAddAgent={agentStore.addAgent}
+            onRemoveAgent={agentStore.removeAgent}
+            onClose={() => { setShowModelSetup(false); agentStore.fetchAgents(); }}
+          />
+        )
       )}
 
       {/* Profile Settings Modal */}
