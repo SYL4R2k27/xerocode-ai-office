@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Play, Upload, Users, Sparkles, Code, Palette, Search, FileText, Settings, Swords, Square, ArrowLeft } from "lucide-react";
+import { Play, Upload, Users, Sparkles, Code, Palette, Search, FileText, Settings, Swords, Square, ArrowLeft, Eye } from "lucide-react";
 import { ArenaView } from "../arena/ArenaView";
 import { TaskPlanPanel } from "./TaskPlanPanel";
 import { ChatMessageV2 } from "./ChatMessageV2";

@@ -109,6 +109,8 @@ export function SidebarV2({
   onArena,
   collapsed = false,
   onToggleCollapse,
+  toggleTheme,
+  resolvedTheme,
 }: SidebarV2Props) {
   const [searchQuery, setSearchQuery] = useState("");
   const [olderExpanded, setOlderExpanded] = useState(false);
