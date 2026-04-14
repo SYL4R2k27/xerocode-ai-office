@@ -1,11 +1,7 @@
 import { useEffect, useState, useCallback, useRef, Component, type ReactNode, useSyncExternalStore } from "react";
-import { Sidebar } from "./components/layout/Sidebar";
 import { SidebarV2 } from "./components/layout/SidebarV2";
 import { ChatAreaV2 } from "./components/chat/ChatAreaV2";
-import { ContextPanel } from "./components/layout/ContextPanel";
 import { ContextPanelV2 } from "./components/layout/ContextPanelV2";
-import { ChatArea } from "./components/chat/ChatArea";
-import { ModelSetup } from "./components/modals/ModelSetup";
 import { ModelSetupV2 } from "./components/modals/ModelSetupV2";
 import { ProfileSettings } from "./components/modals/ProfileSettings";
 import { PricingPage } from "./components/modals/PricingPage";
@@ -55,7 +51,6 @@ function useMediaQuery(query: string): boolean {
   return useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 }
 
-import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "./components/ui/resizable";
 import { useAgentStore, useGoalStore, useTaskStore, useMessageStore, useStatusStore } from "./store/useStore";
 import { useAuthStore } from "./store/useAuthStore";
 import { useWebSocket } from "./hooks/useWebSocket";
@@ -63,7 +58,6 @@ import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
 import { api } from "./lib/api";
 import { OnboardingWizard } from "./components/modals/OnboardingWizard";
 import { Toaster } from "sonner";
-import type { ImperativePanelHandle } from "react-resizable-panels";
 
 /** Обычный чат-интерфейс (для Free/PRO/ULTIMA и для corporate "ИИ Офис" вкладки). */
 function ChatInterface({
@@ -94,10 +88,6 @@ function ChatInterface({
   const [isStarting, setIsStarting] = useState(false);
   const [previewCode, setPreviewCode] = useState<string | null>(null);
 
-  // V2 UI is now default. Set xerocode_ui_v1=true to use legacy.
-  const [useV2UI] = useState(() => {
-    return localStorage.getItem("xerocode_ui_v1") !== "true";
-  });
   const [useKnowledgeBase, setUseKnowledgeBase] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [previewLanguage, setPreviewLanguage] = useState("text");
@@ -107,26 +97,7 @@ function ChatInterface({
 
   // Responsive
   const isMobile = useMediaQuery("(max-width: 767px)");
-  const isTablet = useMediaQuery("(min-width: 768px) and (max-width: 1023px)");
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
-  // Resizable panel refs
-  const contextPanelRef = useRef<ImperativePanelHandle>(null);
-  const sidebarPanelRef = useRef<ImperativePanelHandle>(null);
   const [contextPanelOpen, setContextPanelOpen] = useState(false);
-
-  // Auto-collapse sidebar on tablet, auto-hide on mobile
-  useEffect(() => {
-    if (isMobile && sidebarPanelRef.current && !sidebarPanelRef.current.isCollapsed()) {
-      sidebarPanelRef.current.collapse();
-    }
-    if (isMobile && contextPanelRef.current && !contextPanelRef.current.isCollapsed()) {
-      contextPanelRef.current.collapse();
-    }
-  }, [isMobile]);
-
-  // Load saved panel sizes
-  const savedSizes = JSON.parse(localStorage.getItem("ai-office-panel-sizes") || "[20, 55, 25]");
 
   // Initial data load
   useEffect(() => {
@@ -247,29 +218,7 @@ function ChatInterface({
   const handleOpenInPreview = useCallback((code: string, language: string) => {
     setPreviewCode(code);
     setPreviewLanguage(language);
-    if (contextPanelRef.current) {
-      contextPanelRef.current.expand();
-    }
-  }, []);
-
-  const handleToggleContextPanel = useCallback(() => {
-    if (contextPanelRef.current) {
-      if (contextPanelRef.current.isCollapsed()) {
-        contextPanelRef.current.expand();
-      } else {
-        contextPanelRef.current.collapse();
-      }
-    }
-  }, []);
-
-  const handleToggleSidebar = useCallback(() => {
-    if (sidebarPanelRef.current) {
-      if (sidebarPanelRef.current.isCollapsed()) {
-        sidebarPanelRef.current.expand();
-      } else {
-        sidebarPanelRef.current.collapse();
-      }
-    }
+    setContextPanelOpen(true);
   }, []);
 
   // Guard: user must be loaded
@@ -281,9 +230,7 @@ function ChatInterface({
 
   return (
     <>
-      {/* ═══ V2 UI — Clean layout (no resizable panels) ═══ */}
-      {useV2UI ? (
-        <div className="flex h-full" style={{ backgroundColor: "var(--bg-base)" }}>
+      <div className="flex h-full" style={{ backgroundColor: "var(--bg-base)" }}>
           {/* V2 Sidebar */}
           {!isMobile && (
             <SidebarV2
@@ -359,136 +306,15 @@ function ChatInterface({
             />
           </div>
         </div>
-      ) : (
-        /* ═══ V1 UI — Resizable panels (legacy) ═══ */
-        <>
-          {/* Мобильный гамбургер */}
-          {isMobile && !isCorporateEmbed && (
-            <button
-              onClick={() => {
-                setMobileMenuOpen(!mobileMenuOpen);
-                if (sidebarPanelRef.current) {
-                  if (sidebarPanelRef.current.isCollapsed()) sidebarPanelRef.current.expand();
-                  else sidebarPanelRef.current.collapse();
-                }
-              }}
-              className="fixed top-3 left-3 z-50 p-2 rounded-lg"
-              style={{
-                backgroundColor: "var(--bg-elevated)",
-                border: "1px solid var(--border-default)",
-                color: "var(--text-secondary)",
-              }}
-            >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="18" x2="21" y2="18" /></svg>
-            </button>
-          )}
-          <ResizablePanelGroup
-            direction="horizontal"
-            className="h-full"
-            onLayout={(sizes: number[]) => localStorage.setItem("ai-office-panel-sizes", JSON.stringify(sizes))}
-          >
-            {!isCorporateEmbed && (
-              <>
-                <ResizablePanel
-                  ref={sidebarPanelRef}
-                  defaultSize={isMobile ? 0 : isTablet ? 8 : (savedSizes[0] ?? 20)}
-                  minSize={isMobile ? 0 : isTablet ? 5 : 12}
-                  maxSize={isMobile ? 80 : 30}
-                  collapsible
-                  collapsedSize={0}
-                  className="min-w-0"
-                >
-                  <Sidebar
-                    agents={agentStore.agents}
-                    goals={goalStore.goals}
-                    tasks={taskStore.tasks}
-                    activeGoal={goalStore.activeGoal}
-                    status={statusStore.status}
-                    connected={ws.connected}
-                    onSelectGoal={(g: any) => { setArenaMode(null); goalStore.setActiveGoal(g); }}
-                    onAddModel={() => setShowModelSetup(true)}
-                    onRemoveAgent={async (id) => { await agentStore.removeAgent(id); }}
-                    onNewGoal={() => { setArenaMode(null); goalStore.setActiveGoal(null as any); }}
-                    user={authStore.user}
-                    onLogout={authStore.logout}
-                    onOpenProfile={() => setShowProfileSettings(true)}
-                    arenaMode={arenaMode}
-                    onToggleArena={() => setArenaMode(arenaMode ? null : "battle")}
-                    toggleTheme={toggleTheme}
-                    resolvedTheme={resolvedTheme}
-                  />
-                </ResizablePanel>
-
-                <ResizableHandle withHandle />
-              </>
-            )}
-
-            <ResizablePanel
-              defaultSize={isCorporateEmbed ? 75 : (savedSizes[1] ?? 55)}
-              minSize={30}
-              className="min-w-0"
-            >
-              <ChatArea
-                messages={messageStore.messages}
-                agents={agentStore.agents}
-                activeGoal={goalStore.activeGoal}
-                goals={goalStore.goals}
-                contextPanelOpen={contextPanelOpen}
-                isStarting={isStarting}
-                onToggleContextPanel={handleToggleContextPanel}
-                onCreateGoal={handleCreateGoal}
-                onStartGoal={handleStartGoal}
-                onUserInput={handleUserInput}
-                onOpenInPreview={handleOpenInPreview}
-                arenaMode={arenaMode}
-                onSetArenaMode={setArenaMode}
-              />
-            </ResizablePanel>
-
-            <ResizableHandle withHandle />
-
-            <ResizablePanel
-              ref={contextPanelRef}
-              defaultSize={isCorporateEmbed ? 25 : (savedSizes[2] ?? 25)}
-              minSize={0}
-              maxSize={40}
-              collapsible
-              collapsedSize={0}
-              className="min-w-0"
-              onCollapse={() => setContextPanelOpen(false)}
-              onExpand={() => setContextPanelOpen(true)}
-            >
-              <ContextPanel
-                tasks={taskStore.tasks}
-                agents={agentStore.agents}
-                messages={messageStore.messages}
-                activeGoal={goalStore.activeGoal}
-                previewCode={previewCode}
-                previewLanguage={previewLanguage}
-                arenaMode={arenaMode}
-              />
-            </ResizablePanel>
-          </ResizablePanelGroup>
-        </>
-      )}
 
       {/* Model Setup Modal */}
       {showModelSetup && (
-        useV2UI ? (
-          <ModelSetupV2
-            agents={agentStore.agents}
-            onAddAgent={agentStore.addAgent}
-            onRemoveAgent={agentStore.removeAgent}
-            onClose={() => { setShowModelSetup(false); agentStore.fetchAgents(); }}
-          />
-        ) : (
-          <ModelSetup
-            agents={agentStore.agents}
-            onAddAgent={agentStore.addAgent}
-            onRemoveAgent={agentStore.removeAgent}
-            onClose={() => { setShowModelSetup(false); agentStore.fetchAgents(); }}
-          />
-        )
+        <ModelSetupV2
+          agents={agentStore.agents}
+          onAddAgent={agentStore.addAgent}
+          onRemoveAgent={agentStore.removeAgent}
+          onClose={() => { setShowModelSetup(false); agentStore.fetchAgents(); }}
+        />
       )}
 
       {/* Profile Settings Modal */}
@@ -622,7 +448,7 @@ export default function App() {
 
         {/* Модалки поверх мобильного layout */}
         {showModelSetup && (
-          <ModelSetup
+          <ModelSetupV2
             agents={[]}
             onAddAgent={async () => ({} as any)}
             onRemoveAgent={async () => {}}
