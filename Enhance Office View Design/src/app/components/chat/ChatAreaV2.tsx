@@ -36,6 +36,8 @@ interface ChatAreaV2Props {
   messagesLoading?: boolean;
   onOpenInPreview?: (code: string, language: string) => void;
   onToggleContextPanel?: () => void;
+  isStreaming?: boolean;
+  onStopStream?: () => void;
   isAdmin?: boolean;
   arenaMode?: "battle" | "leaderboard" | null;
   onSetArenaMode?: (mode: "battle" | "leaderboard" | null) => void;
@@ -139,6 +141,8 @@ export function ChatAreaV2({
   onExecuteTask,
   onOpenInPreview,
   onToggleContextPanel,
+  isStreaming,
+  onStopStream,
 }: ChatAreaV2Props) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -383,6 +387,8 @@ export function ChatAreaV2({
           }
           initialText={inputText}
           onTextChange={() => setInputTextState("")}
+          isStreaming={isStreaming}
+          onStop={onStopStream}
         />
       </div>
     </div>

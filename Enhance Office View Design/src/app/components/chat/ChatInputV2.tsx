@@ -14,6 +14,7 @@ import {
   Image,
   Loader2,
   Wand2,
+  Square,
 } from "lucide-react";
 import { api } from "../../lib/api";
 
@@ -25,6 +26,8 @@ interface ChatInputV2Props {
   agents?: { id: string; name: string }[];
   initialText?: string;
   onTextChange?: () => void;
+  isStreaming?: boolean;
+  onStop?: () => void;
 }
 
 /* ── File icon helper ── */
@@ -49,7 +52,18 @@ export function ChatInputV2({
   agents = [],
   initialText,
   onTextChange,
+  isStreaming = false,
+  onStop,
 }: ChatInputV2Props) {
+  // Global Esc → stop streaming
+  useEffect(() => {
+    if (!isStreaming || !onStop) return;
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onStop();
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [isStreaming, onStop]);
   /* State: only 6 variables */
   const [text, setText] = useState("");
 
@@ -504,19 +518,30 @@ export function ChatInputV2({
           )}
         </button>
 
-        {/* Send button */}
-        <button
-          onClick={handleSend}
-          disabled={disabled || (!hasContent)}
-          className="p-2 rounded-lg transition-all flex-shrink-0"
-          style={{
-            backgroundColor: hasContent ? "var(--accent-blue)" : "transparent",
-            color: hasContent ? "#fff" : "var(--text-tertiary)",
-          }}
-          title="Отправить (Ctrl+Enter)"
-        >
-          <Send size={18} />
-        </button>
+        {/* Send / Stop button */}
+        {isStreaming && onStop ? (
+          <button
+            onClick={onStop}
+            className="p-2 rounded-lg transition-all flex-shrink-0"
+            style={{ backgroundColor: "var(--accent-red, #ef4444)", color: "#fff" }}
+            title="Остановить генерацию (Esc)"
+          >
+            <Square size={16} fill="currentColor" />
+          </button>
+        ) : (
+          <button
+            onClick={handleSend}
+            disabled={disabled || (!hasContent)}
+            className="p-2 rounded-lg transition-all flex-shrink-0"
+            style={{
+              backgroundColor: hasContent ? "var(--accent-blue)" : "transparent",
+              color: hasContent ? "#fff" : "var(--text-tertiary)",
+            }}
+            title="Отправить (Ctrl+Enter)"
+          >
+            <Send size={18} />
+          </button>
+        )}
       </div>
 
       {/* Shortcut hint */}

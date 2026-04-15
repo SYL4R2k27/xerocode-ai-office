@@ -658,7 +658,10 @@ export const api = {
      * Stream AI reply. Yields {type:'chunk', content} for each token,
      * finally {type:'done', message_id}. Call via: for await (const ev of api.stream.chat(...)) {}
      */
-    chat: async function* chat(body: { goal_id?: string; prompt: string; model?: string; provider?: string }) {
+    chat: async function* chat(
+      body: { goal_id?: string; prompt: string; model?: string; provider?: string },
+      signal?: AbortSignal,
+    ) {
       const token = localStorage.getItem("ai_office_token") || "";
       const API_URL = (import.meta as any).env?.VITE_API_URL || "/api";
       const res = await fetch(`${API_URL}/stream/chat`, {
@@ -668,6 +671,7 @@ export const api = {
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
         body: JSON.stringify(body),
+        signal,
       });
       if (!res.ok || !res.body) {
         const text = await res.text().catch(() => "");

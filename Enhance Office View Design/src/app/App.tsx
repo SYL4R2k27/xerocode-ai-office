@@ -87,6 +87,8 @@ function ChatInterface({
 
   const [isStarting, setIsStarting] = useState(false);
   const [previewCode, setPreviewCode] = useState<string | null>(null);
+  const streamAbortRef = useRef<AbortController | null>(null);
+  const [isStreaming, setIsStreaming] = useState(false);
 
   const [useKnowledgeBase, setUseKnowledgeBase] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -255,9 +257,12 @@ function ChatInterface({
       model: defaultModel,
     } as any);
 
+    const abort = new AbortController();
+    streamAbortRef.current = abort;
+    setIsStreaming(true);
     try {
       let firstChunk = true;
-      for await (const ev of api.stream.chat({ goal_id: goalId, prompt: content })) {
+      for await (const ev of api.stream.chat({ goal_id: goalId, prompt: content }, abort.signal)) {
         if (ev.type === "chunk" && ev.content) {
           if (firstChunk) {
             messageStore.updateMessage(asstMsgId, { activity: "Генерирует" } as any);
@@ -276,9 +281,21 @@ function ChatInterface({
         }
       }
     } catch (e: any) {
+      const aborted = e?.name === "AbortError";
       messageStore.updateMessage(asstMsgId, { streaming: false, activity: undefined } as any);
-      messageStore.appendToMessage(asstMsgId, `\n\n_Ошибка соединения: ${e?.message || e}_`);
+      if (aborted) {
+        messageStore.appendToMessage(asstMsgId, `\n\n_⏹ Остановлено пользователем_`);
+      } else {
+        messageStore.appendToMessage(asstMsgId, `\n\n_Ошибка соединения: ${e?.message || e}_`);
+      }
+    } finally {
+      setIsStreaming(false);
+      streamAbortRef.current = null;
     }
+  }, []);
+
+  const handleStopStream = useCallback(() => {
+    streamAbortRef.current?.abort();
   }, []);
 
   const handleOpenInPreview = useCallback((code: string, language: string) => {
@@ -359,6 +376,8 @@ function ChatInterface({
                 }}
                 onOpenInPreview={handleOpenInPreview}
                 onToggleContextPanel={() => setContextPanelOpen(!contextPanelOpen)}
+                isStreaming={isStreaming}
+                onStopStream={handleStopStream}
               />
             </div>
 
