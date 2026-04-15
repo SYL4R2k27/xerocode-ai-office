@@ -1,8 +1,9 @@
 /**
  * ModeSelector — dropdown with 5 orchestration modes.
+ * Viewport-aware: menu flips to right/left edge based on available space.
  * Default: xerocode_ai (our flagship).
  */
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Sparkles, User, Users, Waves, Gavel, ChevronDown } from "lucide-react";
 
@@ -23,12 +24,24 @@ const MODES: { id: OrchMode; label: string; tagline: string; icon: any; color: s
 
 export function ModeSelector({ value, onChange }: ModeSelectorProps) {
   const [open, setOpen] = useState(false);
+  const [alignRight, setAlignRight] = useState(false);
+  const btnRef = useRef<HTMLButtonElement>(null);
   const active = MODES.find(m => m.id === value) || MODES[0];
   const ActiveIcon = active.icon;
+
+  // Viewport-aware alignment: flip dropdown if it would overflow right edge
+  useEffect(() => {
+    if (!open || !btnRef.current) return;
+    const rect = btnRef.current.getBoundingClientRect();
+    const menuWidth = 320;
+    const wouldOverflow = rect.left + menuWidth > window.innerWidth - 16;
+    setAlignRight(wouldOverflow);
+  }, [open]);
 
   return (
     <div className="relative">
       <button
+        ref={btnRef}
         type="button"
         onClick={() => setOpen(o => !o)}
         className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
@@ -40,7 +53,7 @@ export function ModeSelector({ value, onChange }: ModeSelectorProps) {
         title={active.tagline}
       >
         <ActiveIcon size={14} style={{ color: active.color }} />
-        <span>{active.label}</span>
+        <span className="max-w-[120px] truncate">{active.label}</span>
         <ChevronDown size={12} style={{ color: "var(--text-tertiary)", transform: open ? "rotate(180deg)" : "none", transition: "transform 0.15s" }} />
       </button>
 
@@ -53,8 +66,9 @@ export function ModeSelector({ value, onChange }: ModeSelectorProps) {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.15 }}
-              className="absolute left-0 top-full mt-1 z-50 w-[320px] rounded-xl overflow-hidden"
+              className="absolute top-full mt-1 z-50 w-[min(320px,calc(100vw-32px))] rounded-xl overflow-hidden"
               style={{
+                ...(alignRight ? { right: 0 } : { left: 0 }),
                 backgroundColor: "var(--bg-surface)",
                 border: "1px solid var(--border-default)",
                 boxShadow: "0 8px 32px rgba(0,0,0,0.3)",

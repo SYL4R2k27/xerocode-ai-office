@@ -254,24 +254,50 @@ export function ChatAreaV2({
         )}
       </AnimatePresence>
 
-      {/* ── Header ── */}
+      {/* ── Header ── 2 zones: primary controls (left) + meta actions (right) */}
       <div
-        className="flex items-center justify-between px-5 h-12 flex-shrink-0"
+        className="flex items-center gap-2 px-4 h-12 flex-shrink-0 overflow-x-auto"
         style={{ borderBottom: "1px solid var(--border-default)", backgroundColor: "var(--bg-surface)" }}
       >
-        <div className="flex items-center gap-3 min-w-0 flex-1">
-          <h3 className="font-semibold truncate" style={{ color: "var(--text-primary)", fontSize: "var(--font-size-base, 15px)", maxWidth: "50vw" }}>
-            {goal?.title || "Новый проект"}
+        {/* LEFT: Mode selector is the hero control */}
+        {onModeSelectorChange && (
+          <div className="flex-shrink-0">
+            <ModeSelector value={mode} onChange={onModeSelectorChange} />
+          </div>
+        )}
+
+        {/* Title (compact, collapsible) */}
+        {goal?.title ? (
+          <h3
+            className="font-medium truncate text-sm hidden sm:block"
+            style={{ color: "var(--text-secondary)", maxWidth: "30vw", marginLeft: 4 }}
+            title={goal.title}
+          >
+            {goal.title}
           </h3>
-          {goal && (
-            <span className="font-medium px-2 py-0.5 rounded-full flex-shrink-0 text-xs" style={{ backgroundColor: "var(--bg-elevated)", color: "var(--text-secondary)", border: "1px solid var(--border-default)" }}>
-              {modeLabels[goal.distribution_mode] || "Менеджер"}
+        ) : null}
+
+        {/* Status badge — только когда активно работает */}
+        {goal && goalStarted && goal.status === "active" && (
+          <span className="flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-medium flex-shrink-0" style={{ backgroundColor: "color-mix(in srgb, var(--accent-green) 15%, transparent)", color: "var(--accent-green)" }}>
+            <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" /> В работе
+          </span>
+        )}
+
+        {/* Spacer */}
+        <div className="flex-1" />
+
+        {/* RIGHT: meta actions cluster */}
+        <div className="flex items-center gap-1.5 flex-shrink-0">
+          {hasBYOK && (
+            <span
+              className="flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-medium"
+              style={{ backgroundColor: "color-mix(in srgb, var(--accent-blue) 15%, transparent)", color: "var(--accent-blue)" }}
+              title="Используются ваши API ключи (BYOK)"
+            >
+              <Key size={10} /> Свои
             </span>
           )}
-        </div>
-
-        <div className="flex items-center gap-2">
-          {/* Start/Stop button */}
           {goal && !goalStarted && (
             <button
               onClick={onStartGoal}
@@ -283,26 +309,6 @@ export function ChatAreaV2({
               {isStarting ? "Запуск..." : "Запустить"}
             </button>
           )}
-          {goal && goalStarted && goal.status === "active" && (
-            <span className="flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-medium" style={{ backgroundColor: "color-mix(in srgb, var(--accent-green) 15%, transparent)", color: "var(--accent-green)" }}>
-              <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" /> В работе
-            </span>
-          )}
-          {/* Mode selector */}
-          {onModeSelectorChange && (
-            <ModeSelector value={mode} onChange={onModeSelectorChange} />
-          )}
-          {/* BYOK indicator */}
-          {hasBYOK && (
-            <span
-              className="flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-medium"
-              style={{ backgroundColor: "color-mix(in srgb, var(--accent-blue) 15%, transparent)", color: "var(--accent-blue)" }}
-              title="Используются ваши API ключи (BYOK)"
-            >
-              <Key size={10} /> Свои ключи
-            </span>
-          )}
-          {/* Context panel toggle */}
           {onToggleContextPanel && goal && (
             <button
               onClick={onToggleContextPanel}
@@ -318,8 +324,33 @@ export function ChatAreaV2({
         </div>
       </div>
 
-      {/* ── Team Bar ── */}
-      {goal && agents.length > 0 && (
+      {/* ── Empty-state models strip ── */}
+      {agents.length === 0 && onAddAgent && (
+        <div
+          className="flex items-center gap-2 px-4 py-1.5 flex-shrink-0"
+          style={{
+            borderBottom: "1px solid var(--border-subtle, var(--border-default))",
+            backgroundColor: "color-mix(in srgb, var(--bg-elevated) 50%, transparent)",
+          }}
+        >
+          <span style={{ fontSize: "11px", color: "var(--text-tertiary)" }}>
+            Модели не подключены — XeroCode AI работает автоматически
+          </span>
+          <div className="flex-1" />
+          <button
+            onClick={onAddAgent}
+            className="flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-medium transition-colors"
+            style={{ color: "var(--accent-blue)", backgroundColor: "transparent" }}
+            onMouseEnter={e => { e.currentTarget.style.backgroundColor = "color-mix(in srgb, var(--accent-blue) 12%, transparent)"; }}
+            onMouseLeave={e => { e.currentTarget.style.backgroundColor = "transparent"; }}
+          >
+            + Добавить модели
+          </button>
+        </div>
+      )}
+
+      {/* ── Team Bar — видна ВСЕГДА когда есть агенты, даже без goal ── */}
+      {agents.length > 0 && (
         <TeamBar
           agents={agents.map((a: any) => ({
             id: a.id,
@@ -330,7 +361,7 @@ export function ChatAreaV2({
             status: a.status || "idle",
             avatar: a.avatar,
           }))}
-          mode={(goal.distribution_mode as any) || "manager"}
+          mode={(goal?.distribution_mode as any) || "manager"}
           onModeChange={onModeChange}
           onRemoveAgent={onRemoveAgent}
           onAddAgent={onAddAgent}
