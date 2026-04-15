@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import {
   User as UserIcon,
   CreditCard,
@@ -20,6 +20,8 @@ import {
   Target,
   CheckCircle2,
   AlertTriangle,
+  Bell,
+  BellOff,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { toast } from "sonner";
@@ -27,6 +29,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "../ui/tabs";
 import { Switch } from "../ui/switch";
 import { api } from "../../lib/api";
 import type { User } from "../../lib/api";
+import { isPushSupported, getPermission, subscribe as pushSubscribe, unsubscribe as pushUnsubscribe, isSubscribed as pushIsSubscribed } from "../../lib/pushNotifications";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -531,6 +534,8 @@ export function ProfileSettings({ user, open, onClose, onUserUpdate, onOpenPrici
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.2 }}
     >
+      <PushNotificationsSection />
+    >
       {/* Active sessions */}
       <div>
         <div className="text-[13px] font-semibold mb-3" style={{ color: "var(--text-primary)" }}>
@@ -838,5 +843,119 @@ export function ProfileSettings({ user, open, onClose, onUserUpdate, onOpenPrici
         </motion.div>
       )}
     </AnimatePresence>
+  );
+}
+
+/* ── Push notifications section (used in security tab) ──────────────── */
+function PushNotificationsSection() {
+  const [supported, setSupported] = useState<boolean | null>(null);
+  const [permission, setPermission] = useState<NotificationPermission>("default");
+  const [subscribed, setSubscribed] = useState(false);
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    const sup = isPushSupported();
+    setSupported(sup);
+    if (!sup) return;
+    getPermission().then(setPermission);
+    pushIsSubscribed().then(setSubscribed);
+  }, []);
+
+  const handleEnable = async () => {
+    setBusy(true);
+    try {
+      const res = await pushSubscribe();
+      if (res.ok) {
+        setSubscribed(true);
+        setPermission("granted");
+        toast.success("Push-уведомления включены");
+      } else {
+        toast.error(`Не получилось: ${res.reason || "ошибка"}`);
+      }
+    } catch (e: any) {
+      toast.error(e?.message || "Ошибка подписки");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handleDisable = async () => {
+    setBusy(true);
+    try {
+      await pushUnsubscribe();
+      setSubscribed(false);
+      toast("Push отключены");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handleTest = async () => {
+    try {
+      const r = await fetch(`${(import.meta as any).env?.VITE_API_URL || "/api"}/push/test`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${localStorage.getItem("ai_office_token") || ""}` },
+      });
+      const data = await r.json();
+      if (data.delivered > 0) toast.success(`Доставлено на ${data.delivered} устройств`);
+      else toast.error("Push не доставлен (проверь подписку)");
+    } catch {
+      toast.error("Ошибка отправки тест-push");
+    }
+  };
+
+  if (supported === null) return null;
+  if (!supported) {
+    return (
+      <div className="rounded-lg p-4" style={{ backgroundColor: "var(--bg-elevated)", border: "1px solid var(--border-default)" }}>
+        <div className="flex items-center gap-2 mb-1">
+          <BellOff size={16} style={{ color: "var(--text-tertiary)" }} />
+          <span style={{ fontSize: "13px", fontWeight: 600, color: "var(--text-primary)" }}>Push-уведомления</span>
+        </div>
+        <p style={{ fontSize: "12px", color: "var(--text-tertiary)" }}>
+          Браузер не поддерживает Web Push. Открой xerocode.ru в Chrome / Edge / Firefox.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="rounded-lg p-4" style={{ backgroundColor: "var(--bg-elevated)", border: "1px solid var(--border-default)" }}>
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex-1">
+          <div className="flex items-center gap-2 mb-1">
+            {subscribed ? (
+              <Bell size={16} style={{ color: "var(--accent-blue)" }} />
+            ) : (
+              <BellOff size={16} style={{ color: "var(--text-tertiary)" }} />
+            )}
+            <span style={{ fontSize: "13px", fontWeight: 600, color: "var(--text-primary)" }}>
+              Push-уведомления
+            </span>
+          </div>
+          <p style={{ fontSize: "12px", color: "var(--text-tertiary)", lineHeight: 1.5 }}>
+            {subscribed
+              ? "Уведомления о завершении исследований и долгих задач приходят на устройство."
+              : permission === "denied"
+                ? "Разрешения запрещены в браузере. Открой настройки сайта и разреши уведомления."
+                : "Включи чтобы получать уведомления о готовности результатов."}
+          </p>
+        </div>
+        <Switch
+          checked={subscribed}
+          disabled={busy || permission === "denied"}
+          onCheckedChange={(v) => v ? handleEnable() : handleDisable()}
+        />
+      </div>
+      {subscribed && (
+        <button
+          onClick={handleTest}
+          className="mt-3 text-xs font-medium hover:underline"
+          style={{ color: "var(--accent-blue)" }}
+        >
+          Отправить тестовый push
+        </button>
+      )}
+    </div>
   );
 }

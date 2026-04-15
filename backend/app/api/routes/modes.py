@@ -166,6 +166,9 @@ async def run_mode(
     )
     _active_tasks[task_id] = context
 
+    from app.core.metrics import active_dag_runs, dag_runs_total, dag_duration_seconds, dag_tokens_total, dag_cost_usd_total
+    active_dag_runs.inc()
+
     async def event_stream():
         # Handshake
         yield f"data: {json.dumps({'type': 'start', 'task_id': task_id, 'mode': mode, 'nodes': [n.id for n in nodes]})}\n\n"
@@ -240,12 +243,34 @@ async def run_mode(
                 logger.warning(f"[Training log] {log_err}")
                 log_id = None
 
+            # Push notification if task took >15s (юзер мог отойти)
+            if context.elapsed_sec() > 15:
+                try:
+                    from app.services.push_service import send_push_to_user
+                    preview = (final or "").strip()[:120].replace("\n", " ")
+                    await send_push_to_user(
+                        db, str(user.id),
+                        title="XeroCode AI готов",
+                        body=preview or "Задача выполнена",
+                        url="/",
+                        tag=f"task-{task_id[:8]}",
+                    )
+                except Exception as push_err:
+                    logger.warning(f"[Push] {push_err}")
+
             yield f"data: {json.dumps({'type': 'done', 'task_id': task_id, 'result': final, 'total_tokens': context.total_tokens, 'duration_sec': context.elapsed_sec(), 'log_id': log_id})}\n\n"
 
         except Exception as e:
             logger.error(f"[Modes] Error: {e}", exc_info=True)
+            dag_runs_total.labels(mode=mode, status="error").inc()
             yield f"data: {json.dumps({'type': 'error', 'message': str(e)[:200]})}\n\n"
+        else:
+            dag_runs_total.labels(mode=mode, status="success").inc()
+            dag_duration_seconds.labels(mode=mode).observe(context.elapsed_sec())
+            dag_tokens_total.labels(mode=mode).inc(context.total_tokens)
+            dag_cost_usd_total.labels(mode=mode).inc(context.total_cost)
         finally:
+            active_dag_runs.dec()
             _active_tasks.pop(task_id, None)
 
     return StreamingResponse(

@@ -99,6 +99,44 @@ if getattr(settings, "sentry_dsn", None):
         logging.getLogger("uvicorn.error").warning("[Sentry] sentry-sdk not installed; skipping")
 
 
+@app.get("/metrics", include_in_schema=False)
+async def metrics():
+    """Prometheus scrape endpoint."""
+    from fastapi.responses import Response
+    from prometheus_client import generate_latest, CONTENT_TYPE_LATEST
+    return Response(generate_latest(), media_type=CONTENT_TYPE_LATEST)
+
+
+# Metrics middleware — count + time every request
+@app.middleware("http")
+async def metrics_middleware(request: Request, call_next):
+    import time as _time
+    from app.core.metrics import http_requests_total, http_request_duration_seconds
+    started = _time.time()
+    # Normalize path (strip dynamic IDs to keep cardinality bounded)
+    raw_path = request.url.path
+    path = raw_path
+    # Truncate dynamic segments after /api/<resource>/
+    parts = raw_path.split("/")
+    if len(parts) >= 4 and parts[1] == "api":
+        path = f"/api/{parts[2]}"
+        if len(parts) > 3 and not parts[3].startswith("{"):
+            # if next looks like UUID/numeric, replace
+            seg = parts[3]
+            if seg and (len(seg) > 30 or seg.isdigit()):
+                path = f"/api/{parts[2]}/<id>"
+            else:
+                path = f"/api/{parts[2]}/{seg}"
+    response = await call_next(request)
+    dur = _time.time() - started
+    try:
+        http_requests_total.labels(method=request.method, path=path, status=str(response.status_code)).inc()
+        http_request_duration_seconds.labels(method=request.method, path=path).observe(dur)
+    except Exception:
+        pass
+    return response
+
+
 # Correlation ID middleware — every request gets a short ID propagated through logs
 @app.middleware("http")
 async def correlation_id_middleware(request: Request, call_next):
