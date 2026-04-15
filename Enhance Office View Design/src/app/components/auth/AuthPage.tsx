@@ -234,6 +234,68 @@ function TelegramIcon() {
   );
 }
 
+/**
+ * Telegram Login Widget — renders the official iframe button.
+ * Bot username comes from VITE_TELEGRAM_BOT (without @). On success,
+ * the widget calls window.onTelegramAuth(payload) which we POST to
+ * /api/auth/oauth/telegram/verify; backend validates HMAC and returns JWT.
+ */
+function TelegramLoginButton() {
+  const botUser = (import.meta as any).env?.VITE_TELEGRAM_BOT || "xerocode_login_bot";
+  const apiBase = (import.meta as any).env?.VITE_API_URL || "/api";
+
+  useEffect(() => {
+    // Global handler — the widget calls window.onTelegramAuth(user)
+    (window as any).onTelegramAuth = async (user: Record<string, any>) => {
+      try {
+        const res = await fetch(`${apiBase}/auth/oauth/telegram/verify`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(user),
+        });
+        if (!res.ok) {
+          const txt = await res.text();
+          toast.error("Ошибка Telegram", { description: txt.slice(0, 200) });
+          return;
+        }
+        const data = await res.json();
+        if (data.access_token) {
+          localStorage.setItem("ai_office_token", data.access_token);
+          window.location.href = "/";
+        }
+      } catch (e: any) {
+        toast.error("Сетевая ошибка", { description: e?.message || String(e) });
+      }
+    };
+
+    // Inject the official Telegram widget script
+    const container = document.getElementById("telegram-login-container");
+    if (!container) return;
+    container.innerHTML = "";
+    const script = document.createElement("script");
+    script.src = "https://telegram.org/js/telegram-widget.js?22";
+    script.async = true;
+    script.setAttribute("data-telegram-login", botUser);
+    script.setAttribute("data-size", "large");
+    script.setAttribute("data-radius", "12");
+    script.setAttribute("data-onauth", "onTelegramAuth(user)");
+    script.setAttribute("data-request-access", "write");
+    container.appendChild(script);
+
+    return () => {
+      try { delete (window as any).onTelegramAuth; } catch {}
+    };
+  }, [botUser, apiBase]);
+
+  return (
+    <div
+      id="telegram-login-container"
+      className="flex justify-center min-h-[40px]"
+      style={{ width: "100%" }}
+    />
+  );
+}
+
 /* ------------------------------------------------------------------ */
 /*  Features list (left panel)                                         */
 /* ------------------------------------------------------------------ */
@@ -725,11 +787,7 @@ export function AuthPage({ onLogin, onRegister, loading, error }: AuthPageProps)
                 label="Войти через GitHub"
                 onClick={() => handleOAuth("GitHub")}
               />
-              <OAuthButton
-                icon={<TelegramIcon />}
-                label="Войти через Telegram"
-                onClick={() => handleOAuth("Telegram")}
-              />
+              <TelegramLoginButton />
             </motion.div>
 
             {/* Switch mode */}
