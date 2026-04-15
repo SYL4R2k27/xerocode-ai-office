@@ -228,19 +228,4 @@ async def user_stats(
     }
 
 
-@router.get("/oauth/{provider}")
-async def oauth_redirect(provider: str):
-    """OAuth redirect (placeholder)."""
-    raise HTTPException(
-        status_code=status.HTTP_501_NOT_IMPLEMENTED,
-        detail=f"OAuth через {provider} — скоро!",
-    )
-
-
-@router.get("/oauth/{provider}/callback")
-async def oauth_callback(provider: str):
-    """OAuth callback (placeholder)."""
-    raise HTTPException(
-        status_code=status.HTTP_501_NOT_IMPLEMENTED,
-        detail="OAuth callback — скоро!",
-    )
+# OAuth routes moved to app/api/routes/oauth.py — full Google/GitHub/Telegram flow.

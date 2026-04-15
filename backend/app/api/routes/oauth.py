@@ -37,8 +37,13 @@ logger = logging.getLogger(__name__)
 
 
 def _redirect_uri(request: Request, provider: str) -> str:
-    """Compute exact callback URL that we registered with the provider."""
-    scheme = request.url.scheme
+    """Build callback URL — prefer settings.oauth_redirect_base (https),
+    fallback to request scheme/host (dev). Production must set the env var
+    so the redirect URI matches what was registered in the OAuth app."""
+    base = (settings.oauth_redirect_base or "").rstrip("/")
+    if base:
+        return f"{base}/api/auth/oauth/{provider}/callback"
+    scheme = request.headers.get("x-forwarded-proto") or request.url.scheme
     host = request.headers.get("host", request.url.netloc)
     return f"{scheme}://{host}/api/auth/oauth/{provider}/callback"
 
