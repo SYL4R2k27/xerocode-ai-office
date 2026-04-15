@@ -8,6 +8,7 @@ import { ChatMessageV2 } from "./ChatMessageV2";
 import { ChatInputV2 } from "./ChatInputV2";
 import TeamBar from "./TeamBar";
 import { MessageSkeleton } from "../shared/LoadingSkeleton";
+import { ModeSelector, type OrchMode } from "./ModeSelector";
 
 /* ── Types ── */
 interface GoalInfo {
@@ -39,6 +40,8 @@ interface ChatAreaV2Props {
   onToggleContextPanel?: () => void;
   isStreaming?: boolean;
   onStopStream?: () => void;
+  mode?: OrchMode;
+  onModeSelectorChange?: (m: OrchMode) => void;
   isAdmin?: boolean;
   arenaMode?: "battle" | "leaderboard" | null;
   onSetArenaMode?: (mode: "battle" | "leaderboard" | null) => void;
@@ -144,6 +147,8 @@ export function ChatAreaV2({
   onToggleContextPanel,
   isStreaming,
   onStopStream,
+  mode = "xerocode_ai",
+  onModeSelectorChange,
 }: ChatAreaV2Props) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -282,6 +287,10 @@ export function ChatAreaV2({
             <span className="flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-medium" style={{ backgroundColor: "color-mix(in srgb, var(--accent-green) 15%, transparent)", color: "var(--accent-green)" }}>
               <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" /> В работе
             </span>
+          )}
+          {/* Mode selector */}
+          {onModeSelectorChange && (
+            <ModeSelector value={mode} onChange={onModeSelectorChange} />
           )}
           {/* BYOK indicator */}
           {hasBYOK && (

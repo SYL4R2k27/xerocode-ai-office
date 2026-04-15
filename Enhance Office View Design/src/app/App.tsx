@@ -104,6 +104,9 @@ function ChatInterface({
   const [contextPanelOpen, setContextPanelOpen] = useState(false);
   const [mobileTab, setMobileTab] = useState<"chat" | "history" | "models" | "profile">("chat");
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
+  const [orchMode, setOrchMode] = useState<"manager" | "team" | "swarm" | "auction" | "xerocode_ai">(
+    () => (localStorage.getItem("xerocode_mode") as any) || "xerocode_ai",
+  );
 
   // Initial data load
   useEffect(() => {
@@ -309,6 +312,61 @@ function ChatInterface({
     streamAbortRef.current?.abort();
   }, []);
 
+  /**
+   * Send via 5-mode orchestrator. SSE stream of node progress + final result.
+   * Used when orchMode is set (all 5 modes go here).
+   */
+  const handleModeSend = useCallback(async (content: string, goalId?: string) => {
+    const now = new Date().toISOString();
+    const userMsgId = `user-${Date.now()}`;
+    const asstMsgId = `asst-${Date.now()}`;
+
+    messageStore.addMessage({
+      id: userMsgId, goal_id: goalId || "", sender_type: "user",
+      sender_agent_id: null, sender_name: authStore.user?.name || "Вы",
+      content, message_type: "chat", tokens_used: 0, cost_usd: 0, created_at: now,
+    } as any);
+
+    messageStore.addMessage({
+      id: asstMsgId, goal_id: goalId || "", sender_type: "agent",
+      sender_agent_id: null, sender_name: "XeroCode",
+      content: "", message_type: "chat", tokens_used: 0, cost_usd: 0, created_at: now,
+      streaming: true, activity: "Запуск", model: orchMode,
+    } as any);
+
+    const abort = new AbortController();
+    streamAbortRef.current = abort;
+    setIsStreaming(true);
+    try {
+      for await (const ev of api.modes.run({ mode: orchMode as any, query: content }, abort.signal)) {
+        if (ev.type === "start") {
+          messageStore.updateMessage(asstMsgId, { activity: `Режим: ${orchMode}`, model: orchMode } as any);
+        } else if (ev.type === "node_status") {
+          const label = ev.status === "running" ? `${ev.node_id} работает`
+            : ev.status === "completed" ? `${ev.node_id} готов`
+            : ev.status === "failed" ? `${ev.node_id} ошибка`
+            : ev.node_id;
+          messageStore.updateMessage(asstMsgId, { activity: label } as any);
+        } else if (ev.type === "done") {
+          messageStore.updateMessage(asstMsgId, {
+            streaming: false, activity: undefined, content: ev.result || "(нет ответа)",
+          } as any);
+        } else if (ev.type === "error") {
+          messageStore.updateMessage(asstMsgId, { streaming: false, activity: undefined } as any);
+          messageStore.appendToMessage(asstMsgId, `\n\n_Ошибка: ${ev.message}_`);
+        }
+      }
+    } catch (e: any) {
+      const aborted = e?.name === "AbortError";
+      messageStore.updateMessage(asstMsgId, { streaming: false, activity: undefined } as any);
+      if (aborted) messageStore.appendToMessage(asstMsgId, `\n\n_⏹ Остановлено_`);
+      else messageStore.appendToMessage(asstMsgId, `\n\n_Ошибка: ${e?.message || e}_`);
+    } finally {
+      setIsStreaming(false);
+      streamAbortRef.current = null;
+    }
+  }, [orchMode]);
+
   const handleOpenInPreview = useCallback((code: string, language: string) => {
     setPreviewCode(code);
     setPreviewLanguage(language);
@@ -354,17 +412,8 @@ function ChatInterface({
                 messages={messageStore.messages}
                 agents={agentStore.agents}
                 onSendMessage={async (content) => {
-                  // Direct-chat streaming mode:
-                  // - No goal yet → pure streaming, no orchestration
-                  // - Goal exists with 0 or 1 agents → streaming (feels like direct chat)
-                  // - Goal with multiple agents → orchestration (team mode)
-                  const isTeamMode = goalStore.activeGoal && agentStore.agents.length > 1;
-
-                  if (!isTeamMode) {
-                    await handleStreamSend(content, goalStore.activeGoal?.id);
-                  } else {
-                    handleUserInput(content, "command");
-                  }
+                  // All 5 modes now go through DAG orchestrator (api.modes.run)
+                  await handleModeSend(content, goalStore.activeGoal?.id);
                 }}
                 onCreateGoal={handleCreateGoal}
                 onStartGoal={handleStartGoal}
@@ -390,6 +439,11 @@ function ChatInterface({
                 isStreaming={isStreaming}
                 onStopStream={handleStopStream}
                 messagesLoading={messageStore.loading}
+                mode={orchMode}
+                onModeSelectorChange={(m) => {
+                  setOrchMode(m);
+                  localStorage.setItem("xerocode_mode", m);
+                }}
               />
             </div>
 
