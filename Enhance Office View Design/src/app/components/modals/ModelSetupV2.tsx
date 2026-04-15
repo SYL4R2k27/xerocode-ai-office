@@ -126,6 +126,50 @@ export function ModelSetupV2({ agents, onAddAgent, onRemoveAgent, onClose }: Mod
   const [keys, setKeys] = useState<Record<string, string>>({
     openai: "", anthropic: "", google: "", groq: "", openrouter: "",
   });
+  const [savedKeys, setSavedKeys] = useState<Record<string, { masked: string } | null>>({});
+  const [savingKeys, setSavingKeys] = useState(false);
+  const [keysStatus, setKeysStatus] = useState<string | null>(null);
+
+  // Load existing BYOK keys on mount
+  useEffect(() => {
+    api.byok.list().then(data => {
+      setSavedKeys(data as any);
+    }).catch(() => {});
+  }, []);
+
+  const handleSaveKeys = useCallback(async () => {
+    // Only send non-empty values
+    const payload: Record<string, string> = {};
+    for (const [k, v] of Object.entries(keys)) {
+      if (v && v.trim()) payload[k] = v.trim();
+    }
+    if (Object.keys(payload).length === 0) {
+      setKeysStatus("Введите хотя бы один ключ");
+      return;
+    }
+    setSavingKeys(true);
+    setKeysStatus(null);
+    try {
+      const res = await api.byok.save(payload);
+      setKeysStatus(`Сохранено: ${res.saved.join(", ")}`);
+      // Clear inputs, refresh status
+      setKeys({ openai: "", anthropic: "", google: "", groq: "", openrouter: "" });
+      const fresh = await api.byok.list();
+      setSavedKeys(fresh as any);
+    } catch (e: any) {
+      setKeysStatus(`Ошибка: ${e?.message || "не удалось сохранить"}`);
+    } finally {
+      setSavingKeys(false);
+    }
+  }, [keys]);
+
+  const handleRemoveKey = useCallback(async (provider: string) => {
+    try {
+      await api.byok.remove(provider);
+      const fresh = await api.byok.list();
+      setSavedKeys(fresh as any);
+    } catch {}
+  }, []);
 
   const connectedAgentModels = useMemo(() => new Set(agents.map(a => `${a.provider}/${a.model_name}`)), [agents]);
 
@@ -242,21 +286,40 @@ export function ModelSetupV2({ agents, onAddAgent, onRemoveAgent, onClose }: Mod
                     className="flex-1 px-3 py-2 rounded-lg text-xs outline-none"
                     style={{ backgroundColor: "var(--bg-base)", border: "1px solid var(--border-default)", color: "var(--text-primary)" }}
                   />
-                  <div className="w-6 flex items-center justify-center">
-                    {keys[provider.id] && <Check size={14} style={{ color: "var(--accent-green)" }} />}
+                  <div className="flex items-center gap-2 min-w-[100px]">
+                    {savedKeys[provider.id] ? (
+                      <>
+                        <span className="text-xs" style={{ color: "var(--accent-green)" }}>
+                          {savedKeys[provider.id]?.masked}
+                        </span>
+                        <button
+                          onClick={() => handleRemoveKey(provider.id)}
+                          className="text-xs opacity-60 hover:opacity-100"
+                          style={{ color: "var(--text-tertiary)" }}
+                          title="Удалить"
+                        >
+                          ✕
+                        </button>
+                      </>
+                    ) : keys[provider.id] ? (
+                      <Check size={14} style={{ color: "var(--accent-green)" }} />
+                    ) : null}
                   </div>
                 </div>
               ))}
               <button
-                disabled
-                className="w-full py-2.5 rounded-lg text-sm font-medium mt-4 opacity-50 cursor-not-allowed"
+                onClick={handleSaveKeys}
+                disabled={savingKeys}
+                className="w-full py-2.5 rounded-lg text-sm font-medium mt-4 disabled:opacity-50 transition-opacity"
                 style={{ backgroundColor: "var(--accent-blue)", color: "#fff" }}
               >
-                Сохранение ключей — скоро
+                {savingKeys ? "Сохраняю..." : "Сохранить ключи"}
               </button>
-              <p className="text-xs mt-2 text-center" style={{ color: "var(--text-tertiary)" }}>
-                Функция сохранения BYOK ключей в разработке
-              </p>
+              {keysStatus && (
+                <p className="text-xs mt-2 text-center" style={{ color: keysStatus.startsWith("Ошибка") ? "var(--accent-red)" : "var(--accent-green)" }}>
+                  {keysStatus}
+                </p>
+              )}
             </div>
           )}
 

@@ -648,6 +648,18 @@ export const api = {
     templateDetail: (id: string) => request<{ label: string; roles: any[] }>(`/org/roles/templates/${id}`),
   },
 
+  // BYOK
+  byok: {
+    list: () => request<Record<string, { masked: string; updated_at: string } | null>>("/byok/keys"),
+    save: (keys: Record<string, string>) =>
+      request<{ saved: string[]; ok: boolean }>("/byok/keys", {
+        method: "POST",
+        body: JSON.stringify(keys),
+      }),
+    remove: (provider: string) =>
+      request<{ ok: boolean }>(`/byok/keys/${provider}`, { method: "DELETE" }),
+  },
+
   // Autoprompt
   autoprompt: {
     enhance: (text: string, category: string) =>
