@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Play, Upload, Users, Sparkles, Code, Palette, Search, FileText, Settings, Swords, Square, ArrowLeft, Eye } from "lucide-react";
+import { Play, Upload, Users, Sparkles, Code, Palette, Search, FileText, Settings, Swords, Square, ArrowLeft, Eye, Key } from "lucide-react";
+import { api } from "../../lib/api";
 import { ArenaView } from "../arena/ArenaView";
 import { TaskPlanPanel } from "./TaskPlanPanel";
 import { ChatMessageV2 } from "./ChatMessageV2";
@@ -144,6 +145,15 @@ export function ChatAreaV2({
   const [inputText, setInputTextState] = useState("");
   const dragCounter = useRef(0);
 
+  /* BYOK status — has user own keys? */
+  const [hasBYOK, setHasBYOK] = useState<boolean>(false);
+  useEffect(() => {
+    api.byok.list().then((data: any) => {
+      const any = Object.values(data || {}).some((v: any) => v && v.masked);
+      setHasBYOK(any);
+    }).catch(() => {});
+  }, []);
+
   /* Auto-scroll on new messages */
   useEffect(() => {
     if (scrollRef.current) {
@@ -266,6 +276,16 @@ export function ChatAreaV2({
           {goal && goalStarted && goal.status === "active" && (
             <span className="flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-medium" style={{ backgroundColor: "color-mix(in srgb, var(--accent-green) 15%, transparent)", color: "var(--accent-green)" }}>
               <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" /> В работе
+            </span>
+          )}
+          {/* BYOK indicator */}
+          {hasBYOK && (
+            <span
+              className="flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-medium"
+              style={{ backgroundColor: "color-mix(in srgb, var(--accent-blue) 15%, transparent)", color: "var(--accent-blue)" }}
+              title="Используются ваши API ключи (BYOK)"
+            >
+              <Key size={10} /> Свои ключи
             </span>
           )}
           {/* Context panel toggle */}

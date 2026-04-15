@@ -52,6 +52,19 @@ async def start_research(
     from app.core.subscription import check_research_limit
     check_research_limit(user)
 
+    # BYOK/plan gate: require at least one accessible AI provider.
+    from app.core.ai_key_resolver import resolve_key
+    has_any = False
+    for prov in ("openrouter", "groq", "openai", "anthropic"):
+        try:
+            await resolve_key(db, user, prov)
+            has_any = True
+            break
+        except Exception:
+            continue
+    if not has_any:
+        raise HTTPException(403, "Deep Research недоступен: добавьте BYOK ключ или повысьте подписку.")
+
     # Rate limit: 3 per hour
     from app.core.redis_client import check_research_rate
     if not await check_research_rate(str(user.id)):

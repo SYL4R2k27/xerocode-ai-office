@@ -1,9 +1,11 @@
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.auth import get_current_user
+from app.core.database import get_db
 
 router = APIRouter(prefix="/autoprompt", tags=["Autoprompt"])
 
@@ -18,10 +20,27 @@ class EnhanceResponse(BaseModel):
 
 
 @router.post("/enhance", response_model=EnhanceResponse)
-async def enhance_prompt(data: EnhanceRequest, _user=Depends(get_current_user)):
+async def enhance_prompt(
+    data: EnhanceRequest,
+    user=Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
     """Улучшает пользовательский промпт с помощью ИИ."""
     import httpx
     from app.core.config import settings
+    from app.core.ai_key_resolver import resolve_key
+
+    # Gate: any accessible provider
+    has_any = False
+    for prov in ("groq", "openrouter"):
+        try:
+            await resolve_key(db, user, prov)
+            has_any = True
+            break
+        except Exception:
+            continue
+    if not has_any:
+        raise HTTPException(403, "Auto-prompt недоступен: добавьте BYOK или повысьте подписку.")
 
     system = f"""You are a prompt engineer for an AI team orchestration platform.
 The user wants to give a task to a team of AI agents. Category: {data.category}.

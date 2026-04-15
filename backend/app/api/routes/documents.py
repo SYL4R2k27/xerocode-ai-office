@@ -411,12 +411,28 @@ def _generate_xlsx(title: str, headers: list[str], rows: list[list]) -> io.Bytes
 
 # ── API Endpoints ────────────────────────────────────────────────────
 
+async def _enforce_ai_gate(db, user):
+    """Central gate: must have BYOK for any provider OR platform access via plan."""
+    from app.core.ai_key_resolver import resolve_key
+    # Try resolve for any provider we might use; if ALL deny, reject.
+    for prov in ("groq", "openrouter", "openai", "anthropic"):
+        try:
+            await resolve_key(db, user, prov)
+            return  # at least one provider OK
+        except Exception:
+            continue
+    from fastapi import HTTPException
+    raise HTTPException(403, "Для генерации документов добавьте BYOK ключ или повысьте подписку.")
+
+
 @router.post("/pptx")
 async def generate_pptx(
     data: SlideRequest,
     current_user: User = Depends(get_current_user),
+    db=Depends(get_db),
 ):
     """Generate a PPTX presentation from a prompt."""
+    await _enforce_ai_gate(db, current_user)
     slides_data = await _ai_generate_slides(data.prompt, data.slides_count)
     buf = _generate_pptx_from_structure(slides_data, data.template)
 
@@ -432,8 +448,10 @@ async def generate_pptx(
 async def generate_docx(
     data: DocRequest,
     current_user: User = Depends(get_current_user),
+    db=Depends(get_db),
 ):
     """Generate a DOCX document from a prompt."""
+    await _enforce_ai_gate(db, current_user)
     title, sections = await _ai_generate_doc(data.prompt)
     buf = _generate_docx(title, sections)
 
@@ -449,8 +467,10 @@ async def generate_docx(
 async def generate_xlsx(
     data: SpreadsheetRequest,
     current_user: User = Depends(get_current_user),
+    db=Depends(get_db),
 ):
     """Generate an XLSX spreadsheet from a prompt."""
+    await _enforce_ai_gate(db, current_user)
     # Try AI generation
     system_prompt = """Ты — эксперт по таблицам. Создай JSON:
 {"title": "Название", "headers": ["Колонка1", "Колонка2"], "rows": [["значение1", "значение2"], ...]}

@@ -39,6 +39,17 @@ class Settings(BaseSettings):
     openrouter_fallback_enabled: bool = True
     invite_code: str | None = None  # Бета-тест инвайт код (из .env)
 
+    # SMTP (transactional email)
+    smtp_host: str | None = None
+    smtp_port: int = 587
+    smtp_user: str | None = None
+    smtp_password: str | None = None
+    smtp_from: str | None = None
+
+    # Observability
+    sentry_dsn: str | None = None
+    sentry_environment: str = "production"
+
     model_config = {"env_file": ".env", "extra": "ignore"}
 
     @model_validator(mode="after")

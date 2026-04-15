@@ -77,6 +77,36 @@ app.add_middleware(
     allow_headers=["Authorization", "Content-Type", "X-Webhook-Secret"],
 )
 
+# Sentry (optional) — initialised only if SENTRY_DSN is set
+if getattr(settings, "sentry_dsn", None):
+    try:
+        import sentry_sdk  # type: ignore
+        from sentry_sdk.integrations.fastapi import FastApiIntegration  # type: ignore
+        from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration  # type: ignore
+        sentry_sdk.init(
+            dsn=settings.sentry_dsn,
+            environment=getattr(settings, "sentry_environment", "production"),
+            traces_sample_rate=0.1,
+            profiles_sample_rate=0.1,
+            integrations=[FastApiIntegration(), SqlalchemyIntegration()],
+        )
+        logging.getLogger("uvicorn.error").info("[Sentry] Initialized")
+    except ImportError:
+        logging.getLogger("uvicorn.error").warning("[Sentry] sentry-sdk not installed; skipping")
+
+
+# Security headers middleware
+@app.middleware("http")
+async def security_headers(request: Request, call_next):
+    response = await call_next(request)
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    response.headers["Permissions-Policy"] = "camera=(), microphone=(self), geolocation=()"
+    response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+    return response
+
+
 # Global error handler — hide stack traces
 @app.exception_handler(Exception)
 async def generic_exception_handler(request: Request, exc: Exception):
