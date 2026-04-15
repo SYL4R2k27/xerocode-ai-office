@@ -99,6 +99,10 @@ if getattr(settings, "sentry_dsn", None):
         logging.getLogger("uvicorn.error").warning("[Sentry] sentry-sdk not installed; skipping")
 
 
+from app.core.idempotency import IdempotencyMiddleware
+app.add_middleware(IdempotencyMiddleware)
+
+
 @app.get("/metrics", include_in_schema=False)
 async def metrics():
     """Prometheus scrape endpoint."""

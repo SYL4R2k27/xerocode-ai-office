@@ -20,6 +20,17 @@ export function setToken(token: string | null): void {
   }
 }
 
+const IDEMPOTENT_PATHS = ["/modes/run", "/orchestration", "/payments", "/byok/keys", "/push/subscribe"];
+
+function shouldSendIdempotency(path: string, method?: string): boolean {
+  if ((method || "GET").toUpperCase() !== "POST") return false;
+  return IDEMPOTENT_PATHS.some(p => path.startsWith(p));
+}
+
+function genIdempotencyKey(): string {
+  return crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+}
+
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
   const token = getToken();
   const headers: Record<string, string> = {
@@ -28,6 +39,10 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
   };
   if (token) {
     headers["Authorization"] = `Bearer ${token}`;
+  }
+  // Auto-attach Idempotency-Key for sensitive POSTs (unless caller already set one)
+  if (!headers["Idempotency-Key"] && shouldSendIdempotency(path, options?.method)) {
+    headers["Idempotency-Key"] = genIdempotencyKey();
   }
 
   const res = await fetch(`${API_BASE}${path}`, {

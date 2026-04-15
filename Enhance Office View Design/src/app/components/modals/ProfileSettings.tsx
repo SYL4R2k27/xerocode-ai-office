@@ -535,7 +535,6 @@ export function ProfileSettings({ user, open, onClose, onUserUpdate, onOpenPrici
       transition={{ duration: 0.2 }}
     >
       <PushNotificationsSection />
-    >
       {/* Active sessions */}
       <div>
         <div className="text-[13px] font-semibold mb-3" style={{ color: "var(--text-primary)" }}>

@@ -1,41 +1,48 @@
-import { useEffect, useState, useCallback, useRef, Component, type ReactNode, useSyncExternalStore } from "react";
-import { SidebarV2 } from "./components/layout/SidebarV2";
-import { ChatAreaV2 } from "./components/chat/ChatAreaV2";
-import { ContextPanelV2 } from "./components/layout/ContextPanelV2";
-import { ModelSetupV2 } from "./components/modals/ModelSetupV2";
-import { BottomNavV2 } from "./components/layout/BottomNavV2";
-import { MobileDrawer } from "./components/layout/MobileDrawer";
+import { useEffect, useState, useCallback, useRef, Component, lazy, Suspense, type ReactNode, useSyncExternalStore } from "react";
 import { ProfileSettings } from "./components/modals/ProfileSettings";
 import { PricingPage } from "./components/modals/PricingPage";
 import { AuthPage } from "./components/auth/AuthPage";
 import { LandingPage } from "./components/landing/LandingPage";
 import { CorporateLayout, type CorporatePage } from "./components/corporate/CorporateLayout";
-import { Dashboard } from "./components/corporate/Dashboard";
-import { ReportsPage } from "./components/corporate/ReportsPage";
-import { SettingsPage } from "./components/corporate/SettingsPage";
-import { WorkflowPage } from "./components/corporate/WorkflowPage";
-import { DocumentsPage } from "./components/corporate/DocumentsPage";
-import { SkillsPage } from "./components/corporate/SkillsPage";
-import { CRMPage } from "./components/corporate/CRMPage";
-import { KnowledgePage } from "./components/corporate/KnowledgePage";
-import { ResearchPage } from "./components/corporate/ResearchPage";
-import { CalendarPage } from "./components/corporate/CalendarPage";
-import { ChannelsPage } from "./components/corporate/ChannelsPage";
-import { AdminTrainingPage } from "./components/admin/AdminTrainingPage";
-import { DocumentRegistryPage } from "./components/corporate/DocumentRegistryPage";
-import { HRPage } from "./components/corporate/HRPage";
-import { AnalyticsPage } from "./components/corporate/AnalyticsPage";
-import { IntegrationsPage } from "./components/corporate/IntegrationsPage";
-import { EDOPage } from "./components/corporate/EDOPage";
-import { AICopilot } from "./components/corporate/AICopilot";
-import { KanbanBoard } from "./components/corporate/KanbanBoard";
-import { GanttPage } from "./components/corporate/GanttPage";
-import { TeamPage } from "./components/corporate/TeamPage";
-import { MobileLayout } from "./components/mobile/MobileLayout";
+import { ModelSetupV2 } from "./components/modals/ModelSetupV2";
+
+// Heavy corporate pages — lazy-loaded (code-splitting, cut main bundle by ~400kb)
+const Dashboard = lazy(() => import("./components/corporate/Dashboard").then(m => ({ default: m.Dashboard })));
+const ReportsPage = lazy(() => import("./components/corporate/ReportsPage").then(m => ({ default: m.ReportsPage })));
+const SettingsPage = lazy(() => import("./components/corporate/SettingsPage").then(m => ({ default: m.SettingsPage })));
+const WorkflowPage = lazy(() => import("./components/corporate/WorkflowPage").then(m => ({ default: m.WorkflowPage })));
+const DocumentsPage = lazy(() => import("./components/corporate/DocumentsPage").then(m => ({ default: m.DocumentsPage })));
+const SkillsPage = lazy(() => import("./components/corporate/SkillsPage").then(m => ({ default: m.SkillsPage })));
+const CRMPage = lazy(() => import("./components/corporate/CRMPage").then(m => ({ default: m.CRMPage })));
+const KnowledgePage = lazy(() => import("./components/corporate/KnowledgePage").then(m => ({ default: m.KnowledgePage })));
+const ResearchPage = lazy(() => import("./components/corporate/ResearchPage").then(m => ({ default: m.ResearchPage })));
+const CalendarPage = lazy(() => import("./components/corporate/CalendarPage").then(m => ({ default: m.CalendarPage })));
+const ChannelsPage = lazy(() => import("./components/corporate/ChannelsPage").then(m => ({ default: m.ChannelsPage })));
+const AdminTrainingPage = lazy(() => import("./components/admin/AdminTrainingPage").then(m => ({ default: m.AdminTrainingPage })));
+const DocumentRegistryPage = lazy(() => import("./components/corporate/DocumentRegistryPage").then(m => ({ default: m.DocumentRegistryPage })));
+const HRPage = lazy(() => import("./components/corporate/HRPage").then(m => ({ default: m.HRPage })));
+const AnalyticsPage = lazy(() => import("./components/corporate/AnalyticsPage").then(m => ({ default: m.AnalyticsPage })));
+const IntegrationsPage = lazy(() => import("./components/corporate/IntegrationsPage").then(m => ({ default: m.IntegrationsPage })));
+const EDOPage = lazy(() => import("./components/corporate/EDOPage").then(m => ({ default: m.EDOPage })));
+const AICopilot = lazy(() => import("./components/corporate/AICopilot").then(m => ({ default: m.AICopilot })));
+const KanbanBoard = lazy(() => import("./components/corporate/KanbanBoard").then(m => ({ default: m.KanbanBoard })));
+const GanttPage = lazy(() => import("./components/corporate/GanttPage").then(m => ({ default: m.GanttPage })));
+const TeamPage = lazy(() => import("./components/corporate/TeamPage").then(m => ({ default: m.TeamPage })));
+const MobileLayout = lazy(() => import("./components/mobile/MobileLayout").then(m => ({ default: m.MobileLayout })));
 // Arena components imported inside ChatInterface
 import { useTheme } from "./hooks/useTheme";
 
 /* ErrorBoundary для Corp View */
+function PageLoader() {
+  return (
+    <div className="flex items-center justify-center h-full" style={{ backgroundColor: "var(--bg-base)" }}>
+      <div className="text-[13px] animate-pulse" style={{ color: "var(--text-tertiary)" }}>
+        Загрузка…
+      </div>
+    </div>
+  );
+}
+
 class CorpErrorBoundary extends Component<{children: ReactNode; fallback: ReactNode}, {hasError: boolean}> {
   state = { hasError: false };
   static getDerivedStateFromError() { return { hasError: true }; }
@@ -187,12 +194,14 @@ export default function App() {
   if (isMobileApp) {
     return (
       <>
-        <MobileLayout
-          user={user}
-          onShowModelSetup={() => setShowModelSetup(true)}
-          onShowProfileSettings={() => setShowProfileSettings(true)}
-          onShowPricing={() => setShowPricing(true)}
-        />
+        <Suspense fallback={<PageLoader />}>
+          <MobileLayout
+            user={user}
+            onShowModelSetup={() => setShowModelSetup(true)}
+            onShowProfileSettings={() => setShowProfileSettings(true)}
+            onShowPricing={() => setShowPricing(true)}
+          />
+        </Suspense>
 
         {/* Модалки поверх мобильного layout */}
         {showModelSetup && (
@@ -302,6 +311,7 @@ export default function App() {
           onLogout={authStore.logout}
           onFocusMode={() => setFocusMode(true)}
         >
+          <Suspense fallback={<PageLoader />}>
           {corporatePage === "dashboard" && (
             <Dashboard
               orgRole={orgRole}
@@ -415,8 +425,11 @@ export default function App() {
             <AdminTrainingPage />
           )}
 
+          </Suspense>
           {/* AI Copilot floating widget */}
-          <AICopilot currentPage={corporatePage} />
+          <Suspense fallback={null}>
+            <AICopilot currentPage={corporatePage} />
+          </Suspense>
         </CorporateLayout>
 
         {/* Onboarding Wizard (corporate) */}
