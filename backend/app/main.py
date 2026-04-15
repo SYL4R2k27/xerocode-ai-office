@@ -12,6 +12,10 @@ from app.api.routes import admin, agents, ai_slides, analytics, arena, audit, au
 from app.api.websocket import setup_websocket
 from app.core.config import settings
 from app.core.database import Base, engine, async_session
+from app.core.logging_config import setup_logging, gen_correlation_id, correlation_id_var
+
+# Initialize structured logging at import time (before any logger is acquired)
+setup_logging()
 
 
 async def _monthly_usage_reset():
@@ -93,6 +97,19 @@ if getattr(settings, "sentry_dsn", None):
         logging.getLogger("uvicorn.error").info("[Sentry] Initialized")
     except ImportError:
         logging.getLogger("uvicorn.error").warning("[Sentry] sentry-sdk not installed; skipping")
+
+
+# Correlation ID middleware — every request gets a short ID propagated through logs
+@app.middleware("http")
+async def correlation_id_middleware(request: Request, call_next):
+    cid = request.headers.get("x-correlation-id") or gen_correlation_id()
+    token = correlation_id_var.set(cid)
+    try:
+        response = await call_next(request)
+        response.headers["X-Correlation-Id"] = cid
+        return response
+    finally:
+        correlation_id_var.reset(token)
 
 
 # Security headers middleware

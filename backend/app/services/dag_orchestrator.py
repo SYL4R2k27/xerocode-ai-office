@@ -369,6 +369,58 @@ async def auction_hook(context: DAGContext, completed: NodeResult, nodes: list[D
     return nodes
 
 
+async def team_hook(context: DAGContext, completed: NodeResult, nodes: list[DAGNode]) -> list[DAGNode]:
+    """Команда: ревьюер может вернуть исполнителю max 1 раз через REVISE: <замечания>.
+
+    Выглядит так: architect → executor → reviewer.
+    Если reviewer.output начинается с APPROVE — ничего не делаем.
+    Если REVISE: <текст> — добавляем executor_revision + reviewer_final узлы (один раз).
+    """
+    if not completed.node_id.startswith("team_reviewer_") or not completed.output:
+        return nodes
+    # Проверяем что revision цикл ещё не запущен
+    if any(n.id.startswith("team_executor_revision_") for n in nodes):
+        return nodes  # уже одна ревизия была — больше не пускаем
+    out = completed.output.strip()
+    if not out.upper().startswith("REVISE:"):
+        return nodes  # APPROVE или просто финальный ответ
+    critique = out.split(":", 1)[1].strip()[:1000]
+    # Найдём предыдущего executor'а
+    executor_node = next((n for n in nodes if n.id.startswith("team_executor_")), None)
+    if not executor_node:
+        return nodes
+    # Добавляем revision + final review
+    rev_id = f"team_executor_revision_{len(context.results)}"
+    final_id = f"team_reviewer_final_{len(context.results)}"
+    nodes.append(DAGNode(
+        id=rev_id,
+        role="executor (revision)",
+        deliverable="переработанный результат с учётом замечаний ревьюера",
+        acceptance_criteria=f"учтены замечания: {critique[:200]}",
+        model=executor_node.model,
+        depends_on=[completed.node_id],
+        system_prompt=(
+            "Ты — исполнитель. Ревьюер вернул работу с замечаниями. "
+            "Перепиши свой результат полностью с учётом критики. "
+            "НЕ повторяй замечания, дай только новый полный результат."
+        ),
+    ))
+    nodes.append(DAGNode(
+        id=final_id,
+        role="reviewer (final)",
+        deliverable="финальный одобренный результат",
+        acceptance_criteria="результат пригоден для пользователя",
+        model=completed.model_used,
+        depends_on=[rev_id],
+        system_prompt=(
+            "Ты — ревьюер. Это финальная итерация (вторых возвратов нет). "
+            "Прими работу: верни ТОЛЬКО финальный текст для пользователя, "
+            "без рассуждений и оценок."
+        ),
+    ))
+    return nodes
+
+
 async def xerocode_hook(context: DAGContext, completed: NodeResult, nodes: list[DAGNode]) -> list[DAGNode]:
     """XeroCode AI: после router — проставляем модель для worker по DOMAIN+TIER."""
     if completed.node_id != "xc_router" or not completed.output:
@@ -410,6 +462,7 @@ def get_hook_for_mode(mode: str) -> Optional[Callable]:
         "manager": manager_hook,
         "auction": auction_hook,
         "xerocode_ai": xerocode_hook,
+        "team": team_hook,
     }.get(mode)
 
 
@@ -438,12 +491,26 @@ def build_manager_dag(query: str, main_model: str, helper_models: list[str] | No
 
 def build_team_dag(query: str, roles: list[dict]) -> list[DAGNode]:
     """Режим 2: Команда. Pipeline архитектор → исполнитель → ревьюер.
+    Ревьюер по протоколу: APPROVE: <финал> или REVISE: <замечания>.
+    Если REVISE — hook добавляет revision + final review (max 1 цикл).
+
     roles: [{role: "architect", model: "claude-sonnet-4.6"}, ...]
     """
     nodes = []
     prev_id: str | None = None
     for idx, r in enumerate(roles):
         node_id = f"team_{r['role']}_{idx}"
+        is_reviewer = "review" in r["role"].lower() or "reviewer" in r["role"].lower()
+        prompt = None
+        if is_reviewer:
+            prompt = (
+                "Ты — ревьюер. Оцени работу исполнителя по критерию готовности. "
+                "Верни СТРОГО в одном из двух форматов:\n"
+                "  APPROVE: <финальный текст для пользователя>\n"
+                "  REVISE: <конкретные замечания, что переделать (1-3 пункта)>\n"
+                "Никаких длинных рассуждений. Если работа годная — APPROVE. "
+                "Только серьёзные проблемы — REVISE. У тебя только ОДИН шанс на возврат."
+            )
         nodes.append(DAGNode(
             id=node_id,
             role=r["role"],
@@ -451,6 +518,7 @@ def build_team_dag(query: str, roles: list[dict]) -> list[DAGNode]:
             acceptance_criteria=r.get("criteria", "конкретный результат без воды"),
             model=r.get("model"),
             depends_on=[prev_id] if prev_id else [],
+            system_prompt=prompt,
         ))
         prev_id = node_id
     return nodes

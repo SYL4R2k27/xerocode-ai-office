@@ -261,10 +261,20 @@ def _extract_final_result(context: DAGContext, mode: str, nodes) -> str:
         r = context.results.get("manager")
         return r.output if r and r.output else "(нет ответа)"
     elif mode == "team":
-        # последний узел в pipeline
-        last_node = nodes[-1]
-        r = context.results.get(last_node.id)
-        return r.output if r and r.output else "(нет ответа)"
+        # Финальный reviewer — либо team_reviewer_final_*, либо последний team_reviewer_*
+        final_reviewers = [n for n in nodes if n.id.startswith("team_reviewer_final_")]
+        if final_reviewers:
+            r = context.results.get(final_reviewers[-1].id)
+        else:
+            reviewers = [n for n in nodes if "reviewer" in n.id]
+            r = context.results.get(reviewers[-1].id) if reviewers else context.results.get(nodes[-1].id)
+        if not r or not r.output:
+            return "(нет ответа)"
+        # Если ревьюер вернул APPROVE: <текст> — обрезаем префикс
+        out = r.output.strip()
+        if out.upper().startswith("APPROVE:"):
+            return out.split(":", 1)[1].strip()
+        return out
     elif mode == "swarm":
         r = context.results.get("swarm_judge")
         return r.output if r and r.output else "(судья не ответил)"
