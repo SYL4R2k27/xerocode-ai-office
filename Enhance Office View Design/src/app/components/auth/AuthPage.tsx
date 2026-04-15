@@ -317,7 +317,7 @@ function useTelegramLogin() {
         }
       }
     );
-  }, [botUser, apiBase]);
+  }, [botId, apiBase]);
 }
 
 /* ------------------------------------------------------------------ */
