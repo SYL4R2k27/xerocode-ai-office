@@ -116,7 +116,15 @@ export function useMessageStore() {
     setMessages((prev) => [...prev, message]);
   }, []);
 
-  return { messages, fetchMessages, addMessage, setMessages };
+  const updateMessage = useCallback((id: string, patch: Partial<Message>) => {
+    setMessages((prev) => prev.map((m) => (m.id === id ? { ...m, ...patch } : m)));
+  }, []);
+
+  const appendToMessage = useCallback((id: string, chunk: string) => {
+    setMessages((prev) => prev.map((m) => (m.id === id ? { ...m, content: (m.content || "") + chunk } : m)));
+  }, []);
+
+  return { messages, fetchMessages, addMessage, updateMessage, appendToMessage, setMessages };
 }
 
 // ====== Status Store ======

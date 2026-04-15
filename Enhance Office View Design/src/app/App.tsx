@@ -215,6 +215,57 @@ function ChatInterface({
     }
   }, [goalStore.activeGoal?.id]);
 
+  /**
+   * Streaming send — instant chat UX.
+   * Adds user message immediately, then streams assistant reply token-by-token.
+   * Used when there's no active goal OR goal has 0/1 agents (direct chat mode).
+   */
+  const handleStreamSend = useCallback(async (content: string, goalId?: string) => {
+    const now = new Date().toISOString();
+    const userMsgId = `user-${Date.now()}`;
+    const asstMsgId = `asst-${Date.now()}`;
+
+    messageStore.addMessage({
+      id: userMsgId,
+      goal_id: goalId || "",
+      sender_type: "user",
+      sender_agent_id: null,
+      sender_name: authStore.user?.name || "Вы",
+      content,
+      message_type: "chat",
+      tokens_used: 0,
+      cost_usd: 0,
+      created_at: now,
+    } as any);
+
+    messageStore.addMessage({
+      id: asstMsgId,
+      goal_id: goalId || "",
+      sender_type: "agent",
+      sender_agent_id: null,
+      sender_name: "AI",
+      content: "",
+      message_type: "chat",
+      tokens_used: 0,
+      cost_usd: 0,
+      created_at: now,
+    } as any);
+
+    try {
+      for await (const ev of api.stream.chat({ goal_id: goalId, prompt: content })) {
+        if (ev.type === "chunk" && ev.content) {
+          messageStore.appendToMessage(asstMsgId, ev.content);
+        } else if (ev.type === "done" && ev.message_id) {
+          messageStore.updateMessage(asstMsgId, { id: ev.message_id } as any);
+        } else if (ev.type === "error") {
+          messageStore.appendToMessage(asstMsgId, `\n\n_Ошибка: ${ev.message}_`);
+        }
+      }
+    } catch (e: any) {
+      messageStore.appendToMessage(asstMsgId, `\n\n_Ошибка соединения: ${e?.message || e}_`);
+    }
+  }, []);
+
   const handleOpenInPreview = useCallback((code: string, language: string) => {
     setPreviewCode(code);
     setPreviewLanguage(language);
@@ -260,12 +311,14 @@ function ChatInterface({
                 messages={messageStore.messages}
                 agents={agentStore.agents}
                 onSendMessage={async (content) => {
-                  if (!goalStore.activeGoal) {
-                    // Create goal + auto-start
-                    const goal = await handleCreateGoal(content, "manager");
-                    if (goal?.id) {
-                      await messageStore.fetchMessages(goal.id);
-                    }
+                  // Direct-chat streaming mode:
+                  // - No goal yet → pure streaming, no orchestration
+                  // - Goal exists with 0 or 1 agents → streaming (feels like direct chat)
+                  // - Goal with multiple agents → orchestration (team mode)
+                  const isTeamMode = goalStore.activeGoal && agentStore.agents.length > 1;
+
+                  if (!isTeamMode) {
+                    await handleStreamSend(content, goalStore.activeGoal?.id);
                   } else {
                     handleUserInput(content, "command");
                   }
