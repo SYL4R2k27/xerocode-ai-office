@@ -17,6 +17,9 @@ interface MessageData {
   created_at?: string;
   cost_usd?: number;
   tokens_used?: number;
+  streaming?: boolean;
+  activity?: string;
+  model?: string;
 }
 
 interface ChatMessageV2Props {
@@ -317,7 +320,7 @@ function MarkdownContent({
 
 /* ── Main Component ── */
 export function ChatMessageV2({ message, isAdmin, onOpenInPreview }: ChatMessageV2Props) {
-  const { sender_type, sender_name, content, created_at, cost_usd, tokens_used } = message;
+  const { sender_type, sender_name, content, created_at, cost_usd, tokens_used, streaming, activity, model } = message;
   const [viewerSrc, setViewerSrc] = useState<string | null>(null);
 
   const handleImageClick = useCallback((src: string) => {
@@ -434,8 +437,45 @@ export function ChatMessageV2({ message, isAdmin, onOpenInPreview }: ChatMessage
           >
             <div style={{ color: "var(--text-primary)" }}>
               <MarkdownContent content={sanitized} onImageClick={handleImageClick} onOpenInPreview={onOpenInPreview} />
+              {streaming && !sanitized && (
+                <span className="inline-block w-1.5 h-4 align-middle animate-pulse" style={{ backgroundColor: providerColor }} />
+              )}
             </div>
           </div>
+
+          {/* Activity chip — visible while streaming */}
+          {streaming && (
+            <motion.div
+              initial={{ opacity: 0, x: -4 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="flex items-center gap-2 mt-2 px-3 py-1.5 rounded-full w-fit"
+              style={{
+                backgroundColor: "color-mix(in srgb, var(--bg-elevated) 80%, transparent)",
+                border: `1px solid color-mix(in srgb, ${providerColor} 30%, var(--border-default))`,
+              }}
+            >
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" style={{ backgroundColor: providerColor }} />
+                <span className="relative inline-flex rounded-full h-2 w-2" style={{ backgroundColor: providerColor }} />
+              </span>
+              <span style={{ fontSize: "11px", color: "var(--text-secondary)", fontWeight: 500 }}>
+                {activity || "Работает"}
+              </span>
+              {model && (
+                <>
+                  <span style={{ color: "var(--text-tertiary)", fontSize: "10px" }}>·</span>
+                  <span style={{ fontSize: "10px", color: "var(--text-tertiary)", fontFamily: "monospace" }}>
+                    {model.split("/").pop()}
+                  </span>
+                </>
+              )}
+              <span className="flex gap-0.5 ml-1">
+                <span className="w-1 h-1 rounded-full animate-bounce" style={{ backgroundColor: "var(--text-tertiary)", animationDelay: "0ms" }} />
+                <span className="w-1 h-1 rounded-full animate-bounce" style={{ backgroundColor: "var(--text-tertiary)", animationDelay: "150ms" }} />
+                <span className="w-1 h-1 rounded-full animate-bounce" style={{ backgroundColor: "var(--text-tertiary)", animationDelay: "300ms" }} />
+              </span>
+            </motion.div>
+          )}
 
           {/* Meta row: cost + tokens (admin only) */}
           {isAdmin && ((cost_usd && cost_usd > 0) || (tokens_used && tokens_used > 0)) && (

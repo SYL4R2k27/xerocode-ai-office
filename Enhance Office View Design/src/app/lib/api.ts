@@ -371,6 +371,10 @@ export interface Message {
   tokens_used: number;
   cost_usd: number;
   created_at: string;
+  // Client-side transient flags (not from server)
+  streaming?: boolean;
+  activity?: string; // e.g. "Думает", "Генерирует", "Ищет в KB"
+  model?: string; // model name shown in activity chip
 }
 
 export interface GoalStatus {

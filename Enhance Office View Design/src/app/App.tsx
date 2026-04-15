@@ -238,6 +238,7 @@ function ChatInterface({
       created_at: now,
     } as any);
 
+    const defaultModel = "llama-3.3-70b-versatile";
     messageStore.addMessage({
       id: asstMsgId,
       goal_id: goalId || "",
@@ -249,19 +250,33 @@ function ChatInterface({
       tokens_used: 0,
       cost_usd: 0,
       created_at: now,
+      streaming: true,
+      activity: "Подключение",
+      model: defaultModel,
     } as any);
 
     try {
+      let firstChunk = true;
       for await (const ev of api.stream.chat({ goal_id: goalId, prompt: content })) {
         if (ev.type === "chunk" && ev.content) {
+          if (firstChunk) {
+            messageStore.updateMessage(asstMsgId, { activity: "Генерирует" } as any);
+            firstChunk = false;
+          }
           messageStore.appendToMessage(asstMsgId, ev.content);
-        } else if (ev.type === "done" && ev.message_id) {
-          messageStore.updateMessage(asstMsgId, { id: ev.message_id } as any);
+        } else if (ev.type === "done") {
+          messageStore.updateMessage(asstMsgId, {
+            id: ev.message_id || asstMsgId,
+            streaming: false,
+            activity: undefined,
+          } as any);
         } else if (ev.type === "error") {
+          messageStore.updateMessage(asstMsgId, { streaming: false, activity: undefined } as any);
           messageStore.appendToMessage(asstMsgId, `\n\n_Ошибка: ${ev.message}_`);
         }
       }
     } catch (e: any) {
+      messageStore.updateMessage(asstMsgId, { streaming: false, activity: undefined } as any);
       messageStore.appendToMessage(asstMsgId, `\n\n_Ошибка соединения: ${e?.message || e}_`);
     }
   }, []);
