@@ -102,13 +102,17 @@ export function useTaskStore() {
 // ====== Message Store ======
 export function useMessageStore() {
   const [messages, setMessages] = useState<Message[]>([]);
+  const [loading, setLoading] = useState(false);
 
   const fetchMessages = useCallback(async (goalId: string) => {
+    setLoading(true);
     try {
       const data = await api.messages.list(goalId);
       setMessages(data);
     } catch (e) {
       console.error("Failed to fetch messages:", e);
+    } finally {
+      setLoading(false);
     }
   }, []);
 
@@ -124,7 +128,7 @@ export function useMessageStore() {
     setMessages((prev) => prev.map((m) => (m.id === id ? { ...m, content: (m.content || "") + chunk } : m)));
   }, []);
 
-  return { messages, fetchMessages, addMessage, updateMessage, appendToMessage, setMessages };
+  return { messages, loading, fetchMessages, addMessage, updateMessage, appendToMessage, setMessages };
 }
 
 // ====== Status Store ======

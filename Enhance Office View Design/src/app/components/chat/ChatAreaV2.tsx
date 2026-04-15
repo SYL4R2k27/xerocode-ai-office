@@ -7,6 +7,7 @@ import { TaskPlanPanel } from "./TaskPlanPanel";
 import { ChatMessageV2 } from "./ChatMessageV2";
 import { ChatInputV2 } from "./ChatInputV2";
 import TeamBar from "./TeamBar";
+import { MessageSkeleton } from "../shared/LoadingSkeleton";
 
 /* ── Types ── */
 interface GoalInfo {
@@ -342,7 +343,13 @@ export function ChatAreaV2({
               transition={{ duration: 0.15 }}
               className="h-full"
             >
-              {messages.length === 0 ? (
+              {messagesLoading && messages.length === 0 ? (
+                <div style={{ maxWidth: "var(--chat-max-width, 720px)", margin: "0 auto" }}>
+                  <MessageSkeleton />
+                  <MessageSkeleton />
+                  <MessageSkeleton />
+                </div>
+              ) : messages.length === 0 ? (
                 <EmptyStateView onQuickAction={(prompt, insertOnly) => {
                   if (insertOnly) {
                     setInputTextState(prompt);
@@ -374,7 +381,7 @@ export function ChatAreaV2({
       </div>
 
       {/* ── Input ── */}
-      <div style={{ maxWidth: tasks.length > 0 ? "none" : "var(--chat-max-width, 720px)", margin: tasks.length > 0 ? "0" : "0 auto", width: "100%", padding: "0 var(--space-4, 16px)" }}>
+      <div className="mobile-safe-bottom" style={{ maxWidth: tasks.length > 0 ? "none" : "var(--chat-max-width, 720px)", margin: tasks.length > 0 ? "0" : "0 auto", width: "100%", padding: "0 var(--space-4, 16px)" }}>
         <ChatInputV2
           onSend={onSendMessage}
           disabled={false}

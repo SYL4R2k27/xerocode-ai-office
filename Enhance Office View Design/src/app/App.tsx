@@ -378,6 +378,7 @@ function ChatInterface({
                 onToggleContextPanel={() => setContextPanelOpen(!contextPanelOpen)}
                 isStreaming={isStreaming}
                 onStopStream={handleStopStream}
+                messagesLoading={messageStore.loading}
               />
             </div>
 
