@@ -368,9 +368,8 @@ export default function TeamBar({
         </button>
       </div>
 
-      {/* Bottom row: mode + KB toggle */}
+      {/* Bottom row: KB toggle (режим теперь сверху в ModeSelector — не дублируем) */}
       <div style={{ display: "flex", alignItems: "center", gap: "var(--space-3)" }}>
-        <ModeDropdown mode={mode} onModeChange={onModeChange} />
         <KBToggle enabled={useKnowledgeBase} onToggle={onToggleKB} />
       </div>
 
