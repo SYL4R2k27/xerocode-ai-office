@@ -6,9 +6,9 @@ import { ArenaView } from "../arena/ArenaView";
 import { TaskPlanPanel } from "./TaskPlanPanel";
 import { ChatMessageV2 } from "./ChatMessageV2";
 import { ChatInputV2 } from "./ChatInputV2";
-import TeamBar from "./TeamBar";
 import { MessageSkeleton } from "../shared/LoadingSkeleton";
 import { ModeSelector, type OrchMode } from "./ModeSelector";
+import { TeamPicker } from "./TeamPicker";
 
 /* ── Types ── */
 interface GoalInfo {
@@ -259,12 +259,21 @@ export function ChatAreaV2({
         className="flex items-center gap-2 px-4 h-12 flex-shrink-0 overflow-x-auto"
         style={{ borderBottom: "1px solid var(--border-default)", backgroundColor: "var(--bg-surface)" }}
       >
-        {/* LEFT: Mode selector is the hero control */}
+        {/* LEFT: Mode selector + Team picker — primary controls cluster */}
         {onModeSelectorChange && (
           <div className="flex-shrink-0">
             <ModeSelector value={mode} onChange={onModeSelectorChange} />
           </div>
         )}
+        <div className="flex-shrink-0">
+          <TeamPicker
+            agents={agents as any}
+            onAddAgent={onAddAgent}
+            onRemoveAgent={onRemoveAgent}
+            useKnowledgeBase={useKnowledgeBase}
+            onToggleKB={onToggleKB}
+          />
+        </div>
 
         {/* Title (compact, collapsible) */}
         {goal?.title ? (
@@ -324,51 +333,7 @@ export function ChatAreaV2({
         </div>
       </div>
 
-      {/* ── Empty-state models strip ── */}
-      {agents.length === 0 && onAddAgent && (
-        <div
-          className="flex items-center gap-2 px-4 py-1.5 flex-shrink-0"
-          style={{
-            borderBottom: "1px solid var(--border-subtle, var(--border-default))",
-            backgroundColor: "color-mix(in srgb, var(--bg-elevated) 50%, transparent)",
-          }}
-        >
-          <span style={{ fontSize: "11px", color: "var(--text-tertiary)" }}>
-            Модели не подключены — XeroCode AI работает автоматически
-          </span>
-          <div className="flex-1" />
-          <button
-            onClick={onAddAgent}
-            className="flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-medium transition-colors"
-            style={{ color: "var(--accent-blue)", backgroundColor: "transparent" }}
-            onMouseEnter={e => { e.currentTarget.style.backgroundColor = "color-mix(in srgb, var(--accent-blue) 12%, transparent)"; }}
-            onMouseLeave={e => { e.currentTarget.style.backgroundColor = "transparent"; }}
-          >
-            + Добавить модели
-          </button>
-        </div>
-      )}
-
-      {/* ── Team Bar — видна ВСЕГДА когда есть агенты, даже без goal ── */}
-      {agents.length > 0 && (
-        <TeamBar
-          agents={agents.map((a: any) => ({
-            id: a.id,
-            name: a.name,
-            role: a.role || "",
-            provider: a.provider || "openrouter",
-            model_name: a.model_name || "",
-            status: a.status || "idle",
-            avatar: a.avatar,
-          }))}
-          mode={(goal?.distribution_mode as any) || "manager"}
-          onModeChange={onModeChange}
-          onRemoveAgent={onRemoveAgent}
-          onAddAgent={onAddAgent}
-          useKnowledgeBase={useKnowledgeBase}
-          onToggleKB={onToggleKB}
-        />
-      )}
+      {/* Team/models живут теперь в TeamPicker (header) — отдельная строка убрана */}
 
       {/* ── Content area (messages + task panel) ── */}
       <div className="flex-1 flex overflow-hidden">
