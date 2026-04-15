@@ -4,6 +4,7 @@ from app.models.agent import Agent
 from app.models.audit_log import AuditLog
 from app.models.byok import UserApiKey
 from app.models.training_log import TrainingLog
+from app.models.push_subscription import PushSubscription
 from app.models.custom_pool import CustomPool
 from app.models.goal import Goal
 from app.models.memory import Memory
@@ -19,6 +20,7 @@ __all__ = [
     "CustomPool",
     "UserApiKey",
     "TrainingLog",
+    "PushSubscription",
     "Goal",
     "Memory",
     "Message",

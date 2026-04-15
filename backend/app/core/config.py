@@ -60,6 +60,11 @@ class Settings(BaseSettings):
     yandex_client_id: str | None = None
     yandex_client_secret: str | None = None
 
+    # Web Push (VAPID)
+    vapid_private_key: str | None = None
+    vapid_public_key: str | None = None
+    vapid_subject: str = "mailto:admin@xerocode.ru"
+
     model_config = {"env_file": ".env", "extra": "ignore"}
 
     @model_validator(mode="after")
