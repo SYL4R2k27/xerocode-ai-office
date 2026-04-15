@@ -57,32 +57,49 @@ async def stream_chat(
         model = "llama-3.3-70b-versatile"
         provider = "groq"
 
-    # Security: validate model against registry + check subscription
-    from app.core.subscription import is_premium_model, check_subscription_limits
-    if is_premium_model(model or ""):
-        check_subscription_limits(user, "use_premium_model")
+    # Security: check task quota + resolve key via BYOK/plan policy.
+    # Resolver raises 403 if user lacks BYOK AND plan doesn't cover the provider/premium model.
+    from app.core.subscription import check_subscription_limits
+    from app.core.ai_key_resolver import resolve_key
     check_subscription_limits(user, "create_task")
 
-    # Build provider config
+    resolved = await resolve_key(db, user, provider or "groq", model)
+
+    # Build provider config — primary uses resolved key (BYOK or platform).
+    # Fallback chain is ONLY appended if the primary was platform-sourced (never when BYOK).
     proxy = getattr(settings, "api_proxy", None)
     providers = []
 
-    if provider == "groq" or (not provider and getattr(settings, "groq_api_key", None)):
+    primary_provider = provider or "groq"
+    if primary_provider == "groq":
         providers.append({
             "url": "https://api.groq.com/openai/v1/chat/completions",
-            "key": settings.groq_api_key,
-            "model": model if provider == "groq" else "llama-3.3-70b-versatile",
+            "key": resolved.key,
+            "model": model,
+            "source": resolved.source,
         })
-
-    if getattr(settings, "openrouter_api_key", None):
-        or_model = model
-        if provider and provider != "openrouter":
-            or_model = f"{provider}/{model}"
-        providers.append({
-            "url": "https://openrouter.ai/api/v1/chat/completions",
-            "key": settings.openrouter_api_key,
-            "model": or_model,
-        })
+    else:
+        # Non-groq: if BYOK, hit provider direct; if platform, route through OpenRouter.
+        if resolved.source == "byok":
+            direct_map = {
+                "openai": "https://api.openai.com/v1/chat/completions",
+                "anthropic": "https://api.anthropic.com/v1/messages",  # different schema; kept as fallback
+                "openrouter": "https://openrouter.ai/api/v1/chat/completions",
+            }
+            providers.append({
+                "url": direct_map.get(primary_provider, "https://openrouter.ai/api/v1/chat/completions"),
+                "key": resolved.key,
+                "model": model,
+                "source": "byok",
+            })
+        else:
+            or_model = f"{primary_provider}/{model}" if primary_provider != "openrouter" else model
+            providers.append({
+                "url": "https://openrouter.ai/api/v1/chat/completions",
+                "key": resolved.key,
+                "model": or_model,
+                "source": "platform",
+            })
 
     if not providers:
         raise HTTPException(503, "No AI providers configured")
