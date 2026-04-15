@@ -375,6 +375,8 @@ export interface Message {
   streaming?: boolean;
   activity?: string; // e.g. "Думает", "Генерирует", "Ищет в KB"
   model?: string; // model name shown in activity chip
+  log_id?: string; // training_log id for rating feedback
+  rated?: 1 | -1;  // user's rating (persisted client-side once given)
 }
 
 export interface GoalStatus {
@@ -650,6 +652,15 @@ export const api = {
     matrix: () => request<{ matrix: Record<string, string[]>; roles: Record<string, { label: string; permissions: string[] }> }>("/org/roles/matrix"),
     templates: () => request<Record<string, { label: string; roles_count: number }>>("/org/roles/templates"),
     templateDetail: (id: string) => request<{ label: string; roles: any[] }>(`/org/roles/templates/${id}`),
+  },
+
+  // Training feedback
+  training: {
+    rate: (log_id: string, rating: 1 | -1, comment?: string) =>
+      request<{ ok: boolean }>("/training/rate", {
+        method: "POST",
+        body: JSON.stringify({ log_id, rating, comment }),
+      }),
   },
 
   // 5 orchestration modes — Manager / Team / Swarm / Auction / XeroCode AI

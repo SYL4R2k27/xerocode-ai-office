@@ -29,6 +29,7 @@ from app.services.dag_orchestrator import (
     build_swarm_dag,
     build_team_dag,
     build_xerocode_dag,
+    get_hook_for_mode,
     run_dag,
     MAX_TOKENS_PER_TASK,
     TASK_TIMEOUT_SEC,
@@ -179,9 +180,11 @@ async def run_mode(
             queue: asyncio.Queue = asyncio.Queue()
 
             # Run DAG в фоне, стримим прогресс через queue
+            hook = get_hook_for_mode(mode)
+
             async def runner():
                 try:
-                    await run_dag(context, nodes, ai_call, on_progress=on_progress)
+                    await run_dag(context, nodes, ai_call, on_progress=on_progress, on_hook=hook)
                 finally:
                     await queue.put(None)  # sentinel
 
@@ -197,7 +200,47 @@ async def run_mode(
 
             # Final aggregation — зависит от режима
             final = _extract_final_result(context, mode, nodes)
-            yield f"data: {json.dumps({'type': 'done', 'task_id': task_id, 'result': final, 'total_tokens': context.total_tokens, 'duration_sec': context.elapsed_sec()})}\n\n"
+
+            # Log to training dataset (for XeroCode AI Phase 2 fine-tune)
+            try:
+                from app.models.training_log import TrainingLog
+                from app.api.routes.training import user_hash
+                dag_nodes_meta = [
+                    {
+                        "id": nid,
+                        "model": r.model_used,
+                        "tokens": r.tokens_used,
+                        "duration": r.duration_sec,
+                        "status": r.status.value,
+                    }
+                    for nid, r in context.results.items()
+                ]
+                router_decision = None
+                if mode == "xerocode_ai" and "xc_router" in context.results:
+                    rout = context.results["xc_router"].output or ""
+                    router_decision = {"raw": rout[:200]}
+                log = TrainingLog(
+                    id=uuid.uuid4(),
+                    user_hash=user_hash(str(user.id)),
+                    mode=mode,
+                    user_query=query[:5000],
+                    final_response=(final or "")[:10000],
+                    dag_nodes=dag_nodes_meta,
+                    chosen_models=[r.model_used for r in context.results.values() if r.model_used],
+                    router_decision=router_decision,
+                    total_tokens=context.total_tokens,
+                    total_cost_usd=context.total_cost,
+                    duration_sec=context.elapsed_sec(),
+                    success=bool(final and not final.startswith("(")),
+                )
+                db.add(log)
+                await db.commit()
+                log_id = str(log.id)
+            except Exception as log_err:
+                logger.warning(f"[Training log] {log_err}")
+                log_id = None
+
+            yield f"data: {json.dumps({'type': 'done', 'task_id': task_id, 'result': final, 'total_tokens': context.total_tokens, 'duration_sec': context.elapsed_sec(), 'log_id': log_id})}\n\n"
 
         except Exception as e:
             logger.error(f"[Modes] Error: {e}", exc_info=True)

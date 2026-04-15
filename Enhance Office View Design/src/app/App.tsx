@@ -349,7 +349,9 @@ function ChatInterface({
           messageStore.updateMessage(asstMsgId, { activity: label } as any);
         } else if (ev.type === "done") {
           messageStore.updateMessage(asstMsgId, {
-            streaming: false, activity: undefined, content: ev.result || "(нет ответа)",
+            streaming: false, activity: undefined,
+            content: ev.result || "(нет ответа)",
+            log_id: ev.log_id,
           } as any);
         } else if (ev.type === "error") {
           messageStore.updateMessage(asstMsgId, { streaming: false, activity: undefined } as any);

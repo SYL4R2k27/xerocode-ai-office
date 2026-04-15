@@ -257,6 +257,7 @@ async def run_dag(
     nodes: list[DAGNode],
     ai_call: Callable,
     on_progress: Optional[Callable] = None,
+    on_hook: Optional[Callable] = None,
 ) -> DAGContext:
     """Выполнить DAG уровнями (параллельно в пределах уровня).
 
@@ -265,17 +266,20 @@ async def run_dag(
         nodes: узлы DAG
         ai_call: async func(system_prompt, user_prompt, model, max_tokens) -> (content, tokens, cost)
         on_progress: optional callback(node_id, status)
+        on_hook: optional callback(context, completed_node, nodes) -> nodes (can mutate/append)
+                 — позволяет mode-специфичную динамику (winner в аукционе, NEED_HELP в менеджере)
     """
     levels = topological_order(nodes)
     logger.info(f"[DAG {context.task_id}] {len(levels)} levels, {len(nodes)} nodes")
 
-    for level_idx, level in enumerate(levels):
+    level_idx = 0
+    while level_idx < len(levels):
+        level = levels[level_idx]
         exceeded, reason = context.budget_exceeded()
         if exceeded:
             logger.warning(f"[DAG {context.task_id}] Aborting at level {level_idx}: {reason}")
             break
 
-        # Ограничиваем параллелизм в пределах уровня
         batch = level[:MAX_PARALLEL_NODES]
         if on_progress:
             for n in batch:
@@ -293,7 +297,120 @@ async def run_dag(
             if on_progress:
                 await on_progress(node.id, res.status)
 
+            # Mode-specific hooks — могут мутировать DAG (добавить узлы, проставить модель)
+            if on_hook:
+                nodes = await on_hook(context, node, nodes) or nodes
+                # Перестроить levels если появились новые узлы
+                try:
+                    new_levels = topological_order(nodes)
+                    if len(new_levels) != len(levels):
+                        levels = new_levels
+                except ValueError:
+                    pass
+
+        level_idx += 1
+
     return context
+
+
+# ── Mode hooks (динамика после узлов) ────────────────────────────────
+
+async def manager_hook(context: DAGContext, completed: NodeResult, nodes: list[DAGNode]) -> list[DAGNode]:
+    """Менеджер: если вернул NEED_HELP: <описание> — добавляем worker-узел."""
+    if completed.node_id != "manager" or not completed.output:
+        return nodes
+    if "NEED_HELP:" not in completed.output:
+        return nodes
+    # Извлекаем описание помощи
+    help_desc = completed.output.split("NEED_HELP:", 1)[1].strip().split("\n")[0]
+    helper_id = f"manager_helper_{len([n for n in nodes if n.id.startswith('manager_helper')])}"
+    nodes.append(DAGNode(
+        id=helper_id,
+        role="helper",
+        deliverable=help_desc[:200],
+        acceptance_criteria="конкретная помощь менеджеру",
+        model=None,  # auto-route
+        depends_on=[],  # независимо, не от manager (чтобы не блокировать)
+    ))
+    return nodes
+
+
+async def auction_hook(context: DAGContext, completed: NodeResult, nodes: list[DAGNode]) -> list[DAGNode]:
+    """Аукцион: после всех bid-узлов определяем winner и проставляем модель."""
+    bids_done = [
+        (n, context.results.get(n.id))
+        for n in nodes if n.id.startswith("auction_bid_")
+    ]
+    if not all(r and r.status == NodeStatus.COMPLETED for _, r in bids_done):
+        return nodes  # не все bid готовы
+
+    # Winner = max score
+    best_score = -1
+    best_node = None
+    for bid_node, bid_res in bids_done:
+        if not bid_res or not bid_res.output:
+            continue
+        # Парсим "SCORE: N"
+        for line in bid_res.output.splitlines():
+            if line.upper().startswith("SCORE:"):
+                try:
+                    s = int(line.split(":", 1)[1].strip().split()[0])
+                    if s > best_score:
+                        best_score = s
+                        best_node = bid_node
+                except Exception:
+                    continue
+
+    # Подставить модель winner'а в auction_winner узел
+    for n in nodes:
+        if n.id == "auction_winner" and best_node and n.model is None:
+            n.model = best_node.model
+            logger.info(f"[Auction] Winner: {best_node.model} with score {best_score}")
+    return nodes
+
+
+async def xerocode_hook(context: DAGContext, completed: NodeResult, nodes: list[DAGNode]) -> list[DAGNode]:
+    """XeroCode AI: после router — проставляем модель для worker по DOMAIN+TIER."""
+    if completed.node_id != "xc_router" or not completed.output:
+        return nodes
+    output = completed.output.upper()
+    domain = "general"
+    tier = "simple"
+    for line in output.splitlines():
+        if line.startswith("DOMAIN:"):
+            domain = line.split(":", 1)[1].strip().lower()
+        elif line.startswith("TIER:"):
+            tier = line.split(":", 1)[1].strip().lower()
+
+    # Mapping: domain × tier → model
+    MODEL_MAP = {
+        ("code", "simple"): "deepseek/deepseek-chat",
+        ("code", "complex"): "anthropic/claude-sonnet-4",
+        ("research", "simple"): "perplexity/sonar",
+        ("research", "complex"): "perplexity/sonar-pro",
+        ("creative", "simple"): "anthropic/claude-sonnet-4",
+        ("creative", "complex"): "anthropic/claude-opus-4",
+        ("reasoning", "simple"): "openai/gpt-4o",
+        ("reasoning", "complex"): "openai/o1-preview",
+        ("vision", "simple"): "openai/gpt-4o",
+        ("vision", "complex"): "google/gemini-2.5-pro",
+        ("general", "simple"): "llama-3.3-70b-versatile",
+        ("general", "complex"): "anthropic/claude-sonnet-4",
+    }
+    chosen = MODEL_MAP.get((domain, tier), MODEL_MAP[("general", "simple")])
+    for n in nodes:
+        if n.id == "xc_worker" and n.model is None:
+            n.model = chosen
+            logger.info(f"[XeroCode] Router → domain={domain}, tier={tier}, model={chosen}")
+    return nodes
+
+
+def get_hook_for_mode(mode: str) -> Optional[Callable]:
+    return {
+        "manager": manager_hook,
+        "auction": auction_hook,
+        "xerocode_ai": xerocode_hook,
+    }.get(mode)
 
 
 # ── 5 режимов — factory функции создания DAG ─────────────────────────

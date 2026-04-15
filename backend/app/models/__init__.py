@@ -3,6 +3,7 @@ from __future__ import annotations
 from app.models.agent import Agent
 from app.models.audit_log import AuditLog
 from app.models.byok import UserApiKey
+from app.models.training_log import TrainingLog
 from app.models.custom_pool import CustomPool
 from app.models.goal import Goal
 from app.models.memory import Memory
@@ -17,6 +18,7 @@ __all__ = [
     "AuditLog",
     "CustomPool",
     "UserApiKey",
+    "TrainingLog",
     "Goal",
     "Memory",
     "Message",

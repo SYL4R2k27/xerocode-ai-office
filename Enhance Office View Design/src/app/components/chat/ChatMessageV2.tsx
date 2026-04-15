@@ -5,7 +5,8 @@ import remarkGfm from "remark-gfm";
 import rehypeSanitize from "rehype-sanitize";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
-import { Check, Copy, ExternalLink } from "lucide-react";
+import { Check, Copy, ExternalLink, ThumbsUp, ThumbsDown } from "lucide-react";
+import { api } from "../../lib/api";
 import { ImageViewer } from "../shared/ImageViewer";
 
 /* ── Types ── */
@@ -20,6 +21,8 @@ interface MessageData {
   streaming?: boolean;
   activity?: string;
   model?: string;
+  log_id?: string;
+  rated?: 1 | -1;
 }
 
 interface ChatMessageV2Props {
@@ -320,7 +323,17 @@ function MarkdownContent({
 
 /* ── Main Component ── */
 export function ChatMessageV2({ message, isAdmin, onOpenInPreview }: ChatMessageV2Props) {
-  const { sender_type, sender_name, content, created_at, cost_usd, tokens_used, streaming, activity, model } = message;
+  const { sender_type, sender_name, content, created_at, cost_usd, tokens_used, streaming, activity, model, log_id, rated } = message;
+  const [localRated, setLocalRated] = useState<1 | -1 | null>(rated ?? null);
+  const handleRate = useCallback(async (val: 1 | -1) => {
+    if (!log_id || localRated) return;
+    setLocalRated(val);
+    try {
+      await api.training.rate(log_id, val);
+    } catch {
+      setLocalRated(null); // rollback on error
+    }
+  }, [log_id, localRated]);
   const [viewerSrc, setViewerSrc] = useState<string | null>(null);
 
   const handleImageClick = useCallback((src: string) => {
@@ -475,6 +488,41 @@ export function ChatMessageV2({ message, isAdmin, onOpenInPreview }: ChatMessage
                 <span className="w-1 h-1 rounded-full animate-bounce" style={{ backgroundColor: "var(--text-tertiary)", animationDelay: "300ms" }} />
               </span>
             </motion.div>
+          )}
+
+          {/* Rating buttons — shown when log_id present and not streaming */}
+          {log_id && !streaming && (
+            <div className="flex items-center gap-1 mt-2 px-1">
+              <button
+                onClick={() => handleRate(1)}
+                disabled={!!localRated}
+                className="p-1.5 rounded-lg transition-all disabled:cursor-default"
+                style={{
+                  color: localRated === 1 ? "var(--accent-green)" : "var(--text-tertiary)",
+                  backgroundColor: localRated === 1 ? "color-mix(in srgb, var(--accent-green) 15%, transparent)" : "transparent",
+                }}
+                title="Хороший ответ"
+              >
+                <ThumbsUp size={12} fill={localRated === 1 ? "currentColor" : "none"} />
+              </button>
+              <button
+                onClick={() => handleRate(-1)}
+                disabled={!!localRated}
+                className="p-1.5 rounded-lg transition-all disabled:cursor-default"
+                style={{
+                  color: localRated === -1 ? "var(--accent-red, #ef4444)" : "var(--text-tertiary)",
+                  backgroundColor: localRated === -1 ? "color-mix(in srgb, var(--accent-red, #ef4444) 15%, transparent)" : "transparent",
+                }}
+                title="Плохой ответ"
+              >
+                <ThumbsDown size={12} fill={localRated === -1 ? "currentColor" : "none"} />
+              </button>
+              {localRated && (
+                <span style={{ fontSize: "10px", color: "var(--text-tertiary)", marginLeft: 4 }}>
+                  Спасибо за фидбек
+                </span>
+              )}
+            </div>
           )}
 
           {/* Meta row: cost + tokens (admin only) */}
