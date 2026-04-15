@@ -108,6 +108,10 @@ async def stream_chat(
         full_content = ""
         success = False
 
+        # Emit meta event first — UI uses this to show real model/source in activity chip
+        first_prov = providers[0]
+        yield f"data: {json.dumps({'type': 'meta', 'model': first_prov['model'], 'source': first_prov.get('source', 'platform'), 'provider': primary_provider})}\n\n"
+
         for prov in providers:
             try:
                 use_proxy = bool(proxy)

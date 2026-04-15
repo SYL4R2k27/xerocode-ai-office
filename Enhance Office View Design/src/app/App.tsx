@@ -267,7 +267,14 @@ function ChatInterface({
     try {
       let firstChunk = true;
       for await (const ev of api.stream.chat({ goal_id: goalId, prompt: content }, abort.signal)) {
-        if (ev.type === "chunk" && ev.content) {
+        if (ev.type === "meta") {
+          // Real model + source from backend (BYOK or platform)
+          const m = ev as any;
+          messageStore.updateMessage(asstMsgId, {
+            activity: m.source === "byok" ? "Думает (свой ключ)" : "Думает",
+            model: m.model || defaultModel,
+          } as any);
+        } else if (ev.type === "chunk" && ev.content) {
           if (firstChunk) {
             messageStore.updateMessage(asstMsgId, { activity: "Генерирует" } as any);
             firstChunk = false;
