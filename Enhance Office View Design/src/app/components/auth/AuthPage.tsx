@@ -181,25 +181,29 @@ function OAuthButton({
   label: string;
   onClick: () => void;
 }) {
+  // Icon-only circular button (unified look for all providers)
   return (
     <motion.button
       type="button"
       onClick={onClick}
-      className="flex items-center justify-center gap-2.5 w-full rounded-xl px-4 py-2.5 text-[13px] font-medium transition-all duration-200"
+      title={label}
+      aria-label={label}
+      className="flex items-center justify-center rounded-xl transition-all duration-200"
       style={{
+        width: 48,
+        height: 48,
         backgroundColor: "#141416",
         border: "1px solid rgba(255, 255, 255, 0.1)",
         color: "var(--text-secondary)",
       }}
       whileHover={{
-        scale: 1.01,
-        borderColor: "rgba(147,51,234,0.3)",
-        backgroundColor: "rgba(255,255,255,0.03)",
+        scale: 1.05,
+        borderColor: "rgba(147,51,234,0.35)",
+        backgroundColor: "rgba(255,255,255,0.04)",
       }}
-      whileTap={{ scale: 0.98 }}
+      whileTap={{ scale: 0.95 }}
     >
       {icon}
-      {label}
     </motion.button>
   );
 }
@@ -209,7 +213,7 @@ function OAuthButton({
 /* ------------------------------------------------------------------ */
 function GoogleIcon() {
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
       <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4" />
       <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
       <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18A10.97 10.97 0 0 0 1 12c0 1.78.42 3.46 1.18 4.93l3.66-2.84z" fill="#FBBC05" />
@@ -220,7 +224,7 @@ function GoogleIcon() {
 
 function GitHubIcon() {
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
       <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z" />
     </svg>
   );
@@ -228,7 +232,7 @@ function GitHubIcon() {
 
 function YandexIcon() {
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="#FC3F1D">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="#FC3F1D">
       <circle cx="12" cy="12" r="12" />
       <path d="M13.32 18.5h2.18V5.5h-3.16c-3.18 0-4.85 1.64-4.85 4.05 0 1.92 0.92 3.05 2.55 4.21l-2.84 5.74h2.36l3.18-6.34-1.1-0.74c-1.32-0.89-1.96-1.58-1.96-3.06 0-1.3 0.91-2.18 2.66-2.18h0.97v11.32z" fill="#fff"/>
     </svg>
@@ -237,72 +241,83 @@ function YandexIcon() {
 
 function TelegramIcon() {
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
       <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.479.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z" />
     </svg>
   );
 }
 
 /**
- * Telegram Login Widget — renders the official iframe button.
- * Bot username comes from VITE_TELEGRAM_BOT (without @). On success,
- * the widget calls window.onTelegramAuth(payload) which we POST to
- * /api/auth/oauth/telegram/verify; backend validates HMAC and returns JWT.
+ * Custom icon-only Telegram button.
+ * Uses window.Telegram.Login.auth() popup API (не iframe — поэтому можно стилизовать).
+ * Script загружается один раз при mount, кнопка вызывает popup вручную.
  */
-function TelegramLoginButton() {
-  const botUser = (import.meta as any).env?.VITE_TELEGRAM_BOT || "xerocode_login_bot";
-  const apiBase = (import.meta as any).env?.VITE_API_URL || "/api";
-
+function useTelegramLoginScript() {
   useEffect(() => {
-    // Global handler — the widget calls window.onTelegramAuth(user)
-    (window as any).onTelegramAuth = async (user: Record<string, any>) => {
-      try {
-        const res = await fetch(`${apiBase}/auth/oauth/telegram/verify`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(user),
-        });
-        if (!res.ok) {
-          const txt = await res.text();
-          toast.error("Ошибка Telegram", { description: txt.slice(0, 200) });
-          return;
-        }
-        const data = await res.json();
-        if (data.access_token) {
-          localStorage.setItem("ai_office_token", data.access_token);
-          window.location.href = "/";
-        }
-      } catch (e: any) {
-        toast.error("Сетевая ошибка", { description: e?.message || String(e) });
-      }
-    };
+    if (document.querySelector('script[src*="telegram-widget"]')) return;
+    const s = document.createElement("script");
+    s.src = "https://telegram.org/js/telegram-widget.js?22";
+    s.async = true;
+    document.head.appendChild(s);
+  }, []);
+}
 
-    // Inject the official Telegram widget script
-    const container = document.getElementById("telegram-login-container");
-    if (!container) return;
-    container.innerHTML = "";
-    const script = document.createElement("script");
-    script.src = "https://telegram.org/js/telegram-widget.js?22";
-    script.async = true;
-    script.setAttribute("data-telegram-login", botUser);
-    script.setAttribute("data-size", "large");
-    script.setAttribute("data-radius", "12");
-    script.setAttribute("data-onauth", "onTelegramAuth(user)");
-    script.setAttribute("data-request-access", "write");
-    container.appendChild(script);
+function TelegramScriptLoader() {
+  useTelegramLoginScript();
+  return null;
+}
 
-    return () => {
-      try { delete (window as any).onTelegramAuth; } catch {}
-    };
-  }, [botUser, apiBase]);
-
+function TelegramIconButton() {
+  const loginTelegram = useTelegramLogin();
   return (
-    <div
-      id="telegram-login-container"
-      className="flex justify-center min-h-[40px]"
-      style={{ width: "100%" }}
+    <OAuthButton
+      icon={<TelegramIcon />}
+      label="Войти через Telegram"
+      onClick={loginTelegram}
     />
   );
+}
+
+function useTelegramLogin() {
+  // VITE_TELEGRAM_BOT_ID должен быть числовым (префикс токена: 8735486334:AAH... → 8735486334)
+  const botId = (import.meta as any).env?.VITE_TELEGRAM_BOT_ID || "8735486334";
+  const apiBase = (import.meta as any).env?.VITE_API_URL || "/api";
+
+  return useCallback(() => {
+    const Telegram = (window as any).Telegram;
+    if (!Telegram?.Login?.auth) {
+      toast.error("Telegram ещё грузится", { description: "Попробуй через секунду" });
+      return;
+    }
+    Telegram.Login.auth(
+      { bot_id: botId, request_access: "write", lang: "ru" },
+      async (user: any) => {
+        if (!user) {
+          toast.error("Авторизация отменена");
+          return;
+        }
+        try {
+          const res = await fetch(`${apiBase}/auth/oauth/telegram/verify`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(user),
+          });
+          if (!res.ok) {
+            const txt = await res.text();
+            toast.error("Ошибка Telegram", { description: txt.slice(0, 200) });
+            return;
+          }
+          const data = await res.json();
+          if (data.access_token) {
+            localStorage.setItem("ai_office_token", data.access_token);
+            window.location.href = "/";
+          }
+        } catch (e: any) {
+          toast.error("Сетевая ошибка", { description: e?.message || String(e) });
+        }
+      }
+    );
+  }, [botUser, apiBase]);
 }
 
 /* ------------------------------------------------------------------ */
@@ -779,9 +794,10 @@ export function AuthPage({ onLogin, onRegister, loading, error }: AuthPageProps)
               <div className="flex-1 h-px" style={{ backgroundColor: "#2A2A2D" }} />
             </div>
 
-            {/* OAuth */}
+            {/* OAuth — unified icon-only row */}
+            <TelegramScriptLoader />
             <motion.div
-              className="space-y-2.5"
+              className="flex items-center justify-center gap-3"
               initial={false}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.3 }}
@@ -801,7 +817,7 @@ export function AuthPage({ onLogin, onRegister, loading, error }: AuthPageProps)
                 label="Войти через Яндекс"
                 onClick={() => handleOAuth("Yandex")}
               />
-              <TelegramLoginButton />
+              <TelegramIconButton />
             </motion.div>
 
             {/* Switch mode */}
