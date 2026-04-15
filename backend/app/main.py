@@ -8,7 +8,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from app.api.routes import admin, agents, ai_slides, analytics, arena, audit, auth, autoprompt, byok, oauth, calendar_api, channels, companies, connectors, crm, custom_pools, doc_registry, documents, edo, files, goals, google_integration, hr, i18n, knowledge, messages, orchestration, organization, payments, research, slack, stream, tasks, task_templates_api, telegram, templates, voice, workflow
+from app.api.routes import admin, agents, ai_slides, analytics, arena, audit, auth, autoprompt, byok, modes, oauth, calendar_api, channels, companies, connectors, crm, custom_pools, doc_registry, documents, edo, files, goals, google_integration, hr, i18n, knowledge, messages, orchestration, organization, payments, research, slack, stream, tasks, task_templates_api, telegram, templates, voice, workflow
 from app.api.websocket import setup_websocket
 from app.core.config import settings
 from app.core.database import Base, engine, async_session
@@ -146,6 +146,7 @@ app.include_router(connectors.router, prefix="/api")
 app.include_router(stream.router, prefix="/api")
 app.include_router(byok.router, prefix="/api")
 app.include_router(oauth.router, prefix="/api")
+app.include_router(modes.router, prefix="/api")
 app.include_router(companies.router, prefix="/api")
 app.include_router(edo.router, prefix="/api")
 app.include_router(task_templates_api.router, prefix="/api")

@@ -652,6 +652,64 @@ export const api = {
     templateDetail: (id: string) => request<{ label: string; roles: any[] }>(`/org/roles/templates/${id}`),
   },
 
+  // 5 orchestration modes — Manager / Team / Swarm / Auction / XeroCode AI
+  modes: {
+    run: async function* run(
+      body: {
+        mode: "manager" | "team" | "swarm" | "auction" | "xerocode_ai";
+        query: string;
+        main_model?: string;
+        roles?: Array<{ role: string; model?: string }>;
+        pool?: string[];
+        judge_model?: string;
+      },
+      signal?: AbortSignal,
+    ) {
+      const token = localStorage.getItem("ai_office_token") || "";
+      const API_URL = (import.meta as any).env?.VITE_API_URL || "/api";
+      const res = await fetch(`${API_URL}/modes/run`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify(body),
+        signal,
+      });
+      if (!res.ok || !res.body) {
+        const text = await res.text().catch(() => "");
+        throw new Error(text || `HTTP ${res.status}`);
+      }
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const parts = buffer.split("\n\n");
+        buffer = parts.pop() || "";
+        for (const part of parts) {
+          const line = part.replace(/^data:\s?/, "").trim();
+          if (!line) continue;
+          try {
+            yield JSON.parse(line);
+          } catch {}
+        }
+      }
+    },
+    cancel: (task_id: string) =>
+      request<{ cancelled: boolean }>("/modes/cancel", {
+        method: "POST",
+        body: JSON.stringify({ task_id }),
+      }),
+    override: (task_id: string, message: string) =>
+      request<{ ok: boolean }>("/modes/override", {
+        method: "POST",
+        body: JSON.stringify({ task_id, message }),
+      }),
+  },
+
   // Streaming AI (SSE)
   stream: {
     /**

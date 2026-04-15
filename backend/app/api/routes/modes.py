@@ -1,0 +1,260 @@
+"""API для 5 режимов оркестрации (Manager/Team/Swarm/Auction/XeroCode AI).
+
+POST /api/modes/run       — запустить DAG для запроса, SSE-стрим прогресса и результата
+POST /api/modes/cancel    — отменить текущий запуск (через task_id)
+"""
+from __future__ import annotations
+
+import asyncio
+import json
+import logging
+import uuid
+from typing import Optional
+
+import httpx
+from fastapi import APIRouter, Depends, HTTPException
+from fastapi.responses import StreamingResponse
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.core.ai_key_resolver import resolve_key
+from app.core.auth import get_current_user
+from app.core.config import settings
+from app.core.database import get_db
+from app.core.subscription import check_subscription_limits
+from app.services.dag_orchestrator import (
+    DAGContext,
+    NodeStatus,
+    build_auction_dag,
+    build_manager_dag,
+    build_swarm_dag,
+    build_team_dag,
+    build_xerocode_dag,
+    run_dag,
+    MAX_TOKENS_PER_TASK,
+    TASK_TIMEOUT_SEC,
+)
+
+logger = logging.getLogger(__name__)
+router = APIRouter(prefix="/modes", tags=["modes"])
+
+# In-memory task registry for cancellation (prod → Redis)
+_active_tasks: dict[str, DAGContext] = {}
+
+VALID_MODES = {"manager", "team", "swarm", "auction", "xerocode_ai"}
+
+
+def _provider_from_model(model: str) -> str:
+    """Infer provider from model name for the key resolver."""
+    m = (model or "").lower()
+    if "claude" in m:
+        return "anthropic"
+    if m.startswith("gpt") or "openai" in m:
+        return "openai"
+    if "gemini" in m or "google" in m:
+        return "google"
+    if "llama" in m or "groq" in m:
+        return "groq"
+    return "openrouter"
+
+
+async def make_ai_caller(db: AsyncSession, user):
+    """Closure: AI-вызов с BYOK/plan gates через resolver."""
+    proxy = getattr(settings, "api_proxy", None)
+
+    async def _call(system_prompt: str, user_prompt: str, model: str | None, max_tokens: int = 4000):
+        target_model = model or "llama-3.3-70b-versatile"
+        provider = _provider_from_model(target_model)
+        try:
+            resolved = await resolve_key(db, user, provider, target_model)
+        except HTTPException as e:
+            # No key → empty response, DAG treats as failure
+            return (f"[{provider} недоступен: {e.detail}]", 0, 0.0)
+
+        url = "https://openrouter.ai/api/v1/chat/completions"
+        model_for_api = target_model
+        if resolved.source == "byok" and provider == "groq":
+            url = "https://api.groq.com/openai/v1/chat/completions"
+        elif resolved.source == "platform" and provider != "groq" and provider != "openrouter":
+            model_for_api = f"{provider}/{target_model}"
+        elif provider == "groq":
+            url = "https://api.groq.com/openai/v1/chat/completions"
+
+        transport = httpx.AsyncHTTPTransport(proxy=proxy) if proxy else None
+        async with httpx.AsyncClient(transport=transport, timeout=60) as client:
+            resp = await client.post(
+                url,
+                headers={
+                    "Authorization": f"Bearer {resolved.key}",
+                    "Content-Type": "application/json",
+                    "HTTP-Referer": "https://xerocode.ru",
+                },
+                json={
+                    "model": model_for_api,
+                    "messages": [
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": user_prompt},
+                    ],
+                    "max_tokens": max_tokens,
+                    "temperature": 0.5,
+                },
+            )
+            if resp.status_code != 200:
+                return (f"[HTTP {resp.status_code}]", 0, 0.0)
+            data = resp.json()
+            content = data.get("choices", [{}])[0].get("message", {}).get("content", "")
+            tokens = data.get("usage", {}).get("total_tokens", 0)
+            return (content, tokens, 0.0)
+
+    return _call
+
+
+def _build_dag(body: dict):
+    """Factory — строит DAG для выбранного режима."""
+    mode = body.get("mode", "xerocode_ai")
+    query = body["query"]
+    if mode == "manager":
+        return mode, build_manager_dag(query, body.get("main_model", "anthropic/claude-sonnet-4"))
+    elif mode == "team":
+        return mode, build_team_dag(query, body.get("roles", [
+            {"role": "architect", "model": "anthropic/claude-sonnet-4"},
+            {"role": "executor", "model": "deepseek/deepseek-chat"},
+            {"role": "reviewer", "model": "anthropic/claude-sonnet-4"},
+        ]))
+    elif mode == "swarm":
+        return mode, build_swarm_dag(
+            query,
+            body.get("pool", ["anthropic/claude-sonnet-4", "openai/gpt-4o", "google/gemini-2.5-pro"]),
+            body.get("judge_model", "anthropic/claude-sonnet-4"),
+        )
+    elif mode == "auction":
+        return mode, build_auction_dag(
+            query,
+            body.get("pool", ["anthropic/claude-sonnet-4", "openai/gpt-4o", "deepseek/deepseek-chat"]),
+            body.get("judge_model", "anthropic/claude-sonnet-4"),
+        )
+    elif mode == "xerocode_ai":
+        return mode, build_xerocode_dag(query)
+    else:
+        raise HTTPException(400, f"Unknown mode: {mode}. Valid: {VALID_MODES}")
+
+
+@router.post("/run")
+async def run_mode(
+    body: dict,
+    user=Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Запустить один из 5 режимов. Стримит прогресс + финал через SSE.
+
+    Body: {mode, query, main_model?, roles?, pool?, judge_model?}
+    """
+    check_subscription_limits(user, "create_task")
+
+    query = (body.get("query") or "").strip()
+    if not query:
+        raise HTTPException(400, "query required")
+
+    mode, nodes = _build_dag(body)
+
+    task_id = str(uuid.uuid4())
+    context = DAGContext(
+        task_id=task_id,
+        user_id=str(user.id),
+        mode=mode,
+        user_query=query,
+    )
+    _active_tasks[task_id] = context
+
+    async def event_stream():
+        # Handshake
+        yield f"data: {json.dumps({'type': 'start', 'task_id': task_id, 'mode': mode, 'nodes': [n.id for n in nodes]})}\n\n"
+
+        try:
+            ai_call = await make_ai_caller(db, user)
+
+            async def on_progress(node_id: str, status: NodeStatus):
+                # (Нельзя yield напрямую из callback — складываем в очередь.)
+                await queue.put({"type": "node_status", "node_id": node_id, "status": status.value})
+
+            queue: asyncio.Queue = asyncio.Queue()
+
+            # Run DAG в фоне, стримим прогресс через queue
+            async def runner():
+                try:
+                    await run_dag(context, nodes, ai_call, on_progress=on_progress)
+                finally:
+                    await queue.put(None)  # sentinel
+
+            task = asyncio.create_task(runner())
+
+            while True:
+                item = await queue.get()
+                if item is None:
+                    break
+                yield f"data: {json.dumps(item)}\n\n"
+
+            await task  # propagate exceptions if any
+
+            # Final aggregation — зависит от режима
+            final = _extract_final_result(context, mode, nodes)
+            yield f"data: {json.dumps({'type': 'done', 'task_id': task_id, 'result': final, 'total_tokens': context.total_tokens, 'duration_sec': context.elapsed_sec()})}\n\n"
+
+        except Exception as e:
+            logger.error(f"[Modes] Error: {e}", exc_info=True)
+            yield f"data: {json.dumps({'type': 'error', 'message': str(e)[:200]})}\n\n"
+        finally:
+            _active_tasks.pop(task_id, None)
+
+    return StreamingResponse(
+        event_stream(),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+    )
+
+
+def _extract_final_result(context: DAGContext, mode: str, nodes) -> str:
+    """Вытащить финальный результат по режиму."""
+    if mode == "manager":
+        r = context.results.get("manager")
+        return r.output if r and r.output else "(нет ответа)"
+    elif mode == "team":
+        # последний узел в pipeline
+        last_node = nodes[-1]
+        r = context.results.get(last_node.id)
+        return r.output if r and r.output else "(нет ответа)"
+    elif mode == "swarm":
+        r = context.results.get("swarm_judge")
+        return r.output if r and r.output else "(судья не ответил)"
+    elif mode == "auction":
+        r = context.results.get("auction_winner")
+        return r.output if r and r.output else "(победитель аукциона не ответил)"
+    elif mode == "xerocode_ai":
+        r = context.results.get("xc_voice")
+        return r.output if r and r.output else "(голос не сработал)"
+    return "(?)"
+
+
+@router.post("/cancel")
+async def cancel_mode(body: dict, user=Depends(get_current_user)):
+    task_id = body.get("task_id")
+    ctx = _active_tasks.get(task_id)
+    if not ctx:
+        return {"cancelled": False, "reason": "not found"}
+    if ctx.user_id != str(user.id):
+        raise HTTPException(403, "not your task")
+    ctx.cancelled = True
+    return {"cancelled": True}
+
+
+@router.post("/override")
+async def override_mode(body: dict, user=Depends(get_current_user)):
+    """User override — текущий запуск получает подсказку/перенаправление."""
+    task_id = body.get("task_id")
+    message = (body.get("message") or "").strip()
+    ctx = _active_tasks.get(task_id)
+    if not ctx:
+        return {"ok": False, "reason": "not found"}
+    if ctx.user_id != str(user.id):
+        raise HTTPException(403, "not your task")
+    ctx.user_override = message
+    return {"ok": True}
