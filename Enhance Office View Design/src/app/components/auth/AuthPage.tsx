@@ -328,9 +328,17 @@ export function AuthPage({ onLogin, onRegister, loading, error }: AuthPageProps)
   };
 
   const handleOAuth = (provider: string) => {
-    toast("Скоро!", {
-      description: `Вход через ${provider} будет доступен в ближайшее время`,
-    });
+    const slug = provider.toLowerCase();
+    if (slug === "telegram") {
+      toast("Telegram", {
+        description: "Используйте виджет — он появится после настройки бота",
+      });
+      return;
+    }
+    // Redirect through backend OAuth start endpoint; backend will redirect us back
+    // to /auth/callback#token=<jwt> after provider consent.
+    const apiBase = (import.meta as any).env?.VITE_API_URL || "/api";
+    window.location.href = `${apiBase}/auth/oauth/${slug}`;
   };
 
   /* ---------------------------------------------------------------- */

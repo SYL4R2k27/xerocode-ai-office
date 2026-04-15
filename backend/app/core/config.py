@@ -50,6 +50,14 @@ class Settings(BaseSettings):
     sentry_dsn: str | None = None
     sentry_environment: str = "production"
 
+    # OAuth
+    oauth_redirect_base: str = "https://xerocode.ru"  # frontend redirect target after callback
+    google_client_id: str | None = None
+    google_client_secret: str | None = None
+    github_client_id: str | None = None
+    github_client_secret: str | None = None
+    telegram_bot_token: str | None = None  # for Telegram Login Widget verification
+
     model_config = {"env_file": ".env", "extra": "ignore"}
 
     @model_validator(mode="after")

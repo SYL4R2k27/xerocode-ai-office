@@ -526,6 +526,26 @@ export default function App() {
   // Mobile detection
   const isMobileApp = useMediaQuery("(max-width: 767px)");
 
+  // OAuth callback: extract token from URL fragment after redirect.
+  useEffect(() => {
+    const path = window.location.pathname;
+    const hash = window.location.hash;
+    if (path === "/auth/callback" || hash.startsWith("#token=")) {
+      const m = hash.match(/token=([^&]+)/);
+      if (m && m[1]) {
+        localStorage.setItem("ai_office_token", decodeURIComponent(m[1]));
+        window.history.replaceState({}, "", "/");
+        authStore.loadUser();
+      }
+    }
+    // Show OAuth error toast if backend redirected with ?oauth_error=
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("oauth_error")) {
+      console.warn("OAuth error:", params.get("oauth_error"));
+      window.history.replaceState({}, "", "/");
+    }
+  }, []);
+
   // Keyboard shortcuts (must be before any early returns per React hooks rules)
   useKeyboardShortcuts({
     onCloseModal: () => {
