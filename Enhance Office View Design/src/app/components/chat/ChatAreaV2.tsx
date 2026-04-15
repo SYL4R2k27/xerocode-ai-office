@@ -256,7 +256,8 @@ export function ChatAreaV2({
 
       {/* ── Header ── 2 zones: primary controls (left) + meta actions (right) */}
       <div
-        className="flex items-center gap-2 px-4 h-12 flex-shrink-0 overflow-x-auto"
+        className="flex items-center gap-2 px-4 h-12 flex-shrink-0"
+        /* NO overflow — иначе абсолютно-позиционированные dropdown'ы клипаются */
         style={{ borderBottom: "1px solid var(--border-default)", backgroundColor: "var(--bg-surface)" }}
       >
         {/* LEFT: Mode selector + Team picker — primary controls cluster */}

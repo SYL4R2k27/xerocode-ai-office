@@ -60,13 +60,13 @@ export function ModeSelector({ value, onChange }: ModeSelectorProps) {
       <AnimatePresence>
         {open && (
           <>
-            <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
+            <div className="fixed inset-0 z-[80]" onClick={() => setOpen(false)} />
             <motion.div
               initial={{ opacity: 0, y: -8 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.15 }}
-              className="absolute top-full mt-1 z-50 w-[min(320px,calc(100vw-32px))] rounded-xl overflow-hidden"
+              className="absolute top-full mt-1 z-[90] w-[min(320px,calc(100vw-32px))] rounded-xl overflow-hidden"
               style={{
                 ...(alignRight ? { right: 0 } : { left: 0 }),
                 backgroundColor: "var(--bg-surface)",
