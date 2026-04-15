@@ -21,6 +21,7 @@ import { KnowledgePage } from "./components/corporate/KnowledgePage";
 import { ResearchPage } from "./components/corporate/ResearchPage";
 import { CalendarPage } from "./components/corporate/CalendarPage";
 import { ChannelsPage } from "./components/corporate/ChannelsPage";
+import { AdminTrainingPage } from "./components/admin/AdminTrainingPage";
 import { DocumentRegistryPage } from "./components/corporate/DocumentRegistryPage";
 import { HRPage } from "./components/corporate/HRPage";
 import { AnalyticsPage } from "./components/corporate/AnalyticsPage";
@@ -779,6 +780,7 @@ export default function App() {
           professionalRole={(user as any).professional_role}
           professionalRoleLabel={(user as any).professional_role_label}
           userModules={(user as any).modules}
+          isAdmin={isAdmin}
           onLogout={authStore.logout}
           onFocusMode={() => setFocusMode(true)}
         >
@@ -889,6 +891,10 @@ export default function App() {
               userEmail={user?.email}
               onLogout={authStore.logout}
             />
+          )}
+
+          {corporatePage === "admin_training" && isAdmin && (
+            <AdminTrainingPage />
           )}
 
           {/* AI Copilot floating widget */}

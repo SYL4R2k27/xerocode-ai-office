@@ -34,13 +34,14 @@ import {
 import { CorporateBackground } from "./CorporateBackground";
 import { BackgroundPicker } from "./BackgroundPicker";
 
-export type CorporatePage = "dashboard" | "chat" | "crm" | "kanban" | "gantt" | "team" | "reports" | "workflows" | "documents" | "skills" | "knowledge" | "research" | "channels" | "calendar" | "hr" | "doc_registry" | "analytics" | "integrations" | "edo" | "settings";
+export type CorporatePage = "dashboard" | "chat" | "crm" | "kanban" | "gantt" | "team" | "reports" | "workflows" | "documents" | "skills" | "knowledge" | "research" | "channels" | "calendar" | "hr" | "doc_registry" | "analytics" | "integrations" | "edo" | "settings" | "admin_training";
 
 interface NavItem {
   id: CorporatePage;
   icon: React.ElementType;
   label: string;
   group: "main" | "work" | "ai" | "admin";
+  adminOnly?: boolean;
 }
 
 const ALL_NAV_ITEMS: NavItem[] = [
@@ -64,6 +65,7 @@ const ALL_NAV_ITEMS: NavItem[] = [
   { id: "team", icon: Users, label: "Команда", group: "admin" },
   { id: "reports", icon: BarChart3, label: "Отчёты", group: "admin" },
   { id: "settings", icon: Settings, label: "Настройки", group: "admin" },
+  { id: "admin_training", icon: BarChart3, label: "Training Data", group: "admin", adminOnly: true },
 ];
 
 const GROUP_LABELS: Record<string, string> = {
@@ -94,6 +96,7 @@ const PAGE_LABELS: Record<CorporatePage, string> = {
   team: "Команда",
   reports: "Отчёты",
   settings: "Настройки",
+  admin_training: "🔬 Training Dataset",
 };
 
 interface CorporateLayoutProps {
@@ -105,6 +108,7 @@ interface CorporateLayoutProps {
   professionalRole?: string;
   professionalRoleLabel?: string;
   userModules?: string[];
+  isAdmin?: boolean;
   onLogout: () => void;
   onFocusMode?: () => void;
   children: React.ReactNode;
@@ -119,6 +123,7 @@ export function CorporateLayout({
   professionalRole,
   professionalRoleLabel,
   userModules,
+  isAdmin = false,
   onLogout,
   onFocusMode,
   children,
@@ -128,9 +133,10 @@ export function CorporateLayout({
   const [searchOpen, setSearchOpen] = useState(false);
 
   // Filter sidebar by user's modules (from professional role)
-  const filteredNav = userModules && userModules.length > 0
+  const baseNav = userModules && userModules.length > 0
     ? ALL_NAV_ITEMS.filter(item => userModules.includes(item.id))
     : ALL_NAV_ITEMS;
+  const filteredNav = baseNav.filter(item => !item.adminOnly || isAdmin);
 
   // Group items
   const groups = ["main", "work", "ai", "admin"]

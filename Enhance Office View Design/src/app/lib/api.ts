@@ -654,13 +654,22 @@ export const api = {
     templateDetail: (id: string) => request<{ label: string; roles: any[] }>(`/org/roles/templates/${id}`),
   },
 
-  // Training feedback
+  // Training feedback + admin
   training: {
     rate: (log_id: string, rating: 1 | -1, comment?: string) =>
       request<{ ok: boolean }>("/training/rate", {
         method: "POST",
         body: JSON.stringify({ log_id, rating, comment }),
       }),
+    stats: () => request<any>("/training/stats"),
+    logs: (page = 1, page_size = 50, mode?: string, rating?: number) => {
+      const params = new URLSearchParams({ page: String(page), page_size: String(page_size) });
+      if (mode) params.set("mode", mode);
+      if (rating !== undefined) params.set("rating", String(rating));
+      return request<any>(`/training/logs?${params.toString()}`);
+    },
+    exportUrl: (rated_only = true, positive_only = false) =>
+      `/api/training/export?rated_only=${rated_only}&positive_only=${positive_only}`,
   },
 
   // 5 orchestration modes — Manager / Team / Swarm / Auction / XeroCode AI
