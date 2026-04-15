@@ -102,7 +102,14 @@ const plans = [
 /* ------------------------------------------------------------------ */
 /*  ProfileSettings Component                                          */
 /* ------------------------------------------------------------------ */
+function useIsMobile(): boolean {
+  // Read once on mount; sufficient for modal lifetime
+  if (typeof window === "undefined") return false;
+  return window.matchMedia("(max-width: 767px)").matches;
+}
+
 export function ProfileSettings({ user, open, onClose, onUserUpdate, onOpenPricing }: ProfileSettingsProps) {
+  const isMobile = useIsMobile();
   const [activeTab, setActiveTab] = useState("profile");
 
   // Profile state
@@ -752,7 +759,7 @@ export function ProfileSettings({ user, open, onClose, onUserUpdate, onOpenPrici
     <AnimatePresence>
       {open && (
         <motion.div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          className={`fixed inset-0 z-50 flex justify-center ${isMobile ? "items-end p-0" : "items-center p-4"}`}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -770,15 +777,20 @@ export function ProfileSettings({ user, open, onClose, onUserUpdate, onOpenPrici
 
           {/* Modal */}
           <motion.div
-            className="relative w-full max-w-[560px] max-h-[85vh] rounded-2xl overflow-hidden flex flex-col"
+            className={`relative w-full ${isMobile ? "max-w-full max-h-[92vh] rounded-t-3xl rounded-b-none" : "max-w-[560px] max-h-[85vh] rounded-2xl"} overflow-hidden flex flex-col`}
             style={{
               backgroundColor: "#1C1C1E",
               border: "1px solid #2A2A2D",
               boxShadow: "0 25px 50px -12px rgba(0,0,0,0.5)",
+              paddingBottom: isMobile ? "var(--safe-bottom)" : undefined,
             }}
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+            initial={isMobile ? { y: "100%" } : { opacity: 0, scale: 0.95, y: 20 }}
+            animate={isMobile ? { y: 0 } : { opacity: 1, scale: 1, y: 0 }}
+            exit={isMobile ? { y: "100%" } : { opacity: 0, scale: 0.95, y: 20 }}
+            drag={isMobile ? "y" : false}
+            dragConstraints={{ top: 0, bottom: 0 }}
+            dragElastic={{ top: 0, bottom: 0.4 }}
+            onDragEnd={isMobile ? (_, info) => { if (info.offset.y > 100 || info.velocity.y > 500) onClose(); } : undefined}
             transition={{ type: "spring", stiffness: 350, damping: 30 }}
           >
             {/* Header */}

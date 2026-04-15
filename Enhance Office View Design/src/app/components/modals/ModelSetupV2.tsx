@@ -5,8 +5,21 @@
  * Block 3: Our Models (by provider, accordion)
  * Block 4: Custom Pools (user-built teams)
  */
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useSyncExternalStore } from "react";
 import { motion, AnimatePresence } from "motion/react";
+import { BottomSheet } from "../layout/BottomSheet";
+
+function useIsMobile(): boolean {
+  return useSyncExternalStore(
+    (cb) => {
+      const mql = window.matchMedia("(max-width: 767px)");
+      mql.addEventListener("change", cb);
+      return () => mql.removeEventListener("change", cb);
+    },
+    () => window.matchMedia("(max-width: 767px)").matches,
+    () => false,
+  );
+}
 import {
   X, Key, Users, Bot, Wrench, Search, Plus, Trash2, Check,
   ChevronDown, ChevronRight, Loader2, Zap, Shield, Star,
@@ -217,16 +230,36 @@ export function ModelSetupV2({ agents, onAddAgent, onRemoveAgent, onClose }: Mod
     }
   };
 
+  const isMobile = useIsMobile();
+
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4" style={{ backgroundColor: "rgba(0,0,0,0.7)" }} onClick={onClose}>
+    <div
+      className={`fixed inset-0 z-[60] flex justify-center ${isMobile ? "items-end p-0" : "items-center p-4"}`}
+      style={{ backgroundColor: "rgba(0,0,0,0.7)", backdropFilter: isMobile ? "blur(6px)" : undefined }}
+      onClick={onClose}
+    >
       <motion.div
-        initial={{ scale: 0.95, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        exit={{ scale: 0.95, opacity: 0 }}
-        className="w-full max-w-[700px] max-h-[85vh] rounded-2xl overflow-hidden flex flex-col"
-        style={{ backgroundColor: "var(--bg-surface)", border: "1px solid var(--border-default)" }}
+        initial={isMobile ? { y: "100%" } : { scale: 0.95, opacity: 0 }}
+        animate={isMobile ? { y: 0 } : { scale: 1, opacity: 1 }}
+        exit={isMobile ? { y: "100%" } : { scale: 0.95, opacity: 0 }}
+        transition={isMobile ? { type: "spring", stiffness: 320, damping: 32 } : undefined}
+        drag={isMobile ? "y" : false}
+        dragConstraints={{ top: 0, bottom: 0 }}
+        dragElastic={{ top: 0, bottom: 0.4 }}
+        onDragEnd={isMobile ? (_, info) => { if (info.offset.y > 100 || info.velocity.y > 500) onClose(); } : undefined}
+        className={`w-full ${isMobile ? "max-w-full max-h-[92vh] rounded-t-3xl rounded-b-none" : "max-w-[700px] max-h-[85vh] rounded-2xl"} overflow-hidden flex flex-col`}
+        style={{
+          backgroundColor: "var(--bg-surface)",
+          border: "1px solid var(--border-default)",
+          paddingBottom: isMobile ? "var(--safe-bottom)" : undefined,
+        }}
         onClick={e => e.stopPropagation()}
       >
+        {isMobile && (
+          <div className="flex justify-center pt-3 pb-1 cursor-grab active:cursor-grabbing">
+            <div className="w-10 h-1 rounded-full" style={{ backgroundColor: "var(--border-default)" }} />
+          </div>
+        )}
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 flex-shrink-0" style={{ borderBottom: "1px solid var(--border-default)" }}>
           <h2 className="text-lg font-bold" style={{ color: "var(--text-primary)" }}>Управление моделями</h2>
