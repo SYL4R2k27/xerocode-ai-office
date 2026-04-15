@@ -57,6 +57,8 @@ class Settings(BaseSettings):
     github_client_id: str | None = None
     github_client_secret: str | None = None
     telegram_bot_token: str | None = None  # for Telegram Login Widget verification
+    yandex_client_id: str | None = None
+    yandex_client_secret: str | None = None
 
     model_config = {"env_file": ".env", "extra": "ignore"}
 

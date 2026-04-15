@@ -220,6 +220,69 @@ async def github_callback(
         return _frontend_redirect(None, "server_error")
 
 
+# ── Yandex ───────────────────────────────────────────────────────────
+
+
+@router.get("/yandex")
+async def yandex_start(request: Request):
+    if not settings.yandex_client_id:
+        raise HTTPException(503, "Yandex OAuth not configured")
+    state = secrets.token_urlsafe(24)
+    params = {
+        "response_type": "code",
+        "client_id": settings.yandex_client_id,
+        "redirect_uri": _redirect_uri(request, "yandex"),
+        "state": state,
+        "force_confirm": "no",
+    }
+    return RedirectResponse(
+        f"https://oauth.yandex.ru/authorize?{urlencode(params)}", status_code=302
+    )
+
+
+@router.get("/yandex/callback")
+async def yandex_callback(
+    request: Request,
+    code: str | None = Query(None),
+    error: str | None = Query(None),
+    db: AsyncSession = Depends(get_db),
+):
+    if error or not code:
+        return _frontend_redirect(None, error or "no_code")
+    try:
+        async with await _httpx_client() as client:
+            tok_res = await client.post(
+                "https://oauth.yandex.ru/token",
+                data={
+                    "grant_type": "authorization_code",
+                    "code": code,
+                    "client_id": settings.yandex_client_id,
+                    "client_secret": settings.yandex_client_secret,
+                },
+            )
+            tok_res.raise_for_status()
+            access = tok_res.json().get("access_token")
+            if not access:
+                return _frontend_redirect(None, "no_access_token")
+
+            uinfo = await client.get(
+                "https://login.yandex.ru/info?format=json",
+                headers={"Authorization": f"OAuth {access}"},
+            )
+            uinfo.raise_for_status()
+            data = uinfo.json()
+        email = data.get("default_email") or data.get("emails", [None])[0]
+        name = data.get("real_name") or data.get("display_name") or data.get("login") or "Yandex User"
+        if not email:
+            return _frontend_redirect(None, "no_email")
+        user = await _find_or_create_user(db, email=email, name=name)
+        token = create_access_token(str(user.id), user.email, user.plan or "free")
+        return _frontend_redirect(token)
+    except Exception as e:
+        logger.error(f"[OAuth Yandex] {e}", exc_info=True)
+        return _frontend_redirect(None, "server_error")
+
+
 # ── Telegram Login Widget ────────────────────────────────────────────
 
 

@@ -226,6 +226,15 @@ function GitHubIcon() {
   );
 }
 
+function YandexIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="#FC3F1D">
+      <circle cx="12" cy="12" r="12" />
+      <path d="M13.32 18.5h2.18V5.5h-3.16c-3.18 0-4.85 1.64-4.85 4.05 0 1.92 0.92 3.05 2.55 4.21l-2.84 5.74h2.36l3.18-6.34-1.1-0.74c-1.32-0.89-1.96-1.58-1.96-3.06 0-1.3 0.91-2.18 2.66-2.18h0.97v11.32z" fill="#fff"/>
+    </svg>
+  );
+}
+
 function TelegramIcon() {
   return (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
@@ -786,6 +795,11 @@ export function AuthPage({ onLogin, onRegister, loading, error }: AuthPageProps)
                 icon={<GitHubIcon />}
                 label="Войти через GitHub"
                 onClick={() => handleOAuth("GitHub")}
+              />
+              <OAuthButton
+                icon={<YandexIcon />}
+                label="Войти через Яндекс"
+                onClick={() => handleOAuth("Yandex")}
               />
               <TelegramLoginButton />
             </motion.div>
