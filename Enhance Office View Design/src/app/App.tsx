@@ -3,6 +3,8 @@ import { SidebarV2 } from "./components/layout/SidebarV2";
 import { ChatAreaV2 } from "./components/chat/ChatAreaV2";
 import { ContextPanelV2 } from "./components/layout/ContextPanelV2";
 import { ModelSetupV2 } from "./components/modals/ModelSetupV2";
+import { BottomNavV2 } from "./components/layout/BottomNavV2";
+import { MobileDrawer } from "./components/layout/MobileDrawer";
 import { ProfileSettings } from "./components/modals/ProfileSettings";
 import { PricingPage } from "./components/modals/PricingPage";
 import { AuthPage } from "./components/auth/AuthPage";
@@ -100,6 +102,8 @@ function ChatInterface({
   // Responsive
   const isMobile = useMediaQuery("(max-width: 767px)");
   const [contextPanelOpen, setContextPanelOpen] = useState(false);
+  const [mobileTab, setMobileTab] = useState<"chat" | "history" | "models" | "profile">("chat");
+  const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
 
   // Initial data load
   useEffect(() => {
@@ -393,6 +397,60 @@ function ChatInterface({
               previewLanguage={previewLanguage}
             />
           </div>
+
+          {/* Mobile bottom nav + sidebar drawer */}
+          {isMobile && (
+            <>
+              <div style={{ paddingBottom: "calc(64px + var(--safe-bottom))" }} />
+              <BottomNavV2
+                activeTab={mobileTab}
+                onTabChange={(tab) => {
+                  setMobileTab(tab);
+                  if (tab === "history") setMobileDrawerOpen(true);
+                  else if (tab === "models") setShowModelSetup(true);
+                  else if (tab === "profile") setShowProfileSettings(true);
+                }}
+                onNewChat={() => {
+                  setArenaMode(null);
+                  goalStore.setActiveGoal(null as any);
+                  messageStore.setMessages([]);
+                  taskStore.setTasks?.([]);
+                }}
+              />
+              <MobileDrawer open={mobileDrawerOpen} onClose={() => { setMobileDrawerOpen(false); setMobileTab("chat"); }}>
+                <SidebarV2
+                  goals={goalStore.goals.map(g => ({ id: g.id, title: g.title, status: g.status, created_at: g.created_at || "" }))}
+                  activeGoalId={goalStore.activeGoal?.id || null}
+                  onSelectGoal={(id) => {
+                    setArenaMode(null);
+                    const g = goalStore.goals.find(g => g.id === id);
+                    if (g) goalStore.setActiveGoal(g);
+                    setMobileDrawerOpen(false);
+                    setMobileTab("chat");
+                  }}
+                  onNewChat={() => {
+                    setArenaMode(null);
+                    goalStore.setActiveGoal(null as any);
+                    messageStore.setMessages([]);
+                    taskStore.setTasks?.([]);
+                    setMobileDrawerOpen(false);
+                    setMobileTab("chat");
+                  }}
+                  userName={authStore.user?.name || "User"}
+                  userPlan={authStore.user?.plan || "free"}
+                  onSettings={() => { setShowProfileSettings(true); setMobileDrawerOpen(false); }}
+                  onPricing={() => { setShowPricing(true); setMobileDrawerOpen(false); }}
+                  onLogout={authStore.logout}
+                  onArena={() => { setArenaMode(arenaMode ? null : "battle"); setMobileDrawerOpen(false); }}
+                  collapsed={false}
+                  onToggleCollapse={() => {}}
+                  connected={ws.connected}
+                  toggleTheme={toggleTheme}
+                  resolvedTheme={resolvedTheme}
+                />
+              </MobileDrawer>
+            </>
+          )}
         </div>
 
       {/* Model Setup Modal */}
@@ -401,7 +459,7 @@ function ChatInterface({
           agents={agentStore.agents}
           onAddAgent={agentStore.addAgent}
           onRemoveAgent={agentStore.removeAgent}
-          onClose={() => { setShowModelSetup(false); agentStore.fetchAgents(); }}
+          onClose={() => { setShowModelSetup(false); setMobileTab("chat"); agentStore.fetchAgents(); }}
         />
       )}
 
@@ -409,7 +467,7 @@ function ChatInterface({
       <ProfileSettings
         user={authStore.user!}
         open={showProfileSettings}
-        onClose={() => setShowProfileSettings(false)}
+        onClose={() => { setShowProfileSettings(false); setMobileTab("chat"); }}
         onUserUpdate={() => {
           authStore.loadUser();
         }}
