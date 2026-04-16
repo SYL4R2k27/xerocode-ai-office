@@ -875,6 +875,9 @@ function ComparisonSection() {
     { feature: "Работает в РФ без VPN",               xc: "yes", bh: "yes", gc: "yes", ct: "no"  },
     { feature: "Оплата российскими картами",          xc: "yes", bh: "yes", gc: "yes", ct: "no"  },
     { feature: "CRM встроенная",                      xc: "yes", bh: "no",  gc: "no",  ct: "no"  },
+    { feature: "CLI для терминала",                   xc: "yes", bh: "no",  gc: "no",  ct: "no"  },
+    { feature: "Pipe-friendly (stdin + JSON)",        xc: "yes", bh: "no",  gc: "no",  ct: "no"  },
+    { feature: "OS keychain для ключей",              xc: "yes", bh: "no",  gc: "no",  ct: "no"  },
     { feature: "Цена / мес",                          xc: "1 990 ₽", bh: "1 490 ₽", gc: "2 500 ₽", ct: "≈2 000 ₽ (+VPN)" },
   ];
 
@@ -995,7 +998,7 @@ const PAGE_LABELS: Record<string, string> = {
   features: "Возможности",
   arena: "Арена",
   business: "Бизнесу",
-  agent: "Агент",
+  agent: "Терминал",
   faq: "FAQ",
   about: "О нас",
   terms: "Оферта",
@@ -1007,7 +1010,7 @@ const MAIN_NAV: Array<{ label: string; page: SubPage }> = [
   { label: "Возможности", page: "features" },
   { label: "Арена", page: "arena" },
   { label: "Бизнесу", page: "business" },
-  { label: "Агент", page: "agent" },
+  { label: "Терминал", page: "agent" },
   { label: "FAQ", page: "faq" },
   { label: "О нас", page: "about" },
 ];
@@ -1223,12 +1226,51 @@ function DynamicHeader({ currentPage, onLogin, onNavigate }: {
 function Footer({ onNavigate }: { onNavigate: (page: SubPage) => void }) {
   return (
     <footer className="relative z-10 border-t border-white/[0.04] mt-8">
-      <div className="max-w-[1440px] mx-auto px-6 md:px-16 py-8 flex flex-col md:flex-row items-center justify-between gap-4 text-white/20 text-xs">
-        <div>© 2026 XeroCode — Тирских В.С. · ИНН 503015361714</div>
-        <div className="flex items-center gap-4">
-          <a href="mailto:support@xerocode.space" className="hover:text-white/40 transition-colors">support@xerocode.space</a>
-          <button onClick={() => onNavigate("terms")} className="underline hover:text-white/40 transition-colors">Оферта</button>
-          <button onClick={() => onNavigate("privacy")} className="underline hover:text-white/40 transition-colors">Конфиденциальность</button>
+      <div className="max-w-[1440px] mx-auto px-6 md:px-16 py-8 flex flex-col gap-4">
+        {/* Top row: developer links */}
+        <div className="flex flex-wrap items-center justify-center md:justify-start gap-x-5 gap-y-2 text-white/30 text-xs">
+          <a
+            href="https://www.npmjs.com/package/xerocode-cli"
+            target="_blank"
+            rel="noreferrer"
+            className="hover:text-white/70 transition-colors inline-flex items-center gap-1.5"
+          >
+            npm · xerocode-cli
+          </a>
+          <span className="text-white/10">·</span>
+          <a
+            href="https://github.com/SYL4R2k27/xerocode-ai-office"
+            target="_blank"
+            rel="noreferrer"
+            className="hover:text-white/70 transition-colors"
+          >
+            GitHub
+          </a>
+          <span className="text-white/10">·</span>
+          <a
+            href="https://github.com/SYL4R2k27/homebrew-tap"
+            target="_blank"
+            rel="noreferrer"
+            className="hover:text-white/70 transition-colors"
+          >
+            Homebrew tap
+          </a>
+          <span className="text-white/10">·</span>
+          <button
+            onClick={() => onNavigate("agent")}
+            className="hover:text-white/70 transition-colors"
+          >
+            CLI · Терминал
+          </button>
+        </div>
+        {/* Bottom row: legal */}
+        <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-white/20 text-xs pt-4 border-t border-white/[0.04]">
+          <div>© 2026 XeroCode — Тирских В.С. · ИНН 503015361714</div>
+          <div className="flex items-center gap-4">
+            <a href="mailto:support@xerocode.space" className="hover:text-white/40 transition-colors">support@xerocode.space</a>
+            <button onClick={() => onNavigate("terms")} className="underline hover:text-white/40 transition-colors">Оферта</button>
+            <button onClick={() => onNavigate("privacy")} className="underline hover:text-white/40 transition-colors">Конфиденциальность</button>
+          </div>
         </div>
       </div>
     </footer>
