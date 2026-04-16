@@ -2,6 +2,8 @@ import { useEffect, useState, useCallback, useRef, Component, lazy, Suspense, ty
 import { ProfileSettings } from "./components/modals/ProfileSettings";
 import { PricingPage } from "./components/modals/PricingPage";
 import { AuthPage } from "./components/auth/AuthPage";
+import { CliLoginPage } from "./components/auth/CliLoginPage";
+import { CliAuthPage } from "./components/auth/CliAuthPage";
 import { LandingPage } from "./components/landing/LandingPage";
 import { CorporateLayout, type CorporatePage } from "./components/corporate/CorporateLayout";
 import { ModelSetupV2 } from "./components/modals/ModelSetupV2";
@@ -100,6 +102,9 @@ export default function App() {
   // Landing page state (must be before any conditional returns — React hooks rule)
   const [showLanding, setShowLanding] = useState(true);
 
+  // CLI login — user clicked "Войти" from /cli-login page; fall through to AuthPage
+  const [cliLoginAuthNeeded, setCliLoginAuthNeeded] = useState(false);
+
   // Focus mode — корпоративный пользователь переключается в чистый чат
   const [focusMode, setFocusMode] = useState(false);
 
@@ -149,6 +154,46 @@ export default function App() {
         </div>
       </div>
     );
+  }
+
+  // CLI device-code auth route — path /cli-auth?code=XXXX-XXXX
+  // Uses backend /api/auth/cli/approve; no loopback, no mixed-content issues.
+  if (window.location.pathname === "/cli-auth") {
+    if (authStore.user) {
+      return <CliAuthPage onLoginNeeded={() => { /* already authed */ }} />;
+    }
+    if (cliLoginAuthNeeded) {
+      // Fall through to AuthPage below (don't short-circuit)
+    } else {
+      return (
+        <CliAuthPage
+          onLoginNeeded={() => {
+            setCliLoginAuthNeeded(true);
+            setShowLanding(false);
+          }}
+        />
+      );
+    }
+  }
+
+  // Legacy /cli-login (loopback flow) — kept for older CLI versions.
+  // Same pattern: once user logs in, page POSTs to loopback 127.0.0.1:<port>.
+  if (window.location.pathname === "/cli-login") {
+    if (authStore.user) {
+      return <CliLoginPage onLoginNeeded={() => { /* already authed */ }} />;
+    }
+    if (cliLoginAuthNeeded) {
+      // Fall through to AuthPage below
+    } else {
+      return (
+        <CliLoginPage
+          onLoginNeeded={() => {
+            setCliLoginAuthNeeded(true);
+            setShowLanding(false);
+          }}
+        />
+      );
+    }
   }
 
   // Не авторизован — показываем лендинг или форму входа

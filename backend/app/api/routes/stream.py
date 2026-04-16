@@ -40,6 +40,7 @@ async def stream_chat(
     prompt = data.get("prompt", "").strip()
     model = data.get("model")
     provider = data.get("provider")
+    system = (data.get("system") or "").strip() or None  # optional system prompt
 
     if not prompt:
         raise HTTPException(400, "Prompt required")
@@ -128,7 +129,9 @@ async def stream_chat(
                         },
                         json={
                             "model": prov["model"],
-                            "messages": [{"role": "user", "content": prompt}],
+                            "messages": (
+                                [{"role": "system", "content": system}] if system else []
+                            ) + [{"role": "user", "content": prompt}],
                             "stream": True,
                             "temperature": 0.7,
                             "max_tokens": 4000,

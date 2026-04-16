@@ -298,8 +298,9 @@ async def run_dag(
                 await on_progress(node.id, res.status)
 
             # Mode-specific hooks — могут мутировать DAG (добавить узлы, проставить модель)
+            # Hooks expect NodeResult (has node_id/output fields), not DAGNode.
             if on_hook:
-                nodes = await on_hook(context, node, nodes) or nodes
+                nodes = await on_hook(context, res, nodes) or nodes
                 # Перестроить levels если появились новые узлы
                 try:
                     new_levels = topological_order(nodes)
