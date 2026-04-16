@@ -111,55 +111,42 @@ export default function EmptyState({ onQuickAction }: EmptyStateProps) {
         minHeight: 0,
       }}
     >
-      {/* Logo */}
+      {/* Logo — X8 Refined */}
       <div
         style={{
-          width: 48,
-          height: 48,
-          borderRadius: "var(--radius-md)",
-          background: "linear-gradient(135deg, var(--accent-blue), var(--accent-lavender))",
+          width: 56,
+          height: 56,
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
           marginBottom: "var(--space-5)",
+          color: "var(--text-primary)",
         }}
       >
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-          <path
-            d="M12 2L2 7L12 12L22 7L12 2Z"
-            stroke="#fff"
-            strokeWidth="1.5"
-            strokeLinejoin="round"
-          />
-          <path
-            d="M2 17L12 22L22 17"
-            stroke="#fff"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-          <path
-            d="M2 12L12 17L22 12"
-            stroke="#fff"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
+        <svg width="48" height="48" viewBox="0 0 200 200" fill="none" aria-hidden="true">
+          <g stroke="currentColor" strokeWidth="16" strokeLinecap="round">
+            <line x1="58" y1="58" x2="88" y2="88" />
+            <line x1="112" y1="112" x2="142" y2="142" />
+            <line x1="142" y1="58" x2="112" y2="88" />
+            <line x1="58" y1="142" x2="88" y2="112" />
+          </g>
         </svg>
       </div>
 
       {/* Heading */}
       <h1
         style={{
-          fontSize: "var(--font-size-xl)",
-          fontWeight: 700,
+          fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif",
+          fontSize: 22,
+          fontWeight: 500,
           color: "var(--text-primary)",
           margin: 0,
           marginBottom: "var(--space-2)",
-          letterSpacing: "-0.02em",
+          letterSpacing: "3px",
+          lineHeight: 1.1,
         }}
       >
-        XeroCode AI
+        XEROCODE AI
       </h1>
 
       {/* Subtitle */}

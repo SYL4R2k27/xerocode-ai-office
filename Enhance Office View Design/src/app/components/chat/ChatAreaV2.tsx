@@ -71,19 +71,32 @@ export function setInputText(fn: (text: string) => void) { _inputSetText = fn; }
 function EmptyStateView({ onQuickAction }: { onQuickAction: (prompt: string, insertOnly?: boolean) => void }) {
   return (
     <div className="flex flex-col items-center justify-center h-full gap-6 px-4">
-      {/* Logo */}
-      <div
-        className="w-16 h-16 rounded-2xl flex items-center justify-center"
-        style={{ background: "linear-gradient(135deg, var(--accent-blue), var(--accent-lavender))" }}
-      >
-        <Sparkles size={28} color="#fff" />
+      {/* Logo — X8 Refined */}
+      <div className="flex items-center justify-center" style={{ width: 72, height: 72, color: "var(--text-primary)" }}>
+        <svg viewBox="0 0 200 200" width="64" height="64" fill="none" aria-hidden="true">
+          <g stroke="currentColor" strokeWidth="16" strokeLinecap="round">
+            <line x1="58" y1="58" x2="88" y2="88" />
+            <line x1="112" y1="112" x2="142" y2="142" />
+            <line x1="142" y1="58" x2="112" y2="88" />
+            <line x1="58" y1="142" x2="88" y2="112" />
+          </g>
+        </svg>
       </div>
 
       <div className="text-center">
-        <h2 className="text-xl font-bold" style={{ color: "var(--text-primary)" }}>
-          XeroCode AI
+        <h2
+          style={{
+            color: "var(--text-primary)",
+            fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif",
+            fontWeight: 500,
+            fontSize: 22,
+            letterSpacing: "3px",
+            lineHeight: 1.1,
+          }}
+        >
+          XEROCODE AI
         </h2>
-        <p className="mt-1" style={{ color: "var(--text-tertiary)", fontSize: "var(--font-size-base)" }}>
+        <p className="mt-2" style={{ color: "var(--text-tertiary)", fontSize: "var(--font-size-base)" }}>
           Чем могу помочь сегодня?
         </p>
       </div>

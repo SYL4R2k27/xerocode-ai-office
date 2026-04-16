@@ -1,47 +1,67 @@
+/**
+ * XeroCode logo system — X8 Refined (Ring-to-X concept, gapped core).
+ *
+ * Mark: 4 diagonal strokes, equal length (30√2), symmetric gap at centre,
+ *       stroke-width 16 on a 200×200 viewBox. Uses currentColor so it
+ *       inherits parent text color (adapts to dark/light themes).
+ *
+ * Wordmark: XEROCODE, all-caps, Inter Medium with wide letter-spacing.
+ */
+
 export function LogoIcon({ size = 32 }: { size?: number }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <linearGradient id="logo-grad" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
-          <stop offset="0%" stopColor="#7C3AED"/>
-          <stop offset="100%" stopColor="#4F7CFF"/>
-        </linearGradient>
-      </defs>
-      <rect width="32" height="32" rx="8" fill="url(#logo-grad)"/>
-      <circle cx="11" cy="10" r="2.5" fill="white" opacity="0.9"/>
-      <circle cx="21" cy="10" r="2.5" fill="white" opacity="0.9"/>
-      <circle cx="16" cy="16" r="3" fill="white"/>
-      <circle cx="11" cy="22" r="2.5" fill="white" opacity="0.9"/>
-      <circle cx="21" cy="22" r="2.5" fill="white" opacity="0.9"/>
-      <line x1="11" y1="10" x2="16" y2="16" stroke="white" strokeWidth="1.2" opacity="0.5"/>
-      <line x1="21" y1="10" x2="16" y2="16" stroke="white" strokeWidth="1.2" opacity="0.5"/>
-      <line x1="16" y1="16" x2="11" y2="22" stroke="white" strokeWidth="1.2" opacity="0.5"/>
-      <line x1="16" y1="16" x2="21" y2="22" stroke="white" strokeWidth="1.2" opacity="0.5"/>
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 200 200"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden="true"
+    >
+      <g stroke="currentColor" strokeWidth="16" strokeLinecap="round">
+        <line x1="58"  y1="58"  x2="88"  y2="88"  />
+        <line x1="112" y1="112" x2="142" y2="142" />
+        <line x1="142" y1="58"  x2="112" y2="88"  />
+        <line x1="58"  y1="142" x2="88"  y2="112" />
+      </g>
     </svg>
   );
 }
 
 export function LogoFull({ height = 28 }: { height?: number }) {
+  const markSize = height;
+  const wordSize = Math.round(height * 0.62);
+  const gap = Math.round(height * 0.45);
+  const dividerHeight = Math.round(height * 0.75);
+
   return (
-    <div className="flex items-center gap-2">
-      <LogoIcon size={height} />
-      <span className="font-bold text-white" style={{ fontSize: height * 0.65 }}>XeroCode</span>
+    <div
+      className="flex items-center text-white"
+      style={{ gap: `${gap}px`, lineHeight: 1 }}
+    >
+      <LogoIcon size={markSize} />
+      <span
+        aria-hidden="true"
+        style={{
+          width: 1,
+          height: dividerHeight,
+          background: "rgba(255,255,255,0.22)",
+          flexShrink: 0,
+        }}
+      />
       <span
         style={{
-          fontSize: height * 0.55,
+          fontFamily:
+            "'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif",
+          fontWeight: 500,
+          fontSize: wordSize,
+          letterSpacing: `${Math.max(2, Math.round(wordSize * 0.14))}px`,
+          color: "white",
           lineHeight: 1,
-          padding: `${height * 0.05}px ${height * 0.12}px`,
-          borderRadius: height * 0.15,
-          background: "rgba(124,58,237,0.15)",
-          border: "1px solid rgba(124,58,237,0.3)",
-          color: "#a78bfa",
-          fontWeight: 600,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
+          whiteSpace: "nowrap",
         }}
       >
-        β
+        XEROCODE
       </span>
     </div>
   );

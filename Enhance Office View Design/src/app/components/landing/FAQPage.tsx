@@ -56,7 +56,7 @@ export function FAQPage({ onBack, onLogin, hideHeader }: FAQPageProps) {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   return (
-    <div className="min-h-screen bg-[#0A0A0F] text-white">
+    <div className="min-h-screen text-white">
       {/* Header */}
       {!hideHeader && (
       <header className="sticky top-0 z-50 bg-[#0A0A0F]/80 backdrop-blur-xl border-b border-white/[0.06]">

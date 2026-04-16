@@ -229,10 +229,16 @@ export function SidebarV2({
         <div className="flex items-center gap-2">
           <LogoIcon size={20} />
           <span
-            className="font-bold tracking-tight"
-            style={{ color: "var(--text-primary)", fontSize: "var(--font-size-sm)" }}
+            style={{
+              color: "var(--text-primary)",
+              fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif",
+              fontWeight: 500,
+              fontSize: 13,
+              letterSpacing: "1.8px",
+              lineHeight: 1,
+            }}
           >
-            XeroCode
+            XEROCODE
           </span>
         </div>
         {onToggleCollapse && (

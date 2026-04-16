@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { toast } from "sonner";
+import { LogoFull } from "../shared/Logo";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -456,21 +457,8 @@ export function AuthPage({ onLogin, onRegister, loading, error }: AuthPageProps)
             transition={{ duration: 0.6, delay: 0.2 }}
           >
             {/* Logo */}
-            <div className="flex items-center gap-3 mb-8">
-              <div
-                className="w-10 h-10 rounded-xl flex items-center justify-center"
-                style={{
-                  background: "linear-gradient(135deg, #9333ea, #3b82f6)",
-                }}
-              >
-                <Sparkles size={20} className="text-white" />
-              </div>
-              <span
-                className="text-[22px] font-bold"
-                style={{ color: "var(--text-primary)" }}
-              >
-                XeroCode
-              </span>
+            <div className="mb-8">
+              <LogoFull height={32} />
             </div>
 
             {/* Tagline */}

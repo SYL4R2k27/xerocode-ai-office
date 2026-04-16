@@ -161,7 +161,7 @@ export function PricingPage({ onBack, onLogin, hideHeader }: PricingPageProps) {
   const [corpExpanded, setCorpExpanded] = useState(false);
 
   return (
-    <div className="min-h-screen bg-[#0A0A0F] text-white">
+    <div className="min-h-screen text-white">
       {!hideHeader && (
         <header className="sticky top-0 z-50 bg-[#0A0A0F]/80 backdrop-blur-xl border-b border-white/[0.06]">
           <div className="max-w-[1440px] mx-auto px-6 md:px-16 flex items-center justify-between h-16">

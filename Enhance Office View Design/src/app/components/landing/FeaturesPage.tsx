@@ -263,7 +263,7 @@ export function FeaturesPage({ onBack, onLogin, onNavigateArena, hideHeader }: F
   const [expanded, setExpanded] = useState<string | null>("orchestration");
 
   return (
-    <div className="min-h-screen bg-[#0A0A0F] text-white">
+    <div className="min-h-screen text-white">
       {/* Ambient background */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
         <div className="absolute w-[500px] h-[500px] rounded-full" style={{ left: "5%", top: "10%", background: "radial-gradient(circle,rgba(124,58,237,0.06),transparent 70%)", filter: "blur(80px)" }} />
@@ -299,13 +299,21 @@ export function FeaturesPage({ onBack, onLogin, onNavigateArena, hideHeader }: F
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
-            className="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-500/20 to-blue-500/20 flex items-center justify-center mx-auto mb-6"
+            className="mx-auto mb-6 flex items-center justify-center"
+            style={{ width: 64, height: 64 }}
           >
-            <Sparkles size={28} className="text-purple-400" />
+            <svg viewBox="0 0 200 200" width="56" height="56" fill="none" aria-hidden="true">
+              <g stroke="currentColor" strokeWidth="16" strokeLinecap="round" className="text-white">
+                <line x1="58" y1="58" x2="88" y2="88" />
+                <line x1="112" y1="112" x2="142" y2="142" />
+                <line x1="142" y1="58" x2="112" y2="88" />
+                <line x1="58" y1="142" x2="88" y2="112" />
+              </g>
+            </svg>
           </motion.div>
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">
+          <h1 className="text-4xl md:text-5xl font-bold mb-4" style={{ letterSpacing: "-0.02em" }}>
             Что умеет{" "}
-            <span className="bg-gradient-to-r from-purple-400 via-blue-400 to-cyan-400 bg-clip-text text-transparent">XeroCode</span>
+            <span style={{ letterSpacing: "0.08em", fontWeight: 500 }}>XEROCODE</span>
           </h1>
           <p className="text-white/40 text-lg max-w-[500px] mx-auto leading-relaxed">
             Полный набор инструментов для ускорения работы с AI
