@@ -1,0 +1,4392 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>XeroCode AI Office — Brand Book v2.0</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+/* ========== TOKENS ========== */
+:root {
+  --void-950: #050510;
+  --void-900: #0A0A1A;
+  --void-800: #14142B;
+  --void-700: #1F1F3D;
+  --void-600: #2D2D5A;
+  --void-500: #4A4A7C;
+
+  --ink-50:   #F8F8FB;
+  --ink-100:  #E8E8F2;
+  --ink-200:  #C7C7E0;
+  --ink-300:  #A0A0CC;
+  --ink-400:  #7575A8;
+
+  --violet-500: #7C5CFF;
+  --violet-600: #6240E8;
+  --cyan-500:   #00D4FF;
+  --amber-500:  #FFB547;
+  --crimson:    #FF3B5C;
+  --aurora:     #22C55E;
+
+  --grad-aurora: linear-gradient(135deg, #7C5CFF 0%, #00D4FF 100%);
+  --grad-solar:  linear-gradient(135deg, #FFB547 0%, #FF3B5C 100%);
+  --grad-mesh:
+    radial-gradient(ellipse 60% 50% at 30% 20%, rgba(124,92,255,0.30) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 50% at 70% 80%, rgba(0,212,255,0.20) 0%, transparent 60%),
+    #050510;
+
+  --serif: 'Playfair Display', Georgia, serif;
+  --sans:  'Manrope', -apple-system, sans-serif;
+  --body:  'Inter', -apple-system, sans-serif;
+  --mono:  'JetBrains Mono', 'SF Mono', monospace;
+
+  --ease-emphasis: cubic-bezier(0.32, 0.72, 0, 1);
+  --ease-smooth:   cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--void-900);
+  color: var(--ink-100);
+  font-family: var(--body);
+  font-weight: 400;
+  font-size: 15px;
+  line-height: 1.6;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+::selection { background: var(--violet-500); color: white; }
+
+/* ========== PAGE LAYOUT ========== */
+.page {
+  min-height: 100vh;
+  width: 100%;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 64px 80px;
+  border-bottom: 1px solid var(--void-700);
+  overflow: hidden;
+}
+.page::before, .page::after {
+  content: '';
+  position: absolute;
+  width: 16px; height: 16px;
+  border: 1px solid var(--void-500);
+}
+.page::before { top: 24px; left: 24px; border-right: none; border-bottom: none; }
+.page::after { bottom: 24px; right: 24px; border-left: none; border-top: none; }
+
+.page-meta {
+  position: absolute;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  color: var(--ink-400);
+  text-transform: uppercase;
+}
+.meta-tl { top: 36px; left: 60px; }
+.meta-tr { top: 36px; right: 60px; }
+.meta-bl { bottom: 36px; left: 60px; }
+.meta-br { bottom: 36px; right: 60px; }
+
+/* ========== COVER ========== */
+.cover {
+  background: var(--void-950);
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.cover::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--grad-mesh);
+  opacity: 0.6;
+}
+.cover > * { position: relative; z-index: 2; }
+
+.logo-hero {
+  font-family: var(--serif);
+  font-weight: 700;
+  font-size: clamp(80px, 13vw, 220px);
+  line-height: 0.9;
+  color: var(--ink-50);
+  letter-spacing: -0.04em;
+  white-space: nowrap;
+  margin-bottom: 32px;
+}
+.logo-hero .accent {
+  color: transparent;
+  background: var(--grad-aurora);
+  -webkit-background-clip: text;
+  background-clip: text;
+  font-style: italic;
+  font-weight: 400;
+}
+.tagline {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 24px;
+  color: var(--ink-200);
+  font-weight: 400;
+}
+.tagline em {
+  color: var(--amber-500);
+  font-weight: 700;
+  font-style: italic;
+}
+.subtag {
+  margin-top: 24px;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--ink-300);
+}
+
+/* ========== SECTION HEADER ========== */
+.section-header {
+  display: flex;
+  align-items: baseline;
+  gap: 32px;
+  margin-bottom: 96px;
+  padding-bottom: 32px;
+  border-bottom: 1px solid var(--void-700);
+}
+.section-num {
+  font-family: var(--mono);
+  font-size: 13px;
+  letter-spacing: 0.3em;
+  color: var(--violet-500);
+  font-weight: 500;
+}
+.section-title {
+  font-family: var(--serif);
+  font-size: clamp(56px, 7vw, 96px);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  color: var(--ink-50);
+}
+.section-title em {
+  font-style: italic;
+  font-weight: 400;
+  color: var(--amber-500);
+}
+
+/* ========== TOC ========== */
+.toc-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-top: 48px;
+}
+.toc-item {
+  display: flex;
+  align-items: baseline;
+  padding: 28px 0;
+  border-bottom: 1px solid var(--void-700);
+  font-family: var(--serif);
+  font-size: 36px;
+  color: var(--ink-100);
+  text-decoration: none;
+  transition: all 0.3s var(--ease-smooth);
+  cursor: pointer;
+}
+.toc-item:hover {
+  color: var(--violet-500);
+  padding-left: 24px;
+}
+.toc-num {
+  font-family: var(--mono);
+  font-size: 14px;
+  color: var(--ink-400);
+  letter-spacing: 0.2em;
+  min-width: 80px;
+  font-weight: 500;
+}
+.toc-name { flex: 1; font-weight: 400; }
+.toc-name em { font-style: italic; color: var(--amber-500); }
+.toc-page {
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--ink-400);
+  letter-spacing: 0.15em;
+}
+
+/* ========== MANIFEST ========== */
+.manifest-quote {
+  font-family: var(--serif);
+  font-size: clamp(40px, 5vw, 72px);
+  line-height: 1.15;
+  font-weight: 400;
+  font-style: italic;
+  color: var(--ink-50);
+  max-width: 1100px;
+  margin: 0 auto;
+}
+.manifest-quote em {
+  color: var(--amber-500);
+  font-weight: 700;
+}
+.manifest-author {
+  margin-top: 48px;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.3em;
+  color: var(--ink-400);
+  text-transform: uppercase;
+}
+.principles {
+  margin-top: 120px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 48px;
+}
+.principle {
+  border-top: 1px solid var(--violet-500);
+  padding-top: 32px;
+}
+.principle-num {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.3em;
+  color: var(--violet-500);
+  margin-bottom: 16px;
+}
+.principle-title {
+  font-family: var(--serif);
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--ink-50);
+  margin-bottom: 16px;
+  letter-spacing: -0.02em;
+}
+.principle-body {
+  color: var(--ink-200);
+  font-size: 15px;
+  line-height: 1.7;
+}
+
+/* ========== TWO-COL ========== */
+.two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 80px;
+  align-items: start;
+}
+.col-label {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--ink-400);
+  margin-bottom: 24px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--void-700);
+}
+.lead-text {
+  font-family: var(--serif);
+  font-size: 36px;
+  line-height: 1.3;
+  color: var(--ink-50);
+  font-weight: 400;
+  margin-bottom: 32px;
+  letter-spacing: -0.01em;
+}
+.lead-text em { color: var(--amber-500); font-style: italic; }
+.body-text {
+  color: var(--ink-200);
+  font-size: 16px;
+  line-height: 1.75;
+  margin-bottom: 16px;
+}
+
+/* ========== LOGO SHOWCASE ========== */
+.logo-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+  margin-top: 64px;
+}
+.logo-card {
+  aspect-ratio: 16/9;
+  border: 1px solid var(--void-700);
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+.logo-card.dark { background: var(--void-950); }
+.logo-card.light { background: var(--ink-50); }
+.logo-card.aurora { background: var(--grad-aurora); }
+.logo-card.mesh { background: var(--grad-mesh); }
+.logo-display {
+  font-family: var(--serif);
+  font-weight: 700;
+  font-size: 64px;
+  letter-spacing: -0.03em;
+}
+.logo-display.on-dark { color: var(--ink-50); }
+.logo-display.on-light { color: var(--void-900); }
+.logo-display .x-glow { color: transparent; background: var(--grad-aurora); -webkit-background-clip: text; background-clip: text; font-style: italic; font-weight: 400; }
+.logo-card-label {
+  position: absolute;
+  bottom: 16px; left: 16px;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  color: var(--ink-400);
+  text-transform: uppercase;
+}
+
+/* The X mark */
+.x-mark {
+  width: 96px; height: 96px;
+  position: relative;
+  display: inline-block;
+}
+.x-mark::before, .x-mark::after {
+  content: '';
+  position: absolute;
+  width: 6px;
+  height: 100%;
+  background: var(--grad-aurora);
+  border-radius: 3px;
+  top: 0; left: 50%;
+  transform-origin: center;
+}
+.x-mark::before { transform: translateX(-50%) rotate(45deg); }
+.x-mark::after { transform: translateX(-50%) rotate(-45deg); }
+
+/* ========== COLOR PALETTE ========== */
+.swatch-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 16px;
+  margin-bottom: 48px;
+}
+.swatch {
+  aspect-ratio: 3/4;
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+  overflow: hidden;
+}
+.swatch-name {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+.swatch-hex {
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 500;
+}
+.swatch-rgb {
+  font-family: var(--mono);
+  font-size: 10px;
+  opacity: 0.7;
+}
+.swatch.dark-text { color: var(--void-900); }
+.swatch.light-text { color: var(--ink-50); }
+.palette-row-label {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--violet-500);
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--void-700);
+}
+
+.gradient-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  margin-top: 32px;
+}
+.gradient-card {
+  aspect-ratio: 4/3;
+  border-radius: 16px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  color: white;
+  position: relative;
+}
+.gradient-card.aurora { background: var(--grad-aurora); }
+.gradient-card.solar { background: var(--grad-solar); }
+.gradient-card.mesh { background: var(--grad-mesh); }
+.gradient-name {
+  font-family: var(--serif);
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.gradient-css {
+  font-family: var(--mono);
+  font-size: 10px;
+  opacity: 0.7;
+  margin-top: 8px;
+}
+
+/* ========== TYPOGRAPHY ========== */
+.type-spec {
+  display: grid;
+  grid-template-columns: 1fr 3fr;
+  gap: 48px;
+  padding: 48px 0;
+  border-top: 1px solid var(--void-700);
+  align-items: baseline;
+}
+.type-spec:last-child { border-bottom: 1px solid var(--void-700); }
+.type-meta {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-400);
+  line-height: 1.8;
+}
+.type-meta strong { color: var(--violet-500); display: block; margin-bottom: 4px; }
+.type-sample-display { font-family: var(--serif); font-size: 96px; font-weight: 700; line-height: 1; color: var(--ink-50); letter-spacing: -0.03em; }
+.type-sample-display em { font-style: italic; font-weight: 400; color: var(--amber-500); }
+.type-sample-h1 { font-family: var(--sans); font-size: 56px; font-weight: 800; line-height: 1.1; color: var(--ink-50); letter-spacing: -0.02em; }
+.type-sample-body { font-family: var(--body); font-size: 18px; line-height: 1.7; color: var(--ink-100); }
+.type-sample-mono { font-family: var(--mono); font-size: 16px; color: var(--cyan-500); }
+
+/* ========== VOICE ========== */
+.voice-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  border: 1px solid var(--void-700);
+  border-radius: 16px;
+  overflow: hidden;
+  margin-top: 48px;
+}
+.voice-col {
+  padding: 48px;
+}
+.voice-col:first-child { border-right: 1px solid var(--void-700); }
+.voice-col-header {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  margin-bottom: 32px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--void-700);
+}
+.voice-col.bad .voice-col-header { color: var(--crimson); }
+.voice-col.good .voice-col-header { color: var(--aurora); }
+.voice-item {
+  font-family: var(--serif);
+  font-size: 20px;
+  line-height: 1.5;
+  margin-bottom: 20px;
+  color: var(--ink-200);
+}
+.voice-col.bad .voice-item { text-decoration: line-through; opacity: 0.6; }
+.voice-col.good .voice-item { color: var(--ink-50); }
+
+/* ========== COMPONENTS DEMO ========== */
+.component-demo {
+  background: var(--void-800);
+  border: 1px solid var(--void-700);
+  border-radius: 16px;
+  padding: 48px;
+  margin-bottom: 24px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+}
+.demo-label {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-400);
+  width: 100%;
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--void-700);
+}
+.btn {
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-family: var(--sans);
+  font-weight: 600;
+  font-size: 14px;
+  letter-spacing: -0.005em;
+  border: none;
+  cursor: pointer;
+  transition: all 200ms var(--ease-smooth);
+}
+.btn-primary { background: var(--violet-500); color: white; }
+.btn-primary:hover { background: var(--violet-600); box-shadow: 0 0 32px rgba(124,92,255,0.4); transform: translateY(-1px); }
+.btn-secondary { background: var(--void-700); color: var(--ink-100); }
+.btn-secondary:hover { background: var(--void-600); }
+.btn-ghost { background: transparent; color: var(--ink-200); border: 1px solid var(--void-600); }
+.btn-ghost:hover { border-color: var(--violet-500); color: var(--violet-500); }
+
+.input-demo {
+  height: 44px;
+  padding: 0 16px;
+  background: var(--void-900);
+  border: 1px solid var(--void-600);
+  border-radius: 8px;
+  color: var(--ink-100);
+  font-family: var(--body);
+  font-size: 14px;
+  width: 280px;
+  transition: all 150ms;
+}
+.input-demo:focus {
+  outline: none;
+  border-color: var(--violet-500);
+  box-shadow: 0 0 0 3px rgba(124,92,255,0.2);
+}
+
+.card-demo {
+  background: var(--void-800);
+  border: 1px solid var(--void-700);
+  border-radius: 16px;
+  padding: 24px;
+  width: 280px;
+  transition: all 200ms var(--ease-smooth);
+  cursor: pointer;
+}
+.card-demo:hover {
+  transform: translateY(-4px);
+  border-color: var(--violet-500);
+  box-shadow: 0 16px 40px rgba(0,0,0,0.5), 0 0 32px rgba(124,92,255,0.3);
+}
+.card-demo h4 {
+  font-family: var(--sans);
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--ink-50);
+  margin-bottom: 8px;
+}
+.card-demo p {
+  font-size: 14px;
+  color: var(--ink-300);
+  line-height: 1.6;
+}
+
+/* ========== ANIMATIONS DEMO ========== */
+.anim-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  margin-top: 32px;
+}
+.anim-card {
+  aspect-ratio: 1;
+  background: var(--void-800);
+  border: 1px solid var(--void-700);
+  border-radius: 16px;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.anim-label {
+  position: absolute;
+  bottom: 16px; left: 16px;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--ink-300);
+  z-index: 2;
+}
+
+/* AI Pulse */
+.ai-pulse {
+  width: 80px; height: 80px;
+  border-radius: 50%;
+  background: var(--grad-aurora);
+  animation: aiPulse 2s ease-in-out infinite;
+}
+@keyframes aiPulse {
+  0%, 100% { opacity: 0.6; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.08); }
+}
+
+/* Aurora Shimmer */
+.shimmer {
+  width: 80%; height: 32px;
+  background: var(--void-700);
+  border-radius: 8px;
+  position: relative;
+  overflow: hidden;
+}
+.shimmer::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(124,92,255,0.4), transparent);
+  animation: shimmer 1.6s linear infinite;
+}
+@keyframes shimmer {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(200%); }
+}
+
+/* Mesh background animated */
+.mesh-anim {
+  position: absolute;
+  inset: 0;
+  background: var(--grad-mesh);
+  animation: meshFloat 8s ease-in-out infinite alternate;
+}
+@keyframes meshFloat {
+  from { transform: scale(1) rotate(0deg); }
+  to { transform: scale(1.15) rotate(2deg); }
+}
+
+/* Stream cursor */
+.stream-text {
+  font-family: var(--mono);
+  font-size: 14px;
+  color: var(--ink-100);
+}
+.stream-cursor {
+  display: inline-block;
+  color: var(--violet-500);
+  animation: cursorBlink 0.8s steps(2) infinite;
+}
+@keyframes cursorBlink {
+  to { opacity: 0; }
+}
+
+/* Number counter */
+.counter {
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 64px;
+  font-weight: 500;
+  color: var(--cyan-500);
+  letter-spacing: -0.02em;
+}
+
+/* Card lift hover */
+.lift-demo {
+  width: 70%; height: 70%;
+  background: var(--void-700);
+  border: 1px solid var(--void-600);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--ink-300);
+  letter-spacing: 0.15em;
+  transition: all 200ms var(--ease-smooth);
+}
+.anim-card:hover .lift-demo {
+  transform: translateY(-8px);
+  border-color: var(--violet-500);
+  background: var(--void-800);
+  box-shadow: 0 16px 40px rgba(0,0,0,0.5), 0 0 32px rgba(124,92,255,0.4);
+}
+
+/* Gradient text shift */
+.grad-text {
+  font-family: var(--serif);
+  font-size: 48px;
+  font-weight: 700;
+  background: linear-gradient(90deg, #7C5CFF, #00D4FF, #FFB547, #7C5CFF);
+  background-size: 300% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: gradShift 4s linear infinite;
+}
+@keyframes gradShift {
+  to { background-position: 300% center; }
+}
+
+/* ========== WEB INTERFACE MOCKUP ========== */
+.ui-mockup {
+  margin-top: 48px;
+  background: var(--void-900);
+  border: 1px solid var(--void-700);
+  border-radius: 16px;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  min-height: 480px;
+}
+.mock-sidebar {
+  background: var(--void-950);
+  padding: 24px 12px;
+  border-right: 1px solid var(--void-700);
+}
+.mock-logo {
+  font-family: var(--serif);
+  font-weight: 700;
+  font-size: 22px;
+  margin: 8px 12px 32px;
+  color: var(--ink-50);
+}
+.mock-logo span {
+  color: transparent;
+  background: var(--grad-aurora);
+  -webkit-background-clip: text;
+  background-clip: text;
+  font-style: italic;
+}
+.mock-nav-item {
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-family: var(--sans);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink-300);
+  margin-bottom: 4px;
+  transition: all 150ms;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.mock-nav-item:hover { background: var(--void-800); color: var(--ink-100); }
+.mock-nav-item.active { background: rgba(124,92,255,0.12); color: var(--violet-500); }
+.mock-nav-icon {
+  width: 16px; height: 16px;
+  border-radius: 4px;
+  background: currentColor;
+  opacity: 0.8;
+}
+.mock-content {
+  padding: 32px 40px;
+}
+.mock-greeting {
+  font-family: var(--serif);
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--ink-50);
+  margin-bottom: 8px;
+}
+.mock-greeting em { font-style: italic; color: var(--amber-500); }
+.mock-sub {
+  font-size: 14px;
+  color: var(--ink-300);
+  margin-bottom: 32px;
+}
+.mock-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+.mock-card {
+  background: var(--void-800);
+  border: 1px solid var(--void-700);
+  border-radius: 12px;
+  padding: 20px;
+  transition: all 200ms;
+}
+.mock-card:hover { border-color: var(--violet-500); transform: translateY(-2px); }
+.mock-card-num {
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 28px;
+  font-weight: 500;
+  color: var(--cyan-500);
+  margin-bottom: 4px;
+}
+.mock-card-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-400);
+}
+
+/* ========== WORKSPACES ========== */
+:root {
+  --w-chat:   #7C5CFF;   /* Violet — общий чат */
+  --w-corp:   #00D4FF;   /* Plasma — корпорация */
+  --w-image:  #FFB547;   /* Solar — картинки */
+  --w-code:   #22C55E;   /* Aurora — код */
+  --w-video:  #FF3B5C;   /* Crimson — видео */
+  --w-sound:  #FF6BFF;   /* Magenta — звук */
+  --w-text:   #F8F8FB;   /* Ink — текст */
+  --w-orch:   linear-gradient(135deg, #7C5CFF, #00D4FF, #FFB547, #FF3B5C); /* Mesh — оркестратор */
+}
+
+.arch-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-top: 48px;
+}
+.arch-card {
+  aspect-ratio: 1 / 1.15;
+  background: var(--void-800);
+  border: 1px solid var(--void-700);
+  border-radius: 16px;
+  padding: 24px;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: all 250ms var(--ease-smooth);
+  cursor: pointer;
+}
+.arch-card:hover {
+  border-color: var(--accent-color, var(--violet-500));
+  transform: translateY(-4px);
+  box-shadow: 0 16px 40px rgba(0,0,0,0.5), 0 0 32px var(--accent-glow, rgba(124,92,255,0.3));
+}
+.arch-card .accent-bar {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: var(--accent-color, var(--violet-500));
+}
+.arch-card.orch .accent-bar { background: var(--w-orch); height: 4px; }
+.arch-num {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  color: var(--ink-400);
+}
+.arch-icon {
+  width: 40px; height: 40px;
+  border-radius: 10px;
+  background: var(--accent-color, var(--violet-500));
+  opacity: 0.15;
+  margin-bottom: auto;
+  position: relative;
+}
+.arch-icon::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 10px;
+  background: var(--accent-color, var(--violet-500));
+  opacity: 0.6;
+  transform: scale(0.5);
+}
+.arch-name {
+  font-family: var(--serif);
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--ink-50);
+  margin-bottom: 4px;
+}
+.arch-tag {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  color: var(--accent-color, var(--violet-500));
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+.arch-body {
+  font-size: 13px;
+  color: var(--ink-300);
+  line-height: 1.55;
+}
+.arch-card.orch {
+  grid-column: span 4;
+  aspect-ratio: auto;
+  background: var(--grad-mesh);
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 32px;
+  align-items: center;
+  padding: 40px 48px;
+  border-color: rgba(124,92,255,0.4);
+}
+.arch-card.orch .arch-name { font-size: 48px; line-height: 1.05; }
+.arch-card.orch .arch-tag { color: var(--ink-100); font-size: 11px; }
+.arch-card.orch .arch-body { font-size: 15px; color: var(--ink-200); max-width: 600px; }
+.orch-modes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+}
+.orch-mode {
+  padding: 6px 12px;
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 100px;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: var(--ink-100);
+  background: rgba(255,255,255,0.05);
+  text-transform: lowercase;
+}
+.orch-mode strong { color: var(--amber-500); font-weight: 500; margin-right: 4px; }
+
+/* ========== WORKSPACE SPEC ========== */
+.ws-hero {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 48px;
+  align-items: center;
+  margin-bottom: 48px;
+}
+.ws-id {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.ws-id-dot {
+  width: 12px; height: 12px;
+  border-radius: 50%;
+  background: var(--accent-color);
+  box-shadow: 0 0 24px var(--accent-color);
+}
+.ws-id-num {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.3em;
+  color: var(--ink-400);
+}
+.ws-name {
+  font-family: var(--serif);
+  font-size: clamp(56px, 8vw, 120px);
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  line-height: 0.95;
+  color: var(--ink-50);
+  margin-bottom: 16px;
+}
+.ws-name em {
+  font-style: italic;
+  font-weight: 400;
+  color: var(--accent-color);
+}
+.ws-tagline {
+  font-family: var(--serif);
+  font-size: 24px;
+  font-style: italic;
+  color: var(--ink-200);
+  font-weight: 400;
+  max-width: 480px;
+  line-height: 1.4;
+}
+.ws-features {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+.ws-feat {
+  display: grid;
+  grid-template-columns: 24px 1fr;
+  gap: 16px;
+  padding: 20px;
+  background: var(--void-800);
+  border: 1px solid var(--void-700);
+  border-radius: 12px;
+  transition: all 200ms;
+}
+.ws-feat:hover {
+  border-color: var(--accent-color);
+  transform: translateX(4px);
+}
+.ws-feat-num {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  color: var(--accent-color);
+  font-weight: 500;
+}
+.ws-feat-content strong {
+  display: block;
+  font-family: var(--sans);
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--ink-50);
+  margin-bottom: 4px;
+}
+.ws-feat-content span {
+  font-size: 13px;
+  color: var(--ink-300);
+  line-height: 1.5;
+}
+
+/* Workspace mockup base */
+.ws-mockup {
+  background: var(--void-950);
+  border: 1px solid var(--void-700);
+  border-radius: 16px;
+  padding: 24px;
+  min-height: 320px;
+  position: relative;
+  overflow: hidden;
+}
+.ws-mockup::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: var(--accent-color);
+}
+.ws-mockup-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  color: var(--ink-400);
+  text-transform: uppercase;
+  padding-bottom: 16px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid var(--void-700);
+}
+.ws-mockup-header .dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--accent-color);
+}
+
+/* IMAGES workspace mockup */
+.ws-img-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+.ws-img-tile {
+  aspect-ratio: 1;
+  border-radius: 8px;
+  position: relative;
+  overflow: hidden;
+}
+.ws-img-tile.t1 { background: linear-gradient(135deg, #FFB547, #FF3B5C); }
+.ws-img-tile.t2 { background: linear-gradient(135deg, #7C5CFF, #00D4FF); }
+.ws-img-tile.t3 { background: linear-gradient(135deg, #050510, #2D2D5A); }
+.ws-img-tile.t4 { background: linear-gradient(135deg, #22C55E, #00D4FF); }
+.ws-img-tile.t5 { background: linear-gradient(135deg, #FF6BFF, #7C5CFF); }
+.ws-img-tile.t6 { background: linear-gradient(135deg, #FFB547, #2D1880); }
+.ws-img-tile span {
+  position: absolute;
+  bottom: 6px; left: 8px;
+  font-family: var(--mono);
+  font-size: 8px;
+  letter-spacing: 0.1em;
+  color: rgba(255,255,255,0.85);
+}
+
+/* CODE workspace mockup */
+.ws-code-block {
+  font-family: var(--mono);
+  font-size: 12px;
+  line-height: 1.7;
+  color: var(--ink-200);
+}
+.ws-code-line { display: block; }
+.ws-code-line .lnum { display: inline-block; width: 32px; color: var(--ink-400); user-select: none; }
+.ws-code-line .kw { color: var(--w-code); }
+.ws-code-line .str { color: var(--w-image); }
+.ws-code-line .fn { color: var(--w-corp); }
+.ws-code-line .com { color: var(--ink-400); font-style: italic; }
+
+/* VIDEO timeline mockup */
+.ws-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 16px;
+}
+.ws-track {
+  display: grid;
+  grid-template-columns: 60px 1fr;
+  gap: 8px;
+  align-items: center;
+}
+.ws-track-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  color: var(--ink-400);
+  text-transform: uppercase;
+}
+.ws-track-bar {
+  height: 24px;
+  background: var(--void-800);
+  border-radius: 4px;
+  position: relative;
+  overflow: hidden;
+}
+.ws-track-bar .clip {
+  position: absolute;
+  top: 0; bottom: 0;
+  border-radius: 4px;
+}
+.ws-track-bar .c1 { left: 5%; width: 30%; background: linear-gradient(90deg, #FF3B5C, #FFB547); }
+.ws-track-bar .c2 { left: 40%; width: 25%; background: linear-gradient(90deg, #FF3B5C, #7C5CFF); }
+.ws-track-bar .c3 { left: 70%; width: 20%; background: var(--w-video); }
+.ws-track-bar .c4 { left: 10%; width: 80%; background: linear-gradient(90deg, var(--w-corp), transparent 50%, var(--w-corp)); }
+.ws-playhead {
+  position: absolute;
+  top: -4px; bottom: -4px;
+  width: 2px;
+  background: var(--w-video);
+  left: 35%;
+}
+.ws-playhead::before {
+  content: '';
+  position: absolute;
+  top: 0; left: -4px;
+  width: 10px; height: 10px;
+  background: var(--w-video);
+  border-radius: 50%;
+}
+
+/* SOUND waveform mockup */
+.ws-wave {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  height: 80px;
+  padding: 0 4px;
+}
+.ws-wave-bar {
+  flex: 1;
+  background: var(--w-sound);
+  border-radius: 2px;
+  opacity: 0.7;
+  transition: all 200ms;
+}
+.ws-mockup:hover .ws-wave-bar { opacity: 1; }
+.ws-eq {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 6px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--void-700);
+}
+.ws-eq-band {
+  text-align: center;
+}
+.ws-eq-band .knob {
+  height: 4px;
+  background: var(--void-700);
+  border-radius: 2px;
+  position: relative;
+  margin-bottom: 4px;
+}
+.ws-eq-band .knob::after {
+  content: '';
+  position: absolute;
+  top: -3px; left: var(--p, 50%);
+  width: 10px; height: 10px;
+  background: var(--w-sound);
+  border-radius: 50%;
+  transform: translateX(-50%);
+  box-shadow: 0 0 8px var(--w-sound);
+}
+.ws-eq-band .label {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  color: var(--ink-400);
+}
+
+/* TEXT workspace mockup */
+.ws-doc {
+  font-family: var(--serif);
+  color: var(--ink-100);
+  padding: 8px 16px;
+}
+.ws-doc h1 {
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--ink-50);
+  margin-bottom: 8px;
+}
+.ws-doc .meta {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  color: var(--ink-400);
+  margin-bottom: 16px;
+  text-transform: uppercase;
+}
+.ws-doc p {
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--ink-200);
+  margin-bottom: 12px;
+}
+.ws-doc p .hi { background: rgba(248,248,251,0.1); padding: 0 4px; border-radius: 2px; }
+.ws-cursor {
+  display: inline-block;
+  width: 2px; height: 16px;
+  background: var(--ink-50);
+  vertical-align: middle;
+  animation: cursorBlink 1s steps(2) infinite;
+}
+
+/* CHAT workspace mockup */
+.ws-chat-msg {
+  margin-bottom: 12px;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+.ws-chat-avatar {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.ws-chat-avatar.user { background: var(--void-700); }
+.ws-chat-avatar.ai { background: var(--w-chat); box-shadow: 0 0 16px rgba(124,92,255,0.5); }
+.ws-chat-bubble {
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--ink-100);
+  background: var(--void-800);
+  padding: 10px 14px;
+  border-radius: 12px;
+  max-width: 80%;
+}
+.ws-chat-msg.user-msg .ws-chat-bubble { background: var(--void-700); }
+
+/* CORP workspace mockup */
+.ws-corp-stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.ws-corp-stat {
+  background: var(--void-800);
+  padding: 12px;
+  border-radius: 8px;
+  border-left: 2px solid var(--w-corp);
+}
+.ws-corp-stat .num {
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 22px;
+  color: var(--w-corp);
+  font-weight: 500;
+  letter-spacing: -0.02em;
+}
+.ws-corp-stat .lbl {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--ink-400);
+}
+.ws-corp-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.ws-corp-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  padding: 8px 12px;
+  background: var(--void-800);
+  border-radius: 6px;
+  font-size: 12px;
+  color: var(--ink-200);
+}
+.ws-corp-row .pill {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  padding: 2px 8px;
+  border-radius: 100px;
+  background: rgba(0,212,255,0.15);
+  color: var(--w-corp);
+}
+
+/* ORCH dag mockup */
+.ws-dag {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 16px;
+  align-items: center;
+  position: relative;
+  padding: 24px 0;
+}
+.ws-node {
+  background: var(--void-800);
+  border: 1px solid var(--void-600);
+  border-radius: 10px;
+  padding: 12px 8px;
+  text-align: center;
+  position: relative;
+  transition: all 200ms;
+}
+.ws-node:hover { border-color: var(--violet-500); transform: scale(1.05); }
+.ws-node-icon {
+  width: 24px; height: 24px;
+  border-radius: 6px;
+  background: var(--node-color, var(--violet-500));
+  margin: 0 auto 6px;
+  opacity: 0.8;
+}
+.ws-node-label {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.15em;
+  color: var(--ink-300);
+  text-transform: uppercase;
+}
+.ws-node.active { border-color: var(--violet-500); box-shadow: 0 0 24px rgba(124,92,255,0.4); }
+.ws-node.active .ws-node-icon { animation: aiPulse 1.5s ease-in-out infinite; }
+
+@media (max-width: 1024px) {
+  .arch-grid { grid-template-columns: repeat(2, 1fr); }
+  .arch-card.orch { grid-column: span 2; grid-template-columns: 1fr; }
+  .ws-hero { grid-template-columns: 1fr; gap: 32px; }
+}
+
+/* ========== LOGO SYSTEM ========== */
+.logo-system {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  margin-top: 48px;
+}
+.logo-spec {
+  background: var(--void-950);
+  border: 1px solid var(--void-700);
+  border-radius: 16px;
+  padding: 56px 48px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 220px;
+  overflow: hidden;
+}
+.logo-spec.gradient-bg { background: var(--grad-mesh); }
+.logo-spec.light-bg { background: var(--ink-50); }
+.logo-spec.amber-bg { background: var(--amber-500); }
+.logo-spec-meta {
+  position: absolute;
+  bottom: 16px; left: 16px;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  color: var(--ink-400);
+  text-transform: uppercase;
+}
+.logo-spec.light-bg .logo-spec-meta { color: var(--void-700); }
+.logo-spec.amber-bg .logo-spec-meta { color: var(--void-900); }
+
+/* The hero logo style — XERO + CODE with gradient */
+.x-logo {
+  font-family: var(--serif);
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  line-height: 0.95;
+  display: inline-block;
+  white-space: nowrap;
+}
+.x-logo .roman { color: var(--ink-50); }
+.x-logo .italic {
+  font-style: italic;
+  font-weight: 700;
+  background: var(--grad-aurora);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.x-logo.inverse .roman { color: var(--void-900); }
+.x-logo.mono .italic, .x-logo.mono .roman { color: currentColor; -webkit-text-fill-color: currentColor; background: none; -webkit-background-clip: initial; }
+
+.logo-size-xs { font-size: 32px; }
+.logo-size-sm { font-size: 56px; }
+.logo-size-md { font-size: 88px; }
+.logo-size-lg { font-size: 120px; }
+
+.logo-stacked {
+  font-family: var(--serif);
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  line-height: 0.85;
+  text-align: center;
+}
+.logo-stacked .roman { color: var(--ink-50); display: block; }
+.logo-stacked .italic {
+  font-style: italic;
+  background: var(--grad-aurora);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  display: block;
+}
+
+/* Monogram (XC ligature) */
+.xc-mono {
+  font-family: var(--serif);
+  font-weight: 700;
+  font-size: 140px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: baseline;
+  letter-spacing: -0.1em;
+}
+.xc-mono .x { color: var(--ink-50); }
+.xc-mono .c {
+  font-style: italic;
+  background: var(--grad-aurora);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Construction grid overlay */
+.logo-grid-bg {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(124,92,255,0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(124,92,255,0.08) 1px, transparent 1px);
+  background-size: 32px 32px;
+  pointer-events: none;
+}
+
+/* ========== APP ICONS ========== */
+.icons-row {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 24px;
+  margin-top: 48px;
+  align-items: end;
+}
+.icon-spec {
+  text-align: center;
+}
+.icon-tile {
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  background: radial-gradient(circle at 30% 30%, #1F1F3D 0%, #050510 70%);
+  border: 1px solid var(--void-700);
+}
+.icon-tile.macos { border-radius: 23%; }
+.icon-tile.ios { border-radius: 22%; }
+.icon-tile.windows { border-radius: 8%; }
+.icon-tile.android { border-radius: 50%; }
+.icon-tile.favicon { border-radius: 4px; }
+
+.icon-1024 { width: 220px; height: 220px; }
+.icon-512  { width: 140px; height: 140px; }
+.icon-256  { width: 96px;  height: 96px;  }
+.icon-128  { width: 64px;  height: 64px;  }
+.icon-32   { width: 32px;  height: 32px;  }
+
+.icon-mark {
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 700;
+  background: var(--grad-aurora);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  letter-spacing: -0.05em;
+  filter: drop-shadow(0 0 24px rgba(124,92,255,0.5));
+  position: relative;
+  z-index: 2;
+}
+.icon-1024 .icon-mark { font-size: 160px; }
+.icon-512  .icon-mark { font-size: 100px; }
+.icon-256  .icon-mark { font-size: 70px; }
+.icon-128  .icon-mark { font-size: 44px; }
+.icon-32   .icon-mark { font-size: 20px; }
+
+.icon-tile::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 70% 80%, rgba(0,212,255,0.15), transparent 50%);
+  pointer-events: none;
+}
+.icon-label {
+  margin-top: 16px;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-400);
+}
+.icon-label strong { display: block; color: var(--ink-100); margin-bottom: 4px; }
+
+/* iOS variant — flat, brighter */
+.icon-tile.ios { background: linear-gradient(135deg, #14142B 0%, #050510 100%); }
+.icon-tile.windows { background: var(--void-900); }
+.icon-tile.android { background: linear-gradient(135deg, #7C5CFF, #00D4FF); }
+.icon-tile.android .icon-mark { color: var(--void-900); -webkit-text-fill-color: var(--void-900); background: none; -webkit-background-clip: initial; filter: none; }
+
+/* ========== ICON CONCEPTS (8 variants) ========== */
+.concept-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+  margin-top: 48px;
+}
+.concept-card {
+  background: var(--void-800);
+  border: 1px solid var(--void-700);
+  border-radius: 16px;
+  overflow: hidden;
+  transition: all 250ms var(--ease-smooth);
+}
+.concept-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--violet-500);
+  box-shadow: 0 16px 40px rgba(0,0,0,0.5), 0 0 32px rgba(124,92,255,0.3);
+}
+.concept-icon {
+  aspect-ratio: 1;
+  border-radius: 23%;  /* macOS squircle */
+  background: radial-gradient(circle at 30% 30%, #1F1F3D 0%, #050510 70%);
+  position: relative;
+  overflow: hidden;
+  margin: 16px;
+  border: 1px solid rgba(124,92,255,0.15);
+  container-type: inline-size;
+  container-name: icn;
+}
+.strip-tile {
+  container-type: inline-size;
+  container-name: icn;
+}
+.concept-icon::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 70% 80%, rgba(0,212,255,0.18), transparent 55%);
+  pointer-events: none;
+  z-index: 1;
+}
+.concept-info {
+  padding: 0 20px 20px;
+}
+.concept-num {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.25em;
+  color: var(--violet-500);
+  margin-bottom: 6px;
+}
+.concept-name {
+  font-family: var(--serif);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--ink-50);
+  letter-spacing: -0.02em;
+  margin-bottom: 8px;
+}
+.concept-desc {
+  font-size: 12px;
+  color: var(--ink-300);
+  line-height: 1.55;
+  margin-bottom: 8px;
+}
+.concept-tag {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-400);
+}
+.concept-tag .pill {
+  display: inline-block;
+  padding: 2px 8px;
+  background: rgba(124,92,255,0.15);
+  color: var(--violet-500);
+  border-radius: 100px;
+  margin-right: 4px;
+}
+
+/* === Concept A: Italic C === */
+.cnc-c {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%; height: 100%;
+  position: relative;
+  z-index: 2;
+}
+.cnc-c-letter {
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 700;
+  font-size: 56cqi;
+  background: var(--grad-aurora);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 0 6cqi rgba(124,92,255,0.5));
+  line-height: 1;
+  padding: 0 4cqi;
+}
+
+/* === Concept B: XC Monogram === */
+.cnc-xc {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%; height: 100%;
+  position: relative;
+  z-index: 2;
+  letter-spacing: -0.06em;
+  line-height: 1;
+  padding: 0 4cqi;
+}
+.cnc-xc .x {
+  font-family: var(--serif);
+  font-weight: 700;
+  font-size: 44cqi;
+  color: var(--ink-50);
+  filter: drop-shadow(0 0 4cqi rgba(248,248,251,0.2));
+  line-height: 1;
+}
+.cnc-xc .c {
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 700;
+  font-size: 44cqi;
+  background: var(--grad-aurora);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 0 6cqi rgba(124,92,255,0.5));
+  line-height: 1;
+}
+
+/* === Concept C: Orb (mascot) === */
+.cnc-orb {
+  width: 68cqi; height: 68cqi;
+  border-radius: 50%;
+  background: radial-gradient(circle at 32% 28%, #FFFFFF 0%, #C7C7E0 8%, #A88AFF 28%, #7C5CFF 55%, #00D4FF 100%);
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 2;
+  box-shadow:
+    0 0 16cqi rgba(124,92,255,0.6),
+    inset -3cqi -4cqi 8cqi rgba(0,0,0,0.3),
+    inset 3cqi 3cqi 8cqi rgba(255,255,255,0.15);
+}
+.cnc-orb::after {
+  content: '';
+  position: absolute;
+  top: 18%; left: 22%;
+  width: 22%; height: 18%;
+  background: radial-gradient(ellipse, rgba(255,255,255,0.7), transparent 70%);
+  border-radius: 50%;
+}
+
+/* === Concept D: X Cross === */
+.cnc-x {
+  width: 65cqi; height: 65cqi;
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 2;
+}
+.cnc-x::before, .cnc-x::after {
+  content: '';
+  position: absolute;
+  width: 16%;
+  height: 100%;
+  left: 50%;
+  top: 0;
+  border-radius: 100px;
+  background: var(--grad-aurora);
+  transform-origin: center;
+  filter: drop-shadow(0 0 6cqi rgba(124,92,255,0.6));
+}
+.cnc-x::before { transform: translateX(-50%) rotate(45deg); }
+.cnc-x::after { transform: translateX(-50%) rotate(-45deg); }
+
+/* === Concept E: Prism (light splits to spectrum) === */
+.cnc-prism {
+  width: 70cqi; height: 70cqi;
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 2;
+  filter: drop-shadow(0 0 12cqi rgba(124,92,255,0.5));
+}
+.cnc-prism .face {
+  position: absolute;
+  width: 0; height: 0;
+  left: 50%; top: 50%;
+  border-left: 22cqi solid transparent;
+  border-right: 22cqi solid transparent;
+}
+.cnc-prism .face.top {
+  border-bottom: 36cqi solid #7C5CFF;
+  transform: translate(-50%, -100%);
+}
+.cnc-prism .face.bot {
+  border-top: 36cqi solid #00D4FF;
+  transform: translate(-50%, 0%);
+}
+.cnc-prism .ray {
+  position: absolute;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--accent-c), transparent);
+  top: 50%; left: 100%;
+  width: 60px;
+  transform-origin: left center;
+}
+.cnc-prism .ray.r1 { --accent-c: #FF3B5C; transform: translateY(-12px) rotate(-15deg); }
+.cnc-prism .ray.r2 { --accent-c: #FFB547; transform: translateY(-4px) rotate(-7deg); }
+.cnc-prism .ray.r3 { --accent-c: #22C55E; transform: translateY(4px) rotate(0deg); }
+.cnc-prism .ray.r4 { --accent-c: #00D4FF; transform: translateY(12px) rotate(7deg); }
+
+/* === Concept F: Node Graph (DAG) === */
+.cnc-dag {
+  width: 75cqi; height: 75cqi;
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 2;
+}
+.cnc-dag svg { width: 100%; height: 100%; overflow: visible; }
+.cnc-dag-node {
+  fill: var(--violet-500);
+  filter: drop-shadow(0 0 8px rgba(124,92,255,0.7));
+}
+.cnc-dag-node.cyan { fill: var(--cyan-500); filter: drop-shadow(0 0 8px rgba(0,212,255,0.7)); }
+.cnc-dag-node.amber { fill: var(--amber-500); filter: drop-shadow(0 0 8px rgba(255,181,71,0.6)); }
+.cnc-dag-edge {
+  stroke: rgba(124,92,255,0.4);
+  stroke-width: 1.5;
+  fill: none;
+}
+
+/* === Concept G: Brackets {} === */
+.cnc-brk {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%; height: 100%;
+  position: relative;
+  z-index: 2;
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 700;
+  font-size: 50cqi;
+  letter-spacing: -0.03em;
+  filter: drop-shadow(0 0 6cqi rgba(124,92,255,0.5));
+  line-height: 1;
+  padding: 0 6cqi;
+}
+.cnc-brk .lb { color: var(--ink-50); }
+.cnc-brk .dot {
+  display: inline-block;
+  width: 0.18em; height: 0.18em;
+  border-radius: 50%;
+  background: var(--grad-aurora);
+  margin: 0 0.15em;
+  vertical-align: middle;
+  box-shadow: 0 0 12px rgba(0,212,255,0.7);
+}
+.cnc-brk .rb {
+  background: var(--grad-aurora);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* === Concept H: Aperture (iris) === */
+.cnc-iris {
+  width: 68cqi; height: 68cqi;
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 2;
+  border-radius: 50%;
+  filter: drop-shadow(0 0 8cqi rgba(124,92,255,0.5));
+}
+.cnc-iris .blade {
+  position: absolute;
+  width: 50%; height: 50%;
+  left: 50%; top: 50%;
+  transform-origin: 0 100%;
+  clip-path: polygon(0 100%, 100% 100%, 50% 0);
+}
+.cnc-iris .blade.b1 { background: linear-gradient(180deg, transparent, var(--violet-500)); transform: rotate(0deg); }
+.cnc-iris .blade.b2 { background: linear-gradient(180deg, transparent, #5882FF);          transform: rotate(60deg); }
+.cnc-iris .blade.b3 { background: linear-gradient(180deg, transparent, #2DA8FF);          transform: rotate(120deg); }
+.cnc-iris .blade.b4 { background: linear-gradient(180deg, transparent, var(--cyan-500));  transform: rotate(180deg); }
+.cnc-iris .blade.b5 { background: linear-gradient(180deg, transparent, #5882FF);          transform: rotate(240deg); }
+.cnc-iris .blade.b6 { background: linear-gradient(180deg, transparent, var(--violet-500));transform: rotate(300deg); }
+.cnc-iris::after {
+  content: '';
+  position: absolute;
+  inset: 30%;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--ink-50), var(--violet-500) 60%, var(--void-900));
+  box-shadow: 0 0 16px rgba(0,212,255,0.6);
+}
+
+/* Concept comparison strip */
+.concept-strip {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  background: var(--void-950);
+  padding: 24px;
+  border: 1px solid var(--void-700);
+  border-radius: 16px;
+  margin-top: 32px;
+}
+.strip-tile {
+  aspect-ratio: 1;
+  border-radius: 18%;
+  background: radial-gradient(circle at 30% 30%, #1F1F3D 0%, #050510 70%);
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(124,92,255,0.15);
+}
+
+/* ========== CLI / TERMINAL ========== */
+.terminal {
+  background: #050510;
+  border: 1px solid var(--void-700);
+  border-radius: 12px;
+  overflow: hidden;
+  font-family: var(--mono);
+  margin-top: 24px;
+}
+.terminal-bar {
+  background: var(--void-800);
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 1px solid var(--void-700);
+}
+.term-dot {
+  width: 12px; height: 12px;
+  border-radius: 50%;
+  background: var(--void-600);
+}
+.term-dot.r { background: #FF5F56; }
+.term-dot.y { background: #FFBD2E; }
+.term-dot.g { background: #27C93F; }
+.term-title {
+  margin-left: auto;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--ink-400);
+  letter-spacing: 0.1em;
+}
+.terminal-body {
+  padding: 24px;
+  font-size: 13px;
+  line-height: 1.5;
+  white-space: pre;
+  overflow-x: auto;
+  color: var(--ink-200);
+}
+.term-prompt { color: var(--w-code); }
+.term-cmd { color: var(--ink-50); }
+.term-out { color: var(--ink-300); }
+.term-x { color: var(--ink-50); }
+.term-c { color: var(--violet-500); font-style: italic; }
+.term-c-2 { color: #8B6FFF; font-style: italic; }
+.term-c-3 { color: #5882FF; font-style: italic; }
+.term-c-4 { color: #2DA8FF; font-style: italic; }
+.term-c-5 { color: #00D4FF; font-style: italic; }
+.term-amber { color: var(--amber-500); }
+.term-cyan { color: var(--w-corp); }
+.term-success { color: var(--aurora); }
+.term-blink {
+  display: inline-block;
+  background: var(--ink-50);
+  width: 8px; height: 14px;
+  vertical-align: middle;
+  margin-left: 2px;
+  animation: cursorBlink 1s steps(2) infinite;
+}
+
+/* ========== WEB INTERFACE VISION (parallax) ========== */
+.hero-vision {
+  margin-top: 48px;
+  position: relative;
+  height: 480px;
+  border-radius: 24px;
+  overflow: hidden;
+  background: var(--void-950);
+  border: 1px solid var(--void-700);
+}
+.hero-layer {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.hero-mesh {
+  background:
+    radial-gradient(ellipse 60% 50% at 30% 30%, rgba(124,92,255,0.4) 0%, transparent 50%),
+    radial-gradient(ellipse 50% 40% at 70% 60%, rgba(0,212,255,0.3) 0%, transparent 50%);
+  animation: meshFloat 12s ease-in-out infinite alternate;
+}
+.hero-grid {
+  background-image:
+    linear-gradient(rgba(124,92,255,0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(124,92,255,0.08) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: radial-gradient(circle at 50% 50%, black 30%, transparent 70%);
+  animation: gridScroll 20s linear infinite;
+}
+@keyframes gridScroll {
+  to { background-position: 48px 48px; }
+}
+.hero-particles {
+  pointer-events: none;
+}
+.particle {
+  position: absolute;
+  width: 4px; height: 4px;
+  border-radius: 50%;
+  background: var(--violet-500);
+  box-shadow: 0 0 12px var(--violet-500);
+  animation: floatUp linear infinite;
+  opacity: 0;
+}
+@keyframes floatUp {
+  0% { transform: translateY(100%); opacity: 0; }
+  10% { opacity: 0.8; }
+  90% { opacity: 0.8; }
+  100% { transform: translateY(-100%); opacity: 0; }
+}
+
+.hero-headline {
+  font-family: var(--serif);
+  font-size: clamp(48px, 7vw, 96px);
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  line-height: 0.95;
+  text-align: center;
+  position: relative;
+  z-index: 5;
+}
+.hero-headline .roman { color: var(--ink-50); }
+.hero-headline .italic {
+  font-style: italic;
+  background: var(--grad-aurora);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Magnetic button */
+.magnetic-btn {
+  display: inline-block;
+  padding: 16px 32px;
+  border-radius: 100px;
+  background: var(--violet-500);
+  color: white;
+  font-family: var(--sans);
+  font-weight: 600;
+  font-size: 15px;
+  border: none;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: transform 200ms var(--ease-emphasis);
+}
+.magnetic-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--grad-aurora);
+  opacity: 0;
+  transition: opacity 250ms;
+}
+.magnetic-btn:hover::before { opacity: 1; }
+.magnetic-btn span { position: relative; z-index: 2; }
+.magnetic-btn:hover { transform: scale(1.04); box-shadow: 0 0 40px rgba(124,92,255,0.5); }
+
+/* Scroll progress indicator (demo) */
+.scroll-progress-demo {
+  position: relative;
+  height: 2px;
+  background: var(--void-700);
+  margin: 48px 0 24px;
+  border-radius: 2px;
+  overflow: hidden;
+}
+.scroll-progress-demo::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  width: 60%;
+  background: var(--grad-aurora);
+  border-radius: 2px;
+  animation: progressFill 3s ease-in-out infinite;
+}
+@keyframes progressFill {
+  0%, 100% { width: 20%; }
+  50% { width: 90%; }
+}
+
+/* Marquee */
+.marquee {
+  overflow: hidden;
+  position: relative;
+  border-top: 1px solid var(--void-700);
+  border-bottom: 1px solid var(--void-700);
+  padding: 24px 0;
+  margin-top: 48px;
+}
+.marquee-track {
+  display: flex;
+  gap: 80px;
+  animation: marquee 30s linear infinite;
+  white-space: nowrap;
+}
+@keyframes marquee {
+  to { transform: translateX(-50%); }
+}
+.marquee-item {
+  font-family: var(--serif);
+  font-size: 36px;
+  font-weight: 400;
+  font-style: italic;
+  color: var(--ink-300);
+  letter-spacing: -0.01em;
+}
+.marquee-item .accent {
+  background: var(--grad-aurora);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.marquee-item::after {
+  content: '✦';
+  margin-left: 80px;
+  color: var(--violet-500);
+  font-style: normal;
+}
+
+/* ========== MASCOT XERO ========== */
+.mascot-fixed {
+  position: fixed;
+  z-index: 1000;
+  pointer-events: none;
+  width: 56px; height: 56px;
+  transition: transform 600ms cubic-bezier(0.32, 0.72, 0, 1);
+  will-change: transform;
+}
+.mascot {
+  width: 100%; height: 100%;
+  position: relative;
+  filter: drop-shadow(0 0 24px rgba(124,92,255,0.6));
+  animation: mascotIdle 3s ease-in-out infinite;
+}
+@keyframes mascotIdle {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-6px); }
+}
+.mascot-body {
+  width: 100%; height: 100%;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #FFFFFF 0%, #A88AFF 30%, #7C5CFF 60%, #00D4FF 100%);
+  position: relative;
+  overflow: visible;
+}
+.mascot-body::before {
+  content: '';
+  position: absolute;
+  top: -8px; left: -8px; right: -8px; bottom: -8px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(124,92,255,0.4) 0%, transparent 60%);
+  animation: mascotGlow 2s ease-in-out infinite;
+}
+@keyframes mascotGlow {
+  0%, 100% { opacity: 0.4; transform: scale(1); }
+  50% { opacity: 0.8; transform: scale(1.15); }
+}
+.mascot-eye {
+  position: absolute;
+  width: 6px; height: 6px;
+  background: var(--void-950);
+  border-radius: 50%;
+  top: 38%;
+  transition: transform 200ms ease-out;
+}
+.mascot-eye.left  { left: 30%; }
+.mascot-eye.right { right: 30%; }
+.mascot-eye::after {
+  content: '';
+  position: absolute;
+  top: 1px; left: 1px;
+  width: 2px; height: 2px;
+  background: white;
+  border-radius: 50%;
+}
+
+.mascot.thinking .mascot-body { animation: mascotSpin 1s linear infinite; }
+@keyframes mascotSpin {
+  to { transform: rotate(360deg); }
+}
+.mascot.happy { animation: mascotBounce 0.6s var(--ease-spring) infinite; }
+@keyframes mascotBounce {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-12px) scale(1.1); }
+}
+.mascot-trail {
+  position: fixed;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--violet-500);
+  box-shadow: 0 0 8px var(--violet-500);
+  pointer-events: none;
+  z-index: 999;
+  opacity: 0;
+}
+
+/* Mascot — static showcase versions */
+.mascot-showcase {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 24px;
+  margin-top: 48px;
+}
+.mascot-state {
+  background: var(--void-800);
+  border: 1px solid var(--void-700);
+  border-radius: 16px;
+  padding: 32px 16px;
+  text-align: center;
+  position: relative;
+}
+.mascot-static {
+  width: 64px; height: 64px;
+  margin: 0 auto 20px;
+  position: relative;
+}
+.mascot-state-name {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-200);
+  margin-bottom: 4px;
+}
+.mascot-state-desc {
+  font-size: 12px;
+  color: var(--ink-400);
+  line-height: 1.5;
+}
+
+/* ========== FOOTER ========== */
+.footer {
+  text-align: center;
+  padding: 120px 80px 80px;
+  background: var(--void-950);
+  border-top: 1px solid var(--void-700);
+}
+.footer-quote {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 32px;
+  color: var(--ink-200);
+  max-width: 720px;
+  margin: 0 auto 48px;
+  line-height: 1.4;
+}
+.footer-meta {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--ink-400);
+}
+.footer-meta a { color: var(--violet-500); text-decoration: none; }
+
+/* ========== UTILS ========== */
+.spacer-md { height: 64px; }
+.spacer-lg { height: 96px; }
+ul.clean { list-style: none; }
+ul.clean li {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--void-800);
+  color: var(--ink-200);
+  font-size: 15px;
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+ul.clean li::before {
+  content: '▸';
+  color: var(--violet-500);
+  font-weight: 700;
+}
+.code-block {
+  background: var(--void-950);
+  border: 1px solid var(--void-700);
+  border-radius: 12px;
+  padding: 24px;
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--cyan-500);
+  line-height: 1.7;
+  overflow-x: auto;
+  white-space: pre;
+  margin: 24px 0;
+}
+.code-block .comment { color: var(--ink-400); }
+.code-block .key { color: var(--violet-500); }
+.code-block .val { color: var(--amber-500); }
+
+/* ========== RESPONSIVE ========== */
+@media (max-width: 1024px) {
+  .page { padding: 48px 32px; }
+  .meta-tl, .meta-tr { top: 24px; }
+  .meta-bl, .meta-br { bottom: 24px; }
+  .meta-tl, .meta-bl { left: 32px; }
+  .meta-tr, .meta-br { right: 32px; }
+  .principles { grid-template-columns: 1fr; gap: 32px; }
+  .two-col { grid-template-columns: 1fr; gap: 48px; }
+  .swatch-grid { grid-template-columns: repeat(3, 1fr); }
+  .gradient-row, .anim-grid { grid-template-columns: 1fr; }
+  .voice-grid { grid-template-columns: 1fr; }
+  .voice-col:first-child { border-right: none; border-bottom: 1px solid var(--void-700); }
+  .ui-mockup { grid-template-columns: 1fr; }
+  .mock-sidebar { display: none; }
+  .logo-grid { grid-template-columns: 1fr; }
+  .type-spec { grid-template-columns: 1fr; gap: 16px; }
+  .type-sample-display { font-size: 56px; }
+  .type-sample-h1 { font-size: 36px; }
+}
+
+/* ========== EXTRA KEYFRAMES ========== */
+@keyframes floatLetter {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+@keyframes progressLoop {
+  0% { width: 0%; }
+  60% { width: 100%; }
+  100% { width: 100%; opacity: 0; }
+}
+@keyframes rotate { to { transform: rotate(360deg); } }
+@keyframes bar {
+  0%, 100% { height: 8px; }
+  50% { height: 50px; }
+}
+
+/* ========== SCROLL REVEAL ========== */
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.7s var(--ease-emphasis), transform 0.7s var(--ease-emphasis);
+}
+.reveal.visible { opacity: 1; transform: translateY(0); }
+</style>
+</head>
+<body>
+
+<!-- ========== 00 — COVER ========== -->
+<section class="page cover">
+  <div class="page-meta meta-tl">XEROCODE · BRAND BOOK</div>
+  <div class="page-meta meta-tr">VOL. I · V2.0</div>
+  <h1 class="logo-hero">XERO<span class="accent">CODE</span></h1>
+  <p class="tagline">AI doesn't chat. AI <em>works.</em></p>
+  <p class="subtag">MULTI-MODEL ORCHESTRATION · 430+ MODELS · MADE IN RUSSIA</p>
+  <div class="page-meta meta-bl">EST · MMXXVI</div>
+  <div class="page-meta meta-br">MOSCOW · RU</div>
+</section>
+
+<!-- ========== TOC ========== -->
+<section class="page">
+  <div class="page-meta meta-tl">CONTENTS</div>
+  <div class="page-meta meta-tr">P. 01</div>
+  <div class="section-header">
+    <span class="section-num">⌘ 00</span>
+    <h2 class="section-title">Содержание</h2>
+  </div>
+  <div class="toc-list">
+    <a class="toc-item" href="#manifest"><span class="toc-num">01</span><span class="toc-name">Манифест</span><span class="toc-page">P. 02</span></a>
+    <a class="toc-item" href="#identity"><span class="toc-num">02</span><span class="toc-name">Идентичность</span><span class="toc-page">P. 04</span></a>
+    <a class="toc-item" href="#color"><span class="toc-num">03</span><span class="toc-name">Цвет</span><span class="toc-page">P. 12</span></a>
+    <a class="toc-item" href="#type"><span class="toc-num">04</span><span class="toc-name">Типографика</span><span class="toc-page">P. 16</span></a>
+    <a class="toc-item" href="#voice"><span class="toc-num">05</span><span class="toc-name">Голос</span><span class="toc-page">P. 20</span></a>
+    <a class="toc-item" href="#photo"><span class="toc-num">06</span><span class="toc-name">Фото</span><span class="toc-page">P. 24</span></a>
+    <a class="toc-item" href="#apply"><span class="toc-num">07</span><span class="toc-name">Применения</span><span class="toc-page">P. 28</span></a>
+    <a class="toc-item" href="#web"><span class="toc-num">08</span><span class="toc-name">Веб-интерфейс</span><span class="toc-page">P. 38</span></a>
+    <a class="toc-item" href="#anim"><span class="toc-num">09</span><span class="toc-name"><em>Анимации</em></span><span class="toc-page">P. 50</span></a>
+    <a class="toc-item" href="#arch"><span class="toc-num">10</span><span class="toc-name"><em>Архитектура</em></span><span class="toc-page">P. 60</span></a>
+    <a class="toc-item" href="#ws-chat"><span class="toc-num">11</span><span class="toc-name">Workspaces — Chat &amp; Corp</span><span class="toc-page">P. 64</span></a>
+    <a class="toc-item" href="#ws-image"><span class="toc-num">12</span><span class="toc-name">Workspace · Images</span><span class="toc-page">P. 68</span></a>
+    <a class="toc-item" href="#ws-code"><span class="toc-num">13</span><span class="toc-name">Workspace · Code</span><span class="toc-page">P. 72</span></a>
+    <a class="toc-item" href="#ws-video"><span class="toc-num">14</span><span class="toc-name">Workspace · Video</span><span class="toc-page">P. 76</span></a>
+    <a class="toc-item" href="#ws-sound"><span class="toc-num">15</span><span class="toc-name">Workspace · Sound</span><span class="toc-page">P. 80</span></a>
+    <a class="toc-item" href="#ws-text"><span class="toc-num">16</span><span class="toc-name">Workspace · Text</span><span class="toc-page">P. 84</span></a>
+    <a class="toc-item" href="#ws-orch"><span class="toc-num">17</span><span class="toc-name"><em>Оркестрация — основа</em></span><span class="toc-page">P. 88</span></a>
+    <a class="toc-item" href="#logo-system"><span class="toc-num">18</span><span class="toc-name">Логотип — система</span><span class="toc-page">P. 96</span></a>
+    <a class="toc-item" href="#app-icons"><span class="toc-num">19</span><span class="toc-name">App Icons</span><span class="toc-page">P. 100</span></a>
+    <a class="toc-item" href="#cli"><span class="toc-num">20</span><span class="toc-name">CLI &amp; Терминал</span><span class="toc-page">P. 104</span></a>
+    <a class="toc-item" href="#vision"><span class="toc-num">21</span><span class="toc-name"><em>Сайт — новое видение</em></span><span class="toc-page">P. 108</span></a>
+    <a class="toc-item" href="#mascot"><span class="toc-num">22</span><span class="toc-name"><em>Маскот · Xero</em></span><span class="toc-page">P. 112</span></a>
+    <a class="toc-item" href="#impl"><span class="toc-num">23</span><span class="toc-name">Реализация</span><span class="toc-page">P. 118</span></a>
+  </div>
+  <div class="page-meta meta-bl">XEROCODE BRAND BOOK V2.0</div>
+  <div class="page-meta meta-br">23 SECTIONS</div>
+</section>
+
+<!-- ========== 01 — MANIFEST ========== -->
+<section class="page" id="manifest">
+  <div class="page-meta meta-tl">SECTION 01</div>
+  <div class="page-meta meta-tr">P. 02</div>
+  <div class="section-header">
+    <span class="section-num">⌘ 01</span>
+    <h2 class="section-title">Манифест</h2>
+  </div>
+  <div style="text-align: center; margin: auto 0;">
+    <p class="manifest-quote">«Мир делится на тех, кто <em>говорит</em> с ИИ, и тех, кто <em>работает</em> с ИИ.»</p>
+    <p class="manifest-author">— XeroCode Founding Principle</p>
+  </div>
+  <div class="principles">
+    <div class="principle">
+      <p class="principle-num">№ 01</p>
+      <h3 class="principle-title">Outcome &gt; Output</h3>
+      <p class="principle-body">Мы не считаем токены. Мы считаем готовые документы, проскоренные лиды, отвеченные письма. Результат — единственная метрика.</p>
+    </div>
+    <div class="principle">
+      <p class="principle-num">№ 02</p>
+      <h3 class="principle-title">Multi-model</h3>
+      <p class="principle-body">Один Claude не лучше всех. Один GPT не лучше всех. Лучше всех — оркестр: правильная модель для правильной задачи. У нас их 430+.</p>
+    </div>
+    <div class="principle">
+      <p class="principle-num">№ 03</p>
+      <h3 class="principle-title">Russia-grade</h3>
+      <p class="principle-body">Не русский Notion. То, чего нет нигде: ИИ, понимающий 1С, ЭДО, Битрикс, ЮKassa, налоговую — потому что 90% бизнеса живёт там.</p>
+    </div>
+  </div>
+  <div class="page-meta meta-bl">MANIFEST</div>
+  <div class="page-meta meta-br">XEROCODE / 01</div>
+</section>
+
+<!-- ========== 02 — IDENTITY ========== -->
+<section class="page" id="identity">
+  <div class="page-meta meta-tl">SECTION 02</div>
+  <div class="page-meta meta-tr">P. 04</div>
+  <div class="section-header">
+    <span class="section-num">⌘ 02</span>
+    <h2 class="section-title">Идентич<em>ность</em></h2>
+  </div>
+  <div class="two-col">
+    <div>
+      <p class="col-label">КОНЦЕПЦИЯ</p>
+      <p class="lead-text">Буква <em>X</em> — пересечение, скрещивание, выбор. Между строгой геометрией и плавным изгибом.</p>
+      <p class="body-text">Логомарк построен на сетке 8×8. Минимальный размер — 24px цифровой / 8mm печатный. Защитное поле — равно высоте перекладины X.</p>
+      <p class="body-text">Архетип — Маг + Творец. Превращаем хаос (430 моделей) в порядок (готовый файл).</p>
+    </div>
+    <div>
+      <p class="col-label">ВАРИАНТЫ</p>
+      <div class="logo-grid">
+        <div class="logo-card dark">
+          <div class="logo-display on-dark">XERO<span class="x-glow">CODE</span></div>
+          <div class="logo-card-label">PRIMARY · DARK</div>
+        </div>
+        <div class="logo-card light">
+          <div class="logo-display on-light">XERO<em style="color: #7C5CFF; font-style: italic; font-weight: 400;">CODE</em></div>
+          <div class="logo-card-label">PRIMARY · LIGHT</div>
+        </div>
+        <div class="logo-card aurora">
+          <div class="logo-display on-dark">X</div>
+          <div class="logo-card-label">MARK · ACCENT</div>
+        </div>
+        <div class="logo-card mesh">
+          <div class="x-mark"></div>
+          <div class="logo-card-label">SYMBOL · GLOW</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="page-meta meta-bl">IDENTITY</div>
+  <div class="page-meta meta-br">XEROCODE / 02</div>
+</section>
+
+<!-- ========== 03 — COLOR ========== -->
+<section class="page" id="color">
+  <div class="page-meta meta-tl">SECTION 03</div>
+  <div class="page-meta meta-tr">P. 12</div>
+  <div class="section-header">
+    <span class="section-num">⌘ 03</span>
+    <h2 class="section-title"><em>Цвет</em></h2>
+  </div>
+
+  <p class="palette-row-label">Void · The Background</p>
+  <div class="swatch-grid">
+    <div class="swatch light-text" style="background:#050510"><span class="swatch-name">Void 950</span><div><span class="swatch-hex">#050510</span><br><span class="swatch-rgb">5 · 5 · 16</span></div></div>
+    <div class="swatch light-text" style="background:#0A0A1A"><span class="swatch-name">Void 900 ⭐</span><div><span class="swatch-hex">#0A0A1A</span><br><span class="swatch-rgb">10 · 10 · 26</span></div></div>
+    <div class="swatch light-text" style="background:#14142B"><span class="swatch-name">Void 800</span><div><span class="swatch-hex">#14142B</span><br><span class="swatch-rgb">20 · 20 · 43</span></div></div>
+    <div class="swatch light-text" style="background:#1F1F3D"><span class="swatch-name">Void 700</span><div><span class="swatch-hex">#1F1F3D</span><br><span class="swatch-rgb">31 · 31 · 61</span></div></div>
+    <div class="swatch light-text" style="background:#2D2D5A"><span class="swatch-name">Void 600</span><div><span class="swatch-hex">#2D2D5A</span><br><span class="swatch-rgb">45 · 45 · 90</span></div></div>
+  </div>
+
+  <p class="palette-row-label">Electric Violet · Primary Accent</p>
+  <div class="swatch-grid">
+    <div class="swatch dark-text" style="background:#F4F0FF"><span class="swatch-name">Violet 50</span><div><span class="swatch-hex">#F4F0FF</span><br><span class="swatch-rgb">244 · 240 · 255</span></div></div>
+    <div class="swatch dark-text" style="background:#A88AFF"><span class="swatch-name">Violet 300</span><div><span class="swatch-hex">#A88AFF</span><br><span class="swatch-rgb">168 · 138 · 255</span></div></div>
+    <div class="swatch light-text" style="background:#7C5CFF"><span class="swatch-name">Violet 500 ⭐</span><div><span class="swatch-hex">#7C5CFF</span><br><span class="swatch-rgb">124 · 92 · 255</span></div></div>
+    <div class="swatch light-text" style="background:#6240E8"><span class="swatch-name">Violet 600</span><div><span class="swatch-hex">#6240E8</span><br><span class="swatch-rgb">98 · 64 · 232</span></div></div>
+    <div class="swatch light-text" style="background:#2D1880"><span class="swatch-name">Violet 900</span><div><span class="swatch-hex">#2D1880</span><br><span class="swatch-rgb">45 · 24 · 128</span></div></div>
+  </div>
+
+  <p class="palette-row-label">Plasma & Solar · Secondary</p>
+  <div class="swatch-grid">
+    <div class="swatch dark-text" style="background:#00D4FF"><span class="swatch-name">Plasma 500</span><div><span class="swatch-hex">#00D4FF</span><br><span class="swatch-rgb">0 · 212 · 255</span></div></div>
+    <div class="swatch dark-text" style="background:#00A6CC"><span class="swatch-name">Plasma 600</span><div><span class="swatch-hex">#00A6CC</span><br><span class="swatch-rgb">0 · 166 · 204</span></div></div>
+    <div class="swatch dark-text" style="background:#FFB547"><span class="swatch-name">Solar 500</span><div><span class="swatch-hex">#FFB547</span><br><span class="swatch-rgb">255 · 181 · 71</span></div></div>
+    <div class="swatch light-text" style="background:#FF3B5C"><span class="swatch-name">Crimson</span><div><span class="swatch-hex">#FF3B5C</span><br><span class="swatch-rgb">255 · 59 · 92</span></div></div>
+    <div class="swatch light-text" style="background:#22C55E"><span class="swatch-name">Aurora</span><div><span class="swatch-hex">#22C55E</span><br><span class="swatch-rgb">34 · 197 · 94</span></div></div>
+  </div>
+
+  <p class="palette-row-label" style="margin-top: 64px;">Signature Gradients</p>
+  <div class="gradient-row">
+    <div class="gradient-card aurora">
+      <span class="gradient-name">Aurora</span>
+      <span class="gradient-css">linear-gradient(135deg, #7C5CFF, #00D4FF)</span>
+    </div>
+    <div class="gradient-card solar">
+      <span class="gradient-name">Solar Flare</span>
+      <span class="gradient-css">linear-gradient(135deg, #FFB547, #FF3B5C)</span>
+    </div>
+    <div class="gradient-card mesh">
+      <span class="gradient-name">Plasma Mesh</span>
+      <span class="gradient-css">radial-gradient(...) + #050510</span>
+    </div>
+  </div>
+  <div class="page-meta meta-bl">COLOR SYSTEM</div>
+  <div class="page-meta meta-br">XEROCODE / 03</div>
+</section>
+
+<!-- ========== 04 — TYPOGRAPHY ========== -->
+<section class="page" id="type">
+  <div class="page-meta meta-tl">SECTION 04</div>
+  <div class="page-meta meta-tr">P. 16</div>
+  <div class="section-header">
+    <span class="section-num">⌘ 04</span>
+    <h2 class="section-title">Типогра<em>фика</em></h2>
+  </div>
+
+  <div class="type-spec">
+    <div class="type-meta">
+      <strong>EDITORIAL</strong>
+      Playfair Display<br>
+      Bold Italic<br>
+      96px / 1.0 / −3%
+    </div>
+    <div class="type-sample-display">Stена становится <em>комнатой.</em></div>
+  </div>
+
+  <div class="type-spec">
+    <div class="type-meta">
+      <strong>DISPLAY</strong>
+      Manrope<br>
+      ExtraBold 800<br>
+      56px / 1.1 / −2%
+    </div>
+    <div class="type-sample-h1">AI doesn't chat.<br>AI works.</div>
+  </div>
+
+  <div class="type-spec">
+    <div class="type-meta">
+      <strong>BODY</strong>
+      Inter<br>
+      Regular 400<br>
+      18px / 1.7 / 0
+    </div>
+    <div class="type-sample-body">Когда в 18:47 пятницы тебе нужна презентация на завтрашнее утро — ты не хочешь ввести промпт, отредактировать ответ, скопировать, вставить в PowerPoint, поправить шрифты. Ты хочешь готовый файл.</div>
+  </div>
+
+  <div class="type-spec">
+    <div class="type-meta">
+      <strong>MONO / DATA</strong>
+      JetBrains Mono<br>
+      Medium 500<br>
+      16px / 1.6 / +5%
+    </div>
+    <div class="type-sample-mono">--accent: #7C5CFF;<br>--ease-emphasis: cubic-bezier(0.32, 0.72, 0, 1);</div>
+  </div>
+  <div class="page-meta meta-bl">TYPE SYSTEM</div>
+  <div class="page-meta meta-br">XEROCODE / 04</div>
+</section>
+
+<!-- ========== 05 — VOICE ========== -->
+<section class="page" id="voice">
+  <div class="page-meta meta-tl">SECTION 05</div>
+  <div class="page-meta meta-tr">P. 20</div>
+  <div class="section-header">
+    <span class="section-num">⌘ 05</span>
+    <h2 class="section-title">Голос</h2>
+  </div>
+  <p class="lead-text" style="max-width: 800px;">Глагол первым. Меньше воды. Цифры вместо прилагательных. На <em>«ты»</em>.</p>
+  <div class="voice-grid">
+    <div class="voice-col bad">
+      <p class="voice-col-header">✕ Не пишем так</p>
+      <p class="voice-item">«Возможность создания презентации»</p>
+      <p class="voice-item">«Очень мощная и инновационная функция»</p>
+      <p class="voice-item">«Очень быстро»</p>
+      <p class="voice-item">«Что-то пошло не так»</p>
+      <p class="voice-item">«Мы рады представить…»</p>
+      <p class="voice-item">«Превышен лимит»</p>
+    </div>
+    <div class="voice-col good">
+      <p class="voice-col-header">✓ Пишем так</p>
+      <p class="voice-item">Создай презентацию</p>
+      <p class="voice-item">Готовая презентация за 12 секунд</p>
+      <p class="voice-item">12 секунд</p>
+      <p class="voice-item">Сервер не ответил. Уже чиним. Код #X-501</p>
+      <p class="voice-item">Новый билд — 2.0</p>
+      <p class="voice-item">50/50 за сегодня. Обнови тариф или жди 00:00 МСК.</p>
+    </div>
+  </div>
+  <div class="page-meta meta-bl">VOICE & TONE</div>
+  <div class="page-meta meta-br">XEROCODE / 05</div>
+</section>
+
+<!-- ========== 06 — PHOTO ========== -->
+<section class="page" id="photo">
+  <div class="page-meta meta-tl">SECTION 06</div>
+  <div class="page-meta meta-tr">P. 24</div>
+  <div class="section-header">
+    <span class="section-num">⌘ 06</span>
+    <h2 class="section-title">Фото</h2>
+  </div>
+  <div class="two-col">
+    <div>
+      <p class="col-label">ЭСТЕТИКА</p>
+      <p class="lead-text">Низкий ключ. Холодные тени с фиолетовым подтоном. <em>Никаких</em> стоковых улыбок и роботов с человеческим лицом.</p>
+      <ul class="clean">
+        <li>Тёмные фоны, киношное освещение</li>
+        <li>Боке огней города, неон, отражения</li>
+        <li>Реальные люди в работе (не постановка)</li>
+        <li>Крупный план: руки, лица в полусвете</li>
+      </ul>
+    </div>
+    <div>
+      <p class="col-label">ЦВЕТОКОР PRESET</p>
+      <div class="code-block"><span class="comment">/* Lightroom / Capture One */</span>
+<span class="key">exposure</span>:    <span class="val">−0.3</span>
+<span class="key">highlights</span>:  <span class="val">−20</span>
+<span class="key">shadows</span>:     <span class="val">+30</span>
+<span class="key">whites</span>:      <span class="val">−10</span>
+<span class="key">blacks</span>:      <span class="val">−15</span>
+<span class="key">vibrance</span>:    <span class="val">+10</span>
+<span class="key">saturation</span>:  <span class="val">−5</span>
+<span class="key">tint</span>:        <span class="val">+5 magenta → +3 blue</span>
+<span class="key">hsl</span>:
+  <span class="key">blue.sat</span>:    <span class="val">+15</span>
+  <span class="key">purple.sat</span>:  <span class="val">+25</span>
+  <span class="key">yellow.sat</span>:  <span class="val">−10</span></div>
+    </div>
+  </div>
+  <div class="page-meta meta-bl">PHOTOGRAPHY</div>
+  <div class="page-meta meta-br">XEROCODE / 06</div>
+</section>
+
+<!-- ========== 07 — APPLICATIONS ========== -->
+<section class="page" id="apply">
+  <div class="page-meta meta-tl">SECTION 07</div>
+  <div class="page-meta meta-tr">P. 28</div>
+  <div class="section-header">
+    <span class="section-num">⌘ 07</span>
+    <h2 class="section-title"><em>Применения</em></h2>
+  </div>
+  <p class="lead-text" style="max-width: 800px;">Документы, email, watermark, социалки — всё на единых токенах.</p>
+
+  <p class="palette-row-label" style="margin-top: 32px;">Темы документов (PPTX / DOCX / XLSX)</p>
+  <div class="logo-grid" style="grid-template-columns: repeat(4, 1fr);">
+    <div class="logo-card" style="background:#0A0A1A; aspect-ratio: 1;">
+      <div style="text-align:center;">
+        <div style="font-family:var(--serif); font-size:20px; color:#F8F8FB;">Quarterly</div>
+        <div style="font-family:var(--mono); font-size:9px; color:#00D4FF; margin-top:8px; letter-spacing:0.2em;">▸ XEROCODE THEME</div>
+      </div>
+      <div class="logo-card-label">XEROCODE ⭐</div>
+    </div>
+    <div class="logo-card" style="background:#FFFFFF; aspect-ratio: 1;">
+      <div style="text-align:center;">
+        <div style="font-family:var(--serif); font-size:20px; color:#0A0A1A;">Quarterly</div>
+        <div style="font-family:var(--mono); font-size:9px; color:#7C5CFF; margin-top:8px; letter-spacing:0.2em;">▸ BUSINESS</div>
+      </div>
+      <div class="logo-card-label" style="color:#7575A8;">BUSINESS</div>
+    </div>
+    <div class="logo-card" style="background:#050510; aspect-ratio: 1;">
+      <div style="text-align:center;">
+        <div style="font-family:var(--serif); font-size:20px; color:#F8F8FB;">Quarterly</div>
+        <div style="font-family:var(--mono); font-size:9px; color:#FFB547; margin-top:8px; letter-spacing:0.2em;">▸ AURORA</div>
+      </div>
+      <div class="logo-card-label">AURORA</div>
+    </div>
+    <div class="logo-card" style="background:#F8F8FB; aspect-ratio: 1;">
+      <div style="text-align:center;">
+        <div style="font-family:var(--serif); font-size:20px; color:#0A0A1A;">Quarterly</div>
+        <div style="font-family:var(--mono); font-size:9px; color:#0A0A1A; margin-top:8px; letter-spacing:0.2em;">▸ MINIMAL</div>
+      </div>
+      <div class="logo-card-label" style="color:#7575A8;">MINIMAL</div>
+    </div>
+  </div>
+
+  <p class="palette-row-label" style="margin-top: 64px;">Watermark / Подпись</p>
+  <div class="component-demo" style="justify-content:center; padding: 64px;">
+    <div style="font-family: var(--mono); font-size: 11px; letter-spacing: 0.2em; color: var(--ink-400); opacity: 0.6;">XEROCODE AI · xerocode.ru · 27.04.2026</div>
+  </div>
+  <div class="page-meta meta-bl">APPLICATIONS</div>
+  <div class="page-meta meta-br">XEROCODE / 07</div>
+</section>
+
+<!-- ========== 08 — WEB INTERFACE ========== -->
+<section class="page" id="web">
+  <div class="page-meta meta-tl">SECTION 08</div>
+  <div class="page-meta meta-tr">P. 38</div>
+  <div class="section-header">
+    <span class="section-num">⌘ 08</span>
+    <h2 class="section-title">Веб-интерфейс</h2>
+  </div>
+
+  <p class="palette-row-label">Кнопки</p>
+  <div class="component-demo">
+    <p class="demo-label">BUTTON · STATES</p>
+    <button class="btn btn-primary">Создать сделку</button>
+    <button class="btn btn-secondary">Отмена</button>
+    <button class="btn btn-ghost">Подробнее</button>
+    <button class="btn btn-primary" disabled style="opacity: 0.4; cursor: not-allowed;">Заблокирована</button>
+  </div>
+
+  <p class="palette-row-label">Поля и карточки</p>
+  <div class="component-demo">
+    <p class="demo-label">INPUT · CARD</p>
+    <input class="input-demo" type="text" placeholder="Название проекта…" />
+    <div class="card-demo">
+      <h4>AI Документ</h4>
+      <p>Sonnet 4.7 · 8 слайдов · 12 секунд</p>
+    </div>
+  </div>
+
+  <p class="palette-row-label" style="margin-top: 64px;">Mockup интерфейса</p>
+  <div class="ui-mockup">
+    <div class="mock-sidebar">
+      <div class="mock-logo">Xero<span>Code</span></div>
+      <div class="mock-nav-item active"><span class="mock-nav-icon"></span>AI Чат</div>
+      <div class="mock-nav-item"><span class="mock-nav-icon"></span>Документы</div>
+      <div class="mock-nav-item"><span class="mock-nav-icon"></span>Презентации</div>
+      <div class="mock-nav-item"><span class="mock-nav-icon"></span>Workflows</div>
+      <div class="mock-nav-item"><span class="mock-nav-icon"></span>Arena</div>
+      <div class="mock-nav-item"><span class="mock-nav-icon"></span>Knowledge Base</div>
+      <div style="height: 24px;"></div>
+      <div style="font-family: var(--mono); font-size: 10px; letter-spacing: 0.2em; color: var(--ink-400); padding: 8px 12px;">КОРПОРАЦИЯ</div>
+      <div class="mock-nav-item"><span class="mock-nav-icon"></span>CRM</div>
+      <div class="mock-nav-item"><span class="mock-nav-icon"></span>Каналы</div>
+      <div class="mock-nav-item"><span class="mock-nav-icon"></span>Задачи</div>
+    </div>
+    <div class="mock-content">
+      <h3 class="mock-greeting">С возвращением, <em>Владимир.</em></h3>
+      <p class="mock-sub">Сегодня модели обработали 2 847 запросов</p>
+      <div class="mock-cards">
+        <div class="mock-card">
+          <div class="mock-card-num">12</div>
+          <div class="mock-card-label">Документов</div>
+        </div>
+        <div class="mock-card">
+          <div class="mock-card-num">847</div>
+          <div class="mock-card-label">Сообщений</div>
+        </div>
+        <div class="mock-card">
+          <div class="mock-card-num">23</div>
+          <div class="mock-card-label">Активных DAG</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="page-meta meta-bl">WEB UI</div>
+  <div class="page-meta meta-br">XEROCODE / 08</div>
+</section>
+
+<!-- ========== 09 — ANIMATIONS ========== -->
+<section class="page" id="anim">
+  <div class="page-meta meta-tl">SECTION 09</div>
+  <div class="page-meta meta-tr">P. 50</div>
+  <div class="section-header">
+    <span class="section-num">⌘ 09</span>
+    <h2 class="section-title"><em>Анимации</em></h2>
+  </div>
+  <p class="lead-text" style="max-width: 800px;">Движение — это смысл, а не декорация. <em>10 пресетов</em>, единые тайминги.</p>
+
+  <div class="anim-grid">
+    <div class="anim-card">
+      <div class="ai-pulse"></div>
+      <span class="anim-label">AI PULSE · 2s</span>
+    </div>
+    <div class="anim-card">
+      <div class="shimmer"></div>
+      <span class="anim-label">AURORA SHIMMER · 1.6s</span>
+    </div>
+    <div class="anim-card">
+      <div class="mesh-anim"></div>
+      <span class="anim-label">MESH FLOAT · 8s</span>
+    </div>
+    <div class="anim-card">
+      <span class="stream-text">генерирую слайд<span class="stream-cursor">▎</span></span>
+      <span class="anim-label">STREAM CURSOR</span>
+    </div>
+    <div class="anim-card">
+      <span class="counter">2 847</span>
+      <span class="anim-label">TABULAR NUMS</span>
+    </div>
+    <div class="anim-card">
+      <div class="lift-demo">HOVER ME</div>
+      <span class="anim-label">CARD LIFT · HOVER</span>
+    </div>
+    <div class="anim-card">
+      <span class="grad-text">XeroCode</span>
+      <span class="anim-label">GRADIENT SHIFT · 4s</span>
+    </div>
+    <div class="anim-card">
+      <div style="display: flex; flex-direction: column; gap: 8px; align-items: center;">
+        <div style="width: 40px; height: 4px; background: var(--violet-500); border-radius: 2px;"></div>
+        <div style="width: 60px; height: 4px; background: var(--cyan-500); border-radius: 2px;"></div>
+        <div style="width: 50px; height: 4px; background: var(--amber-500); border-radius: 2px;"></div>
+      </div>
+      <span class="anim-label">STAGGER REVEAL</span>
+    </div>
+    <div class="anim-card">
+      <div style="font-family: var(--serif); font-size: 24px; color: var(--ink-50);">Modal Bloom</div>
+      <span class="anim-label">SCALE + BLUR FADE</span>
+    </div>
+  </div>
+
+  <p class="palette-row-label" style="margin-top: 64px;">Тайминги</p>
+  <div class="code-block"><span class="comment">/* Easing */</span>
+<span class="key">--ease-emphasis</span>:    <span class="val">cubic-bezier(0.32, 0.72, 0, 1)</span>   <span class="comment">/* default ⭐ */</span>
+<span class="key">--ease-decelerate</span>:  <span class="val">cubic-bezier(0.0, 0.0, 0.2, 1)</span>
+<span class="key">--ease-accelerate</span>:  <span class="val">cubic-bezier(0.4, 0.0, 1.0, 1)</span>
+<span class="key">--ease-spring</span>:      <span class="val">cubic-bezier(0.34, 1.56, 0.64, 1)</span>
+
+<span class="comment">/* Duration */</span>
+<span class="key">--dur-quick</span>:    <span class="val">150ms</span>   <span class="comment">/* кнопки, чипы */</span>
+<span class="key">--dur-snappy</span>:   <span class="val">200ms</span>   <span class="comment">/* карточки */</span>
+<span class="key">--dur-smooth</span>:   <span class="val">300ms</span>   <span class="comment">/* модалки ⭐ */</span>
+<span class="key">--dur-slow</span>:     <span class="val">450ms</span>   <span class="comment">/* hero, секции */</span></div>
+  <div class="page-meta meta-bl">MOTION SYSTEM</div>
+  <div class="page-meta meta-br">XEROCODE / 09</div>
+</section>
+
+<!-- ========== 10 — IMPLEMENTATION ========== -->
+<!-- ========== 10 — ARCHITECTURE ========== -->
+<section class="page" id="arch">
+  <div class="page-meta meta-tl">SECTION 10</div>
+  <div class="page-meta meta-tr">P. 60</div>
+  <div class="section-header">
+    <span class="section-num">⌘ 10</span>
+    <h2 class="section-title"><em>Архитектура</em></h2>
+  </div>
+  <p class="lead-text" style="max-width: 880px;">Не один продукт. <em>Восемь workspace'ов</em> под одной оркестрацией. Как Adobe — но AI.</p>
+
+  <div class="arch-grid">
+    <div class="arch-card" style="--accent-color: var(--w-chat); --accent-glow: rgba(124,92,255,0.3);">
+      <div class="accent-bar"></div>
+      <div>
+        <p class="arch-num">01 / WORKSPACE</p>
+        <div class="arch-icon"></div>
+      </div>
+      <div>
+        <h4 class="arch-name">Chat</h4>
+        <p class="arch-tag">▸ Общий диалог</p>
+        <p class="arch-body">Любая задача словами. 430+ моделей, BYOK, история, стриминг.</p>
+      </div>
+    </div>
+
+    <div class="arch-card" style="--accent-color: var(--w-corp); --accent-glow: rgba(0,212,255,0.3);">
+      <div class="accent-bar"></div>
+      <div>
+        <p class="arch-num">02 / WORKSPACE</p>
+        <div class="arch-icon"></div>
+      </div>
+      <div>
+        <h4 class="arch-name">Corporate</h4>
+        <p class="arch-tag">▸ Команда</p>
+        <p class="arch-body">CRM, каналы, задачи, KB. 1С / Битрикс / ЭДО / Telegram.</p>
+      </div>
+    </div>
+
+    <div class="arch-card" style="--accent-color: var(--w-image); --accent-glow: rgba(255,181,71,0.3);">
+      <div class="accent-bar"></div>
+      <div>
+        <p class="arch-num">03 / WORKSPACE</p>
+        <div class="arch-icon"></div>
+      </div>
+      <div>
+        <h4 class="arch-name">Images</h4>
+        <p class="arch-tag">▸ Визуал</p>
+        <p class="arch-body">gpt-image-2, FLUX Pro, Stability, Pollinations. T2I / I2I / inpaint.</p>
+      </div>
+    </div>
+
+    <div class="arch-card" style="--accent-color: var(--w-code); --accent-glow: rgba(34,197,94,0.3);">
+      <div class="accent-bar"></div>
+      <div>
+        <p class="arch-num">04 / WORKSPACE</p>
+        <div class="arch-icon"></div>
+      </div>
+      <div>
+        <h4 class="arch-name">Code</h4>
+        <p class="arch-tag">▸ Разработка</p>
+        <p class="arch-body">IDE-подобный режим. Исполнение, тесты, git, sandbox-докер.</p>
+      </div>
+    </div>
+
+    <div class="arch-card" style="--accent-color: var(--w-video); --accent-glow: rgba(255,59,92,0.3);">
+      <div class="accent-bar"></div>
+      <div>
+        <p class="arch-num">05 / WORKSPACE</p>
+        <div class="arch-icon"></div>
+      </div>
+      <div>
+        <h4 class="arch-name">Video</h4>
+        <p class="arch-tag">▸ Кинематограф</p>
+        <p class="arch-body">Sora, Runway, Kling, Luma. Timeline, клипы, монтаж, цветокор.</p>
+      </div>
+    </div>
+
+    <div class="arch-card" style="--accent-color: var(--w-sound); --accent-glow: rgba(255,107,255,0.3);">
+      <div class="accent-bar"></div>
+      <div>
+        <p class="arch-num">06 / WORKSPACE</p>
+        <div class="arch-icon"></div>
+      </div>
+      <div>
+        <h4 class="arch-name">Sound</h4>
+        <p class="arch-tag">▸ Аудио</p>
+        <p class="arch-body">ElevenLabs, Suno, Udio, Whisper. Генерация, клонирование, EQ.</p>
+      </div>
+    </div>
+
+    <div class="arch-card" style="--accent-color: var(--w-text); --accent-glow: rgba(248,248,251,0.2);">
+      <div class="accent-bar"></div>
+      <div>
+        <p class="arch-num">07 / WORKSPACE</p>
+        <div class="arch-icon"></div>
+      </div>
+      <div>
+        <h4 class="arch-name">Text</h4>
+        <p class="arch-tag">▸ Документы</p>
+        <p class="arch-body">PPTX / DOCX / XLSX. Editor + AI-coauthor. Шаблоны, экспорт.</p>
+      </div>
+    </div>
+
+    <div class="arch-card" style="--accent-color: var(--violet-500); --accent-glow: rgba(124,92,255,0.4);">
+      <div class="accent-bar" style="background: var(--w-orch);"></div>
+      <div>
+        <p class="arch-num">08 / FOUNDATION</p>
+        <div class="arch-icon" style="background: linear-gradient(135deg, var(--w-chat), var(--w-corp));"></div>
+      </div>
+      <div>
+        <h4 class="arch-name">Knowledge</h4>
+        <p class="arch-tag">▸ База знаний</p>
+        <p class="arch-body">pgvector RAG. Подключается ко всем workspace'ам.</p>
+      </div>
+    </div>
+
+    <div class="arch-card orch">
+      <div class="accent-bar"></div>
+      <div>
+        <p class="arch-num">⌘ FOUNDATION · CORE</p>
+        <div class="arch-icon" style="background: var(--w-orch); width: 56px; height: 56px; opacity: 1;"></div>
+      </div>
+      <div>
+        <h4 class="arch-name">Orchestration</h4>
+        <p class="arch-tag" style="color: var(--amber-500);">▸ ОСНОВА · ДВИЖОК · СПИНА ВСЕГО</p>
+        <p class="arch-body">Многоагентная оркестрация. Любой workspace — это узел DAG. Модели, инструменты, workspace'ы соединяются в граф задач, каждый — со своим режимом исполнения.</p>
+        <div class="orch-modes">
+          <span class="orch-mode"><strong>01</strong>manager</span>
+          <span class="orch-mode"><strong>02</strong>team</span>
+          <span class="orch-mode"><strong>03</strong>swarm</span>
+          <span class="orch-mode"><strong>04</strong>auction</span>
+          <span class="orch-mode"><strong>05</strong>xerocode_ai ⭐</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-meta meta-bl">ARCHITECTURE</div>
+  <div class="page-meta meta-br">XEROCODE / 10</div>
+</section>
+
+<!-- ========== 11 — WS · CHAT & CORP ========== -->
+<section class="page" id="ws-chat">
+  <div class="page-meta meta-tl">SECTION 11</div>
+  <div class="page-meta meta-tr">P. 64</div>
+  <div class="section-header">
+    <span class="section-num">⌘ 11</span>
+    <h2 class="section-title">Chat &amp; <em>Corp</em></h2>
+  </div>
+  <p class="lead-text" style="max-width: 800px;">Текущие режимы — сохраняются. Получают свой <em>дом</em> и accent.</p>
+
+  <div class="ws-hero" style="--accent-color: var(--w-chat);">
+    <div>
+      <div class="ws-id">
+        <span class="ws-id-dot"></span>
+        <span class="ws-id-num">WORKSPACE 01 · VIOLET 500 · #7C5CFF</span>
+      </div>
+      <h3 class="ws-name">Chat<em>.</em></h3>
+      <p class="ws-tagline">Любая задача словами. От «напиши письмо» до «проскорь воронку».</p>
+    </div>
+    <div class="ws-mockup">
+      <div class="ws-mockup-header"><span class="dot"></span>CHAT · CLAUDE SONNET 4.7</div>
+      <div class="ws-chat-msg user-msg">
+        <div class="ws-chat-avatar user"></div>
+        <div class="ws-chat-bubble">Сделай питч-дек на 8 слайдов про Q2 рост</div>
+      </div>
+      <div class="ws-chat-msg">
+        <div class="ws-chat-avatar ai"></div>
+        <div class="ws-chat-bubble">Готово. Скачать <span style="color:var(--w-chat); text-decoration:underline;">Q2_Growth.pptx</span> (2.4 MB) <span class="stream-cursor">▎</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="ws-hero" style="--accent-color: var(--w-corp); margin-top: 80px;">
+    <div class="ws-mockup">
+      <div class="ws-mockup-header"><span class="dot"></span>CORPORATE · CRM PIPELINE</div>
+      <div class="ws-corp-stats">
+        <div class="ws-corp-stat"><div class="num">847k ₽</div><div class="lbl">MRR</div></div>
+        <div class="ws-corp-stat"><div class="num">23</div><div class="lbl">Active deals</div></div>
+        <div class="ws-corp-stat"><div class="num">+18%</div><div class="lbl">vs last week</div></div>
+        <div class="ws-corp-stat"><div class="num">94%</div><div class="lbl">SLA</div></div>
+      </div>
+      <div class="ws-corp-rows">
+        <div class="ws-corp-row"><span>ООО «Альфа» · 1.2М ₽</span><span class="pill">PROPOSAL</span></div>
+        <div class="ws-corp-row"><span>Beta Corp · $12k</span><span class="pill">NEGOTIATION</span></div>
+        <div class="ws-corp-row"><span>Gamma SaaS · €8k</span><span class="pill">CLOSED-WON</span></div>
+      </div>
+    </div>
+    <div>
+      <div class="ws-id">
+        <span class="ws-id-dot"></span>
+        <span class="ws-id-num">WORKSPACE 02 · PLASMA 500 · #00D4FF</span>
+      </div>
+      <h3 class="ws-name">Corp<em>.</em></h3>
+      <p class="ws-tagline">CRM · Каналы · Задачи · 1С · ЭДО. Корпорация в одном окне.</p>
+    </div>
+  </div>
+
+  <div class="page-meta meta-bl">WS · CHAT &amp; CORP</div>
+  <div class="page-meta meta-br">XEROCODE / 11</div>
+</section>
+
+<!-- ========== 12 — WS · IMAGES ========== -->
+<section class="page" id="ws-image" style="--accent-color: var(--w-image);">
+  <div class="page-meta meta-tl">SECTION 12</div>
+  <div class="page-meta meta-tr">P. 68</div>
+  <div class="section-header">
+    <span class="section-num" style="color: var(--w-image);">⌘ 12</span>
+    <h2 class="section-title">Images</h2>
+  </div>
+
+  <div class="ws-hero">
+    <div>
+      <div class="ws-id">
+        <span class="ws-id-dot" style="background:var(--w-image); box-shadow: 0 0 24px var(--w-image);"></span>
+        <span class="ws-id-num" style="color:var(--w-image);">WORKSPACE 03 · SOLAR 500 · #FFB547</span>
+      </div>
+      <h3 class="ws-name">Image<em>s.</em></h3>
+      <p class="ws-tagline">Студия визуала. От обложки до продакшена.</p>
+      <div class="ws-features" style="margin-top: 32px;">
+        <div class="ws-feat" style="--accent-color: var(--w-image);">
+          <span class="ws-feat-num">01</span>
+          <div class="ws-feat-content"><strong>Text → Image</strong><span>gpt-image-2 · FLUX 1.1 Pro Ultra · Stability SD 3.5 · Nano Banana</span></div>
+        </div>
+        <div class="ws-feat" style="--accent-color: var(--w-image);">
+          <span class="ws-feat-num">02</span>
+          <div class="ws-feat-content"><strong>Image → Image</strong><span>Inpaint · outpaint · style transfer · upscale 4K</span></div>
+        </div>
+        <div class="ws-feat" style="--accent-color: var(--w-image);">
+          <span class="ws-feat-num">03</span>
+          <div class="ws-feat-content"><strong>Batch</strong><span>До 100 вариаций за раз. Seed grid. A/B-генерация.</span></div>
+        </div>
+        <div class="ws-feat" style="--accent-color: var(--w-image);">
+          <span class="ws-feat-num">04</span>
+          <div class="ws-feat-content"><strong>Brand presets</strong><span>Цветовая схема XeroCode auto-applied. Watermark optional.</span></div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="ws-mockup">
+        <div class="ws-mockup-header"><span class="dot"></span>IMAGES · GPT-IMAGE-2</div>
+        <div class="ws-img-grid">
+          <div class="ws-img-tile t1"><span>SEED 1042</span></div>
+          <div class="ws-img-tile t2"><span>SEED 1043</span></div>
+          <div class="ws-img-tile t3"><span>SEED 1044</span></div>
+          <div class="ws-img-tile t4"><span>SEED 1045</span></div>
+          <div class="ws-img-tile t5"><span>SEED 1046</span></div>
+          <div class="ws-img-tile t6"><span>SEED 1047</span></div>
+        </div>
+        <div style="display: flex; gap: 8px; margin-top: 16px; align-items: center;">
+          <input class="input-demo" style="height: 36px; flex: 1; width: auto;" placeholder="cinematic violet skyline, 16:9…" />
+          <button class="btn" style="background: var(--w-image); color: var(--void-900); height: 36px; padding: 0 16px;">Generate</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="page-meta meta-bl">WS · IMAGES</div>
+  <div class="page-meta meta-br">XEROCODE / 12</div>
+</section>
+
+<!-- ========== 13 — WS · CODE ========== -->
+<section class="page" id="ws-code" style="--accent-color: var(--w-code);">
+  <div class="page-meta meta-tl">SECTION 13</div>
+  <div class="page-meta meta-tr">P. 72</div>
+  <div class="section-header">
+    <span class="section-num" style="color: var(--w-code);">⌘ 13</span>
+    <h2 class="section-title">Code</h2>
+  </div>
+
+  <div class="ws-hero">
+    <div class="ws-mockup">
+      <div class="ws-mockup-header"><span class="dot"></span>CODE · main.py · CLAUDE SONNET 4.7</div>
+      <div class="ws-code-block">
+        <span class="ws-code-line"><span class="lnum">1</span><span class="com"># XeroCode AI agent</span></span>
+        <span class="ws-code-line"><span class="lnum">2</span><span class="kw">from</span> xerocode <span class="kw">import</span> Agent</span>
+        <span class="ws-code-line"><span class="lnum">3</span></span>
+        <span class="ws-code-line"><span class="lnum">4</span>agent = Agent(<span class="str">"sonnet-4.7"</span>)</span>
+        <span class="ws-code-line"><span class="lnum">5</span>result = <span class="kw">await</span> agent.<span class="fn">run</span>(</span>
+        <span class="ws-code-line"><span class="lnum">6</span>    task=<span class="str">"score leads from CRM"</span>,</span>
+        <span class="ws-code-line"><span class="lnum">7</span>    tools=[<span class="str">"crm"</span>, <span class="str">"email"</span>],</span>
+        <span class="ws-code-line"><span class="lnum">8</span>)</span>
+        <span class="ws-code-line"><span class="lnum">9</span><span class="kw">print</span>(result.report) <span class="com"># 94% accuracy</span></span>
+      </div>
+      <div style="display: flex; gap: 8px; margin-top: 16px;">
+        <button class="btn" style="background: var(--w-code); color: var(--void-900); height: 32px; padding: 0 14px; font-size: 12px;">▶ Run</button>
+        <button class="btn btn-ghost" style="height: 32px; padding: 0 14px; font-size: 12px;">Test</button>
+        <button class="btn btn-ghost" style="height: 32px; padding: 0 14px; font-size: 12px;">git commit</button>
+      </div>
+    </div>
+    <div>
+      <div class="ws-id">
+        <span class="ws-id-dot" style="background:var(--w-code); box-shadow: 0 0 24px var(--w-code);"></span>
+        <span class="ws-id-num" style="color:var(--w-code);">WORKSPACE 04 · AURORA · #22C55E</span>
+      </div>
+      <h3 class="ws-name">Code<em>.</em></h3>
+      <p class="ws-tagline">IDE-режим. Исполнение, тесты, git, Docker sandbox.</p>
+      <div class="ws-features" style="margin-top: 32px;">
+        <div class="ws-feat" style="--accent-color: var(--w-code);">
+          <span class="ws-feat-num">01</span>
+          <div class="ws-feat-content"><strong>Multi-language</strong><span>Python · TS · Go · Rust · SQL · Shell. LSP, syntax, autocomplete.</span></div>
+        </div>
+        <div class="ws-feat" style="--accent-color: var(--w-code);">
+          <span class="ws-feat-num">02</span>
+          <div class="ws-feat-content"><strong>Sandbox execution</strong><span>Docker isolated. CPU/memory limits. Live stdout/stderr.</span></div>
+        </div>
+        <div class="ws-feat" style="--accent-color: var(--w-code);">
+          <span class="ws-feat-num">03</span>
+          <div class="ws-feat-content"><strong>Git native</strong><span>commit · push · PR · diff. История привязана к чату.</span></div>
+        </div>
+        <div class="ws-feat" style="--accent-color: var(--w-code);">
+          <span class="ws-feat-num">04</span>
+          <div class="ws-feat-content"><strong>Test runner</strong><span>pytest · jest · vitest. AI чинит fail'ы автоматически.</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="page-meta meta-bl">WS · CODE</div>
+  <div class="page-meta meta-br">XEROCODE / 13</div>
+</section>
+
+<!-- ========== 14 — WS · VIDEO ========== -->
+<section class="page" id="ws-video" style="--accent-color: var(--w-video);">
+  <div class="page-meta meta-tl">SECTION 14</div>
+  <div class="page-meta meta-tr">P. 76</div>
+  <div class="section-header">
+    <span class="section-num" style="color: var(--w-video);">⌘ 14</span>
+    <h2 class="section-title">Video</h2>
+  </div>
+
+  <div class="ws-hero">
+    <div>
+      <div class="ws-id">
+        <span class="ws-id-dot" style="background:var(--w-video); box-shadow: 0 0 24px var(--w-video);"></span>
+        <span class="ws-id-num" style="color:var(--w-video);">WORKSPACE 05 · CRIMSON · #FF3B5C</span>
+      </div>
+      <h3 class="ws-name">Vid<em>eo.</em></h3>
+      <p class="ws-tagline">Кинематографичный продакшн. От shot list до финального экспорта.</p>
+      <div class="ws-features" style="margin-top: 32px;">
+        <div class="ws-feat" style="--accent-color: var(--w-video);">
+          <span class="ws-feat-num">01</span>
+          <div class="ws-feat-content"><strong>Text → Video</strong><span>Sora 2 · Runway Gen-4 · Kling 2.0 · Luma Dream Machine</span></div>
+        </div>
+        <div class="ws-feat" style="--accent-color: var(--w-video);">
+          <span class="ws-feat-num">02</span>
+          <div class="ws-feat-content"><strong>Timeline editor</strong><span>Multi-track. Cuts, transitions, color grading.</span></div>
+        </div>
+        <div class="ws-feat" style="--accent-color: var(--w-video);">
+          <span class="ws-feat-num">03</span>
+          <div class="ws-feat-content"><strong>AI editing</strong><span>Auto-cut по beat'ам. Subtitles · voiceover · b-roll suggestions.</span></div>
+        </div>
+        <div class="ws-feat" style="--accent-color: var(--w-video);">
+          <span class="ws-feat-num">04</span>
+          <div class="ws-feat-content"><strong>Export</strong><span>1080p · 4K · vertical. MP4 · ProRes · GIF · WebM.</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="ws-mockup">
+      <div class="ws-mockup-header"><span class="dot"></span>VIDEO · TIMELINE · 00:42</div>
+      <div style="aspect-ratio: 16/9; background: linear-gradient(135deg, #FF3B5C 0%, #2D1880 60%, #050510 100%); border-radius: 8px; position: relative; margin-bottom: 16px;">
+        <div style="position: absolute; bottom: 12px; left: 12px; font-family: var(--mono); font-size: 10px; color: rgba(255,255,255,0.7); letter-spacing: 0.15em;">PREVIEW · 1920×1080</div>
+        <div style="position: absolute; top: 12px; right: 12px; font-family: var(--mono); font-size: 10px; color: var(--w-video); letter-spacing: 0.15em;">● REC</div>
+      </div>
+      <div class="ws-timeline">
+        <div class="ws-track">
+          <span class="ws-track-label">VIDEO</span>
+          <div class="ws-track-bar">
+            <div class="clip c1"></div>
+            <div class="clip c2"></div>
+            <div class="clip c3"></div>
+            <div class="ws-playhead"></div>
+          </div>
+        </div>
+        <div class="ws-track">
+          <span class="ws-track-label">B-ROLL</span>
+          <div class="ws-track-bar">
+            <div class="clip c2" style="left: 20%; width: 40%;"></div>
+          </div>
+        </div>
+        <div class="ws-track">
+          <span class="ws-track-label">AUDIO</span>
+          <div class="ws-track-bar">
+            <div class="clip c4"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="page-meta meta-bl">WS · VIDEO</div>
+  <div class="page-meta meta-br">XEROCODE / 14</div>
+</section>
+
+<!-- ========== 15 — WS · SOUND ========== -->
+<section class="page" id="ws-sound" style="--accent-color: var(--w-sound);">
+  <div class="page-meta meta-tl">SECTION 15</div>
+  <div class="page-meta meta-tr">P. 80</div>
+  <div class="section-header">
+    <span class="section-num" style="color: var(--w-sound);">⌘ 15</span>
+    <h2 class="section-title">Sound</h2>
+  </div>
+
+  <div class="ws-hero">
+    <div class="ws-mockup">
+      <div class="ws-mockup-header"><span class="dot"></span>SOUND · SUNO V4 · 02:14</div>
+      <div class="ws-wave">
+        <div class="ws-wave-bar" style="height: 20%;"></div>
+        <div class="ws-wave-bar" style="height: 45%;"></div>
+        <div class="ws-wave-bar" style="height: 60%;"></div>
+        <div class="ws-wave-bar" style="height: 80%;"></div>
+        <div class="ws-wave-bar" style="height: 90%;"></div>
+        <div class="ws-wave-bar" style="height: 70%;"></div>
+        <div class="ws-wave-bar" style="height: 50%;"></div>
+        <div class="ws-wave-bar" style="height: 65%;"></div>
+        <div class="ws-wave-bar" style="height: 85%;"></div>
+        <div class="ws-wave-bar" style="height: 95%;"></div>
+        <div class="ws-wave-bar" style="height: 80%;"></div>
+        <div class="ws-wave-bar" style="height: 60%;"></div>
+        <div class="ws-wave-bar" style="height: 40%;"></div>
+        <div class="ws-wave-bar" style="height: 55%;"></div>
+        <div class="ws-wave-bar" style="height: 75%;"></div>
+        <div class="ws-wave-bar" style="height: 90%;"></div>
+        <div class="ws-wave-bar" style="height: 70%;"></div>
+        <div class="ws-wave-bar" style="height: 50%;"></div>
+        <div class="ws-wave-bar" style="height: 30%;"></div>
+        <div class="ws-wave-bar" style="height: 45%;"></div>
+        <div class="ws-wave-bar" style="height: 65%;"></div>
+        <div class="ws-wave-bar" style="height: 80%;"></div>
+        <div class="ws-wave-bar" style="height: 60%;"></div>
+        <div class="ws-wave-bar" style="height: 40%;"></div>
+        <div class="ws-wave-bar" style="height: 25%;"></div>
+        <div class="ws-wave-bar" style="height: 50%;"></div>
+        <div class="ws-wave-bar" style="height: 70%;"></div>
+        <div class="ws-wave-bar" style="height: 85%;"></div>
+        <div class="ws-wave-bar" style="height: 70%;"></div>
+        <div class="ws-wave-bar" style="height: 55%;"></div>
+        <div class="ws-wave-bar" style="height: 35%;"></div>
+        <div class="ws-wave-bar" style="height: 20%;"></div>
+      </div>
+      <div class="ws-eq">
+        <div class="ws-eq-band"><div class="knob" style="--p: 30%;"></div><div class="label">60Hz</div></div>
+        <div class="ws-eq-band"><div class="knob" style="--p: 60%;"></div><div class="label">170</div></div>
+        <div class="ws-eq-band"><div class="knob" style="--p: 70%;"></div><div class="label">310</div></div>
+        <div class="ws-eq-band"><div class="knob" style="--p: 50%;"></div><div class="label">600</div></div>
+        <div class="ws-eq-band"><div class="knob" style="--p: 80%;"></div><div class="label">1k</div></div>
+        <div class="ws-eq-band"><div class="knob" style="--p: 65%;"></div><div class="label">3k</div></div>
+        <div class="ws-eq-band"><div class="knob" style="--p: 40%;"></div><div class="label">6k</div></div>
+        <div class="ws-eq-band"><div class="knob" style="--p: 55%;"></div><div class="label">12k</div></div>
+      </div>
+    </div>
+    <div>
+      <div class="ws-id">
+        <span class="ws-id-dot" style="background:var(--w-sound); box-shadow: 0 0 24px var(--w-sound);"></span>
+        <span class="ws-id-num" style="color:var(--w-sound);">WORKSPACE 06 · MAGENTA · #FF6BFF</span>
+      </div>
+      <h3 class="ws-name">Sound<em>.</em></h3>
+      <p class="ws-tagline">Синтез голоса, музыки, эффектов. И обратное — транскрипция.</p>
+      <div class="ws-features" style="margin-top: 32px;">
+        <div class="ws-feat" style="--accent-color: var(--w-sound);">
+          <span class="ws-feat-num">01</span>
+          <div class="ws-feat-content"><strong>Voice synthesis</strong><span>ElevenLabs · OpenAI TTS · clone своего голоса (ru/en/multi).</span></div>
+        </div>
+        <div class="ws-feat" style="--accent-color: var(--w-sound);">
+          <span class="ws-feat-num">02</span>
+          <div class="ws-feat-content"><strong>Music gen</strong><span>Suno V4 · Udio · MusicGen. Lyrics → готовый трек.</span></div>
+        </div>
+        <div class="ws-feat" style="--accent-color: var(--w-sound);">
+          <span class="ws-feat-num">03</span>
+          <div class="ws-feat-content"><strong>Speech-to-Text</strong><span>Whisper Large v3 · GigaAM. Транскрипция, диаризация.</span></div>
+        </div>
+        <div class="ws-feat" style="--accent-color: var(--w-sound);">
+          <span class="ws-feat-num">04</span>
+          <div class="ws-feat-content"><strong>Studio</strong><span>EQ · compressor · noise removal · stem separation.</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="page-meta meta-bl">WS · SOUND</div>
+  <div class="page-meta meta-br">XEROCODE / 15</div>
+</section>
+
+<!-- ========== 16 — WS · TEXT ========== -->
+<section class="page" id="ws-text" style="--accent-color: var(--w-text);">
+  <div class="page-meta meta-tl">SECTION 16</div>
+  <div class="page-meta meta-tr">P. 84</div>
+  <div class="section-header">
+    <span class="section-num" style="color: var(--w-text);">⌘ 16</span>
+    <h2 class="section-title">Text</h2>
+  </div>
+
+  <div class="ws-hero">
+    <div>
+      <div class="ws-id">
+        <span class="ws-id-dot" style="background:var(--w-text); box-shadow: 0 0 24px rgba(248,248,251,0.5);"></span>
+        <span class="ws-id-num" style="color:var(--w-text);">WORKSPACE 07 · INK · #F8F8FB</span>
+      </div>
+      <h3 class="ws-name">Te<em>xt.</em></h3>
+      <p class="ws-tagline">Editor + AI-coauthor. Документы, статьи, договоры, лонгриды.</p>
+      <div class="ws-features" style="margin-top: 32px;">
+        <div class="ws-feat" style="--accent-color: var(--w-text);">
+          <span class="ws-feat-num">01</span>
+          <div class="ws-feat-content"><strong>Rich editor</strong><span>Markdown · WYSIWYG · code blocks · math · tables. Slash-команды.</span></div>
+        </div>
+        <div class="ws-feat" style="--accent-color: var(--w-text);">
+          <span class="ws-feat-num">02</span>
+          <div class="ws-feat-content"><strong>AI coauthor</strong><span>Inline-suggestions · rewrite · expand · shorten · translate.</span></div>
+        </div>
+        <div class="ws-feat" style="--accent-color: var(--w-text);">
+          <span class="ws-feat-num">03</span>
+          <div class="ws-feat-content"><strong>Templates</strong><span>Договор · ТЗ · КП · отчёт · бриф · email-серия. На русском.</span></div>
+        </div>
+        <div class="ws-feat" style="--accent-color: var(--w-text);">
+          <span class="ws-feat-num">04</span>
+          <div class="ws-feat-content"><strong>Export</strong><span>PPTX · DOCX · XLSX · PDF · Markdown · HTML. С watermark.</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="ws-mockup">
+      <div class="ws-mockup-header"><span class="dot" style="background:var(--w-text);"></span>TEXT · DOC.MD · 1 247 СЛОВ</div>
+      <div class="ws-doc">
+        <h1>Q2 Quarterly Report</h1>
+        <p class="meta">DRAFT · 27 АПР 2026 · ВЛАДИМИР Т.</p>
+        <p>В первом квартале 2026 года XeroCode AI Office <span class="hi">вырос на 247%</span> по выручке, достигнув <span class="hi">11.7M ₽ MRR</span>. Главный драйвер роста — <span class="hi">Business-тариф</span> для команд до 20 человек.</p>
+        <p>Запуск integration-слоя (1С, Битрикс24, ЭДО) открыл сегмент SMB, ранее недоступный<span class="ws-cursor"></span></p>
+      </div>
+    </div>
+  </div>
+  <div class="page-meta meta-bl">WS · TEXT</div>
+  <div class="page-meta meta-br">XEROCODE / 16</div>
+</section>
+
+<!-- ========== 17 — ORCHESTRATION (FOUNDATION) ========== -->
+<section class="page" id="ws-orch">
+  <div class="page-meta meta-tl">SECTION 17</div>
+  <div class="page-meta meta-tr">P. 88</div>
+  <div class="section-header">
+    <span class="section-num">⌘ 17</span>
+    <h2 class="section-title">Оркест<em>рация</em></h2>
+  </div>
+  <p class="lead-text" style="max-width: 920px;">Это не workspace. Это <em>основа</em> — спина, движок, программа. Все workspace'ы — узлы графа задач.</p>
+
+  <div class="component-demo" style="background: var(--grad-mesh); border-color: rgba(124,92,255,0.3); padding: 56px 40px;">
+    <p class="demo-label" style="color:var(--ink-200);">DAG · QUARTERLY REPORT WORKFLOW</p>
+    <div class="ws-dag">
+      <div class="ws-node" style="--node-color: var(--w-corp);">
+        <div class="ws-node-icon"></div>
+        <div class="ws-node-label">CORP</div>
+        <div style="font-size:10px; color:var(--ink-400); margin-top:4px;">Pull CRM</div>
+      </div>
+      <div class="ws-node" style="--node-color: var(--w-text);">
+        <div class="ws-node-icon"></div>
+        <div class="ws-node-label">TEXT</div>
+        <div style="font-size:10px; color:var(--ink-400); margin-top:4px;">Draft</div>
+      </div>
+      <div class="ws-node active" style="--node-color: var(--violet-500);">
+        <div class="ws-node-icon"></div>
+        <div class="ws-node-label">CHAT</div>
+        <div style="font-size:10px; color:var(--violet-500); margin-top:4px;">Review ▎</div>
+      </div>
+      <div class="ws-node" style="--node-color: var(--w-image);">
+        <div class="ws-node-icon"></div>
+        <div class="ws-node-label">IMG</div>
+        <div style="font-size:10px; color:var(--ink-400); margin-top:4px;">Charts</div>
+      </div>
+      <div class="ws-node" style="--node-color: var(--w-text);">
+        <div class="ws-node-icon"></div>
+        <div class="ws-node-label">TEXT</div>
+        <div style="font-size:10px; color:var(--ink-400); margin-top:4px;">Export</div>
+      </div>
+    </div>
+    <div style="display: flex; align-items: center; gap: 12px; margin-top: 24px; font-family: var(--mono); font-size: 11px; letter-spacing: 0.15em; color: var(--ink-400); text-transform: uppercase; width: 100%; justify-content: center;">
+      <span style="color: var(--aurora);">● 2 DONE</span>
+      <span style="color: var(--violet-500);">● 1 RUNNING</span>
+      <span>● 2 QUEUED</span>
+      <span>·</span>
+      <span style="color: var(--ink-200);">MODE: <strong style="color: var(--amber-500);">XEROCODE_AI</strong></span>
+    </div>
+  </div>
+
+  <div class="spacer-md"></div>
+
+  <p class="palette-row-label">5 режимов оркестрации</p>
+  <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px;">
+    <div class="ws-feat" style="--accent-color: var(--violet-500);">
+      <span class="ws-feat-num">01</span>
+      <div class="ws-feat-content"><strong>manager</strong><span>Один лид-агент управляет подчинёнными.</span></div>
+    </div>
+    <div class="ws-feat" style="--accent-color: var(--w-corp);">
+      <span class="ws-feat-num">02</span>
+      <div class="ws-feat-content"><strong>team</strong><span>Распределение по ролям, синхронные итерации.</span></div>
+    </div>
+    <div class="ws-feat" style="--accent-color: var(--w-image);">
+      <span class="ws-feat-num">03</span>
+      <div class="ws-feat-content"><strong>swarm</strong><span>Параллельный пул, голосование за результат.</span></div>
+    </div>
+    <div class="ws-feat" style="--accent-color: var(--w-video);">
+      <span class="ws-feat-num">04</span>
+      <div class="ws-feat-content"><strong>auction</strong><span>Агенты торгуются за задачу. Минимум cost.</span></div>
+    </div>
+    <div class="ws-feat" style="--accent-color: var(--w-sound);">
+      <span class="ws-feat-num">05</span>
+      <div class="ws-feat-content"><strong>xerocode_ai ⭐</strong><span>Авто-выбор режима. AI решает, какая стратегия лучше.</span></div>
+    </div>
+  </div>
+
+  <div class="spacer-md"></div>
+
+  <div class="two-col">
+    <div>
+      <p class="col-label">КАК ЭТО ВЫГЛЯДИТ В КОДЕ</p>
+      <div class="code-block"><span class="comment">// DAG of workspaces</span>
+<span class="key">workflow</span> = {
+  <span class="key">mode</span>: <span class="val">"xerocode_ai"</span>,
+  <span class="key">nodes</span>: [
+    { <span class="key">ws</span>: <span class="val">"corp"</span>,  <span class="key">action</span>: <span class="val">"pull_crm"</span> },
+    { <span class="key">ws</span>: <span class="val">"text"</span>,  <span class="key">action</span>: <span class="val">"draft"</span>,
+      <span class="key">deps</span>: [<span class="val">"corp"</span>] },
+    { <span class="key">ws</span>: <span class="val">"image"</span>, <span class="key">action</span>: <span class="val">"charts"</span>,
+      <span class="key">deps</span>: [<span class="val">"corp"</span>] },
+    { <span class="key">ws</span>: <span class="val">"text"</span>,  <span class="key">action</span>: <span class="val">"export"</span>,
+      <span class="key">deps</span>: [<span class="val">"text"</span>, <span class="val">"image"</span>] }
+  ]
+}</div>
+    </div>
+    <div>
+      <p class="col-label">ПРИНЦИП</p>
+      <p class="lead-text" style="font-size: 26px;">Workspace — это <em>инструмент</em>. Оркестрация — это <em>дирижёр</em>.</p>
+      <p class="body-text">Любая задача = граф вызовов между workspace'ами. Оркестратор выбирает модели, режим, порядок, параллелизм. Пользователь видит результат — а не оркестр.</p>
+      <p class="body-text">Так Photoshop + Premiere + Audition + Word не существуют отдельно. У нас — единое приложение с 8 режимами и одним мозгом.</p>
+    </div>
+  </div>
+
+  <div class="page-meta meta-bl">ORCHESTRATION · CORE</div>
+  <div class="page-meta meta-br">XEROCODE / 17 ⭐</div>
+</section>
+
+<!-- ========== 18 — IMPLEMENTATION ========== -->
+<!-- ========== 18 — LOGO SYSTEM ========== -->
+<section class="page" id="logo-system">
+  <div class="page-meta meta-tl">SECTION 18</div>
+  <div class="page-meta meta-tr">P. 96</div>
+  <div class="section-header">
+    <span class="section-num">⌘ 18</span>
+    <h2 class="section-title">Логотип — <em>система</em></h2>
+  </div>
+  <p class="lead-text" style="max-width: 880px;">XERO в роман-капители · CODE в italic с aurora-градиентом. <em>Контраст</em> — основа всей идентичности.</p>
+
+  <div class="logo-system">
+    <div class="logo-spec">
+      <div class="x-logo logo-size-md"><span class="roman">XERO</span><span class="italic">CODE</span></div>
+      <span class="logo-spec-meta">PRIMARY · DARK BG · ⭐</span>
+    </div>
+    <div class="logo-spec light-bg">
+      <div class="x-logo logo-size-md inverse"><span class="roman">XERO</span><span class="italic">CODE</span></div>
+      <span class="logo-spec-meta">PRIMARY · LIGHT BG</span>
+    </div>
+    <div class="logo-spec gradient-bg">
+      <div class="x-logo logo-size-md mono" style="color: var(--ink-50);"><span class="roman">XERO</span><span class="italic">CODE</span></div>
+      <span class="logo-spec-meta">MONOCHROME · MESH</span>
+    </div>
+    <div class="logo-spec amber-bg">
+      <div class="x-logo logo-size-md mono" style="color: var(--void-900);"><span class="roman">XERO</span><span class="italic">CODE</span></div>
+      <span class="logo-spec-meta">MONO · ON ACCENT</span>
+    </div>
+    <div class="logo-spec">
+      <div class="logo-stacked" style="font-size: 80px;"><span class="roman">XERO</span><span class="italic">CODE</span></div>
+      <span class="logo-spec-meta">STACKED · 2-LINE</span>
+    </div>
+    <div class="logo-spec">
+      <div class="xc-mono"><span class="x">X</span><span class="c">C</span></div>
+      <span class="logo-spec-meta">MONOGRAM · XC</span>
+    </div>
+  </div>
+
+  <div class="spacer-md"></div>
+
+  <p class="palette-row-label">Размерная шкала</p>
+  <div class="logo-spec" style="display: flex; flex-direction: column; gap: 32px; align-items: flex-start; padding: 40px 48px;">
+    <div class="x-logo logo-size-lg"><span class="roman">XERO</span><span class="italic">CODE</span></div>
+    <div class="x-logo logo-size-md"><span class="roman">XERO</span><span class="italic">CODE</span></div>
+    <div class="x-logo logo-size-sm"><span class="roman">XERO</span><span class="italic">CODE</span></div>
+    <div class="x-logo logo-size-xs"><span class="roman">XERO</span><span class="italic">CODE</span></div>
+    <div class="x-logo" style="font-size: 18px;"><span class="roman">XERO</span><span class="italic">CODE</span></div>
+    <span class="logo-spec-meta">120 / 88 / 56 / 32 / 18 PX</span>
+  </div>
+
+  <div class="spacer-md"></div>
+
+  <div class="two-col">
+    <div>
+      <p class="col-label">ПОСТРОЕНИЕ</p>
+      <ul class="clean">
+        <li>Шрифт — <strong style="color:var(--ink-50);">Playfair Display Bold 700</strong></li>
+        <li>«CODE» — italic 700 с градиентом Aurora</li>
+        <li>Letter-spacing — <strong style="color:var(--ink-50);">−4%</strong> для всех размеров ≥ 32px</li>
+        <li>Минимальный размер — <strong style="color:var(--ink-50);">18px digital / 12mm print</strong></li>
+        <li>Защитное поле — равно высоте «O»</li>
+        <li>Градиент: <code style="color:var(--violet-500);">#7C5CFF → #00D4FF</code> (135°)</li>
+      </ul>
+    </div>
+    <div>
+      <p class="col-label">ЗАПРЕЩЕНО</p>
+      <ul class="clean" style="--cross: '✕';">
+        <li>Менять цвет «XERO» на цветной</li>
+        <li>Использовать обычный (не italic) на «CODE»</li>
+        <li>Применять иной шрифт кроме Playfair Display</li>
+        <li>Растягивать или сжимать неравномерно</li>
+        <li>Размещать на фоне с контрастом &lt; 4.5:1</li>
+        <li>Добавлять обводку, тень, эффекты</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="page-meta meta-bl">LOGO SYSTEM</div>
+  <div class="page-meta meta-br">XEROCODE / 18</div>
+</section>
+
+<!-- ========== 19 — APP ICONS · 8 CONCEPTS ========== -->
+<section class="page" id="app-icons">
+  <div class="page-meta meta-tl">SECTION 19</div>
+  <div class="page-meta meta-tr">P. 100</div>
+  <div class="section-header">
+    <span class="section-num">⌘ 19</span>
+    <h2 class="section-title">App <em>Icons</em></h2>
+  </div>
+  <p class="lead-text" style="max-width: 880px;">8 концепций. <em>Один стиль</em> — один воздух Void, один градиент Aurora, один squircle. Разный <em>смысл</em>.</p>
+
+  <div class="concept-grid">
+
+    <!-- A. Italic C -->
+    <div class="concept-card">
+      <div class="concept-icon">
+        <div class="cnc-c"><span class="cnc-c-letter">C</span></div>
+      </div>
+      <div class="concept-info">
+        <p class="concept-num">CONCEPT · A</p>
+        <h4 class="concept-name">Italic C</h4>
+        <p class="concept-desc">Чистая буква из логотипа. Минимализм, типографика-первая, премиум.</p>
+        <p class="concept-tag"><span class="pill">SAFE</span> WORDMARK ESSENCE</p>
+      </div>
+    </div>
+
+    <!-- B. XC Monogram -->
+    <div class="concept-card">
+      <div class="concept-icon">
+        <div class="cnc-xc"><span class="x">X</span><span class="c">C</span></div>
+      </div>
+      <div class="concept-info">
+        <p class="concept-num">CONCEPT · B</p>
+        <h4 class="concept-name">XC Monogram</h4>
+        <p class="concept-desc">Полные инициалы. Roman + italic — главный визуальный контраст бренда.</p>
+        <p class="concept-tag"><span class="pill">CLASSIC</span> FULL BRAND</p>
+      </div>
+    </div>
+
+    <!-- C. Orb -->
+    <div class="concept-card">
+      <div class="concept-icon">
+        <div class="cnc-orb"></div>
+      </div>
+      <div class="concept-info">
+        <p class="concept-num">CONCEPT · C</p>
+        <h4 class="concept-name">Spark · Xero</h4>
+        <p class="concept-desc">Маскот-сфера с градиентом. ИИ как живая искра. Личность, тёплый.</p>
+        <p class="concept-tag"><span class="pill">FRIENDLY</span> MASCOT-FIRST</p>
+      </div>
+    </div>
+
+    <!-- D. X Cross -->
+    <div class="concept-card">
+      <div class="concept-icon">
+        <div class="cnc-x"></div>
+      </div>
+      <div class="concept-info">
+        <p class="concept-num">CONCEPT · D</p>
+        <h4 class="concept-name">Cross · ✕</h4>
+        <p class="concept-desc">Пересечение моделей. Multi-model оркестрация в одном знаке. Мощный, абстрактный.</p>
+        <p class="concept-tag"><span class="pill">BOLD</span> MULTI-MODEL</p>
+      </div>
+    </div>
+
+    <!-- E. Prism -->
+    <div class="concept-card">
+      <div class="concept-icon">
+        <div class="cnc-prism">
+          <div class="face top"></div>
+          <div class="face bot"></div>
+        </div>
+      </div>
+      <div class="concept-info">
+        <p class="concept-num">CONCEPT · E</p>
+        <h4 class="concept-name">Prism</h4>
+        <p class="concept-desc">Один промпт → спектр моделей. Свет преломляется в радугу AI-провайдеров.</p>
+        <p class="concept-tag"><span class="pill">META</span> SPECTRUM</p>
+      </div>
+    </div>
+
+    <!-- F. Node Graph DAG -->
+    <div class="concept-card">
+      <div class="concept-icon">
+        <div class="cnc-dag">
+          <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+            <line class="cnc-dag-edge" x1="20" y1="20" x2="50" y2="50"/>
+            <line class="cnc-dag-edge" x1="20" y1="80" x2="50" y2="50"/>
+            <line class="cnc-dag-edge" x1="50" y1="50" x2="80" y2="20"/>
+            <line class="cnc-dag-edge" x1="50" y1="50" x2="80" y2="80"/>
+            <circle class="cnc-dag-node cyan" cx="20" cy="20" r="6"/>
+            <circle class="cnc-dag-node amber" cx="20" cy="80" r="6"/>
+            <circle class="cnc-dag-node" cx="50" cy="50" r="9"/>
+            <circle class="cnc-dag-node cyan" cx="80" cy="20" r="6"/>
+            <circle class="cnc-dag-node amber" cx="80" cy="80" r="6"/>
+          </svg>
+        </div>
+      </div>
+      <div class="concept-info">
+        <p class="concept-num">CONCEPT · F</p>
+        <h4 class="concept-name">DAG · Graph</h4>
+        <p class="concept-desc">Узлы + связи. Оркестрация — основа. Технологичный, структурный.</p>
+        <p class="concept-tag"><span class="pill">TECH</span> ORCHESTRATION</p>
+      </div>
+    </div>
+
+    <!-- G. Brackets -->
+    <div class="concept-card">
+      <div class="concept-icon">
+        <div class="cnc-brk"><span class="lb">{</span><span class="dot"></span><span class="rb">}</span></div>
+      </div>
+      <div class="concept-info">
+        <p class="concept-num">CONCEPT · G</p>
+        <h4 class="concept-name">{ · } Brackets</h4>
+        <p class="concept-desc">Код-первый, dev-friendly. AI Office как платформа для разработчиков и BYOK.</p>
+        <p class="concept-tag"><span class="pill">DEV</span> CODE-FIRST</p>
+      </div>
+    </div>
+
+    <!-- H. Aperture / Iris -->
+    <div class="concept-card">
+      <div class="concept-icon">
+        <div class="cnc-iris">
+          <div class="blade b1"></div>
+          <div class="blade b2"></div>
+          <div class="blade b3"></div>
+          <div class="blade b4"></div>
+          <div class="blade b5"></div>
+          <div class="blade b6"></div>
+        </div>
+      </div>
+      <div class="concept-info">
+        <p class="concept-num">CONCEPT · H</p>
+        <h4 class="concept-name">Aperture</h4>
+        <p class="concept-desc">Глаз / диафрагма. AI видит, наблюдает, фокусирует. Премиум-фото-вибес.</p>
+        <p class="concept-tag"><span class="pill">EDITORIAL</span> AI-VISION</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="spacer-md"></div>
+
+  <p class="palette-row-label">Сравнение в едином ряду · «как они уживаются»</p>
+  <div class="concept-strip">
+    <div class="strip-tile"><div class="cnc-c"><span class="cnc-c-letter">C</span></div></div>
+    <div class="strip-tile"><div class="cnc-xc"><span class="x">X</span><span class="c">C</span></div></div>
+    <div class="strip-tile"><div class="cnc-orb"></div></div>
+    <div class="strip-tile"><div class="cnc-x"></div></div>
+  </div>
+  <div class="concept-strip" style="margin-top: 8px;">
+    <div class="strip-tile"><div class="cnc-prism"><div class="face top"></div><div class="face bot"></div></div></div>
+    <div class="strip-tile">
+      <div class="cnc-dag">
+        <svg viewBox="0 0 100 100">
+          <line class="cnc-dag-edge" x1="20" y1="20" x2="50" y2="50"/>
+          <line class="cnc-dag-edge" x1="20" y1="80" x2="50" y2="50"/>
+          <line class="cnc-dag-edge" x1="50" y1="50" x2="80" y2="20"/>
+          <line class="cnc-dag-edge" x1="50" y1="50" x2="80" y2="80"/>
+          <circle class="cnc-dag-node cyan" cx="20" cy="20" r="6"/>
+          <circle class="cnc-dag-node amber" cx="20" cy="80" r="6"/>
+          <circle class="cnc-dag-node" cx="50" cy="50" r="9"/>
+          <circle class="cnc-dag-node cyan" cx="80" cy="20" r="6"/>
+          <circle class="cnc-dag-node amber" cx="80" cy="80" r="6"/>
+        </svg>
+      </div>
+    </div>
+    <div class="strip-tile"><div class="cnc-brk"><span class="lb">{</span><span class="dot"></span><span class="rb">}</span></div></div>
+    <div class="strip-tile">
+      <div class="cnc-iris">
+        <div class="blade b1"></div><div class="blade b2"></div><div class="blade b3"></div>
+        <div class="blade b4"></div><div class="blade b5"></div><div class="blade b6"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="spacer-md"></div>
+
+  <p class="palette-row-label">Рекомендации по выбору</p>
+  <div class="ws-features" style="grid-template-columns: repeat(2, 1fr); gap: 16px;">
+    <div class="ws-feat" style="--accent-color: var(--violet-500);">
+      <span class="ws-feat-num">A · B</span>
+      <div class="ws-feat-content"><strong>Для App Store · macOS · iOS</strong><span>Italic C или XC. Чистая типографика читается на любом размере. Безопасный выбор.</span></div>
+    </div>
+    <div class="ws-feat" style="--accent-color: var(--violet-500);">
+      <span class="ws-feat-num">C</span>
+      <div class="ws-feat-content"><strong>Для маркетинга · соц. сетей</strong><span>Spark / Xero — даёт лицо бренду, человечнее, шарится охотнее.</span></div>
+    </div>
+    <div class="ws-feat" style="--accent-color: var(--w-corp);">
+      <span class="ws-feat-num">D · F</span>
+      <div class="ws-feat-content"><strong>Для тех. документации · CLI · API</strong><span>Cross или DAG — говорят «оркестрация» без слов. Для разработчиков.</span></div>
+    </div>
+    <div class="ws-feat" style="--accent-color: var(--w-image);">
+      <span class="ws-feat-num">E · H</span>
+      <div class="ws-feat-content"><strong>Для премиум · enterprise · бренда</strong><span>Prism / Aperture — редакторский, концептуальный, дороже выглядит.</span></div>
+    </div>
+    <div class="ws-feat" style="--accent-color: var(--w-code);">
+      <span class="ws-feat-num">G</span>
+      <div class="ws-feat-content"><strong>Для разработчиков · GitHub · npm</strong><span>{ · } Brackets — мгновенно сигналит «код, dev tool, BYOK».</span></div>
+    </div>
+    <div class="ws-feat" style="--accent-color: var(--amber-500);">
+      <span class="ws-feat-num">⭐</span>
+      <div class="ws-feat-content"><strong>Моя ставка</strong><span>Concept B (XC) — основной. Concept C (Spark) — fallback для маркетинга. Concept D (Cross) — для CLI / favicon.</span></div>
+    </div>
+  </div>
+
+  <div class="spacer-md"></div>
+
+  <p class="palette-row-label">Многоплатформенный pack (универсальный)</p>
+  <div class="icons-row">
+    <div class="icon-spec">
+      <div class="icon-tile macos icon-512">
+        <div class="cnc-xc" style="position:relative; z-index:2;"><span class="x">X</span><span class="c">C</span></div>
+      </div>
+      <p class="icon-label"><strong>macOS · 512</strong>SQUIRCLE 23%</p>
+    </div>
+    <div class="icon-spec">
+      <div class="icon-tile ios icon-256">
+        <div class="cnc-xc" style="position:relative; z-index:2;"><span class="x">X</span><span class="c">C</span></div>
+      </div>
+      <p class="icon-label"><strong>iOS · 256</strong>SQUIRCLE 22%</p>
+    </div>
+    <div class="icon-spec">
+      <div class="icon-tile windows icon-256">
+        <div class="cnc-xc" style="position:relative; z-index:2;"><span class="x">X</span><span class="c">C</span></div>
+      </div>
+      <p class="icon-label"><strong>Windows · 256</strong>RADIUS 8%</p>
+    </div>
+    <div class="icon-spec">
+      <div class="icon-tile android icon-256" style="background: linear-gradient(135deg, #7C5CFF, #00D4FF);">
+        <div style="font-family: var(--serif); font-weight: 700; color: var(--void-900); font-size: 70%; line-height: 1; letter-spacing: -0.1em; position: relative; z-index: 2; display: flex; align-items: baseline;">
+          <span>X</span><span style="font-style: italic;">C</span>
+        </div>
+      </div>
+      <p class="icon-label"><strong>Android · 256</strong>ADAPTIVE</p>
+    </div>
+    <div class="icon-spec">
+      <div class="icon-tile favicon" style="width: 64px; height: 64px;">
+        <div class="cnc-x" style="width: 60%; height: 60%;"></div>
+      </div>
+      <p class="icon-label"><strong>Favicon · 32</strong>JUST X</p>
+    </div>
+  </div>
+
+  <div class="spacer-md"></div>
+
+  <div class="two-col">
+    <div>
+      <p class="col-label">КОНСТРУКЦИЯ (для всех концептов)</p>
+      <ul class="clean">
+        <li>Фон Void — <code style="color:var(--violet-500)">radial #1F1F3D → #050510</code></li>
+        <li>Cyan glow в правом нижнем углу (15% opacity)</li>
+        <li>Знак — 56–70% от размера tile</li>
+        <li>Drop-shadow — <code style="color:var(--violet-500)">0 0 24px violet@50%</code></li>
+        <li>macOS / iOS — squircle 23% / 22%</li>
+        <li>Android adaptive — фон отдельно (gradient слой)</li>
+        <li>Favicon — упрощённая версия (X cross, без glow)</li>
+      </ul>
+    </div>
+    <div>
+      <p class="col-label">ЭКСПОРТ-ПАК</p>
+      <div class="code-block"><span class="comment">// Required sizes</span>
+<span class="key">macOS</span>:    <span class="val">16, 32, 64, 128, 256, 512, 1024</span>
+<span class="key">iOS</span>:      <span class="val">20, 29, 40, 60, 76, 83.5, 1024</span>
+<span class="key">Windows</span>:  <span class="val">16, 24, 32, 48, 64, 256 (.ico)</span>
+<span class="key">Android</span>:  <span class="val">48, 72, 96, 144, 192, 512</span>
+<span class="key">Favicon</span>:  <span class="val">16, 32, 192, 512 + .ico</span>
+
+<span class="comment">// Bundle naming</span>
+icon-1024.png      <span class="comment">// hero</span>
+AppIcon.icns       <span class="comment">// macOS</span>
+icon.ico           <span class="comment">// Windows</span>
+favicon.svg        <span class="comment">// modern web</span></div>
+    </div>
+  </div>
+
+  <div class="page-meta meta-bl">APP ICONS · 8 CONCEPTS</div>
+  <div class="page-meta meta-br">XEROCODE / 19</div>
+</section>
+
+<!-- ========== 20 — CLI ========== -->
+<section class="page" id="cli">
+  <div class="page-meta meta-tl">SECTION 20</div>
+  <div class="page-meta meta-tr">P. 104</div>
+  <div class="section-header">
+    <span class="section-num">⌘ 20</span>
+    <h2 class="section-title">CLI &amp; <em>Терминал</em></h2>
+  </div>
+  <p class="lead-text" style="max-width: 880px;">Тот же контраст — белый roman + violet→cyan italic — <em>в монохроме терминала</em>. ANSI 24-bit gradient.</p>
+
+  <p class="palette-row-label" style="margin-top: 32px;">Splash — большой ASCII</p>
+  <div class="terminal">
+    <div class="terminal-bar">
+      <span class="term-dot r"></span><span class="term-dot y"></span><span class="term-dot g"></span>
+      <span class="term-title">~/xerocode · zsh · 80×24</span>
+    </div>
+    <div class="terminal-body"><span class="term-x">__  __  _____  ____    ___ </span><span class="term-c">  ____  ___   ____  _____</span>
+<span class="term-x">\ \/ / | ____||  _ \  / _ \</span><span class="term-c"> / ___|/ _ \ |  _ \| ____|</span>
+<span class="term-x"> \  /  |  _|  | |_) || | | </span><span class="term-c-2">|</span><span class="term-c-2"> |   | | | || | | ||  _|  </span>
+<span class="term-x"> /  \  | |___ |  _ < | |_| </span><span class="term-c-3">|</span><span class="term-c-4"> |___| |_| || |_| || |___ </span>
+<span class="term-x">/_/\_\ |_____||_| \_\ \___/</span><span class="term-c-5"> \____|\___/ |____/ |_____|</span>
+
+  <span class="term-out">AI-Office · v2.0.0 · multi-model orchestration</span>
+  <span class="term-amber">▸</span> <span class="term-out">430+ models · BYOK · DAG · 8 workspaces</span>
+  <span class="term-amber">▸</span> <span class="term-out">Made in Russia · MMXXVI · xerocode.ru</span>
+
+<span class="term-prompt">$</span> <span class="term-cmd">xerocode --help</span><span class="term-blink"></span></div>
+  </div>
+
+  <p class="palette-row-label" style="margin-top: 48px;">Header (компактный)</p>
+  <div class="terminal">
+    <div class="terminal-bar">
+      <span class="term-dot r"></span><span class="term-dot y"></span><span class="term-dot g"></span>
+      <span class="term-title">xerocode chat</span>
+    </div>
+    <div class="terminal-body"><span class="term-cyan">▰▱</span> <span class="term-x">XERO</span><span class="term-c">CODE</span>  <span class="term-out">v2.0.0</span>  <span class="term-amber">●</span> <span class="term-out">connected</span>  <span class="term-success">● online</span>
+
+<span class="term-prompt">›</span> <span class="term-cmd">Сделай питч-дек на 8 слайдов про Q2</span>
+
+<span class="term-out">[orchestrator] mode: xerocode_ai · selecting models...</span>
+<span class="term-out">[corp]         pulling Q2 data from CRM</span><span class="term-success">                       ✓ done (1.2s)</span>
+<span class="term-out">[text]         drafting outline · sonnet-4.7</span><span class="term-success">                  ✓ done (3.4s)</span>
+<span class="term-out">[image]         generating 6 charts · gpt-image-2</span><span class="term-success">              ✓ done (8.9s)</span>
+<span class="term-out">[text]         exporting PPTX · xerocode theme</span><span class="term-success">                 ✓ done (0.8s)</span>
+
+<span class="term-success">✓ Готово.</span> <span class="term-out">→</span> <span class="term-c">Q2_Growth.pptx</span> <span class="term-out">(2.4 MB · 14.3s · 0.42$)</span>
+
+<span class="term-prompt">›</span><span class="term-blink"></span></div>
+  </div>
+
+  <p class="palette-row-label" style="margin-top: 48px;">Спиннер · loader · progress</p>
+  <div class="terminal">
+    <div class="terminal-bar">
+      <span class="term-dot r"></span><span class="term-dot y"></span><span class="term-dot g"></span>
+      <span class="term-title">progress states</span>
+    </div>
+    <div class="terminal-body"><span class="term-out">SPINNER (cycle 80ms):</span>
+  <span class="term-c-2">⠋ ⠙ ⠹ ⠸ ⠼ ⠴ ⠦ ⠧ ⠇ ⠏</span>
+
+<span class="term-out">PROGRESS (animated):</span>
+  <span class="term-c">▰▰▰▰▰</span><span class="term-out">▱▱▱▱▱</span> <span class="term-amber">50%</span>  <span class="term-out">draft.pptx</span>
+  <span class="term-c">▰▰▰▰▰▰▰▰▰</span><span class="term-out">▱</span> <span class="term-amber">90%</span>  <span class="term-out">export.pptx</span>
+  <span class="term-c">▰▰▰▰▰▰▰▰▰▰</span> <span class="term-success">✓ done</span>
+
+<span class="term-out">STATES:</span>
+  <span class="term-success">✓ done</span>     <span class="term-amber">⚠ warn</span>     <span class="term-c">⚙ running</span>     <span class="term-out">○ queued</span>     <span style="color:#FF3B5C;">✕ error</span>
+
+<span class="term-out">BANNER (one-liner для CI/CD):</span>
+  <span class="term-x">▰▱</span> <span class="term-x">XERO</span><span class="term-c">CODE</span> <span class="term-out">▸ build #1042 ▸</span> <span class="term-success">✓ passed</span> <span class="term-out">(2m 14s)</span></div>
+  </div>
+
+  <div class="spacer-md"></div>
+
+  <div class="two-col">
+    <div>
+      <p class="col-label">ANSI КОДЫ ГРАДИЕНТА</p>
+      <div class="code-block"><span class="comment"># True-color (24-bit) gradient over "CODE"</span>
+<span class="comment"># Step 1/4 → violet (124, 92, 255)</span>
+<span class="key">\033[38;2;124;92;255m</span><span class="val">C</span>
+<span class="comment"># Step 2/4 → blend</span>
+<span class="key">\033[38;2;88;130;255m</span><span class="val">O</span>
+<span class="comment"># Step 3/4 → blend</span>
+<span class="key">\033[38;2;45;168;255m</span><span class="val">D</span>
+<span class="comment"># Step 4/4 → cyan (0, 212, 255)</span>
+<span class="key">\033[38;2;0;212;255m</span><span class="val">E</span>
+<span class="key">\033[0m</span> <span class="comment"># reset</span></div>
+    </div>
+    <div>
+      <p class="col-label">ШРИФТ В ТЕРМИНАЛЕ</p>
+      <ul class="clean">
+        <li>Рекомендуем <strong style="color:var(--ink-50);">JetBrains Mono</strong> · 14pt</li>
+        <li>Альтернативы — Geist Mono, Berkeley Mono, Iosevka</li>
+        <li>Bold для «XERO», italic для «CODE»</li>
+        <li>Градиент через ANSI 24-bit (3 шага между violet и cyan)</li>
+        <li>Fallback для 16-color: violet → cyan_bright</li>
+        <li>На plain TTY — `▰▱ XEROCODE` ASCII-only</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="page-meta meta-bl">CLI · TERMINAL</div>
+  <div class="page-meta meta-br">XEROCODE / 20</div>
+</section>
+
+<!-- ========== 21 — VISION (interactive web) ========== -->
+<section class="page" id="vision">
+  <div class="page-meta meta-tl">SECTION 21</div>
+  <div class="page-meta meta-tr">P. 108</div>
+  <div class="section-header">
+    <span class="section-num">⌘ 21</span>
+    <h2 class="section-title">Сайт — <em>видение</em></h2>
+  </div>
+  <p class="lead-text" style="max-width: 880px;">Не страница со скроллом. <em>Живая среда</em>, которая дышит, реагирует и движется.</p>
+
+  <div class="hero-vision" id="heroVision">
+    <div class="hero-layer hero-grid"></div>
+    <div class="hero-layer hero-mesh"></div>
+    <div class="hero-layer hero-particles" id="particleField"></div>
+    <div class="hero-layer">
+      <h2 class="hero-headline"><span class="roman">XERO</span><span class="italic">CODE</span></h2>
+    </div>
+    <div style="position: absolute; bottom: 40px; left: 0; right: 0; text-align: center; z-index: 5;">
+      <button class="magnetic-btn" id="magBtn"><span>Попробовать</span></button>
+    </div>
+    <div class="page-meta" style="position: absolute; top: 24px; left: 24px;">PARALLAX · MESH · PARTICLES</div>
+    <div class="page-meta" style="position: absolute; bottom: 24px; right: 24px;">HOVER ME ↑</div>
+  </div>
+
+  <div class="scroll-progress-demo"></div>
+  <p style="font-family: var(--mono); font-size: 11px; color: var(--ink-400); letter-spacing: 0.2em; text-transform: uppercase; text-align: center;">SCROLL PROGRESS · TOP-FIXED · GRADIENT FILL</p>
+
+  <div class="marquee">
+    <div class="marquee-track">
+      <span class="marquee-item">AI doesn't <span class="accent">chat</span></span>
+      <span class="marquee-item">AI <span class="accent">works</span></span>
+      <span class="marquee-item">430+ <span class="accent">моделей</span></span>
+      <span class="marquee-item">8 <span class="accent">workspaces</span></span>
+      <span class="marquee-item">Multi-<span class="accent">model</span></span>
+      <span class="marquee-item">Orchestration is <span class="accent">core</span></span>
+      <span class="marquee-item">AI doesn't <span class="accent">chat</span></span>
+      <span class="marquee-item">AI <span class="accent">works</span></span>
+      <span class="marquee-item">430+ <span class="accent">моделей</span></span>
+      <span class="marquee-item">8 <span class="accent">workspaces</span></span>
+    </div>
+  </div>
+
+  <div class="spacer-md"></div>
+
+  <p class="palette-row-label">Активные паттерны взаимодействия</p>
+  <div class="anim-grid" style="grid-template-columns: repeat(4, 1fr); gap: 16px;">
+    <div class="anim-card" style="aspect-ratio: 4/3;">
+      <div style="text-align:center;">
+        <div style="font-family:var(--serif); font-size:32px; font-weight:700; color:var(--ink-50);">Hover ✦</div>
+        <div style="font-family:var(--mono); font-size:10px; color:var(--ink-400); letter-spacing:0.15em; margin-top: 8px;">CURSOR-TRACKING TILT</div>
+      </div>
+      <span class="anim-label">MAGNETIC CARDS</span>
+    </div>
+    <div class="anim-card" style="aspect-ratio: 4/3;">
+      <div class="hero-layer hero-mesh" style="position: relative; width: 80%; height: 60%;"></div>
+      <span class="anim-label">PARALLAX MESH · MOUSE</span>
+    </div>
+    <div class="anim-card" style="aspect-ratio: 4/3;">
+      <div style="font-family: var(--serif); font-size: 28px;">
+        <span style="display:inline-block; animation: floatLetter 2s ease-in-out infinite; color: var(--w-chat);">A</span>
+        <span style="display:inline-block; animation: floatLetter 2s ease-in-out 0.1s infinite; color: var(--w-corp);">I</span>
+        <span style="display:inline-block; animation: floatLetter 2s ease-in-out 0.2s infinite; color: var(--ink-50); margin-left: 12px;">w</span>
+        <span style="display:inline-block; animation: floatLetter 2s ease-in-out 0.3s infinite; color: var(--w-image);">o</span>
+        <span style="display:inline-block; animation: floatLetter 2s ease-in-out 0.4s infinite; color: var(--w-code);">r</span>
+        <span style="display:inline-block; animation: floatLetter 2s ease-in-out 0.5s infinite; color: var(--w-video);">k</span>
+        <span style="display:inline-block; animation: floatLetter 2s ease-in-out 0.6s infinite; color: var(--w-sound);">s</span>
+      </div>
+      <span class="anim-label">LETTER STAGGER</span>
+    </div>
+    <div class="anim-card" style="aspect-ratio: 4/3;">
+      <div style="position: relative; width: 80%; height: 6px; background: var(--void-700); border-radius: 3px; overflow: hidden;">
+        <div style="position: absolute; height: 100%; background: var(--grad-aurora); border-radius: 3px; animation: progressLoop 2.5s ease-in-out infinite;"></div>
+      </div>
+      <span class="anim-label">SCROLL-LINKED PROGRESS</span>
+    </div>
+    <div class="anim-card" style="aspect-ratio: 4/3;">
+      <div id="ringDemo" style="width: 80px; height: 80px; border-radius: 50%; border: 2px solid var(--void-700); position: relative;">
+        <div style="position: absolute; inset: -2px; border-radius: 50%; border: 2px solid transparent; border-top-color: var(--violet-500); border-right-color: var(--w-corp); animation: rotate 1.5s linear infinite;"></div>
+      </div>
+      <span class="anim-label">CONIC LOADER</span>
+    </div>
+    <div class="anim-card" style="aspect-ratio: 4/3;">
+      <div style="display:flex; gap: 4px; align-items: flex-end; height: 60px;">
+        <div style="width: 8px; background: var(--violet-500); border-radius: 2px; animation: bar 1s ease-in-out 0s infinite;"></div>
+        <div style="width: 8px; background: var(--w-corp); border-radius: 2px; animation: bar 1s ease-in-out 0.15s infinite;"></div>
+        <div style="width: 8px; background: var(--w-image); border-radius: 2px; animation: bar 1s ease-in-out 0.3s infinite;"></div>
+        <div style="width: 8px; background: var(--w-code); border-radius: 2px; animation: bar 1s ease-in-out 0.45s infinite;"></div>
+        <div style="width: 8px; background: var(--w-sound); border-radius: 2px; animation: bar 1s ease-in-out 0.6s infinite;"></div>
+      </div>
+      <span class="anim-label">EQUALIZER · WORKSPACES</span>
+    </div>
+    <div class="anim-card" style="aspect-ratio: 4/3;">
+      <div style="position:relative;">
+        <div style="font-family: var(--serif); font-size: 28px; color: var(--ink-50);">XERO<span style="color: transparent; -webkit-text-stroke: 1px var(--violet-500);">CODE</span></div>
+      </div>
+      <span class="anim-label">TEXT REVEAL · STROKE → FILL</span>
+    </div>
+    <div class="anim-card" style="aspect-ratio: 4/3;">
+      <div style="font-family: var(--mono); font-size: 11px; color: var(--ink-300); text-align: left;">
+        <div>› <span style="color:var(--w-code);">git pull</span></div>
+        <div>› <span style="color:var(--w-corp);">npm run dev</span></div>
+        <div>› <span style="color:var(--w-image);">xerocode chat</span><span class="stream-cursor">▎</span></div>
+      </div>
+      <span class="anim-label">TYPEWRITER COMMAND</span>
+    </div>
+  </div>
+
+  <p class="palette-row-label" style="margin-top: 64px;">Принципы взаимодействия</p>
+  <div class="principles">
+    <div class="principle">
+      <p class="principle-num">№ 01</p>
+      <h3 class="principle-title">Cursor — герой</h3>
+      <p class="principle-body">Курсор оставляет след, тянет за собой gradient blur, mascot Xero смотрит за ним глазами. Hover не статичный — magnetic-эффект.</p>
+    </div>
+    <div class="principle">
+      <p class="principle-num">№ 02</p>
+      <h3 class="principle-title">Scroll — режиссёр</h3>
+      <p class="principle-body">Каждая секция — сцена. Параллакс слоёв, ускорение текста, scrub-видео. Нижняя полоска показывает прогресс. Без джанка.</p>
+    </div>
+    <div class="principle">
+      <p class="principle-num">№ 03</p>
+      <h3 class="principle-title">Idle — живой</h3>
+      <p class="principle-body">Ничего не «замирает». Mesh дышит, частицы летят, маркизы едут, watermark пульсирует. Сайт живёт без действий пользователя.</p>
+    </div>
+  </div>
+
+  <div class="page-meta meta-bl">WEB VISION</div>
+  <div class="page-meta meta-br">XEROCODE / 21</div>
+</section>
+
+<!-- ========== 22 — MASCOT XERO ========== -->
+<section class="page" id="mascot">
+  <div class="page-meta meta-tl">SECTION 22</div>
+  <div class="page-meta meta-tr">P. 112</div>
+  <div class="section-header">
+    <span class="section-num">⌘ 22</span>
+    <h2 class="section-title">Маскот · <em>Xero</em></h2>
+  </div>
+  <p class="lead-text" style="max-width: 880px;">Маленькая <em>искра</em>, которая ходит за курсором, моргает, реагирует на скролл и подсвечивает важное.</p>
+
+  <div class="component-demo" style="background: var(--grad-mesh); border-color: rgba(124,92,255,0.3); padding: 80px 48px; flex-direction: column; align-items: center; min-height: 280px; position: relative;">
+    <div style="width: 96px; height: 96px; position: relative;">
+      <div class="mascot-body" style="width: 100%; height: 100%; animation: mascotIdle 3s ease-in-out infinite;"></div>
+      <div class="mascot-eye left" style="width: 10px; height: 10px;"></div>
+      <div class="mascot-eye right" style="width: 10px; height: 10px;"></div>
+    </div>
+    <p style="margin-top: 32px; font-family: var(--serif); font-size: 24px; font-style: italic; color: var(--ink-100);">Привет. Я <em style="color:var(--amber-500);">Xero.</em></p>
+    <p class="page-meta" style="position: relative; margin-top: 16px;">↑ И я уже хожу по странице. Подвигай мышкой ↑</p>
+  </div>
+
+  <p class="palette-row-label" style="margin-top: 64px;">5 состояний</p>
+  <div class="mascot-showcase">
+    <div class="mascot-state">
+      <div class="mascot-static">
+        <div class="mascot-body" style="animation: mascotIdle 3s ease-in-out infinite;"></div>
+        <div class="mascot-eye left" style="width: 7px; height: 7px;"></div>
+        <div class="mascot-eye right" style="width: 7px; height: 7px;"></div>
+      </div>
+      <p class="mascot-state-name">Idle</p>
+      <p class="mascot-state-desc">Лёгкий боб + glow pulse. По умолчанию.</p>
+    </div>
+    <div class="mascot-state">
+      <div class="mascot-static">
+        <div class="mascot-body" style="animation: mascotSpin 1s linear infinite;"></div>
+      </div>
+      <p class="mascot-state-name">Thinking</p>
+      <p class="mascot-state-desc">Вращается. Когда AI генерит ответ.</p>
+    </div>
+    <div class="mascot-state">
+      <div class="mascot-static" style="animation: mascotBounce 0.6s var(--ease-spring) infinite;">
+        <div class="mascot-body"></div>
+        <div class="mascot-eye left" style="width: 7px; height: 7px; transform: scaleY(0.3);"></div>
+        <div class="mascot-eye right" style="width: 7px; height: 7px; transform: scaleY(0.3);"></div>
+      </div>
+      <p class="mascot-state-name">Happy</p>
+      <p class="mascot-state-desc">Прыгает + жмурится. Успех / готово.</p>
+    </div>
+    <div class="mascot-state">
+      <div class="mascot-static">
+        <div class="mascot-body" style="background: radial-gradient(circle at 35% 30%, #FF8888 0%, #FF3B5C 60%, #2D1880 100%);"></div>
+        <div class="mascot-eye left" style="width: 7px; height: 7px; transform: rotate(45deg) scaleY(0.2);"></div>
+        <div class="mascot-eye right" style="width: 7px; height: 7px; transform: rotate(-45deg) scaleY(0.2);"></div>
+      </div>
+      <p class="mascot-state-name">Error</p>
+      <p class="mascot-state-desc">Краснеет, хмурится. Ошибка / fail.</p>
+    </div>
+    <div class="mascot-state">
+      <div class="mascot-static">
+        <div class="mascot-body" style="background: radial-gradient(circle at 35% 30%, #FFFFFF 0%, #F8F8FB 50%); opacity: 0.5;"></div>
+      </div>
+      <p class="mascot-state-name">Sleep</p>
+      <p class="mascot-state-desc">Затухает после 30 сек idle.</p>
+    </div>
+  </div>
+
+  <div class="spacer-md"></div>
+
+  <div class="two-col">
+    <div>
+      <p class="col-label">ПОВЕДЕНИЕ</p>
+      <ul class="clean">
+        <li><strong style="color:var(--ink-50);">Глаза</strong> — следят за курсором (pupil offset до ±2px)</li>
+        <li><strong style="color:var(--ink-50);">Хвост</strong> — оставляет trail из 5 точек при движении</li>
+        <li><strong style="color:var(--ink-50);">Скролл</strong> — мягко плывёт за viewport (lerp 0.08)</li>
+        <li><strong style="color:var(--ink-50);">CTA</strong> — орбитой облетает кнопку при hover</li>
+        <li><strong style="color:var(--ink-50);">Click</strong> — bounce-реакция</li>
+        <li><strong style="color:var(--ink-50);">Idle 30s</strong> — переходит в sleep, затухает до 30%</li>
+        <li><strong style="color:var(--ink-50);">prefers-reduced-motion</strong> — статичен, без движения</li>
+      </ul>
+    </div>
+    <div>
+      <p class="col-label">МАНИФЕСТ XERO</p>
+      <p class="lead-text" style="font-size: 26px;">Я — <em>искра</em>. Я не помощник, не чат-бот. Я — <em>знак того, что ИИ слушает.</em></p>
+      <p class="body-text">Xero — не персонаж в смысле Clippy. Он не пишет в чате. Он просто живёт в углу экрана и подсказывает движением: «работаем» / «ждём» / «готово» / «упс». Один взгляд на него — и ты знаешь статус.</p>
+      <p class="body-text">Когда юзер свернёт окно или перейдёт на другую вкладку — Xero засыпает.</p>
+    </div>
+  </div>
+
+  <div class="page-meta meta-bl">MASCOT · XERO</div>
+  <div class="page-meta meta-br">XEROCODE / 22</div>
+</section>
+
+<!-- ========== 23 — IMPLEMENTATION ========== -->
+<section class="page" id="impl">
+  <div class="page-meta meta-tl">SECTION 23</div>
+  <div class="page-meta meta-tr">P. 118</div>
+  <div class="section-header">
+    <span class="section-num">⌘ 23</span>
+    <h2 class="section-title">Реализация</h2>
+  </div>
+  <div class="two-col">
+    <div>
+      <p class="col-label">ФАЙЛОВАЯ СТРУКТУРА</p>
+      <div class="code-block"><span class="comment">// frontend/src</span>
+<span class="key">styles/</span>
+  tokens.css
+  animations.css
+  globals.css
+<span class="key">lib/</span>
+  motion-presets.ts
+  theme.ts
+<span class="key">components/brand/</span>
+  Logo.tsx
+  Mark.tsx
+  AIIndicator.tsx
+  GradientMesh.tsx</div>
+    </div>
+    <div>
+      <p class="col-label">ROLL-OUT (8 НЕДЕЛЬ)</p>
+      <ul class="clean">
+        <li><strong style="color:var(--ink-50)">W1.</strong> tokens.css, Logo v2, Manrope</li>
+        <li><strong style="color:var(--ink-50)">W2.</strong> Button, Card, Input</li>
+        <li><strong style="color:var(--ink-50)">W3.</strong> Sidebar, ChatArea V2</li>
+        <li><strong style="color:var(--ink-50)">W4.</strong> 10 motion presets</li>
+        <li><strong style="color:var(--ink-50)">W5.</strong> Темы PPTX/DOCX/XLSX</li>
+        <li><strong style="color:var(--ink-50)">W6.</strong> Лендинг — пересборка</li>
+        <li><strong style="color:var(--ink-50)">W7.</strong> Email + соц. сети</li>
+        <li><strong style="color:var(--ink-50)">W8.</strong> Storybook, документация</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="spacer-lg"></div>
+
+  <p class="palette-row-label">Чеклист бренд-аудита (PR)</p>
+  <ul class="clean" style="columns: 2; column-gap: 64px;">
+    <li>Цвета только через CSS-переменные</li>
+    <li>Шрифты — Manrope / Inter / JetBrains Mono</li>
+    <li>Размеры из шкалы (нет произвольных px)</li>
+    <li>Иконки только из lucide-react</li>
+    <li>Анимации через motion/react + пресеты</li>
+    <li>Контраст ≥ 4.5:1</li>
+    <li>Touch targets ≥ 44px</li>
+    <li>Focus ring виден</li>
+    <li>prefers-reduced-motion уважается</li>
+    <li>Темы dark/light обе работают</li>
+    <li>Текст на «ты», без воды, с цифрами</li>
+    <li>Watermark XeroCode в экспорте</li>
+  </ul>
+  <div class="page-meta meta-bl">IMPLEMENTATION</div>
+  <div class="page-meta meta-br">XEROCODE / 23</div>
+</section>
+
+<!-- ========== FOOTER ========== -->
+<section class="footer">
+  <p class="footer-quote">«Хороший бренд — это не лого. <em style="color:var(--amber-500); font-style: italic;">Это последовательность.</em>»</p>
+  <p class="footer-meta">XEROCODE BRAND BOOK · V2.0 · MMXXVI · MOSCOW · <a href="https://xerocode.ru">XEROCODE.RU</a></p>
+</section>
+
+<!-- ========== LIVE MASCOT XERO ========== -->
+<div class="mascot-fixed" id="xeroMascot" style="left: 50px; top: 80vh;">
+  <div class="mascot" id="xeroBody">
+    <div class="mascot-body"></div>
+    <div class="mascot-eye left" id="eyeL"></div>
+    <div class="mascot-eye right" id="eyeR"></div>
+  </div>
+</div>
+<div class="mascot-trail" id="trail1"></div>
+<div class="mascot-trail" id="trail2"></div>
+<div class="mascot-trail" id="trail3"></div>
+<div class="mascot-trail" id="trail4"></div>
+<div class="mascot-trail" id="trail5"></div>
+
+<script>
+// ========== Scroll reveal ==========
+const io = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) entry.target.classList.add('visible');
+  });
+}, { threshold: 0.1 });
+document.querySelectorAll('.page').forEach(el => {
+  el.classList.add('reveal');
+  io.observe(el);
+});
+
+// Counter animation
+const counters = document.querySelectorAll('.counter');
+counters.forEach(c => {
+  const target = parseInt(c.textContent.replace(/\s/g, ''));
+  let current = 0;
+  const step = target / 60;
+  const animate = () => {
+    current += step;
+    if (current < target) {
+      c.textContent = Math.round(current).toLocaleString('ru-RU');
+      requestAnimationFrame(animate);
+    } else {
+      c.textContent = target.toLocaleString('ru-RU');
+    }
+  };
+  const ioCounter = new IntersectionObserver((es) => {
+    es.forEach(e => { if (e.isIntersecting) { animate(); ioCounter.disconnect(); }});
+  });
+  ioCounter.observe(c);
+});
+
+// ========== MASCOT XERO ==========
+(function() {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+  const mascot = document.getElementById('xeroMascot');
+  const body = document.getElementById('xeroBody');
+  const eyeL = document.getElementById('eyeL');
+  const eyeR = document.getElementById('eyeR');
+  const trails = [
+    document.getElementById('trail1'),
+    document.getElementById('trail2'),
+    document.getElementById('trail3'),
+    document.getElementById('trail4'),
+    document.getElementById('trail5'),
+  ];
+  if (!mascot) return;
+
+  // State
+  let mouseX = window.innerWidth * 0.3;
+  let mouseY = window.innerHeight * 0.7;
+  let mascotX = 50;
+  let mascotY = window.innerHeight * 0.7;
+  let lastMove = Date.now();
+  let trailHistory = [];
+
+  document.addEventListener('mousemove', (e) => {
+    mouseX = e.clientX;
+    mouseY = e.clientY;
+    lastMove = Date.now();
+    body.classList.remove('thinking');
+    mascot.style.opacity = '1';
+  });
+
+  document.addEventListener('click', (e) => {
+    body.classList.add('happy');
+    setTimeout(() => body.classList.remove('happy'), 600);
+  });
+
+  // Hover detection on CTA elements
+  document.querySelectorAll('.btn-primary, .magnetic-btn, .toc-item').forEach(el => {
+    el.addEventListener('mouseenter', () => body.classList.add('thinking'));
+    el.addEventListener('mouseleave', () => body.classList.remove('thinking'));
+  });
+
+  function tick() {
+    const targetX = mouseX - 100;  // offset to side of cursor
+    const targetY = mouseY + 30;
+
+    // Lerp toward target
+    mascotX += (targetX - mascotX) * 0.06;
+    mascotY += (targetY - mascotY) * 0.06;
+
+    // Clamp to viewport
+    const w = mascot.offsetWidth;
+    mascotX = Math.max(8, Math.min(window.innerWidth - w - 8, mascotX));
+    mascotY = Math.max(8, Math.min(window.innerHeight - w - 8, mascotY));
+
+    mascot.style.left = mascotX + 'px';
+    mascot.style.top = mascotY + 'px';
+
+    // Eye tracking — pupils look at cursor
+    const cx = mascotX + w / 2;
+    const cy = mascotY + w / 2;
+    const ang = Math.atan2(mouseY - cy, mouseX - cx);
+    const offX = Math.cos(ang) * 2;
+    const offY = Math.sin(ang) * 2;
+    if (eyeL && eyeR) {
+      eyeL.style.transform = `translate(${offX}px, ${offY}px)`;
+      eyeR.style.transform = `translate(${offX}px, ${offY}px)`;
+    }
+
+    // Trail
+    trailHistory.unshift({ x: mascotX + w/2, y: mascotY + w/2 });
+    if (trailHistory.length > 10) trailHistory.pop();
+    trails.forEach((t, i) => {
+      const idx = (i + 1) * 2;
+      const p = trailHistory[idx];
+      if (p && t) {
+        t.style.left = p.x + 'px';
+        t.style.top = p.y + 'px';
+        t.style.opacity = (1 - i * 0.2) * 0.5;
+      } else if (t) {
+        t.style.opacity = '0';
+      }
+    });
+
+    // Sleep mode after 30s idle
+    if (Date.now() - lastMove > 30000) {
+      mascot.style.opacity = '0.3';
+    }
+
+    requestAnimationFrame(tick);
+  }
+  tick();
+})();
+
+// ========== HERO PARALLAX MESH ==========
+(function() {
+  const hero = document.getElementById('heroVision');
+  const mesh = hero ? hero.querySelector('.hero-mesh') : null;
+  if (!hero || !mesh) return;
+
+  hero.addEventListener('mousemove', (e) => {
+    const r = hero.getBoundingClientRect();
+    const x = (e.clientX - r.left) / r.width - 0.5;
+    const y = (e.clientY - r.top) / r.height - 0.5;
+    mesh.style.transform = `translate(${x * -30}px, ${y * -30}px) scale(1.1)`;
+  });
+  hero.addEventListener('mouseleave', () => {
+    mesh.style.transform = '';
+  });
+})();
+
+// ========== MAGNETIC BUTTON ==========
+(function() {
+  const btn = document.getElementById('magBtn');
+  if (!btn) return;
+  btn.addEventListener('mousemove', (e) => {
+    const r = btn.getBoundingClientRect();
+    const x = e.clientX - (r.left + r.width / 2);
+    const y = e.clientY - (r.top + r.height / 2);
+    btn.style.transform = `translate(${x * 0.3}px, ${y * 0.3}px) scale(1.04)`;
+  });
+  btn.addEventListener('mouseleave', () => {
+    btn.style.transform = '';
+  });
+})();
+
+// ========== PARTICLE FIELD ==========
+(function() {
+  const field = document.getElementById('particleField');
+  if (!field) return;
+  for (let i = 0; i < 30; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    p.style.left = Math.random() * 100 + '%';
+    p.style.animationDelay = Math.random() * 8 + 's';
+    p.style.animationDuration = (8 + Math.random() * 8) + 's';
+    p.style.background = ['var(--violet-500)', 'var(--cyan-500)', 'var(--amber-500)'][i % 3];
+    p.style.boxShadow = '0 0 12px ' + p.style.background;
+    field.appendChild(p);
+  }
+})();
+</script>
+</body>
+</html>

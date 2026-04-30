@@ -10,6 +10,8 @@ from typing import Sequence, Union
 from alembic import op
 import sqlalchemy as sa
 
+import app.core.db_types  # noqa: F401  # GUID type used inside upgrade()
+
 
 # revision identifiers, used by Alembic.
 revision: str = 'b0a11b8e62b2'

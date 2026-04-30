@@ -1,0 +1,97 @@
+/* ══════════════════════════════════════════════════════════
+   XEROCODE · ANIMATIONS — 10 signature keyframes
+   Reference: BRANDBOOK_FINAL_v3.0.html, Section 09
+   ══════════════════════════════════════════════════════════ */
+
+/* 1. AI Pulse — модель думает */
+@keyframes xc-pulse {
+  0%, 100% { opacity: 0.6; transform: scale(1); }
+  50%      { opacity: 1.0; transform: scale(1.05); }
+}
+
+/* 2. Aurora Shimmer — loading большого блока */
+@keyframes xc-shimmer {
+  from { transform: translateX(-100%); }
+  to   { transform: translateX(200%); }
+}
+
+/* 3. Mesh Float — фон дышит */
+@keyframes xc-mesh-float {
+  from { transform: scale(1) rotate(0deg); }
+  to   { transform: scale(1.15) rotate(2deg); }
+}
+
+/* 4. Cursor Blink — стриминг текста */
+@keyframes xc-cursor {
+  to { opacity: 0; }
+}
+
+/* 5. Float Letter — буквы в hero */
+@keyframes xc-float-letter {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-6px); }
+}
+
+/* 6. Gradient Shift — переливание */
+@keyframes xc-grad-shift {
+  to { background-position: 300% center; }
+}
+
+/* 7. Mascot Idle — bobbing */
+@keyframes xc-mascot-idle {
+  0%, 100% { transform: translateY(0px); }
+  50%      { transform: translateY(-6px); }
+}
+
+/* 8. Mascot Glow — пульсирующее свечение */
+@keyframes xc-mascot-glow {
+  0%, 100% { opacity: 0.4; transform: scale(1); }
+  50%      { opacity: 0.8; transform: scale(1.15); }
+}
+
+/* 9. Mascot Spin — режим thinking */
+@keyframes xc-mascot-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* 10. Mascot Bounce — happy */
+@keyframes xc-mascot-bounce {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50%      { transform: translateY(-12px) scale(1.1); }
+}
+
+/* Bonus: progress bar fill */
+@keyframes xc-progress {
+  0%   { width: 0%; }
+  60%  { width: 100%; }
+  100% { width: 100%; opacity: 0; }
+}
+
+/* Bonus: rotate (loaders) */
+@keyframes xc-rotate {
+  to { transform: rotate(360deg); }
+}
+
+/* Bonus: marquee (бесконечная лента) */
+@keyframes xc-marquee {
+  to { transform: translateX(-50%); }
+}
+
+/* Bonus: bar EQ */
+@keyframes xc-bar {
+  0%, 100% { height: 8px; }
+  50%      { height: 50px; }
+}
+
+/* ══════════════════════════════════════════════════════════
+   PREFERS-REDUCED-MOTION — отключаем всё
+   ══════════════════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

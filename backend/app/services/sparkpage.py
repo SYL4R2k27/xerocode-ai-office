@@ -32,7 +32,7 @@ def generate_sparkpage(
         for j, src in enumerate(sources):
             ref = f"[{j + 1}]"
             if ref in content:
-                url = src.get("url", "#")
+                url = src.get("url") or "#"
                 content = content.replace(ref, f'<a href="{html.escape(url)}" class="cite" target="_blank">[{j + 1}]</a>')
         # Convert newlines to paragraphs
         paragraphs = content.split("\n")
@@ -47,8 +47,8 @@ def generate_sparkpage(
     sources_html = ""
     for i, src in enumerate(sources):
         title = html.escape(src.get("title", f"Source {i + 1}"))
-        url = src.get("url", "")
-        snippet = html.escape(src.get("snippet", "")[:150])
+        url = src.get("url") or ""
+        snippet = html.escape((src.get("snippet") or "")[:150])
         url_display = html.escape(url[:60]) if url else ""
         sources_html += f"""
         <li>

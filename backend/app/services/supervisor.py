@@ -257,7 +257,9 @@ class Supervisor:
                                 logger.info(f"Image {i+1} saved: /uploads/{filename} ({len(img_bytes)//1024}KB)")
 
                         elif img_data_url.startswith("http"):
-                            async with httpx.AsyncClient(timeout=30.0) as dl_client:
+                            # ВСЕ image-вызовы строго через прокси
+                            _transport = httpx.AsyncHTTPTransport(proxy=proxy) if proxy else None
+                            async with httpx.AsyncClient(transport=_transport, timeout=30.0) as dl_client:
                                 dl_resp = await dl_client.get(img_data_url)
                                 if dl_resp.status_code == 200:
                                     ct = dl_resp.headers.get("content-type", "image/png")

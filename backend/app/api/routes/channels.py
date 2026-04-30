@@ -26,8 +26,8 @@ async def list_channels(user=Depends(get_current_user), db: AsyncSession = Depen
     return [
         {
             "id": str(c.id), "name": c.name, "description": c.description,
-            "channel_type": c.channel_type, "is_private": c.is_private,
-            "members_count": len(c.members or []),
+            "channel_type": c.channel_type, "type": c.channel_type, "is_private": c.is_private,
+            "member_count": len(c.members or []), "members_count": len(c.members or []),
         }
         for c in channels
     ]
@@ -66,6 +66,8 @@ async def _verify_channel_org(channel_id: str, user, db) -> Channel:
 
 @router.get("/{channel_id}/messages")
 async def get_messages(channel_id: str, limit: int = 50, user=Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+    from app.models.user import User
+
     await _verify_channel_org(channel_id, user, db)
     result = await db.execute(
         select(ChannelMessage)
@@ -74,9 +76,20 @@ async def get_messages(channel_id: str, limit: int = 50, user=Depends(get_curren
         .limit(min(limit, 200))
     )
     messages = result.scalars().all()
+
+    # Resolve user names
+    user_ids = list({str(m.user_id) for m in messages})
+    user_names: dict[str, str] = {}
+    if user_ids:
+        users_result = await db.execute(select(User).where(User.id.in_(user_ids)))
+        for u in users_result.scalars().all():
+            user_names[str(u.id)] = u.name or u.email or "User"
+
     return [
         {
             "id": str(m.id), "user_id": str(m.user_id), "content": m.content,
+            "user_name": user_names.get(str(m.user_id), "User"),
+            "channel_id": str(m.channel_id),
             "message_type": m.message_type, "created_at": str(m.created_at),
         }
         for m in reversed(messages)

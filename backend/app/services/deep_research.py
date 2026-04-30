@@ -30,10 +30,17 @@ async def _call_ai(system_prompt: str, user_prompt: str, model: str | None = Non
 
     # Perplexity via OpenRouter (best for search)
     if model and "sonar" in model and getattr(settings, "openrouter_api_key", None):
+        # Map short names to full OpenRouter model IDs
+        sonar_map = {
+            "sonar-pro": "perplexity/sonar-pro",
+            "sonar": "perplexity/sonar",
+            "sonar-deep-research": "perplexity/sonar-deep-research",
+        }
+        full_model = sonar_map.get(model, f"perplexity/{model}")
         providers.append({
             "url": "https://openrouter.ai/api/v1/chat/completions",
             "key": settings.openrouter_api_key,
-            "model": f"perplexity/{model}",
+            "model": full_model,
             "name": f"Perplexity/{model}",
         })
 
@@ -46,7 +53,7 @@ async def _call_ai(system_prompt: str, user_prompt: str, model: str | None = Non
             "name": "OpenRouter",
         })
 
-    # Groq fallback (free)
+    # Groq fallback
     if getattr(settings, "groq_api_key", None):
         providers.append({
             "url": "https://api.groq.com/openai/v1/chat/completions",
@@ -55,24 +62,40 @@ async def _call_ai(system_prompt: str, user_prompt: str, model: str | None = Non
             "name": "Groq/Llama",
         })
 
+    # OpenRouter generic fallback (cheapest)
+    if getattr(settings, "openrouter_api_key", None) and not any("openrouter" in p["url"] for p in providers):
+        providers.append({
+            "url": "https://openrouter.ai/api/v1/chat/completions",
+            "key": settings.openrouter_api_key,
+            "model": "google/gemini-2.0-flash-001",
+            "name": "OpenRouter/Gemini-Flash",
+        })
+
     for provider in providers:
         try:
             use_proxy = bool(proxy)
             transport = httpx.AsyncHTTPTransport(proxy=proxy) if use_proxy else None
-            async with httpx.AsyncClient(transport=transport, timeout=60) as client:
+            async with httpx.AsyncClient(transport=transport, timeout=90) as client:
+                # Perplexity sonar models: merge system into user prompt (no system role support)
+                is_perplexity = "perplexity" in provider.get("model", "")
+                if is_perplexity:
+                    messages = [{"role": "user", "content": f"{system_prompt}\n\n{user_prompt}"}]
+                else:
+                    messages = [
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": user_prompt},
+                    ]
+
                 resp = await client.post(
                     provider["url"],
                     headers={
                         "Authorization": f"Bearer {provider['key']}",
                         "Content-Type": "application/json",
-                        "HTTP-Referer": "https://xerocode.space",
+                        "HTTP-Referer": "https://xerocode.ru",
                     },
                     json={
                         "model": provider["model"],
-                        "messages": [
-                            {"role": "system", "content": system_prompt},
-                            {"role": "user", "content": user_prompt},
-                        ],
+                        "messages": messages,
                         "temperature": temperature,
                         "max_tokens": max_tokens,
                     },
@@ -85,7 +108,7 @@ async def _call_ai(system_prompt: str, user_prompt: str, model: str | None = Non
                     cost = 0.0
                     logger.info(f"[Research] AI call via {provider['name']}: {tokens} tokens")
                     return content, tokens, cost
-                logger.warning(f"[Research] {provider['name']} failed: {resp.status_code}")
+                logger.warning(f"[Research] {provider['name']} failed: {resp.status_code} — {resp.text[:300]}")
         except Exception as e:
             logger.error(f"[Research] {provider['name']} error: {e}")
 

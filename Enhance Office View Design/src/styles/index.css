@@ -1,6 +1,8 @@
 @import './fonts.css';
 @import './tailwind.css';
 @import './theme.css';
+@import './tokens.css';     /* XeroCode v3.0 brand tokens */
+@import './animations.css'; /* XeroCode v3.0 keyframes */
 
 /* ── Safe-area + mobile baseline ── */
 :root {

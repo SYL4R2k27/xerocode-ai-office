@@ -27,10 +27,18 @@ if config.config_file_name is not None:
 
 target_metadata = Base.metadata
 
-# Read database URL from .env if not set in alembic.ini
-if not config.get_main_option("sqlalchemy.url"):
-    from app.core.config import settings
-    config.set_main_option("sqlalchemy.url", settings.database_url)
+# ALWAYS override URL from settings (alembic.ini may hardcode SQLite default).
+# Convert +asyncpg → sync (psycopg2 / pymysql / etc.) — Alembic uses sync drivers.
+from app.core.config import settings  # noqa: E402
+
+_db_url = settings.database_url
+if "+asyncpg" in _db_url:
+    _db_url = _db_url.replace("+asyncpg", "")
+elif "+aiosqlite" in _db_url:
+    _db_url = _db_url.replace("+aiosqlite", "")
+elif "+aiomysql" in _db_url:
+    _db_url = _db_url.replace("+aiomysql", "+pymysql")
+config.set_main_option("sqlalchemy.url", _db_url)
 
 
 def run_migrations_offline() -> None:

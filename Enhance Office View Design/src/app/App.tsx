@@ -5,8 +5,10 @@ import { AuthPage } from "./components/auth/AuthPage";
 import { CliLoginPage } from "./components/auth/CliLoginPage";
 import { CliAuthPage } from "./components/auth/CliAuthPage";
 import { LandingPage } from "./components/landing/LandingPage";
+import { LandingPageV3 } from "./components/landing/LandingPageV3";
 import { CorporateLayout, type CorporatePage } from "./components/corporate/CorporateLayout";
 import { ModelSetupV2 } from "./components/modals/ModelSetupV2";
+import { XeroMascot } from "./components/brand/XeroMascot";
 
 // Heavy corporate pages — lazy-loaded (code-splitting, cut main bundle by ~400kb)
 const Dashboard = lazy(() => import("./components/corporate/Dashboard").then(m => ({ default: m.Dashboard })));
@@ -196,12 +198,21 @@ export default function App() {
     }
   }
 
-  // Не авторизован — показываем лендинг или форму входа
+  // Не авторизован — показываем лендинг v3 или форму входа
   if (!authStore.user) {
+    // v3 detection: ?v2=1 → fallback на старый лендинг
+    const useV3Landing = !new URLSearchParams(window.location.search).has("v2");
     return (
       <>
         {showLanding ? (
-          <LandingPage onLogin={() => setShowLanding(false)} />
+          useV3Landing ? (
+            <LandingPageV3
+              onCTA={() => setShowLanding(false)}
+              onSelectPlan={() => setShowLanding(false)}
+            />
+          ) : (
+            <LandingPage onLogin={() => setShowLanding(false)} />
+          )
         ) : (
           <AuthPage
             onLogin={authStore.login}
@@ -210,6 +221,8 @@ export default function App() {
             error={authStore.error}
           />
         )}
+        {/* Mascot Xero — живёт даже на лендинге */}
+        <XeroMascot enabled={useV3Landing && showLanding} />
         <Toaster
           theme="dark"
           position="bottom-right"
@@ -340,9 +353,11 @@ export default function App() {
         </div>
       </div>
     );
+    const corpMascotEnabled = localStorage.getItem("xerocode-mascot-disabled") !== "1";
     return (
       <CorpErrorBoundary fallback={corpFallback}>
       <>
+        <XeroMascot enabled={corpMascotEnabled} />
         <CorporateLayout
           activePage={corporatePage}
           onNavigate={setCorporatePage}
@@ -523,9 +538,11 @@ export default function App() {
     );
   }
 
-  // Обычный пользователь (Free/PRO/ULTIMA) → стандартный чат-интерфейс
+  // Обычный пользователь (Free/Go/Pro/Prime) → стандартный чат-интерфейс
+  const mascotEnabled = localStorage.getItem("xerocode-mascot-disabled") !== "1";
   return (
     <div className="h-screen overflow-hidden" style={{ backgroundColor: "var(--bg-base)" }}>
+      <XeroMascot enabled={mascotEnabled} />
       <ChatInterface
         showModelSetup={showModelSetup}
         setShowModelSetup={setShowModelSetup}

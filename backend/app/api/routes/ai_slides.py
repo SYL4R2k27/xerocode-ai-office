@@ -109,107 +109,12 @@ Respond with ONLY a valid JSON array, no extra text."""
         raise HTTPException(status_code=502, detail=f"AI returned invalid JSON: {e}")
 
 
-def _build_pptx(slides: list[dict], theme: str, include_images: bool) -> io.BytesIO:
-    """Build PPTX file from slide data."""
-    from pptx import Presentation
-    from pptx.util import Inches, Pt, Emu
-    from pptx.dml.color import RGBColor
-    from pptx.enum.text import PP_ALIGN
-
-    cfg = THEME_CONFIGS.get(theme, THEME_CONFIGS["business"])
-    prs = Presentation()
-    prs.slide_width = Emu(12192000)   # 16:9
-    prs.slide_height = Emu(6858000)
-
-    def hex_rgb(h: str) -> RGBColor:
-        return RGBColor(int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16))
-
-    for i, slide_data in enumerate(slides):
-        layout = prs.slide_layouts[6]  # blank
-        slide = prs.slides.add_slide(layout)
-
-        # Background
-        bg = slide.background
-        fill = bg.fill
-        fill.solid()
-        fill.fore_color.rgb = hex_rgb(cfg["bg_color"])
-
-        title_text = slide_data.get("title", f"Slide {i + 1}")
-        subtitle_text = slide_data.get("subtitle", "")
-        bullets = slide_data.get("bullets", [])
-        notes_text = slide_data.get("notes", "")
-        image_prompt = slide_data.get("image_prompt", "")
-
-        # Title
-        from pptx.util import Inches, Pt
-        left = Inches(0.8)
-        top = Inches(0.5)
-        width = Inches(8.5) if (include_images and image_prompt) else Inches(11.5)
-        height = Inches(1.2)
-        txBox = slide.shapes.add_textbox(left, top, width, height)
-        tf = txBox.text_frame
-        tf.word_wrap = True
-        p = tf.paragraphs[0]
-        p.text = title_text
-        p.font.size = Pt(32) if i == 0 else Pt(28)
-        p.font.bold = True
-        p.font.color.rgb = hex_rgb(cfg["title_color"])
-        p.alignment = PP_ALIGN.LEFT
-
-        # Subtitle
-        if subtitle_text:
-            sub_top = Inches(1.8) if i == 0 else Inches(1.6)
-            txBox2 = slide.shapes.add_textbox(left, sub_top, width, Inches(0.8))
-            tf2 = txBox2.text_frame
-            tf2.word_wrap = True
-            p2 = tf2.paragraphs[0]
-            p2.text = subtitle_text
-            p2.font.size = Pt(18)
-            p2.font.color.rgb = hex_rgb(cfg["text_color"])
-            p2.alignment = PP_ALIGN.LEFT
-
-        # Bullets
-        if bullets:
-            bullet_top = Inches(2.5)
-            txBox3 = slide.shapes.add_textbox(left, bullet_top, width, Inches(4.0))
-            tf3 = txBox3.text_frame
-            tf3.word_wrap = True
-            for j, bullet in enumerate(bullets):
-                if j == 0:
-                    p3 = tf3.paragraphs[0]
-                else:
-                    p3 = tf3.add_paragraph()
-                p3.text = f"  {bullet}"
-                p3.font.size = Pt(16)
-                p3.font.color.rgb = hex_rgb(cfg["text_color"])
-                p3.space_after = Pt(8)
-
-        # Image placeholder (as a text box with URL — real image download would be async)
-        if include_images and image_prompt:
-            img_url = _pollinations_url(image_prompt)
-            img_left = Inches(9.5)
-            img_top = Inches(1.5)
-            txBox4 = slide.shapes.add_textbox(img_left, img_top, Inches(3.0), Inches(0.4))
-            tf4 = txBox4.text_frame
-            p4 = tf4.paragraphs[0]
-            p4.font.size = Pt(8)
-            p4.font.color.rgb = hex_rgb(cfg["accent_color"])
-
-            # Store image URL in slide notes for reference
-            if notes_text:
-                notes_text += f"\n\nImage: {img_url}"
-            else:
-                notes_text = f"Image: {img_url}"
-
-        # Speaker notes
-        if notes_text:
-            notes_slide = slide.notes_slide
-            notes_slide.notes_text_frame.text = notes_text
-
-    buf = io.BytesIO()
-    prs.save(buf)
-    buf.seek(0)
-    return buf
+def _build_pptx(slides: list[dict], theme: str, include_images: bool, images: dict[int, bytes] | None = None) -> io.BytesIO:
+    """Delegate to the premium PPTX builder in documents.py."""
+    from app.api.routes.documents import _generate_pptx_from_structure
+    # Map ai_slides theme names to documents.py theme names
+    theme_map = {"startup": "business", "business": "business", "education": "education", "minimal": "minimal"}
+    return _generate_pptx_from_structure(slides, theme_map.get(theme, "business"), images)
 
 
 # ---------------------------------------------------------------------------
@@ -223,6 +128,8 @@ async def generate_slides(
     db: AsyncSession = Depends(get_db),
 ):
     """Generate a presentation (PPTX) with AI content and optional images."""
+    from app.api.routes.documents import _check_gen_limit
+    _check_gen_limit(user)
     slides = await _generate_slide_structure(
         topic=body.topic,
         count=body.slides_count,
@@ -230,14 +137,37 @@ async def generate_slides(
         include_images=body.include_images,
     )
 
-    # Add image URLs if requested
-    if body.include_images:
-        for s in slides:
-            prompt = s.get("image_prompt", "")
-            if prompt:
-                s["image_url"] = _pollinations_url(prompt)
+    # Download images in parallel
+    import asyncio
+    import httpx
+    from app.core.config import settings
 
-    buf = _build_pptx(slides, body.theme, body.include_images)
+    images: dict[int, bytes] = {}
+    if body.include_images:
+        last_idx = len(slides) - 1
+
+        async def _dl(idx: int, prompt: str):
+            proxy = getattr(settings, "api_proxy", None)
+            transport = httpx.AsyncHTTPTransport(proxy=proxy) if proxy else None
+            encoded = urllib.parse.quote(prompt, safe="")
+            url = f"https://image.pollinations.ai/prompt/{encoded}?width=800&height=800&nologo=true&seed={idx}"
+            try:
+                async with httpx.AsyncClient(transport=transport, timeout=40) as client:
+                    resp = await client.get(url)
+                    if resp.status_code == 200 and len(resp.content) > 2000:
+                        images[idx] = resp.content
+            except Exception:
+                pass
+
+        tasks = []
+        for i, s in enumerate(slides):
+            p = s.get("image_prompt", "")
+            if p and 0 < i < last_idx:
+                tasks.append(_dl(i, p))
+        if tasks:
+            await asyncio.gather(*tasks)
+
+    buf = _build_pptx(slides, body.theme, body.include_images, images if images else None)
 
     filename = f"presentation_{body.topic[:30].replace(' ', '_')}.pptx"
     return StreamingResponse(
@@ -254,6 +184,8 @@ async def generate_outline(
     db: AsyncSession = Depends(get_db),
 ):
     """Generate slide outline only (no PPTX file)."""
+    from app.api.routes.documents import _check_gen_limit
+    _check_gen_limit(user)
     slides = await _generate_slide_structure(
         topic=body.topic,
         count=body.slides_count,

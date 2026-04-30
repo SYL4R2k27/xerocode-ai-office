@@ -33,7 +33,8 @@ const CHANNEL_TYPES: { id: Channel["type"]; label: string }[] = [
   { id: "project", label: "Проект" },
 ];
 
-function initials(name: string) {
+function initials(name: string | undefined | null) {
+  if (!name) return "?";
   return name.split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2);
 }
 function timeStr(iso: string) {

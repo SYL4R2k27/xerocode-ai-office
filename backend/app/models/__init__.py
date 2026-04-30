@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from app.models.agent import Agent
+from app.models.ai_usage import AIUsageLog
 from app.models.audit_log import AuditLog
 from app.models.byok import UserApiKey
 from app.models.training_log import TrainingLog
@@ -16,6 +17,7 @@ from app.models.user import User
 
 __all__ = [
     "Agent",
+    "AIUsageLog",
     "AuditLog",
     "CustomPool",
     "UserApiKey",

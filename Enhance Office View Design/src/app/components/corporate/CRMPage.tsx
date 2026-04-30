@@ -110,19 +110,15 @@ export function CRMPage({ orgRole }: CRMPageProps) {
   }, []);
 
   const handleCreateDeal = useCallback(async (data: any) => {
-    try {
-      const deal = await api.crm.deals.create(data);
-      setDeals(prev => [deal, ...prev]);
-      setShowCreate(null);
-    } catch (err) { console.error(err); }
+    const deal = await api.crm.deals.create(data);
+    setDeals(prev => [deal, ...prev]);
+    setShowCreate(null);
   }, []);
 
   const handleCreateContact = useCallback(async (data: any) => {
-    try {
-      const contact = await api.crm.contacts.create(data);
-      setContacts(prev => [contact, ...prev]);
-      setShowCreate(null);
-    } catch (err) { console.error(err); }
+    const contact = await api.crm.contacts.create(data);
+    setContacts(prev => [contact, ...prev]);
+    setShowCreate(null);
   }, []);
 
   const handleDeleteDeal = useCallback(async (id: string) => {
@@ -637,53 +633,133 @@ function CreateModal({ type, contacts, onClose, onCreateDeal, onCreateContact }:
   const [company, setCompany] = useState("");
   const [position, setPosition] = useState("");
   const [contactSource, setContactSource] = useState("");
+  const [showMore, setShowMore] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState("");
 
-  const handleSubmit = () => {
-    if (type === "deal" && title.trim()) {
-      onCreateDeal({ title: title.trim(), amount: parseFloat(amount) || 0, stage, priority, source: source || undefined, contact_id: contactId || undefined, description: description || undefined, expected_close: expectedClose || undefined });
-    } else if (type === "contact" && name.trim()) {
-      onCreateContact({ name: name.trim(), email: email || undefined, phone: phone || undefined, company: company || undefined, position: position || undefined, source: contactSource || undefined });
+  const handleSubmit = async () => {
+    setError("");
+    if (type === "deal" && !title.trim()) { setError("Укажите название сделки"); return; }
+    if (type === "contact" && !name.trim()) { setError("Укажите имя контакта"); return; }
+    setSubmitting(true);
+    try {
+      if (type === "deal") {
+        await onCreateDeal({ title: title.trim(), amount: parseFloat(amount) || 0, stage, priority, source: source || undefined, contact_id: contactId || undefined, description: description || undefined, expected_close: expectedClose || undefined });
+      } else {
+        await onCreateContact({ name: name.trim(), email: email || undefined, phone: phone || undefined, company: company || undefined, position: position || undefined, source: contactSource || undefined });
+      }
+    } catch (err: any) {
+      setError(err?.message || "Ошибка при создании");
+      setSubmitting(false);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && !e.shiftKey && (type === "deal" ? title.trim() : name.trim())) {
+      e.preventDefault();
+      handleSubmit();
     }
   };
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ backgroundColor: "rgba(0,0,0,0.6)" }} onClick={onClose}>
-      <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }} exit={{ scale: 0.95 }} className="w-full max-w-[480px] rounded-2xl overflow-hidden" style={{ backgroundColor: "var(--bg-surface)", border: "1px solid var(--border-default)" }} onClick={(e: any) => e.stopPropagation()}>
-        <div className="px-5 py-4" style={{ borderBottom: "1px solid var(--border-default)" }}>
+      <motion.div initial={{ scale: 0.95, y: 10 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.95, y: 10 }} className="w-full max-w-[440px] rounded-2xl overflow-hidden" style={{ backgroundColor: "var(--bg-surface)", border: "1px solid var(--border-default)" }} onClick={(e: any) => e.stopPropagation()}>
+        <div className="px-5 py-4 flex items-center justify-between" style={{ borderBottom: "1px solid var(--border-default)" }}>
           <h3 className="text-base font-bold" style={{ color: "var(--text-primary)" }}>{type === "deal" ? "Новая сделка" : "Новый контакт"}</h3>
+          <button onClick={onClose} className="p-1 rounded-lg transition-colors" style={{ color: "var(--text-tertiary)" }} onMouseEnter={e => { (e.currentTarget as HTMLElement).style.backgroundColor = "var(--bg-elevated)"; }} onMouseLeave={e => { (e.currentTarget as HTMLElement).style.backgroundColor = "transparent"; }}><X size={16} /></button>
         </div>
-        <div className="px-5 py-4 space-y-3 max-h-[60vh] overflow-y-auto">
+
+        <div className="px-5 py-4 space-y-3 max-h-[60vh] overflow-y-auto" onKeyDown={handleKeyDown}>
           {type === "deal" ? (
             <>
-              <Input label="Название" value={title} onChange={setTitle} placeholder="Поставка оборудования" autoFocus />
+              {/* ━━ Основные поля (всегда видны) ━━ */}
+              <Input label="Название *" value={title} onChange={setTitle} placeholder="Например: Поставка серверов для Яндекс" autoFocus />
               <div className="grid grid-cols-2 gap-3">
-                <Input label="Сумма (₽)" value={amount} onChange={setAmount} placeholder="0" type="number" />
-                <Select label="Стадия" value={stage} onChange={setStage} options={STAGES.slice(0, 6).map(s => ({ value: s.id, label: s.label }))} />
+                <Input label="Сумма (₽)" value={amount} onChange={setAmount} placeholder="100 000" type="number" />
+                <div>
+                  <label className="text-[10px] uppercase tracking-wider block mb-1.5" style={{ color: "var(--text-tertiary)" }}>Стадия</label>
+                  <div className="flex flex-wrap gap-1">
+                    {STAGES.slice(0, 6).map(s => (
+                      <button key={s.id} onClick={() => setStage(s.id)} className="px-2 py-1 rounded-md text-[10px] font-medium transition-all" style={{ backgroundColor: stage === s.id ? `color-mix(in srgb, ${s.color} 18%, transparent)` : "var(--bg-base)", color: stage === s.id ? s.color : "var(--text-tertiary)", border: `1px solid ${stage === s.id ? s.color : "var(--border-default)"}` }}>{s.label}</button>
+                    ))}
+                  </div>
+                </div>
               </div>
-              <div className="grid grid-cols-2 gap-3">
-                <Select label="Приоритет" value={priority} onChange={setPriority} options={Object.entries(PRIORITIES).map(([k, v]) => ({ value: k, label: v.label }))} />
-                <Select label="Источник" value={source} onChange={setSource} options={[{ value: "", label: "—" }, ...Object.entries(SOURCES).map(([k, v]) => ({ value: k, label: v }))]} />
-              </div>
-              <Select label="Контакт" value={contactId} onChange={setContactId} options={[{ value: "", label: "Без контакта" }, ...contacts.map((c: CRMContact) => ({ value: c.id, label: `${c.name}${c.company ? ` — ${c.company}` : ""}` }))]} />
-              <Input label="Ожидаемое закрытие" value={expectedClose} onChange={setExpectedClose} type="date" />
-              <Textarea label="Описание" value={description} onChange={setDescription} placeholder="Детали сделки..." />
+
+              {/* ━━ Подробнее (скрыто по умолчанию) ━━ */}
+              <button onClick={() => setShowMore(!showMore)} className="flex items-center gap-1.5 text-[11px] font-medium py-1 transition-colors" style={{ color: "var(--accent-blue)" }}>
+                <ChevronDown size={12} style={{ transform: showMore ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.2s" }} />
+                {showMore ? "Скрыть подробности" : "Подробнее"}
+              </button>
+
+              <AnimatePresence>
+                {showMore && (
+                  <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }} className="space-y-3 overflow-hidden">
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="text-[10px] uppercase tracking-wider block mb-1.5" style={{ color: "var(--text-tertiary)" }}>Приоритет</label>
+                        <div className="flex gap-1">
+                          {Object.entries(PRIORITIES).map(([k, v]) => (
+                            <button key={k} onClick={() => setPriority(k)} className="flex-1 py-1.5 rounded-md text-[10px] font-medium transition-all text-center" style={{ backgroundColor: priority === k ? `color-mix(in srgb, ${v.color} 18%, transparent)` : "var(--bg-base)", color: priority === k ? v.color : "var(--text-tertiary)", border: `1px solid ${priority === k ? v.color : "var(--border-default)"}` }}>{v.label}</button>
+                          ))}
+                        </div>
+                      </div>
+                      <Select label="Источник" value={source} onChange={setSource} options={[{ value: "", label: "—" }, ...Object.entries(SOURCES).map(([k, v]) => ({ value: k, label: v }))]} />
+                    </div>
+                    <Select label="Контакт" value={contactId} onChange={setContactId} options={[{ value: "", label: "Без контакта" }, ...contacts.map((c: CRMContact) => ({ value: c.id, label: `${c.name}${c.company ? ` — ${c.company}` : ""}` }))]} />
+                    <Input label="Ожидаемое закрытие" value={expectedClose} onChange={setExpectedClose} type="date" />
+                    <Textarea label="Описание" value={description} onChange={setDescription} placeholder="Детали сделки..." />
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </>
           ) : (
             <>
-              <Input label="Имя" value={name} onChange={setName} placeholder="Иван Петров" autoFocus />
-              <Input label="Компания" value={company} onChange={setCompany} placeholder="ООО «Компания»" />
+              {/* ━━ Контакт: основные ━━ */}
+              <Input label="Имя *" value={name} onChange={setName} placeholder="Иван Петров" autoFocus />
               <div className="grid grid-cols-2 gap-3">
                 <Input label="Email" value={email} onChange={setEmail} placeholder="ivan@company.ru" />
                 <Input label="Телефон" value={phone} onChange={setPhone} placeholder="+7 900 000-00-00" />
               </div>
-              <Input label="Должность" value={position} onChange={setPosition} placeholder="Директор" />
-              <Select label="Источник" value={contactSource} onChange={setContactSource} options={[{ value: "", label: "—" }, ...Object.entries(SOURCES).map(([k, v]) => ({ value: k, label: v }))]} />
+
+              {/* ━━ Подробнее ━━ */}
+              <button onClick={() => setShowMore(!showMore)} className="flex items-center gap-1.5 text-[11px] font-medium py-1 transition-colors" style={{ color: "var(--accent-blue)" }}>
+                <ChevronDown size={12} style={{ transform: showMore ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.2s" }} />
+                {showMore ? "Скрыть подробности" : "Подробнее"}
+              </button>
+
+              <AnimatePresence>
+                {showMore && (
+                  <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }} className="space-y-3 overflow-hidden">
+                    <Input label="Компания" value={company} onChange={setCompany} placeholder="ООО «Компания»" />
+                    <Input label="Должность" value={position} onChange={setPosition} placeholder="Директор" />
+                    <Select label="Источник" value={contactSource} onChange={setContactSource} options={[{ value: "", label: "—" }, ...Object.entries(SOURCES).map(([k, v]) => ({ value: k, label: v }))]} />
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </>
           )}
         </div>
+
+        {/* ━━ Footer ━━ */}
+        {error && (
+          <div className="px-5 py-2 flex items-center gap-2" style={{ color: "var(--accent-rose)" }}>
+            <AlertCircle size={13} />
+            <span className="text-[11px]">{error}</span>
+          </div>
+        )}
         <div className="px-5 py-3 flex gap-2" style={{ borderTop: "1px solid var(--border-default)" }}>
-          <button onClick={onClose} className="flex-1 py-2.5 rounded-lg text-xs font-medium" style={{ backgroundColor: "var(--bg-base)", color: "var(--text-secondary)", border: "1px solid var(--border-default)" }}>Отмена</button>
-          <button onClick={handleSubmit} className="flex-1 py-2.5 rounded-lg text-xs font-semibold" style={{ backgroundColor: "var(--accent-blue)", color: "#fff" }}>Создать</button>
+          <button onClick={onClose} className="flex-1 py-2.5 rounded-lg text-xs font-medium transition-colors" style={{ backgroundColor: "var(--bg-base)", color: "var(--text-secondary)", border: "1px solid var(--border-default)" }}>Отмена</button>
+          <button onClick={handleSubmit} disabled={submitting} className="flex-1 py-2.5 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-opacity" style={{ backgroundColor: "var(--accent-blue)", color: "#fff", opacity: submitting ? 0.6 : 1 }}>
+            {submitting ? <><Loader2 size={13} className="animate-spin" /> Создание...</> : <>
+              <Plus size={13} /> Создать
+            </>}
+          </button>
+        </div>
+
+        {/* ━━ Подсказка ━━ */}
+        <div className="px-5 py-2 text-center" style={{ borderTop: "1px solid color-mix(in srgb, var(--border-default) 40%, transparent)" }}>
+          <span className="text-[9px]" style={{ color: "var(--text-tertiary)" }}>Enter — создать • Esc — отмена</span>
         </div>
       </motion.div>
     </motion.div>
