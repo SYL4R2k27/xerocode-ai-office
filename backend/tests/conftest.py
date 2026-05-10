@@ -23,7 +23,7 @@ from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 from app.core.database import Base, get_db
-from app.main import app
+from app.main import app as fastapi_app
 
 # Import all models so Base.metadata knows every table
 import app.models  # noqa: F401
@@ -73,12 +73,12 @@ async def _override_get_db() -> AsyncGenerator[AsyncSession, None]:
             await session.close()
 
 
-app.dependency_overrides[get_db] = _override_get_db
+fastapi_app.dependency_overrides[get_db] = _override_get_db
 
 
 @pytest_asyncio.fixture
 async def client() -> AsyncGenerator[AsyncClient, None]:
     """Async httpx client wired to the FastAPI app."""
-    transport = ASGITransport(app=app)
+    transport = ASGITransport(app=fastapi_app)
     async with AsyncClient(transport=transport, base_url="http://test") as ac:
         yield ac

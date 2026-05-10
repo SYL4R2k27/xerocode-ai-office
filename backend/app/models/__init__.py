@@ -11,6 +11,7 @@ from app.models.goal import Goal
 from app.models.memory import Memory
 from app.models.message import Message
 from app.models.organization import Organization
+from app.models.service_account import ServiceAccount, ServiceAccountUsage
 from app.models.task import Task
 from app.models.task_template import TaskTemplate
 from app.models.user import User
@@ -27,6 +28,8 @@ __all__ = [
     "Memory",
     "Message",
     "Organization",
+    "ServiceAccount",
+    "ServiceAccountUsage",
     "Task",
     "TaskTemplate",
     "User",

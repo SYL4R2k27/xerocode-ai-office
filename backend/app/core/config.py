@@ -36,8 +36,16 @@ class Settings(BaseSettings):
     together_api_key: str | None = None
     stability_api_key: str | None = None
     apiyi_api_key: str | None = None
+    gemini_api_key: str | None = None  # Google Gemini direct (для external gateway)
+    google_api_key: str | None = None  # alias for gemini_api_key
     openrouter_fallback_enabled: bool = True
     invite_code: str | None = None  # Бета-тест инвайт код (из .env)
+
+    # ── External API gateway (BELSI и др. service-клиенты) ──
+    external_api_enabled: bool = True
+    belsi_prompt_namespace_enabled: bool = True
+    external_default_timeout_sec: int = 120
+    external_max_body_size_mb: int = 8
 
     # SMTP (transactional email)
     smtp_host: str | None = None

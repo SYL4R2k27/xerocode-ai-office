@@ -218,6 +218,12 @@ app.include_router(google_integration.router, prefix="/api")
 app.include_router(demo.router, prefix="/api")
 app.include_router(cli_auth.router, prefix="/api")
 
+# External gateway (изолированный модуль для service-клиентов · BELSI и др.)
+# Имеет собственный префикс /api/v1/external и собственную auth по Bearer service-token.
+# НЕ пересекается с supervisor/orchestration/messages.
+from app.api.routes.external import router as external_router  # noqa: E402
+app.include_router(external_router)  # router уже содержит prefix='/api/v1/external'
+
 # WebSocket
 setup_websocket(app)
 

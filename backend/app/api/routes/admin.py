@@ -231,3 +231,142 @@ def _user_dict(user: User) -> dict:
         "tasks_used_this_month": user.tasks_used_this_month,
         "created_at": user.created_at.isoformat() if user.created_at else None,
     }
+
+
+# ╔══════════════════════════════════════════════════════════════════╗
+# ║   Service Accounts (external API gateway · BELSI и т.п.)          ║
+# ╚══════════════════════════════════════════════════════════════════╝
+@router.post("/service-accounts")
+async def create_service_account(
+    payload: "ServiceAccountCreate",
+    _admin: User = Depends(get_admin_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Создаёт новый service-аккаунт и выдаёт plaintext-токен ОДИН РАЗ.
+
+    Формат токена: '<name_prefix>_<rand_8>_<rand_24+>'
+    Пример: belsi_a1b2c3d4_PHK3xQzN8mZWvL92cR4tBpY6Kf1jH5sE
+    """
+    import secrets
+
+    import bcrypt
+
+    from app.models.service_account import ServiceAccount as SA
+    from app.schemas.external import ServiceAccountCreateResponse
+
+    # ── Generate token ──
+    base = "".join(c for c in payload.name.lower() if c.isalnum())[:8] or "svc"
+    rand_prefix = secrets.token_urlsafe(6)[:8]
+    rand_secret = secrets.token_urlsafe(24)
+    plaintext = f"{base}_{rand_prefix}_{rand_secret}"
+
+    token_hash = bcrypt.hashpw(
+        plaintext.encode("utf-8"), bcrypt.gensalt(rounds=12)
+    ).decode("utf-8")
+
+    org_uuid = None
+    if payload.organization_id:
+        try:
+            org_uuid = uuid.UUID(payload.organization_id)
+        except (ValueError, TypeError):
+            raise HTTPException(400, "organization_id must be a valid UUID")
+
+    sa = SA(
+        organization_id=org_uuid,
+        name=payload.name,
+        description=payload.description,
+        service_token_hash=token_hash,
+        token_prefix=rand_prefix,
+        allowed_endpoints=payload.allowed_endpoints,
+        allowed_models=payload.allowed_models,
+        rate_limit_per_minute=payload.rate_limit_per_minute,
+        rate_limit_per_day=payload.rate_limit_per_day,
+        monthly_budget_usd=payload.monthly_budget_usd,
+        created_by=_admin.id,
+    )
+    db.add(sa)
+    try:
+        await db.commit()
+        await db.refresh(sa)
+    except Exception as e:
+        await db.rollback()
+        raise HTTPException(409, f"Failed to create service account: {e}")
+
+    return ServiceAccountCreateResponse(
+        id=str(sa.id),
+        name=sa.name,
+        token_plaintext=plaintext,
+        token_prefix=sa.token_prefix,
+    )
+
+
+@router.get("/service-accounts")
+async def list_service_accounts(
+    _admin: User = Depends(get_admin_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Список всех service-аккаунтов (без plaintext-токенов)."""
+    from app.models.service_account import ServiceAccount as SA
+
+    rows = (await db.execute(select(SA).order_by(SA.created_at.desc()))).scalars().all()
+    return {
+        "accounts": [
+            {
+                "id": str(r.id),
+                "name": r.name,
+                "description": r.description,
+                "token_prefix": r.token_prefix,
+                "allowed_endpoints": r.allowed_endpoints,
+                "allowed_models": r.allowed_models,
+                "rate_limit_per_minute": r.rate_limit_per_minute,
+                "rate_limit_per_day": r.rate_limit_per_day,
+                "monthly_budget_usd": float(r.monthly_budget_usd),
+                "is_active": r.is_active,
+                "created_at": r.created_at.isoformat() if r.created_at else None,
+                "last_used_at": r.last_used_at.isoformat() if r.last_used_at else None,
+            }
+            for r in rows
+        ],
+        "count": len(rows),
+    }
+
+
+@router.patch("/service-accounts/{sa_id}")
+async def update_service_account(
+    sa_id: str,
+    is_active: Optional[bool] = None,
+    rate_limit_per_minute: Optional[int] = None,
+    rate_limit_per_day: Optional[int] = None,
+    monthly_budget_usd: Optional[float] = None,
+    _admin: User = Depends(get_admin_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Обновить параметры service-аккаунта (без перевыпуска токена)."""
+    from app.models.service_account import ServiceAccount as SA
+
+    try:
+        sa_uuid = uuid.UUID(sa_id)
+    except (ValueError, TypeError):
+        raise HTTPException(400, "Invalid service account id")
+
+    sa = await db.get(SA, sa_uuid)
+    if sa is None:
+        raise HTTPException(404, "Service account not found")
+
+    if is_active is not None:
+        sa.is_active = is_active
+    if rate_limit_per_minute is not None:
+        sa.rate_limit_per_minute = rate_limit_per_minute
+    if rate_limit_per_day is not None:
+        sa.rate_limit_per_day = rate_limit_per_day
+    if monthly_budget_usd is not None:
+        from decimal import Decimal as _D
+        sa.monthly_budget_usd = _D(str(monthly_budget_usd))
+
+    await db.commit()
+    return {"ok": True, "id": str(sa.id), "is_active": sa.is_active}
+
+
+# Schemas — позднее, чтобы не делать circular import на старте файла
+from app.schemas.external import ServiceAccountCreate  # noqa: E402
