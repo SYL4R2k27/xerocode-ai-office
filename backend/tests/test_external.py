@@ -30,11 +30,17 @@ async def _create_sa(
     *,
     is_active: bool = True,
     allowed_endpoints: list[str] | None = None,
+    allowed_image_hosts: list[str] | None = None,
     rate_limit_per_minute: int = 60,
     rate_limit_per_day: int = 5000,
     monthly_budget_usd: float = 0.0,
 ) -> tuple[ServiceAccount, str]:
-    """Создаёт SA, возвращает (sa, plaintext_token)."""
+    """Создаёт SA, возвращает (sa, plaintext_token).
+
+    По умолчанию allowed_image_hosts покрывает 'x.invalid' (dummy-домен в
+    большинстве existing тестов) — это позволяет старым тестам проходить
+    после v1.5 SSRF-фикса без изменений.
+    """
     plaintext = "belsi_TestPrFx_" + "x" * 32
     token_hash = bcrypt.hashpw(plaintext.encode(), bcrypt.gensalt(rounds=4)).decode()
 
@@ -46,6 +52,11 @@ async def _create_sa(
         token_prefix="TestPrFx",
         allowed_endpoints=allowed_endpoints or ["analyze-image", "generate"],
         allowed_models=[],
+        allowed_image_hosts=(
+            allowed_image_hosts
+            if allowed_image_hosts is not None
+            else ["x.invalid", "*.amazonaws.com", "bucket.api.belsi.ru"]
+        ),
         rate_limit_per_minute=rate_limit_per_minute,
         rate_limit_per_day=rate_limit_per_day,
         monthly_budget_usd=Decimal(str(monthly_budget_usd)),
@@ -180,11 +191,10 @@ async def test_analyze_image_mocked(client, db_session, monkeypatch):
         "app.services.external_router._provider_key", lambda p: "fake-key"
     )
 
-    # v1.3.1: новый формат — + has_worker_in_frame, has_helmet может быть null, разделены issues/info
+    # v2 (2026-05-12): схема — score / category(good|warning|violation|neutral) / comment / issues / info
     fake_response = (
-        '{"score": 9, "comment": "готовый шкаф, чистая работа", "category": "workplace", '
-        '"has_worker_in_frame": true, "has_helmet": true, "is_workplace": true, '
-        '"issues": [], "info": []}'
+        '{"score": 9, "comment": "готовый шкаф, чистая работа", '
+        '"category": "good", "issues": [], "info": []}'
     )
 
     with patch(
@@ -205,9 +215,9 @@ async def test_analyze_image_mocked(client, db_session, monkeypatch):
     env = r.json()
     assert env["ok"] is True
     assert env["result"]["score"] == 9
-    assert env["result"]["has_worker_in_frame"] is True
-    assert env["result"]["has_helmet"] is True
+    assert env["result"]["category"] == "good"
     assert env["result"]["info"] == []
+    assert env["result"]["issues"] == []
     assert env["meta"]["template"] == "photo_quality"
     assert env["meta"]["tokens_in"] == 120
     assert env["meta"]["tokens_out"] == 60
@@ -226,7 +236,7 @@ async def test_idempotency_replay(client, monkeypatch):
         "app.services.external_router._provider_key", lambda p: "fake-key"
     )
 
-    fake_response = '{"score": 7, "comment": "first", "category": "workplace", "has_worker_in_frame": true, "has_helmet": false, "is_workplace": true, "issues": [], "info": []}'
+    fake_response = '{"score": 7, "comment": "first", "category": "warning", "issues": ["работник без каски"], "info": []}'
 
     # 1-й вызов
     with patch(
@@ -606,106 +616,16 @@ async def test_transcribe_empty_body(client, db_session):
 
 
 # ╔════════════════════════════════════════════════════════════════════╗
-# ║   photo_quality v1.3.1 · has_worker_in_frame + null helmet + info  ║
+# ║   photo_quality v2 · multi-context (construction/production/driver)║
+# ║   v2 (2026-05-12) по спецификации BELSI XEROCODE_PROMPTS_v2.md     ║
+# ║   Schema: score / category(good|warning|violation|neutral) /       ║
+# ║          comment / issues / info                                   ║
 # ╚════════════════════════════════════════════════════════════════════╝
 
 
 @pytest.mark.asyncio
-async def test_photo_quality_v131_no_worker(client, db_session, monkeypatch):
-    """Фото готового шкафа без человека: has_worker_in_frame=false,
-    has_helmet=null (не false!), info содержит нейтральные наблюдения,
-    issues пустой (это НЕ проблема)."""
-    sa, token = await _create_sa(db_session)
-    monkeypatch.setattr(
-        "app.services.external_router._provider_key", lambda p: "fake-key"
-    )
-
-    fake_response = (
-        '{"score": 8, "comment": "Готовый шкаф после монтажа, чистая работа.", '
-        '"category": "workplace", '
-        '"has_worker_in_frame": false, '
-        '"has_helmet": null, '
-        '"is_workplace": true, '
-        '"issues": [], '
-        '"info": ["без работника", "после работы"]}'
-    )
-
-    with patch(
-        "app.services.external_router._dispatch_provider",
-        new=AsyncMock(return_value=(fake_response, 110, 70)),
-    ):
-        r = await client.post(
-            "/api/v1/external/analyze-image",
-            headers={"Authorization": f"Bearer {token}"},
-            json={
-                "image_url": "https://x.invalid/cabinet.jpg",
-                "prompt_template": "photo_quality",
-            },
-        )
-
-    assert r.status_code == 200, r.text
-    body = r.json()
-    assert body["ok"] is True
-    res = body["result"]
-    # Главные новые поля
-    assert res["has_worker_in_frame"] is False
-    assert res["has_helmet"] is None  # null валиден, НЕ false
-    # issues — только критичное; "нет работника" туда НЕ попадает
-    assert res["issues"] == []
-    # info содержит нейтральные наблюдения
-    assert "без работника" in res["info"]
-    # score высокий потому что фото результата работы — норма
-    assert res["score"] >= 6
-
-
-@pytest.mark.asyncio
-async def test_photo_quality_v131_safety_violation(client, db_session, monkeypatch):
-    """Работник в кадре без каски — has_helmet=false, issues непустой."""
-    sa, token = await _create_sa(db_session)
-    monkeypatch.setattr(
-        "app.services.external_router._provider_key", lambda p: "fake-key"
-    )
-
-    fake_response = (
-        '{"score": 5, "comment": "Монтажник работает без СИЗ.", '
-        '"category": "workplace", '
-        '"has_worker_in_frame": true, '
-        '"has_helmet": false, '
-        '"is_workplace": true, '
-        '"issues": ["работник без каски"], '
-        '"info": []}'
-    )
-
-    with patch(
-        "app.services.external_router._dispatch_provider",
-        new=AsyncMock(return_value=(fake_response, 100, 60)),
-    ):
-        r = await client.post(
-            "/api/v1/external/analyze-image",
-            headers={"Authorization": f"Bearer {token}"},
-            json={
-                "image_url": "https://x.invalid/worker.jpg",
-                "prompt_template": "photo_quality",
-            },
-        )
-
-    assert r.status_code == 200, r.text
-    res = r.json()["result"]
-    assert res["has_worker_in_frame"] is True
-    assert res["has_helmet"] is False  # реальное нарушение, НЕ null
-    assert "каск" in res["issues"][0].lower()
-
-
-# ╔════════════════════════════════════════════════════════════════════╗
-# ║   photo_quality v1.3.2 · user_comment in prompt                    ║
-# ╚════════════════════════════════════════════════════════════════════╝
-
-
-@pytest.mark.asyncio
-async def test_photo_quality_v132_with_user_comment_match(client, db_session, monkeypatch):
-    """Когда custom_context.user_comment задан — он попадает в prompt
-    отдельной секцией с правилами интерпретации, а LLM может вернуть
-    score=9 + category='documentation'."""
+async def test_photo_quality_v2_construction_helmet_ok(client, db_session, monkeypatch):
+    """photo_kind=construction + монтажник в каске → score>=8, category=good."""
     sa, token = await _create_sa(db_session)
     monkeypatch.setattr(
         "app.services.external_router._provider_key", lambda p: "fake-key"
@@ -713,100 +633,94 @@ async def test_photo_quality_v132_with_user_comment_match(client, db_session, mo
 
     captured = {}
 
-    async def capture_dispatch(provider, model, system, user_text, *a, **kw):
-        captured["provider"] = provider
+    async def capture(provider, model, system, user_text, *a, **kw):
         captured["user_text"] = user_text
         captured["system"] = system
         return (
-            '{"score": 9, "comment": "Готовый шкаф после монтажа.", '
-            '"category": "documentation", '
-            '"has_worker_in_frame": false, "has_helmet": null, '
-            '"is_workplace": true, "issues": [], '
-            '"info": ["после работы"]}',
-            120, 70,
+            '{"score": 9, "category": "good", '
+            '"comment": "Монтажник в каске, видна работа с вентиляцией.", '
+            '"issues": [], "info": []}',
+            120, 60,
         )
 
     with patch(
-        "app.services.external_router._dispatch_provider",
-        side_effect=capture_dispatch,
+        "app.services.external_router._dispatch_provider", side_effect=capture
     ):
         r = await client.post(
             "/api/v1/external/analyze-image",
             headers={"Authorization": f"Bearer {token}"},
             json={
-                "image_url": "https://x.invalid/cabinet.jpg",
+                "image_url": "https://x.invalid/worker_helmet.jpg",
                 "prompt_template": "photo_quality",
                 "custom_context": {
-                    "user_comment": "финальная сборка готового шкафа",
-                    "site_object": "Углич-2",
+                    "photo_kind": "construction",
+                    "hour_label": "10:00",
+                    "shift_number": 1,
                 },
             },
         )
 
     assert r.status_code == 200, r.text
-    body = r.json()
-    assert body["ok"] is True
-    res = body["result"]
-    assert res["score"] == 9
-    assert res["category"] == "documentation"
-
-    # Главное: в LLM-prompt действительно попал user_comment
-    user_text = captured["user_text"]
-    assert "финальная сборка готового шкафа" in user_text
-    # И секция-обёртка с правилами
-    assert "КОММЕНТАРИЙ ОТ АВТОРА ФОТО" in user_text
-    assert "результат / готово / собрано / закончил" in user_text
-    # custom_context остальные ключи тоже в prompt
-    assert "Углич-2" in user_text
+    res = r.json()["result"]
+    assert res["score"] >= 8
+    assert res["category"] == "good"
+    assert res["issues"] == []
+    # photo_kind должен попасть в prompt
+    assert "construction" in captured["user_text"]
 
 
 @pytest.mark.asyncio
-async def test_photo_quality_v132_no_user_comment(client, db_session, monkeypatch):
-    """Когда user_comment нет (или custom_context пуст) — секция не рендерится,
-    шаблон не падает, AI-ответ парсится как обычно."""
+async def test_photo_quality_v2_production_packaging_ok(client, db_session, monkeypatch):
+    """photo_kind=production + упакованная партия → category=good/neutral,
+    НЕ должно ругаться 'нет каски' (это критерий для construction)."""
     sa, token = await _create_sa(db_session)
     monkeypatch.setattr(
         "app.services.external_router._provider_key", lambda p: "fake-key"
     )
 
+    fake = (
+        '{"score": 8, "category": "good", '
+        '"comment": "Готовая партия мебели в плёнке, маркировка читаема.", '
+        '"issues": [], "info": ["готовая партия в упаковке"]}'
+    )
+
     captured = {}
 
-    async def capture_dispatch(provider, model, system, user_text, *a, **kw):
+    async def capture(provider, model, system, user_text, *a, **kw):
         captured["user_text"] = user_text
-        return (
-            '{"score": 7, "comment": "обычное фото", "category": "workplace", '
-            '"has_worker_in_frame": true, "has_helmet": true, '
-            '"is_workplace": true, "issues": [], "info": []}',
-            100, 50,
-        )
+        return (fake, 100, 50)
 
     with patch(
-        "app.services.external_router._dispatch_provider",
-        side_effect=capture_dispatch,
+        "app.services.external_router._dispatch_provider", side_effect=capture
     ):
         r = await client.post(
             "/api/v1/external/analyze-image",
             headers={"Authorization": f"Bearer {token}"},
             json={
-                "image_url": "https://x.invalid/a.jpg",
+                "image_url": "https://x.invalid/batch.jpg",
                 "prompt_template": "photo_quality",
-                # без custom_context
+                "custom_context": {
+                    "photo_kind": "production",
+                    "batch_code": "BL-2026-05-12-042",
+                    "item_count_expected": 5,
+                },
             },
         )
 
     assert r.status_code == 200, r.text
-    body = r.json()
-    assert body["ok"] is True
-    # Секция КОММЕНТАРИЙ-ОТ-АВТОРА не должна появиться
-    user_text = captured["user_text"]
-    assert "КОММЕНТАРИЙ ОТ АВТОРА ФОТО" not in user_text
-    # Остальной шаблон рендерится корректно
-    assert "ОЦЕНКА score" in user_text
+    res = r.json()["result"]
+    assert res["category"] in ("good", "neutral")
+    # issues пуст — целая упаковка
+    assert res["issues"] == []
+    # batch_code должен попасть в prompt
+    assert "BL-2026-05-12-042" in captured["user_text"]
+    assert "production" in captured["user_text"]
 
 
 @pytest.mark.asyncio
-async def test_photo_quality_v132_empty_string_user_comment(client, db_session, monkeypatch):
-    """user_comment='' (пустая строка) — секция тоже НЕ рендерится."""
+async def test_photo_quality_v2_driver_unloading_ok(client, db_session, monkeypatch):
+    """photo_kind=driver + фото разгрузки → category=good/neutral, info
+    содержит 'разгрузка'. НЕ ругается на отсутствие каски/ТБ."""
     sa, token = await _create_sa(db_session)
     monkeypatch.setattr(
         "app.services.external_router._provider_key", lambda p: "fake-key"
@@ -814,31 +728,190 @@ async def test_photo_quality_v132_empty_string_user_comment(client, db_session, 
 
     captured = {}
 
-    async def capture_dispatch(provider, model, system, user_text, *a, **kw):
+    async def capture(provider, model, system, user_text, *a, **kw):
         captured["user_text"] = user_text
         return (
-            '{"score": 6, "comment": "ok", "category": "workplace", '
-            '"has_worker_in_frame": false, "has_helmet": null, '
-            '"is_workplace": true, "issues": [], "info": []}',
-            80, 40,
+            '{"score": 8, "category": "good", '
+            '"comment": "Палеты разгружаются у склада, груз цел.", '
+            '"issues": [], "info": ["разгрузка на складе"]}',
+            90, 45,
         )
 
     with patch(
-        "app.services.external_router._dispatch_provider",
-        side_effect=capture_dispatch,
+        "app.services.external_router._dispatch_provider", side_effect=capture
     ):
         r = await client.post(
             "/api/v1/external/analyze-image",
             headers={"Authorization": f"Bearer {token}"},
             json={
-                "image_url": "https://x.invalid/a.jpg",
+                "image_url": "https://x.invalid/unloading.jpg",
                 "prompt_template": "photo_quality",
-                "custom_context": {"user_comment": "   "},  # whitespace only
+                "custom_context": {
+                    "photo_kind": "driver",
+                    "route_point_type": "unloading",
+                    "object_name": "Склад №3",
+                    "item_count_expected": 12,
+                },
             },
         )
 
-    assert r.status_code == 200
-    assert "КОММЕНТАРИЙ ОТ АВТОРА ФОТО" not in captured["user_text"]
+    assert r.status_code == 200, r.text
+    res = r.json()["result"]
+    assert res["category"] in ("good", "neutral")
+    assert "разгрузка" in res["info"][0].lower()
+    # driver-режим должен быть передан
+    assert "driver" in captured["user_text"]
+    assert "unloading" in captured["user_text"]
+
+
+@pytest.mark.asyncio
+async def test_photo_quality_v2_violation_no_helmet(client, db_session, monkeypatch):
+    """photo_kind=construction + работник без каски → category=violation,
+    issues содержит критичную проблему."""
+    sa, token = await _create_sa(db_session)
+    monkeypatch.setattr(
+        "app.services.external_router._provider_key", lambda p: "fake-key"
+    )
+
+    fake = (
+        '{"score": 3, "category": "violation", '
+        '"comment": "Работник на крыше без каски — нарушение ТБ.", '
+        '"issues": ["без каски"], "info": []}'
+    )
+
+    with patch(
+        "app.services.external_router._dispatch_provider",
+        new=AsyncMock(return_value=(fake, 90, 40)),
+    ):
+        r = await client.post(
+            "/api/v1/external/analyze-image",
+            headers={"Authorization": f"Bearer {token}"},
+            json={
+                "image_url": "https://x.invalid/no_helmet.jpg",
+                "prompt_template": "photo_quality",
+                "custom_context": {"photo_kind": "construction"},
+            },
+        )
+
+    assert r.status_code == 200, r.text
+    res = r.json()["result"]
+    assert res["category"] == "violation"
+    assert "каск" in res["issues"][0].lower()
+
+
+# ╔════════════════════════════════════════════════════════════════════╗
+# ║   daily_summary v2 · regression no-hallucination                   ║
+# ║   v2 (2026-05-12) по спецификации BELSI XEROCODE_PROMPTS_v2.md     ║
+# ╚════════════════════════════════════════════════════════════════════╝
+
+
+@pytest.mark.asyncio
+async def test_daily_summary_v2_active_shifts_14(client, db_session, monkeypatch):
+    """active_shifts=14 → headline содержит '14'; summary НЕ содержит
+    'отсутстви/нет смен/простой' (главный регресс-кейс)."""
+    sa, token = await _create_sa(db_session)
+    monkeypatch.setattr(
+        "app.services.external_router._provider_key", lambda p: "fake-key"
+    )
+
+    captured = {}
+
+    async def capture(provider, model, system, user_text, *a, **kw):
+        captured["user_text"] = user_text
+        captured["system"] = system
+        return (
+            '{"headline": "14 активных смен · 4 закрыто за сегодня", '
+            '"summary": "На стройке работают 14 активных смен. '
+            'За сегодня уже закрыто 4 смены.", '
+            '"anomalies": [], '
+            '"recommendations": ["Запросить фото-отчёт с объекта ЖК Лесной"]}',
+            200, 100,
+        )
+
+    with patch(
+        "app.services.external_router._dispatch_provider", side_effect=capture
+    ):
+        r = await client.post(
+            "/api/v1/external/generate",
+            headers={"Authorization": f"Bearer {token}"},
+            json={
+                "prompt_template": "daily_summary",
+                "data": {
+                    "date": "2026-05-12",
+                    "active_shifts": 14,
+                    "finished_shifts": 4,
+                    "work_hours": 0.1,
+                    "idle_hours": 0.0,
+                    "pause_hours": 2.5,
+                    "long_pauses": 0,
+                    "silent_objects": ["ЖК Лесной"],
+                    "idle_reasons": [{"reason": "Ожидание материалов", "count": 2}],
+                    "factual_headline": "14 активных смен · 4 закрыто",
+                },
+            },
+        )
+
+    assert r.status_code == 200, r.text
+    res = r.json()["result"]
+    # headline и summary содержат число 14
+    assert "14" in res["headline"]
+    assert "14" in res["summary"]
+    # summary НЕ должен содержать признаков галлюцинации
+    bad_words = ["отсутстви", "нет смен", "простой ", "приостанов"]
+    summary_lower = res["summary"].lower()
+    for w in bad_words:
+        assert w not in summary_lower, f"hallucination word '{w}' in summary: {res['summary']!r}"
+
+    # data_json должна быть в prompt
+    assert "data_json" not in captured["user_text"]  # placeholder подставлен, не оставлен литералом
+    assert '"active_shifts": 14' in captured["user_text"]
+    assert "ЖК Лесной" in captured["user_text"]
+
+
+@pytest.mark.asyncio
+async def test_daily_summary_v2_active_shifts_0(client, db_session, monkeypatch):
+    """active_shifts=0 → корректная констатация без выдумок."""
+    sa, token = await _create_sa(db_session)
+    monkeypatch.setattr(
+        "app.services.external_router._provider_key", lambda p: "fake-key"
+    )
+
+    fake = (
+        '{"headline": "0 активных смен · 0 закрыто за сегодня", '
+        '"summary": "На стройке нет активных смен.", '
+        '"anomalies": [], '
+        '"recommendations": []}'
+    )
+
+    with patch(
+        "app.services.external_router._dispatch_provider",
+        new=AsyncMock(return_value=(fake, 100, 50)),
+    ):
+        r = await client.post(
+            "/api/v1/external/generate",
+            headers={"Authorization": f"Bearer {token}"},
+            json={
+                "prompt_template": "daily_summary",
+                "data": {
+                    "date": "2026-05-12",
+                    "active_shifts": 0,
+                    "finished_shifts": 0,
+                    "work_hours": 0,
+                    "idle_hours": 0,
+                    "pause_hours": 0,
+                    "long_pauses": 0,
+                    "silent_objects": [],
+                    "idle_reasons": [],
+                },
+            },
+        )
+
+    assert r.status_code == 200, r.text
+    res = r.json()["result"]
+    # headline должен содержать "0" или явно "Нет"
+    assert "0" in res["headline"] or "нет" in res["headline"].lower()
+    # никаких выдуманных причин
+    assert res["anomalies"] == []
 
 
 # ╔════════════════════════════════════════════════════════════════════╗
@@ -932,8 +1005,7 @@ async def test_paid_fallback_activated_with_flag(client, db_session, monkeypatch
         call_log.append((provider, model))
         if provider == "anthropic":
             return (
-                '{"score": 9, "comment": "ok", "category": "workplace", '
-                '"has_worker_in_frame": true, "has_helmet": true, "is_workplace": true, '
+                '{"score": 9, "category": "good", "comment": "ok", '
                 '"issues": [], "info": []}',
                 100, 50,
             )
@@ -1206,8 +1278,7 @@ async def test_fallback_chain(client, db_session, monkeypatch):
         if call_count["n"] == 1:
             raise RuntimeError("first provider down")
         return (
-            '{"score": 8, "comment": "ok", "category": "workplace", '
-            '"has_worker_in_frame": true, "has_helmet": true, "is_workplace": true, '
+            '{"score": 8, "category": "good", "comment": "ok", '
             '"issues": [], "info": []}',
             80,
             40,

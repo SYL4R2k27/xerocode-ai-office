@@ -57,6 +57,12 @@ class ServiceAccount(Base):
     allowed_models: Mapped[List[str]] = mapped_column(
         StringArray(), nullable=False, default=list
     )
+    # v1.5 (SSRF defense): per-SA allowlist хостов для image_url в /analyze-image.
+    # Пустой список = explicit-only (все image_url отвергнутся с 422).
+    # Wildcards поддерживаются: '*.amazonaws.com' matchит 's3.amazonaws.com'.
+    allowed_image_hosts: Mapped[List[str]] = mapped_column(
+        StringArray(), nullable=False, default=list
+    )
 
     # ── Rate limits ──
     rate_limit_per_minute: Mapped[int] = mapped_column(

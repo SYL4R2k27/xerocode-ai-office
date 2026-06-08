@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import platform
 import uuid
-from typing import Optional
+from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
@@ -280,6 +280,7 @@ async def create_service_account(
         token_prefix=rand_prefix,
         allowed_endpoints=payload.allowed_endpoints,
         allowed_models=payload.allowed_models,
+        allowed_image_hosts=payload.allowed_image_hosts,  # v1.5 SSRF allowlist
         rate_limit_per_minute=payload.rate_limit_per_minute,
         rate_limit_per_day=payload.rate_limit_per_day,
         monthly_budget_usd=payload.monthly_budget_usd,
@@ -319,6 +320,7 @@ async def list_service_accounts(
                 "token_prefix": r.token_prefix,
                 "allowed_endpoints": r.allowed_endpoints,
                 "allowed_models": r.allowed_models,
+                "allowed_image_hosts": r.allowed_image_hosts,
                 "rate_limit_per_minute": r.rate_limit_per_minute,
                 "rate_limit_per_day": r.rate_limit_per_day,
                 "monthly_budget_usd": float(r.monthly_budget_usd),
@@ -332,13 +334,26 @@ async def list_service_accounts(
     }
 
 
+class _SAPatchBody(BaseModel):
+    """Body для PATCH /service-accounts/{sa_id} (v1.5+).
+
+    Все поля опциональны. Используется JSON-body вместо query-string чтобы
+    список allowed_image_hosts передавался корректно.
+    """
+
+    is_active: Optional[bool] = None
+    rate_limit_per_minute: Optional[int] = None
+    rate_limit_per_day: Optional[int] = None
+    monthly_budget_usd: Optional[float] = None
+    allowed_image_hosts: Optional[List[str]] = None
+    allowed_endpoints: Optional[List[str]] = None
+    allowed_models: Optional[List[str]] = None
+
+
 @router.patch("/service-accounts/{sa_id}")
 async def update_service_account(
     sa_id: str,
-    is_active: Optional[bool] = None,
-    rate_limit_per_minute: Optional[int] = None,
-    rate_limit_per_day: Optional[int] = None,
-    monthly_budget_usd: Optional[float] = None,
+    body: _SAPatchBody,
     _admin: User = Depends(get_admin_user),
     db: AsyncSession = Depends(get_db),
 ):
@@ -354,18 +369,29 @@ async def update_service_account(
     if sa is None:
         raise HTTPException(404, "Service account not found")
 
-    if is_active is not None:
-        sa.is_active = is_active
-    if rate_limit_per_minute is not None:
-        sa.rate_limit_per_minute = rate_limit_per_minute
-    if rate_limit_per_day is not None:
-        sa.rate_limit_per_day = rate_limit_per_day
-    if monthly_budget_usd is not None:
+    if body.is_active is not None:
+        sa.is_active = body.is_active
+    if body.rate_limit_per_minute is not None:
+        sa.rate_limit_per_minute = body.rate_limit_per_minute
+    if body.rate_limit_per_day is not None:
+        sa.rate_limit_per_day = body.rate_limit_per_day
+    if body.monthly_budget_usd is not None:
         from decimal import Decimal as _D
-        sa.monthly_budget_usd = _D(str(monthly_budget_usd))
+        sa.monthly_budget_usd = _D(str(body.monthly_budget_usd))
+    if body.allowed_image_hosts is not None:
+        sa.allowed_image_hosts = body.allowed_image_hosts
+    if body.allowed_endpoints is not None:
+        sa.allowed_endpoints = body.allowed_endpoints
+    if body.allowed_models is not None:
+        sa.allowed_models = body.allowed_models
 
     await db.commit()
-    return {"ok": True, "id": str(sa.id), "is_active": sa.is_active}
+    return {
+        "ok": True,
+        "id": str(sa.id),
+        "is_active": sa.is_active,
+        "allowed_image_hosts": sa.allowed_image_hosts,
+    }
 
 
 # Schemas — позднее, чтобы не делать circular import на старте файла

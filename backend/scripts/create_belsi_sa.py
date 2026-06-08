@@ -30,6 +30,8 @@ SA_CONFIG = {
     "description": "BELSI.Монтаж production AI integration",
     "allowed_endpoints": ["analyze-image", "generate", "transcribe", "usage"],
     "allowed_models": [],
+    # v1.5 (SSRF): BELSI грузит фото только с собственного CDN (Timeweb Cloud S3).
+    "allowed_image_hosts": ["bucket.api.belsi.ru"],
     "rate_limit_per_minute": 60,
     "rate_limit_per_day": 5000,
     "monthly_budget_usd": Decimal("50.0"),
@@ -73,6 +75,7 @@ async def main() -> int:
             token_prefix=rand_prefix,
             allowed_endpoints=SA_CONFIG["allowed_endpoints"],
             allowed_models=SA_CONFIG["allowed_models"],
+            allowed_image_hosts=SA_CONFIG["allowed_image_hosts"],
             rate_limit_per_minute=SA_CONFIG["rate_limit_per_minute"],
             rate_limit_per_day=SA_CONFIG["rate_limit_per_day"],
             monthly_budget_usd=SA_CONFIG["monthly_budget_usd"],

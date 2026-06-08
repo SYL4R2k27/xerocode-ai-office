@@ -8,7 +8,8 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 from decimal import Decimal
-from typing import Any, Dict
+from typing import Any, Dict, List
+from urllib.parse import urlparse
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
 from sqlalchemy import func as sa_func
@@ -33,6 +34,61 @@ from app.services.external_router import (
 )
 
 router = APIRouter(prefix="/api/v1/external", tags=["external"])
+
+
+# ╔══════════════════════════════════════════════════════════════╗
+# ║   SSRF defense · per-SA image_url host allowlist             ║
+# ╚══════════════════════════════════════════════════════════════╝
+def _host_matches(host: str, pattern: str) -> bool:
+    """Match host against one allowlist pattern. Supports wildcard `*.example.com`.
+
+    `*.example.com` matchит `foo.example.com` и `foo.bar.example.com`,
+    но НЕ `example.com` и НЕ `evil-example.com`.
+    """
+    host = host.lower().strip()
+    pattern = pattern.lower().strip()
+    if not pattern or not host:
+        return False
+    if pattern == host:
+        return True
+    if pattern.startswith("*."):
+        suffix = pattern[1:]  # ".example.com" — обязан содержать leading dot
+        # Точечный suffix-match: 's3.amazonaws.com'.endswith('.amazonaws.com') == True
+        # 'evil-amazonaws.com'.endswith('.amazonaws.com') == False (нет ведущей точки)
+        if host.endswith(suffix) and host != suffix.lstrip("."):
+            return True
+    return False
+
+
+def _validate_image_url_host(image_url: str, allowlist: List[str]) -> None:
+    """Raise 422 если host из image_url не в per-SA allowlist."""
+    parsed = urlparse(image_url)
+    host = (parsed.hostname or "").lower()
+    if not host:
+        # Pydantic-валидатор уже должен был это поймать, но защита defense-in-depth.
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="image_url has no host",
+        )
+    if not allowlist:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=(
+                "This service account has no allowed_image_hosts configured. "
+                "All image_url fetches are rejected. Contact admin to add the "
+                "CDN host to allowed_image_hosts, or use image_base64 instead."
+            ),
+        )
+    for pattern in allowlist:
+        if _host_matches(host, pattern):
+            return
+    raise HTTPException(
+        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+        detail=(
+            f"image_url host {host!r} is not in this service account's "
+            f"allowed_image_hosts ({allowlist}). Contact admin to allowlist it."
+        ),
+    )
 
 
 # ╔══════════════════════════════════════════════════════════════╗
@@ -97,6 +153,13 @@ async def analyze_image(
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Unknown prompt_template '{payload.prompt_template}'",
+        )
+
+    # v1.5 (SSRF defense): per-SA allowlist хостов для image_url.
+    # image_base64 — обходит проверку (содержимое внутри, не fetch).
+    if payload.image_url:
+        _validate_image_url_host(
+            payload.image_url, sa.allowed_image_hosts or []
         )
 
     return await call_with_fallback(

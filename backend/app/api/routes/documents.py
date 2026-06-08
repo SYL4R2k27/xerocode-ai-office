@@ -245,13 +245,13 @@ async def _call_ai(system_prompt: str, user_prompt: str, prefer_premium: bool = 
     # Provider chain: direct keys first → OpenRouter → Groq fallback
     providers = []
 
-    # 1. Anthropic Sonnet 4.7 — ПЕРВЫЙ (дешевле Opus, того же класса качество)
+    # 1. Anthropic Claude Opus 4.6 — ПЕРВЫЙ (всегда, без gate'ов; глубокий контент)
     if getattr(settings, "anthropic_api_key", None):
         providers.append({
             "url": "https://api.anthropic.com/v1/messages",
             "key": settings.anthropic_api_key,
-            "model": "claude-sonnet-4-7",
-            "name": "Anthropic/Sonnet-4.7",
+            "model": "claude-opus-4-6",
+            "name": "Anthropic/Claude-Opus-4.6",
             "is_anthropic": True,
             "tok": 8000,
         })

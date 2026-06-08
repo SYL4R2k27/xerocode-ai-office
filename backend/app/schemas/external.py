@@ -1,10 +1,21 @@
 """Pydantic-схемы для external API (BELSI и т.п.)."""
 from __future__ import annotations
 
+import ipaddress
 from datetime import datetime
 from typing import Any, Dict, List, Optional
+from urllib.parse import urlparse
 
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
+
+
+def _is_ip_literal(host: str) -> bool:
+    """True если host — IPv4/IPv6 literal (не FQDN)."""
+    try:
+        ipaddress.ip_address(host.strip("[]"))
+        return True
+    except (ValueError, AttributeError):
+        return False
 
 
 # ╔══════════════════════════════════════════════════════════════╗
@@ -37,6 +48,34 @@ class AnalyzeImageRequest(BaseModel):
         if not (self.image_url or self.image_base64):
             raise ValueError("Either image_url or image_base64 must be provided")
         return self
+
+    # v1.5 (SSRF defense — базовый структурный фильтр).
+    # Per-SA host-allowlist проверяется отдельно в endpoint'е (нужен доступ к SA).
+    @field_validator("image_url")
+    @classmethod
+    def _validate_image_url_basic(cls, v: Optional[str]) -> Optional[str]:
+        if v is None:
+            return v
+        v_str = v.strip()
+        if not v_str:
+            return None
+        try:
+            parsed = urlparse(v_str)
+        except Exception as e:
+            raise ValueError(f"image_url is malformed: {e}")
+        if parsed.scheme not in {"http", "https"}:
+            raise ValueError(
+                f"image_url scheme must be http or https (got {parsed.scheme!r})"
+            )
+        if not parsed.hostname:
+            raise ValueError("image_url must have a host")
+        if parsed.username or parsed.password:
+            raise ValueError("image_url must not contain userinfo (user:pass@host)")
+        if _is_ip_literal(parsed.hostname):
+            raise ValueError(
+                f"image_url host must be a FQDN, not an IP literal (got {parsed.hostname!r})"
+            )
+        return v_str
 
 
 class GenerateRequest(BaseModel):
@@ -80,6 +119,12 @@ class ServiceAccountCreate(BaseModel):
     organization_id: Optional[str] = None  # UUID as string
     allowed_endpoints: List[str] = Field(default_factory=lambda: ["analyze-image", "generate"])
     allowed_models: List[str] = Field(default_factory=list)  # пусто = все из шаблонов
+    # v1.5 (SSRF): per-SA host-allowlist для image_url. Пусто = все image_url 422.
+    # Wildcards: '*.amazonaws.com' matchит 's3.amazonaws.com'.
+    allowed_image_hosts: List[str] = Field(
+        default_factory=list,
+        description="Host-allowlist для image_url. Wildcards: *.example.com",
+    )
     rate_limit_per_minute: int = Field(60, ge=1, le=10000)
     rate_limit_per_day: int = Field(5000, ge=1, le=1000000)
     monthly_budget_usd: float = Field(0.0, ge=0.0)
