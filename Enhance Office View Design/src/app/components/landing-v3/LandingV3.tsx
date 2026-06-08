@@ -9,13 +9,17 @@
 import { useState, useEffect, useRef, Fragment, type CSSProperties, type FC } from "react";
 import { AppIcon } from "./Icon";
 import { Header, type SubPage, type Toast } from "./Header";
-import { SubComingSoon } from "./SubHero";
 import { PricingPage } from "./pages/Pricing";
 import { FeaturesPage } from "./pages/Features";
+import { BusinessPage } from "./pages/Business";
+import { ArenaPage } from "./pages/Arena";
+import { TerminalPage } from "./pages/Terminal";
+import { FaqPage } from "./pages/Faq";
 import { AboutPage } from "./pages/About";
 import "../../../styles/xerocode-v3-landing.css";
 import "../../../styles/xerocode-v3-landing-pages.css";
 import "../../../styles/xerocode-v3-page-content.css";
+import "../../../styles/xerocode-v3-pages2.css";
 
 /* ── Hero (karaoke scroll-reveal) ────────────────────────────────── */
 const HERO_LINES: { t: string; a?: boolean }[][] = [
@@ -687,10 +691,11 @@ export function LandingV3() {
       {page === null && <LandingHome onToast={flash} />}
       {page === "pricing" && <PricingPage onBack={back} onToast={flash} />}
       {page === "features" && <FeaturesPage onBack={back} onNavigate={navigate} />}
+      {page === "business" && <BusinessPage onBack={back} onToast={flash} />}
+      {page === "arena" && <ArenaPage onBack={back} onToast={flash} />}
+      {page === "terminal" && <TerminalPage onBack={back} />}
+      {page === "faq" && <FaqPage onBack={back} />}
       {page === "about" && <AboutPage onBack={back} />}
-      {page !== null && page !== "pricing" && page !== "features" && page !== "about" && (
-        <SubComingSoon page={page} onBack={back} />
-      )}
       <div className={"toast" + (toast ? " show" : "")}>{toast ? `→ ${toast} · демо-лендинг (review)` : ""}</div>
     </div>
   );
