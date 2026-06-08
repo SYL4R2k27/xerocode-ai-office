@@ -26,13 +26,13 @@ This project uses the following Claude Code skills:
 ```bash
 # Frontend
 cd "Enhance Office View Design" && npx vite build
-rsync -avz --delete dist/ vladimir@213.165.210.250:/var/www/ai-office/
+rsync -avz --delete dist/ vladimir@111.88.144.124:/var/www/ai-office/
 
 # Backend
-rsync -avz --exclude='.env' --exclude='.venv' --exclude='__pycache__' backend/app/ vladimir@213.165.210.250:~/ai-office/backend/app/
-ssh vladimir@213.165.210.250 "sudo systemctl restart ai-office"
+rsync -avz --exclude='.env' --exclude='.venv' --exclude='__pycache__' backend/app/ vladimir@111.88.144.124:~/ai-office/backend/app/
+ssh vladimir@111.88.144.124 "sudo systemctl restart ai-office"
 ```
 
 ## Domain
 - Production: https://xerocode.ru
-- Server: 213.165.210.250 (Yandex Cloud)
+- Server: 111.88.144.124 (Yandex Cloud)

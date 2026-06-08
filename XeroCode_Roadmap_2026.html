@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>XeroCode · Roadmap 2026</title>
+<style>
+  @page { size: A4 landscape; margin: 0; }
+  :root {
+    --bg: #0a0a0f; --card: #0e0e14; --card-hi: #131319; --line: #27272e;
+    --muted: #8a8a94; --white: #fff; --white-80: #d4d4d8; --white-60: #9a9aa3; --white-40: #5a5a63;
+    --violet: #7c3aed; --violet-soft: #a78bfa; --cyan: #06b6d4;
+    --green: #10b981; --orange: #f59e0b; --yellow: #eab308; --red: #ef4444;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--white); font: 14px/1.5 'Inter', -apple-system, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+
+  /* Slide = A4 landscape at 96dpi (1123×794) */
+  .slide {
+    width: 100vw; height: 100vh; min-height: 100vh;
+    position: relative; overflow: hidden;
+    padding: 60px 72px;
+    display: flex; flex-direction: column;
+    page-break-after: always;
+  }
+  @media print {
+    .slide { width: 297mm; height: 210mm; min-height: 210mm; padding: 40px 48px; }
+    body { background: var(--bg); }
+  }
+
+  /* Liquid background ambient */
+  .blob { position: absolute; border-radius: 50%; filter: blur(110px); pointer-events: none; z-index: 0; }
+  .blob-violet { background: #7c3aed; opacity: 0.14; }
+  .blob-cyan { background: #06b6d4; opacity: 0.10; }
+  .blob-soft { background: #a78bfa; opacity: 0.10; }
+  .slide > * { position: relative; z-index: 1; }
+
+  /* Header */
+  .hdr { display: flex; align-items: center; justify-content: space-between; margin-bottom: 36px; }
+  .hdr-left { display: flex; align-items: center; gap: 14px; }
+  .hdr-mark { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; color: #fff; }
+  .hdr-div { width: 1px; height: 28px; background: rgba(255,255,255,0.25); }
+  .hdr-wm { font-family: 'Inter'; font-weight: 500; font-size: 15px; letter-spacing: 2.2px; color: #fff; }
+  .hdr-label { font-size: 11px; letter-spacing: 2.5px; color: var(--white-40); font-weight: 600; }
+
+  /* Footer */
+  .ftr { display: flex; align-items: center; justify-content: space-between; margin-top: auto; padding-top: 20px; font-size: 11px; letter-spacing: 2px; color: var(--white-40); font-weight: 500; }
+
+  /* Typography */
+  h1.hero { font-size: 80px; font-weight: 700; letter-spacing: -2px; line-height: 1.05; }
+  h1.hero .accent { color: var(--violet-soft); }
+  h2.title { font-size: 48px; font-weight: 700; letter-spacing: -1px; line-height: 1.1; margin-bottom: 8px; }
+  .kicker { font-size: 13px; letter-spacing: 5px; color: var(--violet-soft); font-weight: 600; text-transform: uppercase; margin-bottom: 12px; }
+  .subtitle { font-size: 18px; color: var(--white-60); font-weight: 400; max-width: 880px; line-height: 1.5; }
+
+  /* Cover */
+  .cover-center { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  .cover-mark { width: 140px; height: 140px; margin-bottom: 24px; color: #fff; }
+  .cover-wm { font-family: 'Inter'; font-weight: 500; font-size: 56px; letter-spacing: 7px; margin-bottom: 8px; }
+  .cover-year { font-family: 'Inter'; font-weight: 500; font-size: 24px; letter-spacing: 10px; color: var(--violet-soft); }
+  .cover-tagline { font-size: 24px; color: var(--white-80); margin-top: 32px; font-weight: 400; }
+
+  /* Stat cards */
+  .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; margin: 24px 0; }
+  .stat-card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 22px 24px; position: relative; }
+  .stat-card::before { content: ''; position: absolute; top: 22px; left: 24px; width: 3px; height: 22px; border-radius: 2px; }
+  .stat-card.violet::before { background: var(--violet); }
+  .stat-card.cyan::before { background: var(--cyan); }
+  .stat-card.green::before { background: var(--green); }
+  .stat-card.orange::before { background: var(--orange); }
+  .stat-value { font-size: 42px; font-weight: 700; letter-spacing: -1px; padding-left: 16px; margin-bottom: 36px; }
+  .stat-label { font-size: 10px; letter-spacing: 2px; color: var(--white-60); font-weight: 600; padding-left: 16px; }
+
+  /* Feature list */
+  .feat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 36px; }
+  .feat-row { display: flex; align-items: flex-start; gap: 10px; padding: 6px 0; font-size: 13px; color: var(--white-80); }
+  .feat-check { color: var(--green); font-weight: 700; flex-shrink: 0; }
+
+  /* Priority cards */
+  .p-kicker { font-size: 12px; letter-spacing: 6px; font-weight: 700; margin-bottom: 4px; }
+  .p-time { font-size: 12px; letter-spacing: 3px; color: var(--white-60); font-weight: 500; margin-bottom: 20px; }
+  .p-title { font-size: 56px; font-weight: 700; letter-spacing: -1.5px; line-height: 1.1; margin-bottom: 28px; }
+  .items-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .item-card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; }
+  .item-code { display: inline-block; padding: 3px 8px; border-radius: 5px; font-size: 10px; font-weight: 700; letter-spacing: 1.5px; margin-bottom: 8px; }
+  .item-title { font-size: 14px; font-weight: 600; color: var(--white); margin-bottom: 6px; line-height: 1.3; }
+  .item-desc { font-size: 11px; color: var(--white-60); line-height: 1.4; }
+
+  /* P0 colors (red) */
+  .P0 .p-kicker { color: var(--red); }
+  .P0 .item-code { background: rgba(239,68,68,0.15); color: var(--red); }
+  /* P1 orange */
+  .P1 .p-kicker { color: var(--orange); }
+  .P1 .item-code { background: rgba(245,158,11,0.15); color: var(--orange); }
+  /* P2 yellow */
+  .P2 .p-kicker { color: var(--yellow); }
+  .P2 .item-code { background: rgba(234,179,8,0.15); color: var(--yellow); }
+  /* P3 green */
+  .P3 .p-kicker { color: var(--green); }
+  .P3 .item-code { background: rgba(16,185,129,0.15); color: var(--green); }
+  /* P4 violet */
+  .P4 .p-kicker { color: var(--violet-soft); }
+  .P4 .item-code { background: rgba(167,139,250,0.15); color: var(--violet-soft); }
+
+  /* Metrics table */
+  .m-table { width: 100%; border-collapse: collapse; background: var(--card); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; margin-top: 20px; }
+  .m-table th, .m-table td { padding: 14px 22px; text-align: left; font-size: 14px; }
+  .m-table th { background: var(--card-hi); color: var(--white-40); font-size: 11px; letter-spacing: 2px; font-weight: 600; text-transform: uppercase; }
+  .m-table td { color: var(--white-80); border-top: 1px solid var(--line); }
+  .m-table td.now { color: var(--white-60); }
+  .m-table td.target { color: var(--violet-soft); font-weight: 600; }
+  .m-table td.metric { color: var(--white); font-weight: 500; }
+
+  /* Next commit */
+  .next-kicker { font-size: 14px; letter-spacing: 6px; color: var(--violet-soft); font-weight: 700; margin-bottom: 12px; }
+  .next-title { font-size: 80px; font-weight: 700; letter-spacing: -2px; margin-bottom: 12px; }
+  .next-sub { font-size: 26px; color: var(--white-80); margin-bottom: 28px; }
+  .next-desc { font-size: 17px; color: var(--white-60); max-width: 960px; line-height: 1.6; margin-bottom: 40px; }
+  .next-boxes { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; max-width: 760px; }
+  .next-box { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 18px 22px; }
+  .next-box .lbl { font-size: 10px; letter-spacing: 2px; color: var(--white-40); font-weight: 600; margin-bottom: 4px; }
+  .next-box .val { font-size: 32px; font-weight: 700; margin-bottom: 2px; }
+  .next-box .val.violet { color: var(--violet-soft); }
+  .next-box .note { font-size: 11px; color: var(--white-60); }
+
+  /* Close slide */
+  .close-center { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  .close-mark { width: 90px; height: 90px; margin-bottom: 16px; color: #fff; }
+  .close-wm { font-family: 'Inter'; font-weight: 500; font-size: 44px; letter-spacing: 6px; margin-bottom: 30px; }
+  .close-line { font-size: 22px; color: var(--white-60); margin-bottom: 8px; }
+  .close-sub { font-size: 14px; color: var(--white-40); }
+
+  /* Print helpers */
+  @media print {
+    .slide { page-break-after: always; page-break-inside: avoid; }
+    .cover-mark { width: 100px; height: 100px; }
+    .cover-wm { font-size: 42px; }
+    h1.hero { font-size: 60px; }
+    .p-title { font-size: 40px; }
+    .next-title { font-size: 56px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ SLIDE 1: COVER ============ -->
+<section class="slide">
+  <div class="blob blob-violet" style="width:520px;height:520px;top:-120px;left:-120px;"></div>
+  <div class="blob blob-cyan" style="width:620px;height:620px;bottom:-200px;right:-180px;"></div>
+
+  <div class="cover-center">
+    <svg class="cover-mark" viewBox="0 0 200 200" fill="none">
+      <g stroke="currentColor" stroke-width="16" stroke-linecap="round">
+        <line x1="58" y1="58" x2="88" y2="88"/>
+        <line x1="112" y1="112" x2="142" y2="142"/>
+        <line x1="142" y1="58" x2="112" y2="88"/>
+        <line x1="58" y1="142" x2="88" y2="112"/>
+      </g>
+    </svg>
+    <div class="cover-wm">XEROCODE</div>
+    <div class="cover-year">ROADMAP 2026</div>
+    <div class="cover-tagline">AI, который думает командой</div>
+  </div>
+
+  <div class="ftr" style="margin-top:auto;">
+    <div>АПРЕЛЬ 2026</div>
+    <div>ВНУТРЕННИЙ ОТЧЁТ</div>
+  </div>
+</section>
+
+<!-- ============ SLIDE 2: POSITIONING ============ -->
+<section class="slide">
+  <div class="blob blob-violet" style="width:480px;height:480px;top:-100px;right:-140px;"></div>
+
+  <div class="hdr">
+    <div class="hdr-left">
+      <svg class="hdr-mark" viewBox="0 0 200 200" fill="none"><g stroke="currentColor" stroke-width="16" stroke-linecap="round"><line x1="58" y1="58" x2="88" y2="88"/><line x1="112" y1="112" x2="142" y2="142"/><line x1="142" y1="58" x2="112" y2="88"/><line x1="58" y1="142" x2="88" y2="112"/></g></svg>
+      <div class="hdr-div"></div>
+      <div class="hdr-wm">XEROCODE</div>
+    </div>
+    <div class="hdr-label">ПОЗИЦИОНИРОВАНИЕ</div>
+  </div>
+
+  <h1 class="hero">AI, который думает<br><span class="accent">командой.</span></h1>
+  <p class="subtitle" style="margin-top:32px;font-size:24px;max-width:1100px;">
+    Claude, GPT, Gemini и Grok работают вместе над одной задачей — проверяют друг друга и дают результат лучше любого одиночки.
+  </p>
+  <div class="kicker" style="margin-top:28px;font-size:17px;letter-spacing:6px;">ОДНА ПОДПИСКА ВМЕСТО ПЯТИ</div>
+
+  <div class="ftr"><div>02 / 11</div><div>XEROCODE · ROADMAP 2026</div></div>
+</section>
+
+<!-- ============ SLIDE 3: WHERE WE ARE ============ -->
+<section class="slide">
+  <div class="hdr">
+    <div class="hdr-left">
+      <svg class="hdr-mark" viewBox="0 0 200 200" fill="none"><g stroke="currentColor" stroke-width="16" stroke-linecap="round"><line x1="58" y1="58" x2="88" y2="88"/><line x1="112" y1="112" x2="142" y2="142"/><line x1="142" y1="58" x2="112" y2="88"/><line x1="58" y1="142" x2="88" y2="112"/></g></svg>
+      <div class="hdr-div"></div>
+      <div class="hdr-wm">XEROCODE</div>
+    </div>
+    <div class="hdr-label">ГДЕ МЫ СЕЙЧАС</div>
+  </div>
+
+  <h2 class="title">Что уже работает в проде</h2>
+  <p class="subtitle">45+ этапов · 31+ коммитов в последней сессии · xerocode.ru в активной эксплуатации</p>
+
+  <div class="stat-grid">
+    <div class="stat-card violet"><div class="stat-value">45+</div><div class="stat-label">STAGES COMPLETE</div></div>
+    <div class="stat-card cyan"><div class="stat-value">10</div><div class="stat-label">CORP PAGES LIVE</div></div>
+    <div class="stat-card green"><div class="stat-value">4</div><div class="stat-label">OAUTH PROVIDERS</div></div>
+    <div class="stat-card orange"><div class="stat-value">430+</div><div class="stat-label">AI MODELS VIA BYOK</div></div>
+  </div>
+
+  <div class="feat-grid" style="margin-top:16px;">
+    <div class="feat-row"><span class="feat-check">✓</span>V2 UI на всём продукте</div>
+    <div class="feat-row"><span class="feat-check">✓</span>Brand identity v2 (X8 mark + XEROCODE wordmark)</div>
+    <div class="feat-row"><span class="feat-check">✓</span>5 режимов оркестрации (Manager/Team/Swarm/Auction/XeroCode)</div>
+    <div class="feat-row"><span class="feat-check">✓</span>BYOK с Fernet-шифрованием ключей</div>
+    <div class="feat-row"><span class="feat-check">✓</span>SSE-стриминг с Stop и activity chip</div>
+    <div class="feat-row"><span class="feat-check">✓</span>JSON-логи + Prometheus + Grafana dashboards</div>
+    <div class="feat-row"><span class="feat-check">✓</span>OAuth: Google / GitHub / Yandex / Telegram</div>
+    <div class="feat-row"><span class="feat-check">✓</span>Redis + idempotency-middleware</div>
+    <div class="feat-row"><span class="feat-check">✓</span>Training dataset + админ-дашборд</div>
+    <div class="feat-row"><span class="feat-check">✓</span>Security hardening (HSTS, CSP, brute-force)</div>
+    <div class="feat-row"><span class="feat-check">✓</span>Push-уведомления + PWA + bottom nav</div>
+    <div class="feat-row"><span class="feat-check">✓</span>Code-splitting (22 lazy routes)</div>
+    <div class="feat-row"><span class="feat-check">✓</span>Live-демо без регистрации (G1)</div>
+    <div class="feat-row"><span class="feat-check">✓</span>Жидкий анимированный фон (CSS-only, GPU-friendly)</div>
+    <div class="feat-row"><span class="feat-check">✓</span>Hero chat стримит реальный Groq Llama 3.3 70B</div>
+    <div class="feat-row"><span class="feat-check">✓</span>Comparison-таблица vs Bothub/GigaChat/ChatGPT Plus</div>
+  </div>
+
+  <div class="ftr"><div>03 / 11</div><div>XEROCODE · ROADMAP 2026</div></div>
+</section>
+
+<!-- ============ SLIDE 4: P0 ============ -->
+<section class="slide P0">
+  <div class="blob blob-violet" style="width:380px;height:380px;top:-80px;right:-80px;background:#ef4444;opacity:0.10;"></div>
+
+  <div class="hdr">
+    <div class="hdr-left">
+      <svg class="hdr-mark" viewBox="0 0 200 200" fill="none"><g stroke="currentColor" stroke-width="16" stroke-linecap="round"><line x1="58" y1="58" x2="88" y2="88"/><line x1="112" y1="112" x2="142" y2="142"/><line x1="142" y1="58" x2="112" y2="88"/><line x1="58" y1="142" x2="88" y2="112"/></g></svg>
+      <div class="hdr-div"></div>
+      <div class="hdr-wm">XEROCODE</div>
+    </div>
+    <div class="hdr-label">ПРИОРИТЕТ · P0</div>
+  </div>
+
+  <div class="p-kicker">P0 · CRITICAL</div>
+  <div class="p-time">7–14 ДНЕЙ</div>
+  <h2 class="p-title">Ближайшие 2 недели</h2>
+
+  <div class="items-grid">
+    <div class="item-card"><span class="item-code">G1 · DONE</span><div class="item-title">Demo без регистрации</div><div class="item-desc">Hero-чат стримит Groq Llama. Rate limit 3 msg/IP/hour. Nudge на регистрацию после 5.</div></div>
+    <div class="item-card"><span class="item-code">G2 · 80%</span><div class="item-title">Landing rewrite</div><div class="item-desc">Новое позиционирование, comparison-таблица, жидкий фон, бренд v2 — полировка осталась.</div></div>
+    <div class="item-card"><span class="item-code">G3</span><div class="item-title">Убрать 60% UI с главной</div><div class="item-desc">Оставить только чат + 1 режим + настройки. Остальное — скрыть за меню «Other».</div></div>
+    <div class="item-card"><span class="item-code">G4</span><div class="item-title">Редизайн визуала</div><div class="item-desc">Hero-gradient, typography-pass, grain-overlay. Partial: X8 + liquid bg сделано.</div></div>
+    <div class="item-card"><span class="item-code">G5</span><div class="item-title">Rewrite копирайта</div><div class="item-desc">Убрать «оркестрация», «DAG». Заменить buzzwords на человеческий язык.</div></div>
+    <div class="item-card"><span class="item-code">M1</span><div class="item-title">Активация ЮKassa + Stripe</div><div class="item-desc">Webhooks, checkout session, план-upgrade flow. 3–5 дней.</div></div>
+    <div class="item-card"><span class="item-code">M2</span><div class="item-title">Daily cost cap per user</div><div class="item-desc">Stop AI-calls если юзер превысил дневной лимит по БД. 1 час работы.</div></div>
+    <div class="item-card"><span class="item-code">M3</span><div class="item-title">SMTP + Sentry активация</div><div class="item-desc">Production error-tracking и транзакционные письма. 2 часа.</div></div>
+  </div>
+
+  <div class="ftr"><div>04 / 11</div><div>XEROCODE · ROADMAP 2026</div></div>
+</section>
+
+<!-- ============ SLIDE 5: P1 ============ -->
+<section class="slide P1">
+  <div class="blob blob-violet" style="width:380px;height:380px;top:-80px;right:-80px;background:#f59e0b;opacity:0.10;"></div>
+
+  <div class="hdr">
+    <div class="hdr-left">
+      <svg class="hdr-mark" viewBox="0 0 200 200" fill="none"><g stroke="currentColor" stroke-width="16" stroke-linecap="round"><line x1="58" y1="58" x2="88" y2="88"/><line x1="112" y1="112" x2="142" y2="142"/><line x1="142" y1="58" x2="112" y2="88"/><line x1="58" y1="142" x2="88" y2="112"/></g></svg>
+      <div class="hdr-div"></div>
+      <div class="hdr-wm">XEROCODE</div>
+    </div>
+    <div class="hdr-label">ПРИОРИТЕТ · P1</div>
+  </div>
+
+  <div class="p-kicker">P1 · HIGH</div>
+  <div class="p-time">2–8 НЕДЕЛЬ</div>
+  <h2 class="p-title">Следующие 1–2 месяца</h2>
+
+  <div class="items-grid">
+    <div class="item-card"><span class="item-code">S10</span><div class="item-title">CSP + httpOnly cookies</div><div class="item-desc">Content Security Policy, миграция JWT в httpOnly, защита от XSS.</div></div>
+    <div class="item-card"><span class="item-code">S11</span><div class="item-title">PII encryption (ФЗ-152)</div><div class="item-desc">Encrypt email/phone/ФИО в БД. Compliance российского закона.</div></div>
+    <div class="item-card"><span class="item-code">S12</span><div class="item-title">CAPTCHA на регистрацию</div><div class="item-desc">hCaptcha или Cloudflare Turnstile — защита от ботов.</div></div>
+    <div class="item-card"><span class="item-code">S13</span><div class="item-title">Email верификация</div><div class="item-desc">Обязательный verify email перед активацией аккаунта.</div></div>
+    <div class="item-card"><span class="item-code">S14</span><div class="item-title">Prompt injection defense</div><div class="item-desc">Санитизация user input + system prompt firewall.</div></div>
+    <div class="item-card"><span class="item-code">S15</span><div class="item-title">PostgreSQL backups</div><div class="item-desc">Ежедневный pg_dump → S3, point-in-time recovery.</div></div>
+    <div class="item-card"><span class="item-code">G6</span><div class="item-title">Share-линки диалогов</div><div class="item-desc">Viral-канал: поделись результатом AI-команды → входящие регистрации.</div></div>
+    <div class="item-card"><span class="item-code">G7</span><div class="item-title">Referral программа</div><div class="item-desc">Пригласил друга — оба получают +7 дней PRO.</div></div>
+    <div class="item-card"><span class="item-code">G8</span><div class="item-title">Онбординг-тур</div><div class="item-desc">Интерактивный 5-шаговый walkthrough для новых юзеров.</div></div>
+    <div class="item-card"><span class="item-code">I1</span><div class="item-title">Рефакторинг AuthGuard</div><div class="item-desc">Вынос AuthGuard + ModalsLayer из App.tsx (сейчас 520 строк).</div></div>
+    <div class="item-card"><span class="item-code">I2</span><div class="item-title">E2E тесты (Playwright)</div><div class="item-desc">Smoke-тесты: login, стриминг-чат, BYOK-флоу, оплата.</div></div>
+    <div class="item-card"><span class="item-code">I3</span><div class="item-title">Multi-worker deploy</div><div class="item-desc">Uvicorn + Gunicorn workers; Redis уже готов для inter-worker state.</div></div>
+  </div>
+
+  <div class="ftr"><div>05 / 11</div><div>XEROCODE · ROADMAP 2026</div></div>
+</section>
+
+<!-- ============ SLIDE 6: P2 ============ -->
+<section class="slide P2">
+  <div class="blob blob-violet" style="width:380px;height:380px;top:-80px;right:-80px;background:#eab308;opacity:0.08;"></div>
+
+  <div class="hdr">
+    <div class="hdr-left">
+      <svg class="hdr-mark" viewBox="0 0 200 200" fill="none"><g stroke="currentColor" stroke-width="16" stroke-linecap="round"><line x1="58" y1="58" x2="88" y2="88"/><line x1="112" y1="112" x2="142" y2="142"/><line x1="142" y1="58" x2="112" y2="88"/><line x1="58" y1="142" x2="88" y2="112"/></g></svg>
+      <div class="hdr-div"></div>
+      <div class="hdr-wm">XEROCODE</div>
+    </div>
+    <div class="hdr-label">ПРИОРИТЕТ · P2</div>
+  </div>
+
+  <div class="p-kicker">P2 · MEDIUM</div>
+  <div class="p-time">1–3 МЕСЯЦА</div>
+  <h2 class="p-title">Phase 2 · AI + Growth</h2>
+
+  <div class="items-grid">
+    <div class="item-card"><span class="item-code">P2.1</span><div class="item-title">Fine-tune XeroCode-7B</div><div class="item-desc">На собственном training dataset (10k+ диалогов). Qwen/Llama-base LoRA.</div></div>
+    <div class="item-card"><span class="item-code">P2.2</span><div class="item-title">Дистилляция оркестратора</div><div class="item-desc">Из DAG-симуляций — в 3B-модель. Router + синтезатор one-shot.</div></div>
+    <div class="item-card"><span class="item-code">P2.3</span><div class="item-title">Tool-calling нативный</div><div class="item-desc">Через function-calling API моделей вместо ReAct-промптинга.</div></div>
+    <div class="item-card"><span class="item-code">P2.4</span><div class="item-title">RLHF на ratings</div><div class="item-desc">Учимся на +1/-1 фидбеке из training_logs. DPO или ORPO.</div></div>
+    <div class="item-card"><span class="item-code">G9</span><div class="item-title">Telegram inline-бот</div><div class="item-desc">@xerocode_bot — AI-команда прямо в любом чате. Viral growth.</div></div>
+    <div class="item-card"><span class="item-code">G10</span><div class="item-title">Arena публичная</div><div class="item-desc">Open comparison: сравни 5 моделей side-by-side. SEO-magnet.</div></div>
+    <div class="item-card"><span class="item-code">G11</span><div class="item-title">Sparkpages / shareable</div><div class="item-desc">Perplexity-style: публичные страницы с research-отчётами.</div></div>
+    <div class="item-card"><span class="item-code">G12</span><div class="item-title">Social proof v1</div><div class="item-desc">Когда появятся реальные клиенты — добавить логотипы в лендинг.</div></div>
+    <div class="item-card"><span class="item-code">I4</span><div class="item-title">Observability v2</div><div class="item-desc">OpenTelemetry trace: UI → API → DAG → AI-call через всю цепочку.</div></div>
+  </div>
+
+  <div class="ftr"><div>06 / 11</div><div>XEROCODE · ROADMAP 2026</div></div>
+</section>
+
+<!-- ============ SLIDE 7: P3 ============ -->
+<section class="slide P3">
+  <div class="blob blob-violet" style="width:380px;height:380px;top:-80px;right:-80px;background:#10b981;opacity:0.08;"></div>
+
+  <div class="hdr">
+    <div class="hdr-left">
+      <svg class="hdr-mark" viewBox="0 0 200 200" fill="none"><g stroke="currentColor" stroke-width="16" stroke-linecap="round"><line x1="58" y1="58" x2="88" y2="88"/><line x1="112" y1="112" x2="142" y2="142"/><line x1="142" y1="58" x2="112" y2="88"/><line x1="58" y1="142" x2="88" y2="112"/></g></svg>
+      <div class="hdr-div"></div>
+      <div class="hdr-wm">XEROCODE</div>
+    </div>
+    <div class="hdr-label">ПРИОРИТЕТ · P3</div>
+  </div>
+
+  <div class="p-kicker">P3 · LOW</div>
+  <div class="p-time">3–6 МЕСЯЦЕВ</div>
+  <h2 class="p-title">Corporate expansion</h2>
+
+  <div class="items-grid">
+    <div class="item-card"><span class="item-code">C1</span><div class="item-title">CRM v2 — pipeline stages</div><div class="item-desc">Kanban, forecasting, deal-rotting alerts, revenue-attribution к AI.</div></div>
+    <div class="item-card"><span class="item-code">C2</span><div class="item-title">Документооборот</div><div class="item-desc">Approval flow, templating, версионирование, ЭДО подключение.</div></div>
+    <div class="item-card"><span class="item-code">C3</span><div class="item-title">Календарь + события</div><div class="item-desc">Team-view, Google/Outlook sync, AI-ассистент планировщик.</div></div>
+    <div class="item-card"><span class="item-code">C4</span><div class="item-title">HR-модуль</div><div class="item-desc">Сотрудники, роли, onboarding checklist, offboarding workflow.</div></div>
+    <div class="item-card"><span class="item-code">C5</span><div class="item-title">Gantt + roadmap</div><div class="item-desc">Проект-менеджмент для команд. AI-генерация планов.</div></div>
+    <div class="item-card"><span class="item-code">C6</span><div class="item-title">Channels / чаты</div><div class="item-desc">Slack-подобные каналы с AI-агентами как участниками.</div></div>
+    <div class="item-card"><span class="item-code">S16</span><div class="item-title">SOC 2 Type I</div><div class="item-desc">Политики, процедуры, controls. 3–6 месяцев аудита.</div></div>
+    <div class="item-card"><span class="item-code">S17</span><div class="item-title">Bug bounty</div><div class="item-desc">HackerOne / BI.ZONE — привлечь внешних исследователей.</div></div>
+    <div class="item-card"><span class="item-code">S18</span><div class="item-title">Pentest внешний</div><div class="item-desc">Раз в год полноценный pentest от certified провайдера.</div></div>
+  </div>
+
+  <div class="ftr"><div>07 / 11</div><div>XEROCODE · ROADMAP 2026</div></div>
+</section>
+
+<!-- ============ SLIDE 8: P4 ============ -->
+<section class="slide P4">
+  <div class="blob blob-violet" style="width:380px;height:380px;top:-80px;right:-80px;opacity:0.15;"></div>
+
+  <div class="hdr">
+    <div class="hdr-left">
+      <svg class="hdr-mark" viewBox="0 0 200 200" fill="none"><g stroke="currentColor" stroke-width="16" stroke-linecap="round"><line x1="58" y1="58" x2="88" y2="88"/><line x1="112" y1="112" x2="142" y2="142"/><line x1="142" y1="58" x2="112" y2="88"/><line x1="58" y1="142" x2="88" y2="112"/></g></svg>
+      <div class="hdr-div"></div>
+      <div class="hdr-wm">XEROCODE</div>
+    </div>
+    <div class="hdr-label">ПРИОРИТЕТ · P4</div>
+  </div>
+
+  <div class="p-kicker">P4 · VISION</div>
+  <div class="p-time">6–12 МЕСЯЦЕВ</div>
+  <h2 class="p-title">Phase 3 · Enterprise & Scale</h2>
+
+  <div class="items-grid">
+    <div class="item-card"><span class="item-code">P3.1</span><div class="item-title">Self-reliant model tier</div><div class="item-desc">XeroCode-30B собственного обучения — замена всей платформы моделей.</div></div>
+    <div class="item-card"><span class="item-code">P3.2</span><div class="item-title">On-premise deployment</div><div class="item-desc">Enterprise-пакет: установка в закрытом контуре клиента.</div></div>
+    <div class="item-card"><span class="item-code">P3.3</span><div class="item-title">K8s cluster scale-out</div><div class="item-desc">Переход с 2-CPU VPS на managed Kubernetes в Yandex Cloud.</div></div>
+    <div class="item-card"><span class="item-code">E1</span><div class="item-title">Enterprise-tier SLA</div><div class="item-desc">99.95% uptime, dedicated support, custom contracts, NDA.</div></div>
+    <div class="item-card"><span class="item-code">E2</span><div class="item-title">SSO SAML / SCIM</div><div class="item-desc">Корпоративная идентификация: Okta / Azure AD / Keycloak.</div></div>
+    <div class="item-card"><span class="item-code">E3</span><div class="item-title">Audit-logs export</div><div class="item-desc">SIEM-ready экспорт всех действий (Splunk / DataDog / ELK).</div></div>
+    <div class="item-card"><span class="item-code">E4</span><div class="item-title">Data residency</div><div class="item-desc">Контроль где физически хранятся данные (РФ / ЕС / US).</div></div>
+    <div class="item-card"><span class="item-code">I5</span><div class="item-title">Multi-region replication</div><div class="item-desc">PostgreSQL logical replication, Redis cluster, CDN фронта.</div></div>
+  </div>
+
+  <div class="ftr"><div>08 / 11</div><div>XEROCODE · ROADMAP 2026</div></div>
+</section>
+
+<!-- ============ SLIDE 9: METRICS ============ -->
+<section class="slide">
+  <div class="hdr">
+    <div class="hdr-left">
+      <svg class="hdr-mark" viewBox="0 0 200 200" fill="none"><g stroke="currentColor" stroke-width="16" stroke-linecap="round"><line x1="58" y1="58" x2="88" y2="88"/><line x1="112" y1="112" x2="142" y2="142"/><line x1="142" y1="58" x2="112" y2="88"/><line x1="58" y1="142" x2="88" y2="112"/></g></svg>
+      <div class="hdr-div"></div>
+      <div class="hdr-wm">XEROCODE</div>
+    </div>
+    <div class="hdr-label">МЕТРИКИ УСПЕХА</div>
+  </div>
+
+  <h2 class="title">Что мерим и куда целимся</h2>
+  <p class="subtitle">KPIs для каждого приоритета. Проверка каждые 2 недели.</p>
+
+  <table class="m-table">
+    <thead>
+      <tr>
+        <th>Метрика</th>
+        <th>Сейчас</th>
+        <th>P0 цель</th>
+        <th>P1 цель</th>
+        <th>P2 цель</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td class="metric">Hero → Register %</td><td class="now">~2%</td><td class="target">8%</td><td class="target">12%</td><td class="target">15%</td></tr>
+      <tr><td class="metric">MRR</td><td class="now">0</td><td class="target">50k ₽</td><td class="target">300k ₽</td><td class="target">1.5M ₽</td></tr>
+      <tr><td class="metric">DAU</td><td class="now">~50</td><td class="target">500</td><td class="target">2 000</td><td class="target">10 000</td></tr>
+      <tr><td class="metric">Bounce rate</td><td class="now">~68%</td><td class="target">&lt;45%</td><td class="target">&lt;35%</td><td class="target">&lt;30%</td></tr>
+      <tr><td class="metric">Error rate</td><td class="now">~0.5%</td><td class="target">&lt;0.2%</td><td class="target">&lt;0.1%</td><td class="target">&lt;0.05%</td></tr>
+      <tr><td class="metric">p95 latency</td><td class="now">~3s</td><td class="target">&lt;2s</td><td class="target">&lt;1.5s</td><td class="target">&lt;1s</td></tr>
+      <tr><td class="metric">Training logs</td><td class="now">~500</td><td class="target">5 000</td><td class="target">15 000</td><td class="target">50 000</td></tr>
+      <tr><td class="metric">Paying users</td><td class="now">0</td><td class="target">40</td><td class="target">250</td><td class="target">1 200</td></tr>
+    </tbody>
+  </table>
+
+  <div class="ftr"><div>09 / 11</div><div>XEROCODE · ROADMAP 2026</div></div>
+</section>
+
+<!-- ============ SLIDE 10: NEXT COMMIT ============ -->
+<section class="slide">
+  <div class="blob blob-violet" style="width:460px;height:460px;bottom:-120px;left:-120px;"></div>
+
+  <div class="hdr">
+    <div class="hdr-left">
+      <svg class="hdr-mark" viewBox="0 0 200 200" fill="none"><g stroke="currentColor" stroke-width="16" stroke-linecap="round"><line x1="58" y1="58" x2="88" y2="88"/><line x1="112" y1="112" x2="142" y2="142"/><line x1="142" y1="58" x2="112" y2="88"/><line x1="58" y1="142" x2="88" y2="112"/></g></svg>
+      <div class="hdr-div"></div>
+      <div class="hdr-wm">XEROCODE</div>
+    </div>
+    <div class="hdr-label">СЛЕДУЮЩЕЕ ДЕЙСТВИЕ</div>
+  </div>
+
+  <div class="next-kicker">NEXT COMMIT</div>
+  <div class="next-title">G3 · Убрать 60% UI</div>
+  <div class="next-sub">с главной страницы продукта</div>
+  <div class="next-desc">
+    Оставить только: <b>чат + 1 режим по умолчанию (XeroCode AI) + настройки</b>.
+    Остальное (CRM, HR, Gantt, Docs и т.д.) — спрятать за навигацию уровня «Other».
+    Пользователь не должен теряться в функционале на первом экране.
+  </div>
+
+  <div class="next-boxes">
+    <div class="next-box">
+      <div class="lbl">ESTIMATE</div>
+      <div class="val">2–3 дня</div>
+      <div class="note">Чистый UI, меньше перегрузки, фокус на ядре</div>
+    </div>
+    <div class="next-box">
+      <div class="lbl">IMPACT</div>
+      <div class="val violet">+30% retention</div>
+      <div class="note">Юзер не теряется в функционале на первом экране</div>
+    </div>
+  </div>
+
+  <div class="ftr"><div>10 / 11</div><div>XEROCODE · ROADMAP 2026</div></div>
+</section>
+
+<!-- ============ SLIDE 11: CLOSE ============ -->
+<section class="slide">
+  <div class="blob blob-violet" style="width:520px;height:520px;top:-160px;right:-180px;"></div>
+  <div class="blob blob-cyan" style="width:420px;height:420px;bottom:-140px;left:-140px;"></div>
+
+  <div class="close-center">
+    <svg class="close-mark" viewBox="0 0 200 200" fill="none">
+      <g stroke="currentColor" stroke-width="16" stroke-linecap="round">
+        <line x1="58" y1="58" x2="88" y2="88"/>
+        <line x1="112" y1="112" x2="142" y2="142"/>
+        <line x1="142" y1="58" x2="112" y2="88"/>
+        <line x1="58" y1="142" x2="88" y2="112"/>
+      </g>
+    </svg>
+    <div class="close-wm">XEROCODE</div>
+  </div>
+
+  <div class="ftr"><div>11 / 11</div><div>АПРЕЛЬ 2026</div></div>
+</section>
+
+</body>
+</html>

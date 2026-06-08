@@ -1,0 +1,50 @@
+/* XeroCode v3 — content sub-pages (About/Contacts, Features). Scoped under .x3l. */
+.x3l {
+  /* ── About / Contacts ── */
+  .about-wrap { padding: 48px var(--pad-x) 110px; max-width: 880px; }
+  .about-mission { background: var(--bg-soft); border: 1px solid var(--line-bg); border-left: 3px solid var(--xero); border-radius: 14px; padding: 28px 32px; margin-bottom: 40px; }
+  .about-mission p { font-size: 16px; line-height: 1.7; color: var(--on-bg-mute); }
+  .about-mission p + p { margin-top: 14px; }
+  .about-mission b { color: var(--on-bg); font-weight: 500; }
+  .about-vals { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 44px; }
+  .val-card { background: var(--bg-soft); border: 1px solid var(--line-bg); border-radius: 12px; padding: 22px; }
+  .val-ico { width: 42px; height: 42px; border-radius: 11px; background: var(--xero-mute); display: flex; align-items: center; justify-content: center; margin-bottom: 14px; }
+  .val-h { font-family: var(--display); font-weight: 500; font-size: 17px; letter-spacing: -0.01em; color: var(--on-bg); margin-bottom: 6px; }
+  .val-p { font-size: 13.5px; line-height: 1.55; color: var(--on-bg-mute); }
+  .about-cap { font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--on-bg-dim); margin-bottom: 18px; }
+  .about-contacts { background: var(--bg-soft); border: 1px solid var(--line-bg); border-radius: 14px; padding: 28px 32px; margin-top: 44px; }
+  .about-req { padding-bottom: 18px; margin-bottom: 10px; border-bottom: 1px solid var(--line-bg); }
+  .about-req .nm { font-family: var(--display); font-weight: 500; font-size: 17px; color: var(--on-bg); }
+  .about-req .meta { font-family: var(--mono); font-size: 12px; letter-spacing: 0.04em; color: var(--on-bg-dim); margin-top: 5px; }
+  .contact-row { display: flex; align-items: center; gap: 16px; padding: 10px 0; text-decoration: none; }
+  .contact-row:hover .c-val { color: var(--xero); }
+  .c-lab { font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--on-bg-dim); }
+  .c-val { font-size: 14px; color: var(--on-bg-mute); transition: color 180ms var(--ease); }
+  @media (max-width: 720px) { .about-vals { grid-template-columns: 1fr; } }
+
+  /* ── Features (category accordion) ── */
+  .feat-wrap { padding: 40px var(--pad-x) 110px; max-width: 1000px; }
+  .feat-stats { margin: 0 0 56px; }
+  .feat-list { display: flex; flex-direction: column; gap: 10px; }
+  .feat-cat { border: 1px solid var(--line-bg); border-radius: 14px; background: var(--bg-soft); overflow: hidden; transition: border-color 200ms var(--ease); }
+  .feat-cat.open { border-color: var(--xero); }
+  .feat-cat-head { display: flex; align-items: center; gap: 16px; padding: 20px 24px; cursor: pointer; }
+  .feat-cat-ico { width: 46px; height: 46px; border-radius: 12px; background: var(--xero-mute); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .feat-cat-meta { flex: 1; min-width: 0; }
+  .feat-cat-h { font-family: var(--display); font-weight: 500; font-size: 18px; letter-spacing: -0.015em; color: var(--on-bg); }
+  .feat-cat-d { font-size: 13.5px; color: var(--on-bg-mute); margin-top: 3px; }
+  .feat-cat-n { font-family: var(--mono); font-size: 10px; color: var(--on-bg-dim); padding: 3px 9px; border: 1px solid var(--line-bg); border-radius: 999px; flex-shrink: 0; }
+  .feat-cat-chev { color: var(--on-bg-dim); transition: transform 240ms var(--ease); flex-shrink: 0; display: flex; }
+  .feat-cat.open .feat-cat-chev { transform: rotate(180deg); }
+  .feat-cat-body { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 280ms var(--ease); }
+  .feat-cat.open .feat-cat-body { grid-template-rows: 1fr; }
+  .feat-cat-inner { overflow: hidden; }
+  .feat-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; padding: 0 24px 22px; }
+  .feat-item { display: flex; gap: 12px; padding: 14px; border: 1px solid var(--line-bg); border-radius: 11px; }
+  .feat-item-ico { width: 32px; height: 32px; border-radius: 8px; background: var(--xero-mute); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .feat-item-h { font-family: var(--display); font-weight: 500; font-size: 14px; color: var(--on-bg); }
+  .feat-item-d { font-size: 12.5px; line-height: 1.5; color: var(--on-bg-mute); margin-top: 3px; }
+  .feat-link { margin: 0 24px 22px; width: calc(100% - 48px); display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 12px; border-radius: 999px; border: 1px solid var(--line-bg-strong); background: transparent; color: var(--xero); font-size: 13px; font-weight: 500; cursor: pointer; transition: all 180ms var(--ease); }
+  .feat-link:hover { border-color: var(--xero); background: var(--xero-mute); }
+  @media (max-width: 720px) { .feat-grid { grid-template-columns: 1fr; } }
+}

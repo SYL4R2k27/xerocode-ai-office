@@ -614,7 +614,7 @@ function WorkspacesSection() {
 function QuickNav({ onNavigate }: { onNavigate: (p: SubPage) => void }) {
   const ITEMS: Array<{ id: Exclude<SubPage, null>; label: string; subtitle: string; accent: string }> = [
     { id: "features", label: "Возможности", subtitle: "8 workspace · 7 категорий · 30+ фич",         accent: "#7C5CFF" },
-    { id: "pricing",  label: "Тарифы",       subtitle: "6 тарифов · cost-tier · marg 35-39%",         accent: "#FFB547" },
+    { id: "pricing",  label: "Тарифы",       subtitle: "6 тарифов · cost-tier · BYOK ∞",              accent: "#FFB547" },
     { id: "business", label: "Бизнесу",      subtitle: "12 модулей · 1С · Битрикс · команда",         accent: "#00D4FF" },
     { id: "arena",    label: "Арена",        subtitle: "4 режима · Elo · сравнение моделей",          accent: "#FF3B5C" },
     { id: "cli",      label: "Терминал",     subtitle: "CLI · Docker · git · Desktop Agent",          accent: "#22C55E" },

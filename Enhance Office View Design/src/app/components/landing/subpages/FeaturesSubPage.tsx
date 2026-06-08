@@ -366,7 +366,6 @@ export function FeaturesSubPage({ onBack, onCTA, onNavigateArena }: Props) {
         num="05"
         title={<>Возмож<em style={{ color: "var(--amber-500)", fontStyle: "italic", fontWeight: 400 }}>ности.</em></>}
         subtitle="Полный набор инструментов для ускорения работы с AI. 7 категорий — раскрывайте интересующее."
-        tag={{ icon: <Sparkles size={12} />, label: "7 категорий · 30+ фич", accent: "var(--violet-500)" }}
         onBack={onBack}
       />
 

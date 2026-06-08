@@ -77,7 +77,56 @@ import { Toaster } from "sonner";
 import { ChatInterface } from "./components/ChatInterface";
 
 
+// v3 design preview — переход через ?view=v3 или /v3/
+// Lazy-loaded чтобы не подгружать 44KB CSS в основной bundle.
+const XeroDesignShowcase = lazy(() =>
+  import("./components/xerodesign/XeroDesignShowcase").then((m) => ({
+    default: m.XeroDesignShowcase,
+  }))
+);
+
+// Redesign v3 — лендинг (handoff из Claude Design). Review-роут: ?view=landing-v3
+// или /landing-v3. Изолирован, токены заскоуплены под .x3l. Деплой на прод —
+// только по явной команде владельца.
+const LandingV3 = lazy(() =>
+  import("./components/landing-v3/LandingV3").then((m) => ({
+    default: m.LandingV3,
+  }))
+);
+
+function isV3PreviewRoute(): boolean {
+  if (typeof window === "undefined") return false;
+  const params = new URLSearchParams(window.location.search);
+  return params.get("view") === "v3" || window.location.pathname.startsWith("/v3");
+}
+
+function isLandingV3Route(): boolean {
+  if (typeof window === "undefined") return false;
+  const params = new URLSearchParams(window.location.search);
+  return params.get("view") === "landing-v3" || window.location.pathname.startsWith("/landing-v3");
+}
+
 export default function App() {
+  // v3 design preview route — рендерим showcase БЕЗ всего остального app-state
+  // (никакого WebSocket / auth / corporate routing). Это чистая дизайн-страница.
+  if (isV3PreviewRoute()) {
+    return (
+      <Suspense fallback={<PageLoader />}>
+        <XeroDesignShowcase />
+      </Suspense>
+    );
+  }
+
+  // Redesign v3 — лендинг на review-роуте (?view=landing-v3). Чистая страница,
+  // без WebSocket / auth / corporate routing.
+  if (isLandingV3Route()) {
+    return (
+      <Suspense fallback={<PageLoader />}>
+        <LandingV3 />
+      </Suspense>
+    );
+  }
+
   const authStore = useAuthStore();
   const { toggleTheme, resolvedTheme } = useTheme();
 

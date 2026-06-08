@@ -1,0 +1,3154 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SYLAR · Design Visions — 9 directions · 1 DNA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,800;1,400;1,700;1,800&family=DM+Serif+Display:ital@0;1&family=Manrope:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&family=Inter+Tight:wght@500;700;800&family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@500;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<style>
+/* ╔════════════════════════════════════════════════════╗
+   ║  SYLAR · DESIGN VISIONS — TOKENS                   ║
+   ╚════════════════════════════════════════════════════╝ */
+
+:root {
+  /* Base */
+  --obsidian:    #050510;
+  --abyss:       #0A0A14;
+  --slate-900:   #14141C;
+  --slate-800:   #1E1E2A;
+  --slate-700:   #2A2A3C;
+  --slate-600:   #3D3D52;
+  --slate-500:   #5A5A75;
+
+  --ink-50:  #F8F8FB;
+  --ink-100: #E8E8EC;
+  --ink-200: #C7C7CF;
+  --ink-300: #A0A0AC;
+  --ink-400: #75757F;
+
+  /* Brand markers — common across all directions */
+  --aurum:   #C9A55C;
+  --aurum-bright: #E4BD6A;
+
+  /* Product colors */
+  --xero-violet: #7C5CFF;
+  --xero-cyan:   #00D4FF;
+  --xero-amber:  #FFB547;
+
+  --rf-aurora:   #22C55E;
+  --rf-steel:    #4A6FA5;
+  --rf-alert:    #FF3B5C;
+
+  /* Typography */
+  --font-display: 'DM Serif Display', 'Playfair Display', Georgia, serif;
+  --font-serif:   'Playfair Display', Georgia, serif;
+  --font-instrument: 'Instrument Serif', Georgia, serif;
+  --font-grotesk: 'Space Grotesk', sans-serif;
+  --font-tight:   'Inter Tight', sans-serif;
+  --font-sans:    'Manrope', sans-serif;
+  --font-body:    'Inter', sans-serif;
+  --font-mono:    'JetBrains Mono', monospace;
+
+  --ease-emphasis: cubic-bezier(0.32, 0.72, 0, 1);
+  --ease-smooth:   cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--obsidian);
+  color: var(--ink-100);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.6;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+::selection { background: var(--aurum); color: var(--obsidian); }
+
+/* ─── PAGE ─── */
+.page {
+  min-height: 100vh;
+  width: 100%;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 56px 56px;
+  border-bottom: 1px solid var(--slate-700);
+  overflow: hidden;
+}
+.page::before, .page::after {
+  content: '';
+  position: absolute;
+  width: 14px; height: 14px;
+  border: 1px solid var(--slate-500);
+}
+.page::before { top: 20px; left: 20px; border-right: none; border-bottom: none; }
+.page::after { bottom: 20px; right: 20px; border-left: none; border-top: none; }
+
+.page-meta {
+  position: absolute;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.25em;
+  color: var(--ink-400);
+  text-transform: uppercase;
+}
+.meta-tl { top: 32px; left: 56px; }
+.meta-tr { top: 32px; right: 56px; }
+.meta-bl { bottom: 32px; left: 56px; }
+.meta-br { bottom: 32px; right: 56px; }
+
+/* ─── COVER ─── */
+.cover {
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  position: relative;
+}
+.cover-name {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(60px, 10vw, 160px);
+  line-height: 0.92;
+  color: var(--ink-50);
+  letter-spacing: -0.03em;
+  margin-bottom: 32px;
+}
+.cover-name em {
+  font-style: italic;
+  color: transparent;
+  background: linear-gradient(135deg, var(--aurum), var(--aurum-bright));
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+.cover-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  max-width: 1100px;
+  width: 100%;
+  margin-top: 64px;
+}
+.cover-tile {
+  padding: 28px 24px;
+  background: var(--slate-900);
+  border: 1px solid var(--slate-700);
+  border-radius: 16px;
+  text-align: left;
+  position: relative;
+  overflow: hidden;
+}
+.cover-tile.x { border-color: rgba(124,92,255,0.25); }
+.cover-tile.r { border-color: rgba(34,197,94,0.25); }
+.cover-tile-tag {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+.cover-tile.s .cover-tile-tag { color: var(--aurum); }
+.cover-tile.x .cover-tile-tag { color: var(--xero-violet); }
+.cover-tile.r .cover-tile-tag { color: var(--rf-aurora); }
+.cover-tile-name {
+  font-family: var(--font-display);
+  font-size: 28px;
+  color: var(--ink-50);
+  letter-spacing: -0.02em;
+  margin-bottom: 8px;
+}
+.cover-tile-name em { font-style: italic; }
+.cover-tile-list {
+  list-style: none;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--ink-300);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.cover-tile-list li::before { content: '▸ '; color: inherit; }
+
+/* ─── SECTION HEADER ─── */
+.section-header {
+  display: flex;
+  align-items: baseline;
+  gap: 32px;
+  margin-bottom: 56px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--slate-700);
+}
+.section-num {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  letter-spacing: 0.3em;
+  color: var(--aurum);
+  font-weight: 500;
+}
+.section-title {
+  font-family: var(--font-display);
+  font-size: clamp(40px, 5vw, 72px);
+  font-weight: 400;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  color: var(--ink-50);
+}
+.section-title em { font-style: italic; color: var(--aurum); }
+
+/* ─── DIRECTION PAGE LAYOUT ─── */
+.direction-grid {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr;
+  gap: 32px;
+  margin-top: 16px;
+}
+.mockup-frame {
+  background: var(--obsidian);
+  border: 1px solid var(--slate-700);
+  border-radius: 16px;
+  overflow: hidden;
+  position: relative;
+  aspect-ratio: 4/3;
+}
+.mockup-bar {
+  background: var(--slate-900);
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--slate-700);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--ink-400);
+}
+.mockup-bar .dots { display: flex; gap: 6px; }
+.mockup-bar .dots span { width: 9px; height: 9px; border-radius: 50%; }
+.mockup-bar .dots span:nth-child(1) { background: #FF5F56; }
+.mockup-bar .dots span:nth-child(2) { background: #FFBD2E; }
+.mockup-bar .dots span:nth-child(3) { background: #27C93F; }
+.mockup-bar .url {
+  margin-left: auto;
+  letter-spacing: 0.05em;
+}
+.mockup-body {
+  position: absolute;
+  top: 36px;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  overflow: hidden;
+}
+
+.meta-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.meta-card {
+  background: var(--slate-900);
+  border: 1px solid var(--slate-700);
+  border-radius: 12px;
+  padding: 20px;
+  position: relative;
+  overflow: hidden;
+}
+.meta-card .accent-bar {
+  position: absolute; top: 0; left: 0; right: 0; height: 2px;
+}
+.meta-card .label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--ink-400);
+  margin-bottom: 10px;
+}
+.meta-card .value {
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--ink-100);
+  line-height: 1.55;
+}
+.meta-card .value strong { color: var(--ink-50); font-weight: 600; }
+.meta-card .value em { font-style: italic; color: var(--aurum); font-weight: 600; }
+.meta-card ul {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--ink-200);
+}
+.meta-card ul li::before { content: '▸ '; color: var(--aurum); }
+
+/* Direction-specific accents */
+.dir-sylar .accent-bar { background: var(--aurum); }
+.dir-sylar .meta-card ul li::before { color: var(--aurum); }
+.dir-xero .accent-bar { background: var(--xero-violet); }
+.dir-xero .meta-card ul li::before { color: var(--xero-violet); }
+.dir-rf .accent-bar { background: var(--rf-aurora); }
+.dir-rf .meta-card ul li::before { color: var(--rf-aurora); }
+
+/* Scroll thumbnails strip */
+.thumb-strip {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-top: 20px;
+}
+.thumb {
+  aspect-ratio: 4/3;
+  background: var(--slate-900);
+  border: 1px solid var(--slate-700);
+  border-radius: 8px;
+  position: relative;
+  overflow: hidden;
+}
+.thumb-label {
+  position: absolute;
+  bottom: 6px; left: 8px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--ink-300);
+  z-index: 5;
+  background: rgba(5,5,16,0.6);
+  padding: 2px 6px;
+  border-radius: 3px;
+}
+
+/* ╔════════════════════════════════════════════════════╗
+   ║  MOCKUP STYLES — per direction                     ║
+   ╚════════════════════════════════════════════════════╝ */
+
+/* ── SYLAR · A — Infrastructure (Vercel/Stripe vibe) ── */
+.mock-sylar-a {
+  background: #050510;
+  position: relative;
+}
+.mock-sylar-a::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(201,165,92,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(201,165,92,0.04) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+.mock-sylar-a-nav {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 24px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+.mock-sylar-a-nav .logo {
+  font-family: var(--font-tight);
+  font-weight: 800;
+  font-size: 14px;
+  color: var(--ink-50);
+  letter-spacing: -0.01em;
+}
+.mock-sylar-a-nav .logo .gold { color: var(--aurum); }
+.mock-sylar-a-nav .menu { display: flex; gap: 16px; color: var(--ink-300); }
+.mock-sylar-a-cta {
+  padding: 6px 14px;
+  background: var(--ink-50);
+  color: var(--obsidian);
+  border-radius: 6px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
+.mock-sylar-a-hero {
+  padding: 32px 24px;
+  text-align: left;
+}
+.mock-sylar-a-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border: 1px solid var(--slate-600);
+  border-radius: 100px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  color: var(--aurum);
+  text-transform: uppercase;
+  margin-bottom: 16px;
+}
+.mock-sylar-a-h1 {
+  font-family: var(--font-tight);
+  font-weight: 800;
+  font-size: 38px;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  color: var(--ink-50);
+  margin-bottom: 12px;
+}
+.mock-sylar-a-h1 .accent { color: var(--aurum); }
+.mock-sylar-a-sub {
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--ink-300);
+  max-width: 480px;
+  line-height: 1.5;
+  margin-bottom: 20px;
+}
+.mock-sylar-a-stack {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.15em;
+}
+.mock-sylar-a-chip {
+  padding: 4px 10px;
+  border: 1px solid var(--slate-600);
+  border-radius: 6px;
+  color: var(--ink-300);
+  text-transform: uppercase;
+}
+
+/* ── SYLAR · B — legacy Editorial Magazine (kept as fallback styles) ── */
+.mock-sylar-b {
+  background: #0F0E0B;
+  position: relative;
+}
+.mock-sylar-b-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 32px;
+}
+.mock-sylar-b-nav .logo {
+  font-family: var(--font-instrument);
+  font-style: italic;
+  font-size: 22px;
+  color: var(--aurum);
+  letter-spacing: -0.02em;
+}
+.mock-sylar-b-nav .menu {
+  display: flex; gap: 18px;
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--ink-200);
+}
+.mock-sylar-b-hero {
+  padding: 40px 32px;
+}
+.mock-sylar-b-num {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.4em;
+  color: var(--aurum);
+  margin-bottom: 8px;
+}
+.mock-sylar-b-headline {
+  font-family: var(--font-instrument);
+  font-size: 56px;
+  line-height: 0.95;
+  color: var(--ink-50);
+  letter-spacing: -0.02em;
+  margin-bottom: 16px;
+  font-weight: 400;
+}
+.mock-sylar-b-headline em {
+  font-style: italic;
+  color: var(--aurum);
+  font-weight: 400;
+}
+.mock-sylar-b-sub {
+  font-family: var(--font-instrument);
+  font-style: italic;
+  font-size: 17px;
+  color: var(--ink-200);
+  max-width: 520px;
+  line-height: 1.4;
+}
+
+/* ── SYLAR · C — Studio Lab (terminal+editorial mix) ── */
+.mock-sylar-c {
+  background: #050510;
+  position: relative;
+  font-family: var(--font-mono);
+}
+.mock-sylar-c::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(circle at 50% 50%, rgba(201,165,92,0.08), transparent 70%);
+}
+.mock-sylar-c-nav {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--slate-700);
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+.mock-sylar-c-nav .logo { color: var(--aurum); font-weight: 700; }
+.mock-sylar-c-nav .menu { display: flex; gap: 16px; color: var(--ink-300); }
+.mock-sylar-c-content {
+  position: relative;
+  padding: 32px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.mock-sylar-c-prompt {
+  font-size: 11px;
+  color: var(--ink-300);
+}
+.mock-sylar-c-prompt .arrow { color: var(--aurum); }
+.mock-sylar-c-h1 {
+  font-family: 'Iosevka', var(--font-mono);
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--ink-50);
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+.mock-sylar-c-h1 .gold { color: var(--aurum); }
+.mock-sylar-c-h1 em { font-style: italic; }
+.mock-sylar-c-spec {
+  font-size: 11px;
+  color: var(--ink-300);
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--slate-700);
+  border-radius: 6px;
+  padding: 12px 14px;
+  line-height: 1.7;
+}
+.mock-sylar-c-spec .key { color: var(--aurum); }
+.mock-sylar-c-spec .val { color: var(--ink-50); }
+
+/* ── XEROCODE · A — Editorial Italic (current refined) ── */
+.mock-xero-a {
+  background: radial-gradient(ellipse 60% 50% at 30% 30%, rgba(124,92,255,0.30) 0%, transparent 60%),
+              radial-gradient(ellipse 60% 50% at 70% 70%, rgba(0,212,255,0.20) 0%, transparent 60%),
+              #050510;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+.mock-xero-a-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 24px;
+}
+.mock-xero-a-logo {
+  font-family: var(--font-serif);
+  font-weight: 700;
+  font-size: 18px;
+  letter-spacing: -0.03em;
+}
+.mock-xero-a-logo .roman { color: var(--ink-50); }
+.mock-xero-a-logo .italic {
+  font-style: italic;
+  background: linear-gradient(135deg, var(--xero-violet), var(--xero-cyan));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.mock-xero-a-menu {
+  display: flex; gap: 14px;
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--ink-300);
+}
+.mock-xero-a-cta {
+  padding: 6px 14px;
+  background: var(--xero-violet);
+  color: white;
+  border-radius: 100px;
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 11px;
+}
+.mock-xero-a-hero {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 16px 24px 32px;
+}
+.mock-xero-a-mark {
+  font-family: var(--font-serif);
+  font-weight: 700;
+  font-size: 56px;
+  letter-spacing: -0.04em;
+  line-height: 0.95;
+  margin-bottom: 16px;
+}
+.mock-xero-a-mark .roman { color: var(--ink-50); }
+.mock-xero-a-mark .italic {
+  font-style: italic;
+  background: linear-gradient(135deg, var(--xero-violet), var(--xero-cyan));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.mock-xero-a-tag {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 16px;
+  color: var(--ink-200);
+}
+.mock-xero-a-tag em { color: var(--xero-amber); font-weight: 700; font-style: italic; }
+
+/* ── XEROCODE · B — Liquid Studio (3D blobs / mesh) ── */
+.mock-xero-b {
+  background: #0A0214;
+  position: relative;
+  overflow: hidden;
+}
+.mock-xero-b::before, .mock-xero-b::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(40px);
+  pointer-events: none;
+}
+.mock-xero-b::before {
+  width: 60%; height: 60%;
+  background: radial-gradient(circle, rgba(124,92,255,0.6), transparent 70%);
+  top: -10%; left: -10%;
+}
+.mock-xero-b::after {
+  width: 70%; height: 70%;
+  background: radial-gradient(circle, rgba(0,212,255,0.5), transparent 70%);
+  bottom: -20%; right: -15%;
+}
+.mock-xero-b-nav {
+  position: relative;
+  z-index: 5;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 24px;
+  backdrop-filter: blur(20px);
+  background: rgba(10,2,20,0.5);
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+.mock-xero-b-logo {
+  font-family: var(--font-grotesk);
+  font-weight: 700;
+  font-size: 17px;
+  color: var(--ink-50);
+  letter-spacing: -0.03em;
+}
+.mock-xero-b-logo .accent { color: var(--xero-cyan); }
+.mock-xero-b-pill {
+  padding: 6px 14px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 100px;
+  color: var(--ink-100);
+  font-family: var(--font-grotesk);
+  font-weight: 500;
+  font-size: 11px;
+}
+.mock-xero-b-hero {
+  position: relative;
+  z-index: 5;
+  padding: 32px 24px;
+  text-align: center;
+}
+.mock-xero-b-orb {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  margin: 0 auto 24px;
+  background: radial-gradient(circle at 30% 30%, #FFF, #A88AFF 30%, #7C5CFF 60%, #00D4FF 100%);
+  box-shadow: 0 0 60px rgba(124,92,255,0.6), inset -8px -8px 16px rgba(0,0,0,0.3);
+  position: relative;
+}
+.mock-xero-b-orb::after {
+  content: '';
+  position: absolute;
+  top: 18%; left: 22%;
+  width: 22%; height: 18%;
+  background: radial-gradient(ellipse, rgba(255,255,255,0.7), transparent 70%);
+  border-radius: 50%;
+}
+.mock-xero-b-h1 {
+  font-family: var(--font-grotesk);
+  font-weight: 700;
+  font-size: 40px;
+  color: var(--ink-50);
+  letter-spacing: -0.04em;
+  line-height: 0.95;
+  margin-bottom: 12px;
+}
+.mock-xero-b-h1 .accent {
+  background: linear-gradient(135deg, var(--xero-violet), var(--xero-cyan));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.mock-xero-b-sub {
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--ink-200);
+  max-width: 360px;
+  margin: 0 auto;
+  line-height: 1.5;
+}
+
+/* ── XEROCODE · C — Bento Brutalist (Vercel/Linear vibe) ── */
+.mock-xero-c {
+  background: #0E0E14;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+}
+.mock-xero-c-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 16px;
+  margin-bottom: 12px;
+  background: var(--slate-900);
+  border: 1px solid var(--slate-700);
+  border-radius: 10px;
+}
+.mock-xero-c-logo {
+  font-family: var(--font-tight);
+  font-weight: 800;
+  font-size: 15px;
+  letter-spacing: -0.03em;
+  color: var(--ink-50);
+}
+.mock-xero-c-logo .accent { color: var(--xero-violet); }
+.mock-xero-c-cta {
+  padding: 4px 12px;
+  background: var(--xero-violet);
+  color: white;
+  border-radius: 6px;
+  font-family: var(--font-tight);
+  font-weight: 700;
+  font-size: 10px;
+  letter-spacing: 0.02em;
+}
+.mock-xero-c-bento {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  grid-template-rows: 1.5fr 1fr;
+  gap: 10px;
+}
+.mock-xero-c-cell {
+  background: var(--slate-900);
+  border: 1px solid var(--slate-700);
+  border-radius: 10px;
+  padding: 14px;
+  position: relative;
+  overflow: hidden;
+}
+.mock-xero-c-cell.hero {
+  grid-column: span 2;
+  grid-row: span 1;
+  background: linear-gradient(135deg, rgba(124,92,255,0.15), rgba(0,212,255,0.10));
+  border-color: rgba(124,92,255,0.3);
+}
+.mock-xero-c-cell.acc {
+  background: rgba(124,92,255,0.06);
+  border-color: rgba(124,92,255,0.2);
+}
+.mock-xero-c-cell.dark { background: var(--obsidian); border-color: var(--slate-700); }
+.mock-xero-c-cell .h {
+  font-family: var(--font-tight);
+  font-weight: 800;
+  font-size: 16px;
+  color: var(--ink-50);
+  letter-spacing: -0.02em;
+  margin-bottom: 6px;
+  line-height: 1.05;
+}
+.mock-xero-c-cell.hero .h {
+  font-size: 22px;
+}
+.mock-xero-c-cell .h .accent { color: var(--xero-violet); }
+.mock-xero-c-cell .meta {
+  font-family: var(--font-mono);
+  font-size: 8px;
+  letter-spacing: 0.2em;
+  color: var(--ink-400);
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.mock-xero-c-cell .stat {
+  font-family: var(--font-tight);
+  font-weight: 800;
+  font-size: 28px;
+  color: var(--xero-violet);
+  letter-spacing: -0.04em;
+}
+
+/* ── ROLEFLOW · A — SOC Dashboard ── */
+.mock-rf-a {
+  background: linear-gradient(135deg, #0A1410, #0E1620);
+  position: relative;
+  font-family: var(--font-mono);
+}
+.mock-rf-a::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(34,197,94,0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(74,111,165,0.08) 1px, transparent 1px);
+  background-size: 24px 24px;
+  opacity: 0.6;
+}
+.mock-rf-a-nav {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 18px;
+  border-bottom: 1px solid rgba(34,197,94,0.2);
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+.mock-rf-a-nav .logo {
+  font-family: var(--font-sans);
+  font-weight: 800;
+  font-size: 14px;
+  letter-spacing: -0.02em;
+}
+.mock-rf-a-nav .logo .gradient {
+  background: linear-gradient(135deg, var(--rf-aurora), var(--rf-steel));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.mock-rf-a-nav .right { display: flex; gap: 12px; align-items: center; color: var(--ink-300); font-size: 9px; }
+.mock-rf-a-status { display: inline-flex; align-items: center; gap: 4px; }
+.mock-rf-a-status .dot { width: 6px; height: 6px; background: var(--rf-aurora); border-radius: 50%; box-shadow: 0 0 6px var(--rf-aurora); }
+.mock-rf-a-content {
+  position: relative;
+  padding: 24px;
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 20px;
+}
+.mock-rf-a-h1 {
+  font-family: var(--font-sans);
+  font-weight: 800;
+  font-size: 32px;
+  color: var(--ink-50);
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+  margin-bottom: 12px;
+}
+.mock-rf-a-h1 .gradient {
+  background: linear-gradient(135deg, var(--rf-aurora), var(--rf-steel));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  font-style: italic;
+}
+.mock-rf-a-sub {
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--ink-200);
+  line-height: 1.5;
+  margin-bottom: 16px;
+}
+.mock-rf-a-log {
+  background: rgba(5,12,9,0.7);
+  border: 1px solid rgba(34,197,94,0.2);
+  border-radius: 8px;
+  padding: 12px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  line-height: 1.7;
+}
+.mock-rf-a-log-h {
+  display: flex;
+  justify-content: space-between;
+  font-size: 8px;
+  letter-spacing: 0.2em;
+  color: var(--rf-aurora);
+  margin-bottom: 6px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid rgba(34,197,94,0.15);
+  text-transform: uppercase;
+}
+.mock-rf-a-log-line { color: var(--ink-300); white-space: nowrap; overflow: hidden; }
+.mock-rf-a-log-line .ts { color: var(--ink-400); }
+.mock-rf-a-log-line .ok { color: var(--rf-aurora); }
+.mock-rf-a-log-line .ko { color: var(--rf-alert); }
+.mock-rf-a-log-line .warn { color: var(--aurum); }
+.mock-rf-a-log-line .model { color: var(--xero-violet); }
+
+/* ── ROLEFLOW · B — Enterprise Trust (Anthropic Trust / Vanta) ── */
+.mock-rf-b {
+  background: #0E1A22;
+  position: relative;
+}
+.mock-rf-b-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 28px;
+  background: rgba(255,255,255,0.02);
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.mock-rf-b-logo {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 18px;
+  color: var(--ink-50);
+  letter-spacing: -0.02em;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.mock-rf-b-shield {
+  width: 16px; height: 16px;
+  background: var(--rf-aurora);
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+}
+.mock-rf-b-menu {
+  display: flex; gap: 18px;
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--ink-200);
+}
+.mock-rf-b-cta {
+  padding: 6px 14px;
+  background: var(--rf-aurora);
+  color: var(--obsidian);
+  border-radius: 4px;
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 11px;
+}
+.mock-rf-b-hero {
+  padding: 40px 28px;
+  display: grid;
+  grid-template-columns: 1.3fr 1fr;
+  gap: 32px;
+  align-items: center;
+}
+.mock-rf-b-h1 {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 38px;
+  color: var(--ink-50);
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+  margin-bottom: 12px;
+}
+.mock-rf-b-h1 .accent { color: var(--rf-aurora); }
+.mock-rf-b-sub {
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--ink-200);
+  line-height: 1.55;
+}
+.mock-rf-b-badge-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+  flex-wrap: wrap;
+}
+.mock-rf-b-badge {
+  padding: 4px 10px;
+  background: rgba(34,197,94,0.08);
+  border: 1px solid rgba(34,197,94,0.2);
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.15em;
+  color: var(--rf-aurora);
+  text-transform: uppercase;
+}
+.mock-rf-b-diagram {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 12px;
+  padding: 20px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--ink-300);
+  line-height: 2;
+}
+.mock-rf-b-diagram .lvl { color: var(--rf-aurora); }
+.mock-rf-b-diagram .arrow { color: var(--rf-steel); }
+
+/* ── ROLEFLOW · C — Editorial Defense (1Password vibe) ── */
+.mock-rf-c {
+  background: #0F1410;
+  position: relative;
+  overflow: hidden;
+}
+.mock-rf-c::before {
+  content: '';
+  position: absolute;
+  top: 0; right: 0;
+  width: 50%; height: 100%;
+  background: radial-gradient(circle at 80% 50%, rgba(34,197,94,0.15), transparent 60%);
+}
+.mock-rf-c-nav {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 32px;
+  z-index: 5;
+}
+.mock-rf-c-logo {
+  font-family: var(--font-instrument);
+  font-style: italic;
+  font-size: 22px;
+  color: var(--ink-50);
+  letter-spacing: -0.02em;
+}
+.mock-rf-c-logo .accent { color: var(--rf-aurora); }
+.mock-rf-c-menu {
+  display: flex; gap: 18px;
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--ink-200);
+}
+.mock-rf-c-hero {
+  position: relative;
+  padding: 32px;
+  z-index: 5;
+}
+.mock-rf-c-tag {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.3em;
+  color: var(--rf-aurora);
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+.mock-rf-c-h1 {
+  font-family: var(--font-instrument);
+  font-size: 50px;
+  font-weight: 400;
+  color: var(--ink-50);
+  letter-spacing: -0.02em;
+  line-height: 1;
+  margin-bottom: 16px;
+  max-width: 70%;
+}
+.mock-rf-c-h1 em {
+  font-style: italic;
+  color: var(--rf-aurora);
+}
+.mock-rf-c-sub {
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--ink-200);
+  max-width: 50%;
+  line-height: 1.55;
+}
+
+/* ╔════════════════════════════════════════════════════╗
+   ║  ANIMATION LIBRARY                                 ║
+   ╚════════════════════════════════════════════════════╝ */
+.anim-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-top: 32px;
+}
+.anim-card {
+  background: var(--slate-900);
+  border: 1px solid var(--slate-700);
+  border-radius: 12px;
+  padding: 24px;
+  position: relative;
+  overflow: hidden;
+}
+.anim-card .ac-num {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.25em;
+  color: var(--aurum);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.anim-card .ac-name {
+  font-family: var(--font-display);
+  font-size: 20px;
+  color: var(--ink-50);
+  letter-spacing: -0.02em;
+  margin-bottom: 8px;
+}
+.anim-card .ac-name em { font-style: italic; color: var(--aurum); }
+.anim-card .ac-desc {
+  font-size: 12px;
+  color: var(--ink-300);
+  line-height: 1.5;
+  margin-bottom: 12px;
+}
+.anim-card .ac-tech {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--ink-400);
+  letter-spacing: 0.05em;
+  border-top: 1px solid var(--slate-700);
+  padding-top: 8px;
+}
+
+/* ╔════════════════════════════════════════════════════╗
+   ║  REFERENCES                                        ║
+   ╚════════════════════════════════════════════════════╝ */
+.ref-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-top: 32px;
+}
+.ref-card {
+  background: var(--slate-900);
+  border: 1px solid var(--slate-700);
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+.ref-card .ref-num {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: var(--aurum);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  min-width: 28px;
+}
+.ref-card .ref-content { flex: 1; }
+.ref-card .ref-name {
+  font-family: var(--font-display);
+  font-size: 22px;
+  color: var(--ink-50);
+  letter-spacing: -0.02em;
+  margin-bottom: 4px;
+}
+.ref-card .ref-url {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--aurum);
+  letter-spacing: 0.05em;
+  margin-bottom: 8px;
+  display: block;
+}
+.ref-card .ref-takeaway {
+  font-size: 13px;
+  color: var(--ink-200);
+  line-height: 1.55;
+}
+.ref-card .ref-takeaway strong { color: var(--ink-50); }
+
+/* ╔════════════════════════════════════════════════════╗
+   ║  MOCK · SYLAR · B² · LIVING MAP (Constellation)    ║
+   ╚════════════════════════════════════════════════════╝ */
+.mock-sylar-b2 {
+  background:
+    radial-gradient(ellipse at 30% 30%, rgba(201,165,92,0.08), transparent 50%),
+    radial-gradient(ellipse at 70% 70%, rgba(124,92,255,0.06), transparent 50%),
+    #06060E;
+  position: relative;
+  overflow: hidden;
+}
+.mock-sylar-b2::before {
+  content: ''; position: absolute; inset: 0;
+  background-image:
+    linear-gradient(rgba(201,165,92,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(201,165,92,0.04) 1px, transparent 1px);
+  background-size: 24px 24px;
+  pointer-events: none;
+}
+.mock-sylar-b2-nav {
+  position: absolute; top: 0; left: 0; right: 0; z-index: 5;
+  padding: 14px 22px;
+  display: flex; justify-content: space-between; align-items: center;
+  font-family: var(--font-mono); font-size: 10px;
+  border-bottom: 1px solid rgba(201,165,92,0.15);
+  background: rgba(6,6,14,0.85); backdrop-filter: blur(8px);
+}
+.mock-sylar-b2-nav .crumb { color: var(--ink-400); letter-spacing: 0.15em; }
+.mock-sylar-b2-nav .crumb .sep { color: var(--aurum); margin: 0 6px; }
+.mock-sylar-b2-nav .crumb .live { color: var(--rf-aurora); }
+.mock-sylar-b2-nav .live::before { content: '● '; animation: pulse-dot 2s ease infinite; }
+.mock-sylar-b2-canvas {
+  position: absolute;
+  top: 44px; bottom: 0; left: 0; right: 0;
+  z-index: 1;
+  overflow: hidden;
+}
+.mock-sylar-b2-title {
+  position: absolute; top: 32px; left: 32px; z-index: 3;
+  font-family: var(--font-instrument); font-style: italic;
+  color: var(--ink-50); font-size: 28px; line-height: 1; letter-spacing: -0.02em;
+  max-width: 280px;
+}
+.mock-sylar-b2-title em { color: var(--aurum); font-style: italic; }
+.mock-sylar-b2-meta {
+  position: absolute; top: 32px; right: 32px; z-index: 3;
+  font-family: var(--font-mono); font-size: 9px; color: var(--ink-400);
+  letter-spacing: 0.2em; text-align: right; line-height: 1.6;
+}
+.mock-sylar-b2-meta b { color: var(--aurum); font-weight: 500; }
+.mock-sylar-b2-node {
+  position: absolute; z-index: 4;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  flex-direction: column;
+  font-family: var(--font-tight); font-weight: 700;
+  text-align: center; cursor: pointer;
+  transition: transform 250ms var(--ease-emphasis);
+}
+.mock-sylar-b2-node::before {
+  content: ''; position: absolute; inset: -8px;
+  border-radius: 50%; border: 1px dashed currentColor; opacity: 0.4;
+  animation: rotate-slow 18s linear infinite;
+}
+.mock-sylar-b2-node-c {
+  width: 88px; height: 88px;
+  background: radial-gradient(circle at 30% 30%, rgba(201,165,92,0.4), rgba(201,165,92,0.08));
+  border: 1.5px solid var(--aurum);
+  color: var(--aurum);
+  top: 38%; left: 42%;
+  font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.2em;
+}
+.mock-sylar-b2-node-x {
+  width: 76px; height: 76px;
+  background: radial-gradient(circle at 30% 30%, rgba(124,92,255,0.4), rgba(124,92,255,0.08));
+  border: 1.5px solid var(--xero-violet);
+  color: #C4B5FF;
+  top: 22%; left: 18%;
+  font-family: var(--font-tight); font-weight: 800; font-size: 11px; letter-spacing: 0.05em;
+}
+.mock-sylar-b2-node-r {
+  width: 76px; height: 76px;
+  background: radial-gradient(circle at 30% 30%, rgba(34,197,94,0.4), rgba(34,197,94,0.08));
+  border: 1.5px solid var(--rf-aurora);
+  color: #86EFAC;
+  top: 60%; right: 18%;
+  font-family: var(--font-tight); font-weight: 800; font-size: 11px; letter-spacing: 0.05em;
+}
+.mock-sylar-b2-feature {
+  position: absolute; z-index: 3;
+  background: rgba(20,20,28,0.6);
+  border: 1px solid rgba(201,165,92,0.2);
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-family: var(--font-mono); font-size: 8px;
+  color: var(--ink-300); letter-spacing: 0.1em;
+}
+.mock-sylar-b2-tag {
+  position: absolute; z-index: 5;
+  font-family: var(--font-mono); font-size: 9px;
+  color: var(--ink-200); letter-spacing: 0.15em;
+}
+.mock-sylar-b2-tag .lab { color: var(--aurum); }
+.mock-sylar-b2-edge {
+  position: absolute; z-index: 2;
+  background: linear-gradient(90deg, transparent, rgba(201,165,92,0.4), transparent);
+  height: 1px;
+  transform-origin: 0 50%;
+  pointer-events: none;
+}
+.mock-sylar-b2-edge::after {
+  content: ''; position: absolute; right: -2px; top: -1.5px;
+  width: 4px; height: 4px; border-radius: 50%;
+  background: var(--aurum); opacity: 0.8;
+  animation: travel 3.5s linear infinite;
+}
+@keyframes rotate-slow { to { transform: rotate(360deg); } }
+@keyframes pulse-dot { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+@keyframes travel { 0% { right: 100%; opacity: 0; } 20% { opacity: 1; } 80% { opacity: 1; } 100% { right: -2px; opacity: 0; } }
+
+/* ╔════════════════════════════════════════════════════╗
+   ║  ANATOMY · component breakdown panels              ║
+   ╚════════════════════════════════════════════════════╝ */
+.anatomy-grid {
+  display: grid; grid-template-columns: repeat(2, 1fr);
+  gap: 16px; margin-top: 24px;
+}
+.anatomy-card {
+  background: var(--slate-900);
+  border: 1px solid var(--slate-700);
+  border-radius: 14px;
+  padding: 18px; position: relative; overflow: hidden;
+}
+.anatomy-card .a-num {
+  font-family: var(--font-mono); font-size: 9px;
+  letter-spacing: 0.3em; color: var(--aurum); text-transform: uppercase;
+}
+.anatomy-card .a-name {
+  font-family: var(--font-display); font-size: 18px;
+  color: var(--ink-50); letter-spacing: -0.02em;
+  margin: 4px 0 10px;
+}
+.anatomy-card .a-name em { font-style: italic; color: var(--aurum); }
+.anatomy-card .a-vis {
+  height: 72px;
+  background: var(--obsidian);
+  border: 1px solid var(--slate-700);
+  border-radius: 8px;
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+.anatomy-card .a-spec {
+  font-family: var(--font-mono); font-size: 10px;
+  color: var(--ink-300); line-height: 1.65;
+}
+.anatomy-card .a-spec b { color: var(--aurum); font-weight: 500; }
+
+/* ╔════════════════════════════════════════════════════╗
+   ║  DNA CROSS — visible brand markers                 ║
+   ╚════════════════════════════════════════════════════╝ */
+.dna-cross {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 12px; margin-top: 24px;
+}
+.dna-cross-card {
+  background: var(--obsidian);
+  border: 1px solid var(--slate-700);
+  border-radius: 14px;
+  padding: 22px;
+  position: relative;
+  overflow: hidden;
+}
+.dna-cross-card.product-sylar { border-top: 3px solid var(--aurum); }
+.dna-cross-card.product-xero { border-top: 3px solid var(--xero-violet); }
+.dna-cross-card.product-rf { border-top: 3px solid var(--rf-aurora); }
+.dna-cross-card .pname {
+  font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.3em;
+  text-transform: uppercase; margin-bottom: 14px;
+}
+.product-sylar .pname { color: var(--aurum); }
+.product-xero .pname { color: var(--xero-violet); }
+.product-rf .pname { color: var(--rf-aurora); }
+.dna-cross-card .demo {
+  background: var(--slate-900); border-radius: 8px;
+  padding: 14px; margin-bottom: 14px;
+  font-family: var(--font-display); font-style: italic;
+  font-size: 22px; color: var(--ink-50); line-height: 1.1;
+  border: 1px solid var(--slate-700);
+}
+.dna-cross-card .demo em { font-style: italic; }
+.product-sylar .demo em { color: var(--aurum); }
+.product-xero .demo em { color: var(--xero-violet); }
+.product-rf .demo em { color: var(--rf-aurora); }
+.dna-cross-card .marker {
+  font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.2em;
+  color: var(--ink-300); margin-bottom: 6px;
+}
+.dna-cross-card .marker .key {
+  color: var(--ink-400); display: inline-block; min-width: 80px;
+}
+
+/* ╔════════════════════════════════════════════════════╗
+   ║  SCROLL CHOREOGRAPHY                               ║
+   ╚════════════════════════════════════════════════════╝ */
+.choreo-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 14px; margin-top: 24px;
+}
+.choreo-card {
+  background: var(--slate-900);
+  border: 1px solid var(--slate-700);
+  border-radius: 14px; padding: 22px;
+  display: grid; grid-template-columns: 96px 1fr; gap: 18px;
+}
+.choreo-card .timeline {
+  display: flex; flex-direction: column;
+  gap: 4px;
+  font-family: var(--font-mono); font-size: 9px;
+  color: var(--ink-400); letter-spacing: 0.15em;
+  border-right: 1px dashed var(--slate-600); padding-right: 12px;
+}
+.choreo-card .timeline span.active { color: var(--aurum); }
+.choreo-card .timeline span.active::before { content: '▸ '; }
+.choreo-card .body h4 {
+  font-family: var(--font-display); font-size: 17px;
+  color: var(--ink-50); margin-bottom: 6px;
+  letter-spacing: -0.02em;
+}
+.choreo-card .body h4 em { color: var(--aurum); font-style: italic; }
+.choreo-card .body p {
+  font-size: 12.5px; color: var(--ink-300); line-height: 1.55;
+  margin-bottom: 8px;
+}
+.choreo-card .code {
+  font-family: var(--font-mono); font-size: 10.5px;
+  background: var(--obsidian); border: 1px solid var(--slate-700);
+  border-radius: 6px; padding: 10px;
+  color: var(--ink-200); line-height: 1.5;
+  white-space: pre-wrap; overflow-x: auto;
+}
+.choreo-card .code .k { color: var(--aurum); }
+.choreo-card .code .v { color: var(--xero-cyan); }
+.choreo-card .code .c { color: var(--ink-400); }
+
+/* ╔════════════════════════════════════════════════════╗
+   ║  UTILS                                             ║
+   ╚════════════════════════════════════════════════════╝ */
+.spacer-md { height: 48px; }
+.lead-text {
+  font-family: var(--font-display);
+  font-size: 28px;
+  line-height: 1.3;
+  color: var(--ink-50);
+  font-weight: 400;
+  margin-bottom: 24px;
+  letter-spacing: -0.01em;
+}
+.lead-text em { color: var(--aurum); font-style: italic; }
+.body-text {
+  color: var(--ink-200);
+  font-size: 15px;
+  line-height: 1.7;
+  margin-bottom: 12px;
+}
+.row-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--aurum);
+  margin: 32px 0 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--slate-700);
+}
+
+@media (max-width: 1024px) {
+  .page { padding: 40px 24px; }
+  .meta-tl, .meta-tr, .meta-bl, .meta-br { left: 24px; right: 24px; }
+  .meta-tl, .meta-tr { top: 20px; }
+  .meta-bl, .meta-br { bottom: 20px; }
+  .direction-grid { grid-template-columns: 1fr; }
+  .cover-grid { grid-template-columns: 1fr; }
+  .anim-grid { grid-template-columns: 1fr; }
+  .ref-grid { grid-template-columns: 1fr; }
+  .thumb-strip { grid-template-columns: repeat(2, 1fr); }
+}
+
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.7s var(--ease-emphasis), transform 0.7s var(--ease-emphasis);
+}
+.reveal.visible { opacity: 1; transform: translateY(0); }
+</style>
+</head>
+<body>
+
+<!-- ╔════════════════════════════════════════════════════╗
+     ║  COVER                                             ║
+     ╚════════════════════════════════════════════════════╝ -->
+<section class="page cover">
+  <div class="page-meta meta-tl">SYLAR · DESIGN VISIONS</div>
+  <div class="page-meta meta-tr">VOL. II · V1.0</div>
+
+  <p style="font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.4em; color: var(--aurum); text-transform: uppercase; margin-bottom: 24px;">
+    9 НАПРАВЛЕНИЙ · 1 ДНК
+  </p>
+
+  <h1 class="cover-name">Design <em>Visions.</em></h1>
+
+  <p style="font-family: var(--font-instrument); font-style: italic; font-size: 24px; color: var(--ink-200); max-width: 760px; line-height: 1.45;">Каждый продукт получает <em style="color: var(--aurum); font-style: italic;">три варианта</em> визуального направления. По одному вы выбираете финал.<br>Связаны общей <em style="color: var(--aurum); font-style: italic;">ДНК</em>, но кардинально разные по характеру.</p>
+
+  <div class="cover-grid">
+    <div class="cover-tile s">
+      <p class="cover-tile-tag">▸ SYLAR · UMBRELLA</p>
+      <h3 class="cover-tile-name">Три направления</h3>
+      <ul class="cover-tile-list">
+        <li>Infrastructure (Vercel-vibe)</li>
+        <li>Living Map (constellation)</li>
+        <li>Studio Lab (terminal + editorial)</li>
+      </ul>
+    </div>
+    <div class="cover-tile x">
+      <p class="cover-tile-tag">▸ XEROCODE · CREATIVE</p>
+      <h3 class="cover-tile-name">Три направления</h3>
+      <ul class="cover-tile-list">
+        <li>Editorial Italic (refined current)</li>
+        <li>Liquid Studio (3D mesh / blob)</li>
+        <li>Bento Brutalist (Vercel-grid)</li>
+      </ul>
+    </div>
+    <div class="cover-tile r">
+      <p class="cover-tile-tag">▸ ROLEFLOW · GOVERNANCE</p>
+      <h3 class="cover-tile-name">Три направления</h3>
+      <ul class="cover-tile-list">
+        <li>SOC Dashboard (live audit)</li>
+        <li>Enterprise Trust (Vanta-vibe)</li>
+        <li>Editorial Defense (1Password)</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="page-meta meta-bl">EST · MMXXVI · forged by <span style="color: var(--aurum);">@SYL4R</span></div>
+  <div class="page-meta meta-br">MOSCOW · RU</div>
+</section>
+
+<!-- ╔════════════════════════════════════════════════════╗
+     ║  01 — INTRO + DNA                                  ║
+     ╚════════════════════════════════════════════════════╝ -->
+<section class="page">
+  <div class="page-meta meta-tl">SECTION 01</div>
+  <div class="page-meta meta-tr">P. 02 · INTRO</div>
+  <div class="section-header">
+    <span class="section-num">⌘ 01</span>
+    <h2 class="section-title">DNA <em>core</em></h2>
+  </div>
+
+  <p class="lead-text" style="max-width: 880px;">9 направлений выглядят кардинально разно. Их связывает <em>9 общих генов</em> — и пользователь распознаёт «это наше» даже на чужой странице.</p>
+
+  <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
+    <div class="meta-card dir-sylar">
+      <span class="accent-bar"></span>
+      <p class="label">▸ ОСНОВА</p>
+      <ul>
+        <li>Obsidian (#050510) — единый dark базис</li>
+        <li>Aurum #C9A55C — touch-point в каждом продукте</li>
+        <li>Architectural corner brackets на страницах</li>
+        <li>Italic <em>emphasis</em> на ключевых словах</li>
+      </ul>
+    </div>
+    <div class="meta-card dir-sylar">
+      <span class="accent-bar"></span>
+      <p class="label">▸ ТИПОГРАФИКА</p>
+      <ul>
+        <li>JetBrains Mono для labels uppercase 0.2em</li>
+        <li>Inter для body — единый размерный ряд</li>
+        <li>Italic в ключевых словах — везде</li>
+        <li>Type scale ratio 1.25 единый</li>
+      </ul>
+    </div>
+    <div class="meta-card dir-sylar">
+      <span class="accent-bar"></span>
+      <p class="label">▸ ПОВЕДЕНИЕ</p>
+      <ul>
+        <li>Easing: cubic-bezier(0.32, 0.72, 0, 1)</li>
+        <li>Hover: −4px translateY + accent glow</li>
+        <li>Top accent-bar 2-3px на каждой карточке</li>
+        <li>«⌘ NN» numbering префикс везде</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="spacer-md"></div>
+
+  <p class="row-label">Что МОЖЕТ меняться между направлениями</p>
+  <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;">
+    <div class="meta-card">
+      <p class="label">▸ ВИЗУАЛЬНЫЙ ХАРАКТЕР</p>
+      <p class="value">Mesh-blob / Bento-grid / SOC dashboard / Editorial magazine / Terminal-blueprint — <strong>всё разное</strong>.</p>
+    </div>
+    <div class="meta-card">
+      <p class="label">▸ HEADLINE FONT</p>
+      <p class="value">Каждое направление выбирает <strong>свой headline</strong>: DM Serif / Instrument Italic / Inter Tight 800 / Space Grotesk / Iosevka mono. Body Inter — общий.</p>
+    </div>
+    <div class="meta-card">
+      <p class="label">▸ ЦВЕТОВАЯ ГЛУБИНА</p>
+      <p class="value">Палитра продукта <strong>остаётся</strong>, но насыщенность и роль меняется. SYLAR может быть пастельным или контрастным.</p>
+    </div>
+    <div class="meta-card">
+      <p class="label">▸ АНИМАЦИИ</p>
+      <p class="value">Editorial = scroll-driven type reveal. Bento = hover-lift. SOC = live data. Studio = mesh morph. Каждый — свой signature motion.</p>
+    </div>
+  </div>
+
+  <div class="page-meta meta-bl">DNA</div>
+  <div class="page-meta meta-br">SYLAR DV / 01</div>
+</section>
+
+<!-- ╔════════════════════════════════════════════════════╗
+     ║  02 — SYLAR · A · INFRASTRUCTURE                   ║
+     ╚════════════════════════════════════════════════════╝ -->
+<section class="page">
+  <div class="page-meta meta-tl">SECTION 02 · SYLAR DIRECTION A</div>
+  <div class="page-meta meta-tr">P. 04 · INFRASTRUCTURE</div>
+  <div class="section-header">
+    <span class="section-num">⌘ 02 · S/A</span>
+    <h2 class="section-title">Infra<em>structure</em></h2>
+  </div>
+
+  <p class="lead-text" style="max-width: 820px;">SYLAR как <em>инфраструктурный layer</em>. Не «премиум-luxury», а <em>backbone</em>: чистая типографика, технический premium, как Vercel или Stripe.</p>
+
+  <div class="direction-grid dir-sylar">
+    <div class="mockup-frame">
+      <div class="mockup-bar">
+        <div class="dots"><span></span><span></span><span></span></div>
+        <span class="url">sylar.com</span>
+      </div>
+      <div class="mockup-body mock-sylar-a">
+        <div class="mock-sylar-a-nav">
+          <span class="logo">SYLAR <span class="gold">/</span></span>
+          <span class="menu"><span>Products</span><span>Docs</span><span>Pricing</span><span>Company</span></span>
+          <span class="mock-sylar-a-cta">Login</span>
+        </div>
+        <div class="mock-sylar-a-hero">
+          <span class="mock-sylar-a-tag">⚡ AI INFRASTRUCTURE</span>
+          <h1 class="mock-sylar-a-h1">Build with AI.<br><span class="accent">Trust the stack.</span></h1>
+          <p class="mock-sylar-a-sub">SYLAR is the AI layer for modern teams. Two products: XeroCode for creators, RoleFlow for governance. One billing, one standard.</p>
+          <div class="mock-sylar-a-stack">
+            <span class="mock-sylar-a-chip">XEROCODE</span>
+            <span class="mock-sylar-a-chip">ROLEFLOW</span>
+            <span class="mock-sylar-a-chip">+ API</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="meta-panel">
+      <div class="meta-card dir-sylar">
+        <span class="accent-bar"></span>
+        <p class="label">▸ POSITIONING</p>
+        <p class="value"><em>«AI infrastructure for builders.»</em><br>Утилитарно-премиум. Технический. Не пафосный. Прицел на developers, СТО, технических founders.</p>
+      </div>
+      <div class="meta-card dir-sylar">
+        <span class="accent-bar"></span>
+        <p class="label">▸ TYPOGRAPHY</p>
+        <ul>
+          <li>Headline: Inter Tight 800 −4% tracking</li>
+          <li>Body: Inter Regular</li>
+          <li>Mono: JetBrains Mono</li>
+          <li>NO serif. Без «editorial italic».</li>
+        </ul>
+      </div>
+      <div class="meta-card dir-sylar">
+        <span class="accent-bar"></span>
+        <p class="label">▸ COLOR</p>
+        <ul>
+          <li>Obsidian #050510 (95%)</li>
+          <li>Aurum #C9A55C (single accent)</li>
+          <li>White CTAs · contrast over color</li>
+          <li>Grid backdrop 40px golden faint</li>
+        </ul>
+      </div>
+      <div class="meta-card dir-sylar">
+        <span class="accent-bar"></span>
+        <p class="label">▸ SIGNATURE ANIMATION</p>
+        <p class="value"><strong>Floating constellation</strong> — точки сетки слегка мерцают, при скролле появляются «edges» соединения. Pin-scroll секции (sticky) с горизонтальной типографикой.</p>
+      </div>
+      <div class="meta-card dir-sylar">
+        <span class="accent-bar"></span>
+        <p class="label">▸ REFERENCE</p>
+        <p class="value"><strong>vercel.com</strong> · <strong>railway.app</strong> · <strong>stripe.com/atlas</strong> — взять скелет и добавить золотой touch-point.</p>
+      </div>
+    </div>
+  </div>
+
+  <p class="row-label">Header / Hero / Cards / Footer · в одном стиле</p>
+  <div class="thumb-strip">
+    <div class="thumb">
+      <div class="mock-sylar-a" style="position: absolute; inset: 0;">
+        <div class="mock-sylar-a-nav" style="padding: 8px 12px;">
+          <span class="logo" style="font-size: 9px;">SYLAR <span class="gold">/</span></span>
+          <span class="menu" style="font-size: 7px; gap: 8px;"><span>Products</span><span>Docs</span></span>
+        </div>
+      </div>
+      <span class="thumb-label">Header</span>
+    </div>
+    <div class="thumb">
+      <div class="mock-sylar-a" style="position: absolute; inset: 0; padding: 16px;">
+        <h1 style="font-family: var(--font-tight); font-weight: 800; font-size: 24px; color: var(--ink-50); letter-spacing: -0.04em; line-height: 1; margin-top: 30px;">Build with AI.<br><span style="color: var(--aurum);">Trust the stack.</span></h1>
+      </div>
+      <span class="thumb-label">Hero</span>
+    </div>
+    <div class="thumb">
+      <div class="mock-sylar-a" style="position: absolute; inset: 0; padding: 16px; display: flex; gap: 8px;">
+        <div style="flex: 1; background: rgba(201,165,92,0.05); border: 1px solid rgba(201,165,92,0.2); border-radius: 6px; padding: 8px;">
+          <p style="font-family: var(--font-mono); font-size: 7px; color: var(--aurum); letter-spacing: 0.2em;">▸ 01</p>
+          <p style="font-family: var(--font-tight); font-weight: 700; font-size: 13px; color: var(--ink-50); margin-top: 8px;">XeroCode</p>
+        </div>
+        <div style="flex: 1; background: rgba(201,165,92,0.05); border: 1px solid rgba(201,165,92,0.2); border-radius: 6px; padding: 8px;">
+          <p style="font-family: var(--font-mono); font-size: 7px; color: var(--aurum); letter-spacing: 0.2em;">▸ 02</p>
+          <p style="font-family: var(--font-tight); font-weight: 700; font-size: 13px; color: var(--ink-50); margin-top: 8px;">RoleFlow</p>
+        </div>
+      </div>
+      <span class="thumb-label">Cards</span>
+    </div>
+    <div class="thumb">
+      <div class="mock-sylar-a" style="position: absolute; inset: 0; padding: 16px; display: flex; flex-direction: column; justify-content: flex-end;">
+        <div style="border-top: 1px solid var(--slate-700); padding-top: 8px; display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 7px; color: var(--ink-400); letter-spacing: 0.15em;">
+          <span>SYLAR · MMXXVI</span>
+          <span style="color: var(--aurum);">@SYL4R</span>
+        </div>
+      </div>
+      <span class="thumb-label">Footer</span>
+    </div>
+  </div>
+
+  <div class="page-meta meta-bl">SYLAR · A — INFRASTRUCTURE</div>
+  <div class="page-meta meta-br">DV / 02</div>
+</section>
+
+<!-- ╔════════════════════════════════════════════════════╗
+     ║  03 — SYLAR · B² · LIVING MAP / CONSTELLATION      ║
+     ╚════════════════════════════════════════════════════╝ -->
+<section class="page">
+  <div class="page-meta meta-tl">SECTION 03 · SYLAR DIRECTION B</div>
+  <div class="page-meta meta-tr">P. 06 · LIVING MAP</div>
+  <div class="section-header">
+    <span class="section-num">⌘ 03 · S/B</span>
+    <h2 class="section-title">Living <em>Map.</em></h2>
+  </div>
+
+  <p class="lead-text" style="max-width: 820px;">SYLAR как <em>интерактивная карта</em>. Главная — это canvas с двумя планетами (XeroCode, RoleFlow) и орбитой возможностей. <em>Не страница — диаграмма.</em> Аудитория «играется», а не читает.</p>
+
+  <div class="direction-grid dir-sylar">
+    <div class="mockup-frame">
+      <div class="mockup-bar">
+        <div class="dots"><span></span><span></span><span></span></div>
+        <span class="url">sylar.com</span>
+      </div>
+      <div class="mockup-body mock-sylar-b2">
+        <div class="mock-sylar-b2-nav">
+          <span class="crumb">SYLAR <span class="sep">/</span> Map <span class="sep">/</span> <span style="color: var(--aurum);">Overview</span></span>
+          <span class="crumb"><span class="live">LIVE</span> · <span style="color: var(--ink-50);">2 nodes · 14 features</span></span>
+        </div>
+        <div class="mock-sylar-b2-canvas">
+          <h1 class="mock-sylar-b2-title">An <em>operating system</em> for AI&nbsp;work.</h1>
+          <p class="mock-sylar-b2-meta">⌘ STAR MAP<br><b>v 1.0</b> · MMXXVI<br>updated 14:32 MSK</p>
+          <span class="mock-sylar-b2-tag" style="top: 30%; left: 8%;">↗ <span class="lab">B2C / Creators</span></span>
+          <span class="mock-sylar-b2-tag" style="top: 71%; right: 8%;"><span class="lab">B2B / CISO</span> ↙</span>
+          <div class="mock-sylar-b2-edge" style="top: 38%; left: 25%; width: 25%;"></div>
+          <div class="mock-sylar-b2-edge" style="top: 56%; left: 50%; width: 25%; transform: rotate(35deg);"></div>
+          <div class="mock-sylar-b2-edge" style="top: 53%; left: 30%; width: 18%; transform: rotate(-12deg); opacity: 0.5;"></div>
+          <div class="mock-sylar-b2-node mock-sylar-b2-node-x">XERO<br>CODE</div>
+          <div class="mock-sylar-b2-node mock-sylar-b2-node-c">⌘<br>SYLAR</div>
+          <div class="mock-sylar-b2-node mock-sylar-b2-node-r">ROLE<br>FLOW</div>
+          <span class="mock-sylar-b2-feature" style="top: 14%; left: 36%;">Multi-model</span>
+          <span class="mock-sylar-b2-feature" style="top: 76%; left: 30%;">SOC 2</span>
+          <span class="mock-sylar-b2-feature" style="top: 28%; right: 36%;">DAG orchestration</span>
+          <span class="mock-sylar-b2-feature" style="top: 80%; right: 12%;">RBAC · Audit</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="meta-panel">
+      <div class="meta-card dir-sylar">
+        <span class="accent-bar"></span>
+        <p class="label">▸ POSITIONING</p>
+        <p class="value"><em>«Don't read SYLAR — fly through it.»</em><br>SYLAR — не лендинг с разделами «о нас», а живая <strong>карта-схема</strong>. Главное действие посетителя — <strong>исследовать</strong>, а не «scroll вниз». Хорошо отделяет SYLAR от обычных SaaS.</p>
+      </div>
+      <div class="meta-card dir-sylar">
+        <span class="accent-bar"></span>
+        <p class="label">▸ STRUCTURE</p>
+        <ul>
+          <li>Главный экран = canvas 100vh</li>
+          <li>2 узла-планеты: XeroCode · RoleFlow</li>
+          <li>Орбиты: возможности (12-14 nodes)</li>
+          <li>Зум при клике на узел — drill-in</li>
+          <li>Side-panel с детализацией справа</li>
+        </ul>
+      </div>
+      <div class="meta-card dir-sylar">
+        <span class="accent-bar"></span>
+        <p class="label">▸ TYPOGRAPHY</p>
+        <ul>
+          <li>Headline: Instrument Serif Italic — поверх карты, не доминирует</li>
+          <li>Узлы: Inter Tight 800 (имена продуктов)</li>
+          <li>Метки и связи: JetBrains Mono 9-11px</li>
+          <li>Низкая иерархия — карта главнее текста</li>
+        </ul>
+      </div>
+      <div class="meta-card dir-sylar">
+        <span class="accent-bar"></span>
+        <p class="label">▸ COLOR</p>
+        <ul>
+          <li>Obsidian #06060E + grid 24px</li>
+          <li>Aurum — центральный узел SYLAR</li>
+          <li>Violet — XeroCode planet</li>
+          <li>Aurora — RoleFlow planet</li>
+          <li>Edges — gradient travelling pulse</li>
+        </ul>
+      </div>
+      <div class="meta-card dir-sylar">
+        <span class="accent-bar"></span>
+        <p class="label">▸ SIGNATURE INTERACTION</p>
+        <p class="value"><strong>Cursor-driven canvas:</strong> карта реагирует на мышь — узлы притягиваются (magnetic 0.04), edges светятся при пересечении. На клик — узел зумится с центральной точкой, открывается пейн справа. Без кликов — медленное parallax-дыхание.</p>
+      </div>
+      <div class="meta-card dir-sylar">
+        <span class="accent-bar"></span>
+        <p class="label">▸ REFERENCE</p>
+        <p class="value"><strong>are.na</strong> (карта связей) · <strong>obsidian.md</strong> graph-view · <strong>nasa.gov</strong> mission control · <strong>a16z big ideas</strong> · <strong>kepler.gl</strong> — взять «карта как интерфейс» и убрать перегруз.</p>
+      </div>
+    </div>
+  </div>
+
+  <p class="row-label">Header / Canvas / Node-detail / Footer</p>
+  <div class="thumb-strip">
+    <div class="thumb">
+      <div class="mock-sylar-b2" style="position: absolute; inset: 0;">
+        <div class="mock-sylar-b2-nav" style="padding: 8px 10px; font-size: 7px;">
+          <span class="crumb">SYLAR <span class="sep">/</span> Map</span>
+          <span class="crumb"><span class="live">LIVE</span></span>
+        </div>
+      </div>
+      <span class="thumb-label">Header · breadcrumb</span>
+    </div>
+    <div class="thumb">
+      <div class="mock-sylar-b2" style="position: absolute; inset: 0; padding: 12px;">
+        <div style="position: relative; height: 100%;">
+          <div style="position: absolute; top: 30%; left: 20%; width: 28px; height: 28px; border-radius: 50%; background: radial-gradient(circle, rgba(124,92,255,0.5), rgba(124,92,255,0.1)); border: 1px solid var(--xero-violet);"></div>
+          <div style="position: absolute; top: 38%; left: 45%; width: 36px; height: 36px; border-radius: 50%; background: radial-gradient(circle, rgba(201,165,92,0.5), rgba(201,165,92,0.1)); border: 1.5px solid var(--aurum);"></div>
+          <div style="position: absolute; top: 60%; right: 18%; width: 28px; height: 28px; border-radius: 50%; background: radial-gradient(circle, rgba(34,197,94,0.5), rgba(34,197,94,0.1)); border: 1px solid var(--rf-aurora);"></div>
+        </div>
+      </div>
+      <span class="thumb-label">Canvas · 2 planets</span>
+    </div>
+    <div class="thumb">
+      <div class="mock-sylar-b2" style="position: absolute; inset: 0; padding: 10px; display: flex; flex-direction: column; gap: 4px;">
+        <p style="font-family: var(--font-mono); font-size: 6px; color: var(--xero-violet); letter-spacing: 0.25em;">▸ XEROCODE · DETAIL</p>
+        <h3 style="font-family: var(--font-instrument); font-style: italic; font-size: 13px; color: var(--ink-50); line-height: 1.05;">AI office for solo & small teams.</h3>
+        <p style="font-family: var(--font-mono); font-size: 6px; color: var(--ink-400); letter-spacing: 0.15em; margin-top: 6px;">B2C · 5—249 ₽/мес</p>
+        <p style="font-family: var(--font-body); font-size: 7px; color: var(--ink-300); line-height: 1.45; margin-top: 4px;">Multi-model · 8 workspaces · BYOK · Telegram bot · Pollinations free.</p>
+      </div>
+      <span class="thumb-label">Drill-in panel</span>
+    </div>
+    <div class="thumb">
+      <div class="mock-sylar-b2" style="position: absolute; inset: 0; padding: 10px; display: flex; flex-direction: column; justify-content: flex-end;">
+        <div style="border-top: 1px solid rgba(201,165,92,0.2); padding-top: 6px; display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 6px; letter-spacing: 0.2em; color: var(--ink-400);">
+          <span>SYLAR · MMXXVI</span>
+          <span style="color: var(--aurum);">@SYL4R</span>
+        </div>
+      </div>
+      <span class="thumb-label">Footer · markers</span>
+    </div>
+  </div>
+
+  <div class="page-meta meta-bl">SYLAR · B — LIVING MAP</div>
+  <div class="page-meta meta-br">DV / 03</div>
+</section>
+
+<!-- ╔════════════════════════════════════════════════════╗
+     ║  04 — SYLAR · C · STUDIO LAB                       ║
+     ╚════════════════════════════════════════════════════╝ -->
+<section class="page">
+  <div class="page-meta meta-tl">SECTION 04 · SYLAR DIRECTION C</div>
+  <div class="page-meta meta-tr">P. 08 · STUDIO LAB</div>
+  <div class="section-header">
+    <span class="section-num">⌘ 04 · S/C</span>
+    <h2 class="section-title">Studio <em>Lab</em></h2>
+  </div>
+
+  <p class="lead-text" style="max-width: 820px;">Hacker meets editorial. Mono-driven, terminal-влияние, но с хорошим типографическим вкусом. Ощущение <em>«это сделал @SYL4R лично»</em> — founder-led, raw, человеческий.</p>
+
+  <div class="direction-grid dir-sylar">
+    <div class="mockup-frame">
+      <div class="mockup-bar">
+        <div class="dots"><span></span><span></span><span></span></div>
+        <span class="url">syl4r.dev</span>
+      </div>
+      <div class="mockup-body mock-sylar-c">
+        <div class="mock-sylar-c-nav">
+          <span class="logo">@syl4r</span>
+          <span class="menu"><span>~/products</span><span>~/blog</span><span>~/about</span></span>
+        </div>
+        <div class="mock-sylar-c-content">
+          <p class="mock-sylar-c-prompt"><span class="arrow">›</span> whoami</p>
+          <h1 class="mock-sylar-c-h1"><span class="gold">SYLAR</span><br>// AI <em>infrastructure</em><br>// for builders</h1>
+          <div class="mock-sylar-c-spec">
+<span class="key">stack</span>: XeroCode + RoleFlow<br>
+<span class="key">since</span>: <span class="val">MMXXVI</span><br>
+<span class="key">forged_by</span>: <span class="val">@SYL4R</span><br>
+<span class="key">made_in</span>: <span class="val">Moscow</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="meta-panel">
+      <div class="meta-card dir-sylar">
+        <span class="accent-bar"></span>
+        <p class="label">▸ POSITIONING</p>
+        <p class="value"><em>«Built by an AI hacker for AI hackers.»</em><br>Founder-led, human, не корпоративный. Идеально для tech-сообщества и dev-инфлюенс.</p>
+      </div>
+      <div class="meta-card dir-sylar">
+        <span class="accent-bar"></span>
+        <p class="label">▸ TYPOGRAPHY</p>
+        <ul>
+          <li>Headline: Iosevka / JetBrains Mono Bold</li>
+          <li>Subhead: Instrument Italic mix</li>
+          <li>Body: Inter (для читаемости)</li>
+          <li>Code-sample blocks везде</li>
+        </ul>
+      </div>
+      <div class="meta-card dir-sylar">
+        <span class="accent-bar"></span>
+        <p class="label">▸ COLOR</p>
+        <ul>
+          <li>Pure Obsidian #050510</li>
+          <li>Terminal-style: Aurum + soft green/cyan accents</li>
+          <li>Yellow caution / Red error / Green ok</li>
+          <li>Контраст низкий — глаз не устаёт</li>
+        </ul>
+      </div>
+      <div class="meta-card dir-sylar">
+        <span class="accent-bar"></span>
+        <p class="label">▸ SIGNATURE ANIMATION</p>
+        <p class="value"><strong>Typewriter</strong> везде. Cursor blink. Loaders как progress-bars `▰▰▰▱▱`. Code-blocks с подсветкой. ASCII art в hero. Live-status pings.</p>
+      </div>
+      <div class="meta-card dir-sylar">
+        <span class="accent-bar"></span>
+        <p class="label">▸ REFERENCE</p>
+        <p class="value"><strong>fly.io</strong> · <strong>tursol.so</strong> · <strong>bun.sh</strong> · <strong>raycast.com/changelog</strong> — terminal-vibe + хороший дизайн.</p>
+      </div>
+    </div>
+  </div>
+
+  <p class="row-label">Terminal Hero / Code Card / Status / Konami</p>
+  <div class="thumb-strip">
+    <div class="thumb">
+      <div class="mock-sylar-c" style="position: absolute; inset: 0; padding: 14px;">
+        <p style="font-family: var(--font-mono); font-size: 9px; color: var(--ink-300);"><span style="color: var(--aurum);">›</span> sylar --version</p>
+        <p style="font-family: var(--font-mono); font-size: 11px; color: var(--ink-50); margin-top: 8px;"><span style="color: var(--aurum);">SYLAR</span> v1.0.0</p>
+        <p style="font-family: var(--font-mono); font-size: 8px; color: var(--ink-400); margin-top: 4px;">forged by @SYL4R</p>
+      </div>
+      <span class="thumb-label">Terminal</span>
+    </div>
+    <div class="thumb">
+      <div class="mock-sylar-c" style="position: absolute; inset: 0; padding: 12px;">
+        <div style="background: rgba(255,255,255,0.04); border: 1px solid var(--slate-700); border-radius: 4px; padding: 8px; font-family: var(--font-mono); font-size: 8px; color: var(--ink-200); line-height: 1.6;">
+          <span style="color: var(--aurum);">const</span> <span style="color: var(--xero-violet);">sylar</span> = {<br>
+&nbsp;&nbsp;<span style="color: var(--aurum);">stack</span>: [<span style="color: var(--rf-aurora);">'xero'</span>, <span style="color: var(--rf-aurora);">'rf'</span>],<br>
+&nbsp;&nbsp;<span style="color: var(--aurum);">aurum</span>: <span style="color: var(--rf-aurora);">'#C9A55C'</span>,<br>
+}
+        </div>
+      </div>
+      <span class="thumb-label">Code</span>
+    </div>
+    <div class="thumb">
+      <div class="mock-sylar-c" style="position: absolute; inset: 0; padding: 14px;">
+        <p style="font-family: var(--font-mono); font-size: 8px; color: var(--ink-400); letter-spacing: 0.2em; text-transform: uppercase;">▸ STATUS</p>
+        <div style="display: flex; flex-direction: column; gap: 4px; margin-top: 8px; font-family: var(--font-mono); font-size: 8px;">
+          <p><span style="color: var(--rf-aurora);">●</span> <span style="color: var(--ink-200);">xero</span> <span style="color: var(--ink-400);">200ms</span></p>
+          <p><span style="color: var(--rf-aurora);">●</span> <span style="color: var(--ink-200);">rf</span> <span style="color: var(--ink-400);">180ms</span></p>
+          <p><span style="color: var(--aurum);">●</span> <span style="color: var(--ink-200);">api</span> <span style="color: var(--ink-400);">degraded</span></p>
+        </div>
+      </div>
+      <span class="thumb-label">Status</span>
+    </div>
+    <div class="thumb">
+      <div class="mock-sylar-c" style="position: absolute; inset: 0; padding: 14px;">
+        <p style="font-family: var(--font-mono); font-size: 7px; color: var(--ink-400); letter-spacing: 0.25em;">/ KONAMI · /SYL4R</p>
+        <p style="font-family: var(--font-mono); font-size: 14px; color: var(--aurum); margin-top: 8px;">// hi, hacker</p>
+        <p style="font-family: var(--font-instrument); font-style: italic; font-size: 13px; color: var(--ink-200); margin-top: 4px;">welcome home.</p>
+      </div>
+      <span class="thumb-label">Konami</span>
+    </div>
+  </div>
+
+  <div class="page-meta meta-bl">SYLAR · C — STUDIO LAB</div>
+  <div class="page-meta meta-br">DV / 04</div>
+</section>
+
+<!-- ╔════════════════════════════════════════════════════╗
+     ║  05 — XEROCODE · A · EDITORIAL ITALIC              ║
+     ╚════════════════════════════════════════════════════╝ -->
+<section class="page" style="background: linear-gradient(180deg, var(--obsidian), #08081A);">
+  <div class="page-meta meta-tl">SECTION 05 · XEROCODE DIRECTION A</div>
+  <div class="page-meta meta-tr">P. 10 · EDITORIAL ITALIC</div>
+  <div class="section-header" style="border-bottom-color: rgba(124,92,255,0.3);">
+    <span class="section-num" style="color: var(--xero-violet);">⌘ 05 · X/A</span>
+    <h2 class="section-title">Editorial <em style="color: var(--xero-violet);">Italic.</em></h2>
+  </div>
+
+  <p class="lead-text" style="max-width: 820px;">Текущее направление, <em style="color: var(--xero-violet);">отполированное</em>. Playfair italic + violet-cyan gradient + mesh. Премиум-creative с editorial-фундаментом. Magazine для AI.</p>
+
+  <div class="direction-grid dir-xero">
+    <div class="mockup-frame">
+      <div class="mockup-bar">
+        <div class="dots"><span></span><span></span><span></span></div>
+        <span class="url">xerocode.ru</span>
+      </div>
+      <div class="mockup-body mock-xero-a">
+        <div class="mock-xero-a-nav">
+          <span class="mock-xero-a-logo"><span class="roman">XERO</span><span class="italic">CODE</span></span>
+          <span class="mock-xero-a-menu"><span>Возможности</span><span>Тарифы</span><span>Бизнесу</span><span>FAQ</span></span>
+          <span class="mock-xero-a-cta">Начать</span>
+        </div>
+        <div class="mock-xero-a-hero">
+          <h1 class="mock-xero-a-mark"><span class="roman">XERO</span><span class="italic">CODE</span></h1>
+          <p class="mock-xero-a-tag">AI doesn't <em>chat.</em> AI <em>works.</em></p>
+        </div>
+      </div>
+    </div>
+
+    <div class="meta-panel">
+      <div class="meta-card dir-xero">
+        <span class="accent-bar"></span>
+        <p class="label">▸ POSITIONING</p>
+        <p class="value"><em>«AI as creative tool.»</em><br>Editorial premium для creators, фрилансеров, маркетологов. Соло-про вибрация. Не корпоративный.</p>
+      </div>
+      <div class="meta-card dir-xero">
+        <span class="accent-bar"></span>
+        <p class="label">▸ TYPOGRAPHY</p>
+        <ul>
+          <li>Headline: Playfair Display 700 + italic</li>
+          <li>UI: Manrope 600/800</li>
+          <li>Body: Inter</li>
+          <li>«CODE» italic gradient — signature</li>
+        </ul>
+      </div>
+      <div class="meta-card dir-xero">
+        <span class="accent-bar"></span>
+        <p class="label">▸ COLOR</p>
+        <ul>
+          <li>Mesh: Violet 500 + Cyan 500 radials</li>
+          <li>Solar Amber для emphasis em-words</li>
+          <li>Aurum touch-point в footer (DNA)</li>
+        </ul>
+      </div>
+      <div class="meta-card dir-xero">
+        <span class="accent-bar"></span>
+        <p class="label">▸ SIGNATURE ANIMATION</p>
+        <p class="value"><strong>Magnetic CTA</strong> + parallax mesh + mascot Xero (cursor follow). Italic CODE shimmer на hover. Stagger reveal cards.</p>
+      </div>
+      <div class="meta-card dir-xero">
+        <span class="accent-bar"></span>
+        <p class="label">▸ REFERENCE</p>
+        <p class="value"><strong>arc.net</strong> · <strong>resend.com</strong> · <strong>cosmos.so</strong> — editorial с мощным italic, теплая premium-creative.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-meta meta-bl" style="color: var(--xero-violet);">XEROCODE · A — EDITORIAL</div>
+  <div class="page-meta meta-br">DV / 05</div>
+</section>
+
+<!-- ╔════════════════════════════════════════════════════╗
+     ║  06 — XEROCODE · B · LIQUID STUDIO                 ║
+     ╚════════════════════════════════════════════════════╝ -->
+<section class="page" style="background: #0A0214;">
+  <div class="page-meta meta-tl">SECTION 06 · XEROCODE DIRECTION B</div>
+  <div class="page-meta meta-tr">P. 12 · LIQUID STUDIO</div>
+  <div class="section-header" style="border-bottom-color: rgba(124,92,255,0.3);">
+    <span class="section-num" style="color: var(--xero-violet);">⌘ 06 · X/B</span>
+    <h2 class="section-title">Liquid <em style="color: var(--xero-violet);">Studio.</em></h2>
+  </div>
+
+  <p class="lead-text" style="max-width: 820px;">3D-blob morph, liquid mesh, glass-morphism. Современный <em style="color: var(--xero-violet);">studio-look</em>. Бренд = искусство. Большое орб-маскот в центре hero.</p>
+
+  <div class="direction-grid dir-xero">
+    <div class="mockup-frame">
+      <div class="mockup-bar">
+        <div class="dots"><span></span><span></span><span></span></div>
+        <span class="url">xerocode.ru</span>
+      </div>
+      <div class="mockup-body mock-xero-b">
+        <div class="mock-xero-b-nav">
+          <span class="mock-xero-b-logo">xero<span class="accent">.</span></span>
+          <span class="mock-xero-b-pill">Try free →</span>
+        </div>
+        <div class="mock-xero-b-hero">
+          <div class="mock-xero-b-orb"></div>
+          <h1 class="mock-xero-b-h1">AI<br>that <span class="accent">flows.</span></h1>
+          <p class="mock-xero-b-sub">From prompt to PPTX in 12 seconds. Multi-model orchestration that feels like magic.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="meta-panel">
+      <div class="meta-card dir-xero">
+        <span class="accent-bar"></span>
+        <p class="label">▸ POSITIONING</p>
+        <p class="value"><em>«AI as art studio.»</em><br>Современный creative-tool. Visually-driven. Дизайнерская audience. Большие visuals, минимум текста.</p>
+      </div>
+      <div class="meta-card dir-xero">
+        <span class="accent-bar"></span>
+        <p class="label">▸ TYPOGRAPHY</p>
+        <ul>
+          <li>Headline: Space Grotesk 700</li>
+          <li>UI: Manrope</li>
+          <li>NO italic serif (минимум)</li>
+          <li>Большие numerals</li>
+        </ul>
+      </div>
+      <div class="meta-card dir-xero">
+        <span class="accent-bar"></span>
+        <p class="label">▸ COLOR</p>
+        <ul>
+          <li>Deep purple #0A0214 (warm violet)</li>
+          <li>Liquid violet→cyan→pink blobs</li>
+          <li>Glass blur backdrop-filter везде</li>
+        </ul>
+      </div>
+      <div class="meta-card dir-xero">
+        <span class="accent-bar"></span>
+        <p class="label">▸ SIGNATURE ANIMATION</p>
+        <p class="value"><strong>Liquid morph</strong> blob следует за курсором (slow lerp). 3D orb-mascot вращается / пульсирует. Gradient noise overlay везде. Зум-on-scroll картинок.</p>
+      </div>
+      <div class="meta-card dir-xero">
+        <span class="accent-bar"></span>
+        <p class="label">▸ REFERENCE</p>
+        <p class="value"><strong>stripe.com</strong> · <strong>anthropic.com</strong> · <strong>linear.app/method</strong> · <strong>fey.com</strong> — cinema-grade gradient mesh + liquid surfaces.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-meta meta-bl" style="color: var(--xero-violet);">XEROCODE · B — LIQUID</div>
+  <div class="page-meta meta-br">DV / 06</div>
+</section>
+
+<!-- ╔════════════════════════════════════════════════════╗
+     ║  07 — XEROCODE · C · BENTO BRUTALIST               ║
+     ╚════════════════════════════════════════════════════╝ -->
+<section class="page" style="background: #0E0E14;">
+  <div class="page-meta meta-tl">SECTION 07 · XEROCODE DIRECTION C</div>
+  <div class="page-meta meta-tr">P. 14 · BENTO BRUTALIST</div>
+  <div class="section-header" style="border-bottom-color: rgba(124,92,255,0.3);">
+    <span class="section-num" style="color: var(--xero-violet);">⌘ 07 · X/C</span>
+    <h2 class="section-title">Bento <em style="color: var(--xero-violet);">Brutalist.</em></h2>
+  </div>
+
+  <p class="lead-text" style="max-width: 820px;">Vercel-grid стиль — большие bento-карточки, тяжёлый sans, контрастные блоки. Product-first. Минимум поэзии, максимум <em style="color: var(--xero-violet);">structure</em>.</p>
+
+  <div class="direction-grid dir-xero">
+    <div class="mockup-frame">
+      <div class="mockup-bar">
+        <div class="dots"><span></span><span></span><span></span></div>
+        <span class="url">xerocode.ru</span>
+      </div>
+      <div class="mockup-body mock-xero-c">
+        <div class="mock-xero-c-nav">
+          <span class="mock-xero-c-logo">XERO<span class="accent">.</span></span>
+          <span class="mock-xero-c-cta">Start →</span>
+        </div>
+        <div class="mock-xero-c-bento">
+          <div class="mock-xero-c-cell hero">
+            <p class="meta">▸ Hero</p>
+            <h1 class="h">Multi-model<br>AI for <span class="accent">teams.</span></h1>
+            <p style="font-family: var(--font-body); font-size: 10px; color: var(--ink-300); margin-top: 8px;">430+ models · BYOK · 8 workspaces</p>
+          </div>
+          <div class="mock-xero-c-cell acc">
+            <p class="meta">▸ Stat</p>
+            <div class="stat">430+</div>
+            <p style="font-family: var(--font-mono); font-size: 8px; color: var(--ink-400); letter-spacing: 0.15em;">MODELS</p>
+          </div>
+          <div class="mock-xero-c-cell dark">
+            <p class="meta">▸ Stat</p>
+            <div class="stat" style="color: var(--xero-cyan);">∞</div>
+            <p style="font-family: var(--font-mono); font-size: 8px; color: var(--ink-400); letter-spacing: 0.15em;">BYOK</p>
+          </div>
+          <div class="mock-xero-c-cell">
+            <p class="meta">▸ Workspace</p>
+            <p class="h" style="font-size: 13px;">Chat</p>
+          </div>
+          <div class="mock-xero-c-cell">
+            <p class="meta">▸ Workspace</p>
+            <p class="h" style="font-size: 13px;">Code</p>
+          </div>
+          <div class="mock-xero-c-cell">
+            <p class="meta">▸ Pricing</p>
+            <p class="h" style="font-size: 13px;">Free →</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="meta-panel">
+      <div class="meta-card dir-xero">
+        <span class="accent-bar"></span>
+        <p class="label">▸ POSITIONING</p>
+        <p class="value"><em>«AI in well-organized boxes.»</em><br>Product-first. Понятно сразу что делает. Хорошо для tech-savvy SMB. Очень scannable.</p>
+      </div>
+      <div class="meta-card dir-xero">
+        <span class="accent-bar"></span>
+        <p class="label">▸ TYPOGRAPHY</p>
+        <ul>
+          <li>Headline: Inter Tight 800 −4% tracking</li>
+          <li>Body: Inter</li>
+          <li>NO italic / NO serif</li>
+          <li>Тяжёлый weight, сжатые tracking</li>
+        </ul>
+      </div>
+      <div class="meta-card dir-xero">
+        <span class="accent-bar"></span>
+        <p class="label">▸ COLOR</p>
+        <ul>
+          <li>Bento cells разных подложек</li>
+          <li>Violet — accent в 1-2 cells</li>
+          <li>Контрастные секции — bento-grid</li>
+        </ul>
+      </div>
+      <div class="meta-card dir-xero">
+        <span class="accent-bar"></span>
+        <p class="label">▸ SIGNATURE ANIMATION</p>
+        <p class="value"><strong>Hover-lift</strong> cards. Reveal-on-scroll bento. Numbers count-up. Magnetic CTA. Sticky-scroll feature highlights.</p>
+      </div>
+      <div class="meta-card dir-xero">
+        <span class="accent-bar"></span>
+        <p class="label">▸ REFERENCE</p>
+        <p class="value"><strong>vercel.com</strong> · <strong>linear.app</strong> · <strong>railway.app</strong> · <strong>raycast.com</strong> — bento-grid SaaS, scannable, dev-friendly.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-meta meta-bl" style="color: var(--xero-violet);">XEROCODE · C — BENTO</div>
+  <div class="page-meta meta-br">DV / 07</div>
+</section>
+
+<!-- ╔════════════════════════════════════════════════════╗
+     ║  08 — ROLEFLOW · A · SOC DASHBOARD                 ║
+     ╚════════════════════════════════════════════════════╝ -->
+<section class="page" style="background: linear-gradient(180deg, var(--obsidian), #0A1410);">
+  <div class="page-meta meta-tl">SECTION 08 · ROLEFLOW DIRECTION A</div>
+  <div class="page-meta meta-tr">P. 16 · SOC DASHBOARD</div>
+  <div class="section-header" style="border-bottom-color: rgba(34,197,94,0.3);">
+    <span class="section-num" style="color: var(--rf-aurora);">⌘ 08 · R/A</span>
+    <h2 class="section-title">SOC <em style="color: var(--rf-aurora);">Dashboard.</em></h2>
+  </div>
+
+  <p class="lead-text" style="max-width: 820px;">Live-feel security center. Audit logs, real-time metrics, status indicators. Ощущение, что <em style="color: var(--rf-aurora);">сервис работает прямо сейчас</em> и видит всё.</p>
+
+  <div class="direction-grid dir-rf">
+    <div class="mockup-frame">
+      <div class="mockup-bar">
+        <div class="dots"><span></span><span></span><span></span></div>
+        <span class="url">roleflow.ai</span>
+      </div>
+      <div class="mockup-body mock-rf-a">
+        <div class="mock-rf-a-nav">
+          <span class="logo">ROLE<span class="gradient">FLOW</span></span>
+          <div class="right">
+            <span class="mock-rf-a-status"><span class="dot"></span>ONLINE</span>
+            <span>13:42:08</span>
+          </div>
+        </div>
+        <div class="mock-rf-a-content">
+          <div>
+            <h1 class="mock-rf-a-h1">AI that<br><span class="gradient">won't leak.</span></h1>
+            <p class="mock-rf-a-sub">Live AI-DLP gateway. Every prompt classified. Every response logged. CISO-grade.</p>
+          </div>
+          <div class="mock-rf-a-log">
+            <div class="mock-rf-a-log-h"><span>● LIVE GATEWAY</span><span>last 60s</span></div>
+            <div class="mock-rf-a-log-line"><span class="ts">13:42:08</span> <span class="ok">✓</span> user → <span class="model">sonnet-4-6</span> · 1247t</div>
+            <div class="mock-rf-a-log-line"><span class="ts">13:42:11</span> <span class="ok">✓</span> hr → <span class="model">gpt-5.4</span> · masked: 5</div>
+            <div class="mock-rf-a-log-line"><span class="ts">13:42:14</span> <span class="ko">✕</span> sales → BLOCKED</div>
+            <div class="mock-rf-a-log-line"><span class="ts">13:42:18</span> <span class="warn">⚠</span> dev → on-prem</div>
+            <div class="mock-rf-a-log-line"><span class="ts">13:42:24</span> <span class="ok">✓</span> finance → <span class="model">opus-4-7</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="meta-panel">
+      <div class="meta-card dir-rf">
+        <span class="accent-bar"></span>
+        <p class="label">▸ POSITIONING</p>
+        <p class="value"><em>«SOC for AI usage.»</em><br>Security operations. CISO-driven. Live data, не маркетинг. Ощущение «всё под контролем».</p>
+      </div>
+      <div class="meta-card dir-rf">
+        <span class="accent-bar"></span>
+        <p class="label">▸ TYPOGRAPHY</p>
+        <ul>
+          <li>Headline: Manrope ExtraBold</li>
+          <li>UI: Manrope SemiBold</li>
+          <li>Logs: JetBrains Mono</li>
+          <li>Aurora-italic em для emphasis</li>
+        </ul>
+      </div>
+      <div class="meta-card dir-rf">
+        <span class="accent-bar"></span>
+        <p class="label">▸ COLOR</p>
+        <ul>
+          <li>Green-tinted dark #0A1410</li>
+          <li>Aurora #22C55E + Steel Blue #4A6FA5</li>
+          <li>Crimson alert · Amber warn · Gray queued</li>
+          <li>Grid backdrop 24px</li>
+        </ul>
+      </div>
+      <div class="meta-card dir-rf">
+        <span class="accent-bar"></span>
+        <p class="label">▸ SIGNATURE ANIMATION</p>
+        <p class="value"><strong>Live data feed</strong> — лог-строки появляются сверху. Pulse-blink на статус. Counter animation. Chart-on-scroll. Matrix-style code rain в hero.</p>
+      </div>
+      <div class="meta-card dir-rf">
+        <span class="accent-bar"></span>
+        <p class="label">▸ REFERENCE</p>
+        <p class="value"><strong>datadoghq.com</strong> · <strong>splunk.com</strong> · <strong>crowdstrike.com</strong> · <strong>sentry.io</strong> — SOC-aesthetic, live data, dashboards.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-meta meta-bl" style="color: var(--rf-aurora);">ROLEFLOW · A — SOC</div>
+  <div class="page-meta meta-br">DV / 08</div>
+</section>
+
+<!-- ╔════════════════════════════════════════════════════╗
+     ║  09 — ROLEFLOW · B · ENTERPRISE TRUST              ║
+     ╚════════════════════════════════════════════════════╝ -->
+<section class="page" style="background: #0E1A22;">
+  <div class="page-meta meta-tl">SECTION 09 · ROLEFLOW DIRECTION B</div>
+  <div class="page-meta meta-tr">P. 18 · ENTERPRISE TRUST</div>
+  <div class="section-header" style="border-bottom-color: rgba(34,197,94,0.2);">
+    <span class="section-num" style="color: var(--rf-aurora);">⌘ 09 · R/B</span>
+    <h2 class="section-title">Enterprise <em style="color: var(--rf-aurora);">Trust.</em></h2>
+  </div>
+
+  <p class="lead-text" style="max-width: 820px;">Vanta / Anthropic-Trust style. Чисто, строго, ИБ-grade. Diagrams и architecture-схемы. Compliance-первое. Не <em style="color: var(--rf-aurora);">tech-flex</em>, а серьёзная B2B-коммуникация.</p>
+
+  <div class="direction-grid dir-rf">
+    <div class="mockup-frame">
+      <div class="mockup-bar">
+        <div class="dots"><span></span><span></span><span></span></div>
+        <span class="url">roleflow.ai</span>
+      </div>
+      <div class="mockup-body mock-rf-b">
+        <div class="mock-rf-b-nav">
+          <span class="mock-rf-b-logo"><span class="mock-rf-b-shield"></span>RoleFlow</span>
+          <span class="mock-rf-b-menu"><span>Platform</span><span>Compliance</span><span>Resources</span><span>Customers</span></span>
+          <span class="mock-rf-b-cta">Book demo</span>
+        </div>
+        <div class="mock-rf-b-hero">
+          <div>
+            <h1 class="mock-rf-b-h1">Govern AI usage.<br><span class="accent">Across the enterprise.</span></h1>
+            <p class="mock-rf-b-sub">RoleFlow is the AI governance platform for organizations that take security seriously. Audit, DLP, access control — built for CISOs.</p>
+            <div class="mock-rf-b-badge-row">
+              <span class="mock-rf-b-badge">152-ФЗ</span>
+              <span class="mock-rf-b-badge">SOC 2</span>
+              <span class="mock-rf-b-badge">ISO 27001</span>
+              <span class="mock-rf-b-badge">on-prem</span>
+            </div>
+          </div>
+          <div class="mock-rf-b-diagram">
+<span class="lvl">Users</span>
+<span class="arrow">  ↓</span>
+<span class="lvl">DLP Gateway</span>
+<span class="arrow">  ↓</span>
+<span class="lvl">Model Router</span>
+<span class="arrow">  ↓</span>
+<span class="lvl">AI providers</span>
+<span class="arrow">  ↓</span>
+<span class="lvl">Audit log</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="meta-panel">
+      <div class="meta-card dir-rf">
+        <span class="accent-bar"></span>
+        <p class="label">▸ POSITIONING</p>
+        <p class="value"><em>«AI governance for serious enterprises.»</em><br>Compliance-first. Спокойно, строго, без эффектов. CISO/CIO для банков, госсектора.</p>
+      </div>
+      <div class="meta-card dir-rf">
+        <span class="accent-bar"></span>
+        <p class="label">▸ TYPOGRAPHY</p>
+        <ul>
+          <li>Headline: Manrope SemiBold (не extra-bold)</li>
+          <li>Body: Inter 14-15px</li>
+          <li>Compliance badges JetBrains Mono</li>
+          <li>NO italic / NO playful</li>
+        </ul>
+      </div>
+      <div class="meta-card dir-rf">
+        <span class="accent-bar"></span>
+        <p class="label">▸ COLOR</p>
+        <ul>
+          <li>Steel-tinted dark #0E1A22</li>
+          <li>Aurora #22C55E (single accent)</li>
+          <li>Cool greys, no warm tones</li>
+          <li>White · steel · aurora · alert-red</li>
+        </ul>
+      </div>
+      <div class="meta-card dir-rf">
+        <span class="accent-bar"></span>
+        <p class="label">▸ SIGNATURE ANIMATION</p>
+        <p class="value"><strong>Architecture-diagrams</strong> draw-on-scroll. Compliance-badges fade-up. Quote carousel of CISOs. Sticky-feature scroll. Subtle hover lifts.</p>
+      </div>
+      <div class="meta-card dir-rf">
+        <span class="accent-bar"></span>
+        <p class="label">▸ REFERENCE</p>
+        <p class="value"><strong>vanta.com</strong> · <strong>nightfall.ai</strong> · <strong>drata.com</strong> · <strong>anthropic.com/trust</strong> — Trust Center aesthetics.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-meta meta-bl" style="color: var(--rf-aurora);">ROLEFLOW · B — TRUST</div>
+  <div class="page-meta meta-br">DV / 09</div>
+</section>
+
+<!-- ╔════════════════════════════════════════════════════╗
+     ║  10 — ROLEFLOW · C · EDITORIAL DEFENSE             ║
+     ╚════════════════════════════════════════════════════╝ -->
+<section class="page" style="background: #0F1410;">
+  <div class="page-meta meta-tl">SECTION 10 · ROLEFLOW DIRECTION C</div>
+  <div class="page-meta meta-tr">P. 20 · EDITORIAL DEFENSE</div>
+  <div class="section-header" style="border-bottom-color: rgba(34,197,94,0.3);">
+    <span class="section-num" style="color: var(--rf-aurora);">⌘ 10 · R/C</span>
+    <h2 class="section-title">Editorial <em style="color: var(--rf-aurora);">Defense.</em></h2>
+  </div>
+
+  <p class="lead-text" style="max-width: 820px;">1Password vibe — премиум-editorial для security. Серифные заголовки, photography-driven, manifesto-tone. <em style="color: var(--rf-aurora);">«Тонко о серьёзном»</em>.</p>
+
+  <div class="direction-grid dir-rf">
+    <div class="mockup-frame">
+      <div class="mockup-bar">
+        <div class="dots"><span></span><span></span><span></span></div>
+        <span class="url">roleflow.ai</span>
+      </div>
+      <div class="mockup-body mock-rf-c">
+        <div class="mock-rf-c-nav">
+          <span class="mock-rf-c-logo">Role<span class="accent">flow.</span></span>
+          <span class="mock-rf-c-menu"><span>Manifesto</span><span>Platform</span><span>Stories</span><span>Contact</span></span>
+        </div>
+        <div class="mock-rf-c-hero">
+          <p class="mock-rf-c-tag">▸ ESSAY 03</p>
+          <h1 class="mock-rf-c-h1">Trust isn't built<br>by accident. <em>It's<br>governed.</em></h1>
+          <p class="mock-rf-c-sub">RoleFlow is how serious teams keep AI safe — and serious about it. Not a dashboard. A doctrine.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="meta-panel">
+      <div class="meta-card dir-rf">
+        <span class="accent-bar"></span>
+        <p class="label">▸ POSITIONING</p>
+        <p class="value"><em>«AI governance is a discipline.»</em><br>Premium-editorial для thought-leaders. Длинные эссе, manifestos, philosophy of AI safety.</p>
+      </div>
+      <div class="meta-card dir-rf">
+        <span class="accent-bar"></span>
+        <p class="label">▸ TYPOGRAPHY</p>
+        <ul>
+          <li>Headline: Instrument Serif Italic 50-72px</li>
+          <li>Body: Inter 16-17px</li>
+          <li>Pull quotes большого размера</li>
+          <li>Drop caps в эссе</li>
+        </ul>
+      </div>
+      <div class="meta-card dir-rf">
+        <span class="accent-bar"></span>
+        <p class="label">▸ COLOR</p>
+        <ul>
+          <li>Forest-tinted dark #0F1410</li>
+          <li>Aurora 30% — приглушённая</li>
+          <li>Photography с warm tones</li>
+          <li>Cream + amber для emphasis</li>
+        </ul>
+      </div>
+      <div class="meta-card dir-rf">
+        <span class="accent-bar"></span>
+        <p class="label">▸ SIGNATURE ANIMATION</p>
+        <p class="value"><strong>Cinematic photography zoom</strong> on scroll. Type-mask reveal. Sticky chapter headers. Quote-fade transitions. Slow, deliberate motion.</p>
+      </div>
+      <div class="meta-card dir-rf">
+        <span class="accent-bar"></span>
+        <p class="label">▸ REFERENCE</p>
+        <p class="value"><strong>1password.com</strong> · <strong>cloudflare.com/trust</strong> · <strong>blog.cloudflare.com</strong> · <strong>medium.com/anthropic</strong> — editorial defense.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-meta meta-bl" style="color: var(--rf-aurora);">ROLEFLOW · C — EDITORIAL</div>
+  <div class="page-meta meta-br">DV / 10</div>
+</section>
+
+<!-- ╔════════════════════════════════════════════════════╗
+     ║  11 — ANIMATION LIBRARY                            ║
+     ╚════════════════════════════════════════════════════╝ -->
+<section class="page">
+  <div class="page-meta meta-tl">SECTION 11</div>
+  <div class="page-meta meta-tr">P. 22 · ANIMATIONS</div>
+  <div class="section-header">
+    <span class="section-num">⌘ 11</span>
+    <h2 class="section-title">Animation <em>library</em></h2>
+  </div>
+
+  <p class="lead-text" style="max-width: 880px;">12 паттернов, которые работают на всех 9 направлениях. Дозировка зависит от выбранного направления — но язык движения <em>един</em>.</p>
+
+  <div class="anim-grid">
+    <div class="anim-card">
+      <p class="ac-num">▸ 01 · TYPE REVEAL</p>
+      <h4 class="ac-name">Scroll-driven <em>headline reveal</em></h4>
+      <p class="ac-desc">Большой заголовок зашивается по словам с blur+opacity-mask по мере приближения к центру viewport. Sticky-pinned секция.</p>
+      <p class="ac-tech">Framer Motion useScroll + mask-image · 600-900ms ease</p>
+    </div>
+
+    <div class="anim-card">
+      <p class="ac-num">▸ 02 · IMAGE ZOOM</p>
+      <h4 class="ac-name">Cinematic <em>image zoom</em></h4>
+      <p class="ac-desc">Изображение в 100vh контейнере scale 1.0 → 1.15 при scroll-progress 0 → 1. Создает «погружение» на ключевые визуалы.</p>
+      <p class="ac-tech">CSS transform + IntersectionObserver · GPU layer</p>
+    </div>
+
+    <div class="anim-card">
+      <p class="ac-num">▸ 03 · MAGNETIC CTA</p>
+      <h4 class="ac-name">Magnetic <em>cursor-follow</em></h4>
+      <p class="ac-desc">Кнопка «тянется» к курсору в радиусе 80px (translate scaled by 0.3). На hover background меняется на gradient.</p>
+      <p class="ac-tech">requestAnimationFrame + lerp · transform translate3d</p>
+    </div>
+
+    <div class="anim-card">
+      <p class="ac-num">▸ 04 · LIQUID BLOB</p>
+      <h4 class="ac-name">Liquid <em>mesh morph</em></h4>
+      <p class="ac-desc">Радиальные градиенты медленно дрейфуют (8-12s loop). На mousemove центры тянутся к курсору с задержкой 600ms.</p>
+      <p class="ac-tech">CSS radial-gradient + transform · noise overlay</p>
+    </div>
+
+    <div class="anim-card">
+      <p class="ac-num">▸ 05 · STAGGER REVEAL</p>
+      <h4 class="ac-name">Cards <em>stagger entrance</em></h4>
+      <p class="ac-desc">Сетка карточек проявляется по диагонали с staggerChildren 60ms. Каждая стартует с y +12px, blur 8px → 0.</p>
+      <p class="ac-tech">Framer staggerChildren · viewport once · easeEmphasis</p>
+    </div>
+
+    <div class="anim-card">
+      <p class="ac-num">▸ 06 · STICKY SCRUB</p>
+      <h4 class="ac-name">Sticky <em>scroll-scrub</em></h4>
+      <p class="ac-desc">Pin-section на 200vh: при скролле меняется состояние (например, шаги процесса). Текст выводится по фазам, картинка свапается.</p>
+      <p class="ac-tech">position: sticky + scroll-progress + AnimatePresence</p>
+    </div>
+
+    <div class="anim-card">
+      <p class="ac-num">▸ 07 · PARALLAX LAYERS</p>
+      <h4 class="ac-name">Parallax <em>multi-layer</em></h4>
+      <p class="ac-desc">3 слоя движутся с разными скоростями: фон 0.3x, средний 0.6x, передний 1.0x. Создает глубину в hero.</p>
+      <p class="ac-tech">useScroll + useTransform · transform translate</p>
+    </div>
+
+    <div class="anim-card">
+      <p class="ac-num">▸ 08 · COUNTER ANIM</p>
+      <h4 class="ac-name">Numbers <em>count-up</em></h4>
+      <p class="ac-desc">При появлении в viewport число анимируется от 0 до целевого значения. Tabular-nums чтоб не дрожало.</p>
+      <p class="ac-tech">requestAnimationFrame · ease-out cubic · 1.2-1.8s</p>
+    </div>
+
+    <div class="anim-card">
+      <p class="ac-num">▸ 09 · LIVE FEED</p>
+      <h4 class="ac-name">Live <em>data feed</em></h4>
+      <p class="ac-desc">Лог-строки появляются сверху каждые 3-5 секунд. Старые исчезают снизу. Ощущение реальной системы.</p>
+      <p class="ac-tech">setInterval + AnimatePresence · slide+fade</p>
+    </div>
+
+    <div class="anim-card">
+      <p class="ac-num">▸ 10 · MARQUEE BAND</p>
+      <h4 class="ac-name">Bottomless <em>marquee</em></h4>
+      <p class="ac-desc">Бесконечная горизонтальная лента (логотипы / ключевые слова / цитаты). 30s loop, paused на hover.</p>
+      <p class="ac-tech">CSS @keyframes translateX · duplicated content</p>
+    </div>
+
+    <div class="anim-card">
+      <p class="ac-num">▸ 11 · CURSOR TRAIL</p>
+      <h4 class="ac-name">Cursor <em>spotlight</em></h4>
+      <p class="ac-desc">Большой radial-gradient следует за курсором (lerp 0.06). Подсвечивает контент под ним. Не утомляет.</p>
+      <p class="ac-tech">requestAnimationFrame + radial-gradient mask</p>
+    </div>
+
+    <div class="anim-card">
+      <p class="ac-num">▸ 12 · TYPEWRITER</p>
+      <h4 class="ac-name">Terminal <em>typewriter</em></h4>
+      <p class="ac-desc">Текст печатается посимвольно (50-80ms/char). Курсор мигает. Циклом для CLI-секций.</p>
+      <p class="ac-tech">setInterval + slice + cursor blink keyframes</p>
+    </div>
+
+    <div class="anim-card">
+      <p class="ac-num">▸ 13 · KEN BURNS</p>
+      <h4 class="ac-name">Image <em>Ken Burns</em></h4>
+      <p class="ac-desc">Hero-картинка медленно зумится (1.0 → 1.08) и пансит (translate 2-3%) на протяжении 14-18 секунд. Loop alternate. Hero никогда не «застывает».</p>
+      <p class="ac-tech">CSS @keyframes infinite alternate · transform-origin: center</p>
+    </div>
+
+    <div class="anim-card">
+      <p class="ac-num">▸ 14 · SCRUB MASK</p>
+      <h4 class="ac-name">Image <em>scrub-clip</em></h4>
+      <p class="ac-desc">Большая картинка раскрывается через clip-path inset на скролле: от 30% → 0%. Чувство «затвора фотоаппарата». Хорошо для product shots.</p>
+      <p class="ac-tech">useScroll + useTransform → clip-path: inset(N%)</p>
+    </div>
+
+    <div class="anim-card">
+      <p class="ac-num">▸ 15 · SHADER NOISE</p>
+      <h4 class="ac-name">Background <em>noise field</em></h4>
+      <p class="ac-desc">SVG turbulence фильтр поверх gradient hero. Тонкая зернистость, дрожит на 0.3 opacity. Спасает «плоский dark» от пустоты.</p>
+      <p class="ac-tech">SVG feTurbulence · CSS filter: url(#noise) · GPU layer</p>
+    </div>
+
+    <div class="anim-card">
+      <p class="ac-num">▸ 16 · MAGNETIC SVG</p>
+      <h4 class="ac-name">Cursor <em>node attraction</em></h4>
+      <p class="ac-desc">SVG-узлы (карта, schema) тянутся к курсору с lerp 0.04-0.08. Edge-линии перерисовываются. Идеально для SYLAR · B (Living Map).</p>
+      <p class="ac-tech">requestAnimationFrame · lerp · SVG path d-attr</p>
+    </div>
+
+    <div class="anim-card">
+      <p class="ac-num">▸ 17 · TILT 3D</p>
+      <h4 class="ac-name">Card <em>3D tilt</em></h4>
+      <p class="ac-desc">Карточки наклоняются за курсором (rotateX/rotateY ±8°), внутри — глянцевый highlight, который двигается. Stripe-вибрация.</p>
+      <p class="ac-tech">mouseenter/move · transform: perspective(1000px) rotate3d</p>
+    </div>
+
+    <div class="anim-card">
+      <p class="ac-num">▸ 18 · NUMBER SCRAMBLE</p>
+      <h4 class="ac-name">Hash <em>scramble</em></h4>
+      <p class="ac-desc">Цифры/коды постоянно «перешафливаются» (10 кадров) перед стабилизацией. На каждом ховере — реролл. Чувство «живой системы».</p>
+      <p class="ac-tech">setInterval + random char · settle 600ms · monospace tabular-nums</p>
+    </div>
+
+    <div class="anim-card">
+      <p class="ac-num">▸ 19 · GRADIENT TRAVEL</p>
+      <h4 class="ac-name">Edge <em>gradient pulse</em></h4>
+      <p class="ac-desc">По линиям-связям бежит светящаяся точка от A к B. Период 3-4с. Создает ощущение «по системе течёт сигнал».</p>
+      <p class="ac-tech">@keyframes left/right · linear-gradient mask · ::after dot</p>
+    </div>
+
+    <div class="anim-card">
+      <p class="ac-num">▸ 20 · LENIS SMOOTH</p>
+      <h4 class="ac-name">Smooth <em>scroll engine</em></h4>
+      <p class="ac-desc">Lenis заменяет нативный scroll: lerp 0.1, easing exponential. Все scroll-driven эффекты получают «масло». Используется на всех 9.</p>
+      <p class="ac-tech">@studio-freight/lenis · raf integration · 60fps</p>
+    </div>
+
+    <div class="anim-card">
+      <p class="ac-num">▸ 21 · IMG SWAP</p>
+      <h4 class="ac-name">Picture <em>state swap</em></h4>
+      <p class="ac-desc">Один контейнер — несколько картинок. На скролл-этапе один скрывается (clip + scale 1→0.92), другой проявляется. Sticky-pinned секция.</p>
+      <p class="ac-tech">AnimatePresence · scrollYProgress thresholds · clip-path</p>
+    </div>
+
+    <div class="anim-card">
+      <p class="ac-num">▸ 22 · PAGE EXIT</p>
+      <h4 class="ac-name">Route <em>exit & enter</em></h4>
+      <p class="ac-desc">Между страницами — мгновенный «занавес» из aurum-полосы (300ms in, 300ms out). Контент следующей страницы уже готов снизу.</p>
+      <p class="ac-tech">AnimatePresence mode="wait" · y/opacity · ease-emphasis</p>
+    </div>
+  </div>
+
+  <div class="page-meta meta-bl">ANIMATION LIBRARY</div>
+  <div class="page-meta meta-br">DV / 11</div>
+</section>
+
+<!-- ╔════════════════════════════════════════════════════╗
+     ║  11.5 — SCROLL CHOREOGRAPHY                        ║
+     ╚════════════════════════════════════════════════════╝ -->
+<section class="page">
+  <div class="page-meta meta-tl">SECTION 11.5 · SCROLL</div>
+  <div class="page-meta meta-tr">P. 23 · CHOREOGRAPHY</div>
+  <div class="section-header">
+    <span class="section-num">⌘ 11½</span>
+    <h2 class="section-title">Scroll <em>choreography</em></h2>
+  </div>
+
+  <p class="lead-text" style="max-width: 880px;">Готовые «номера», в которых scroll = режиссёр. Каждый — комбинация 2-4 паттернов сверху. <em>Реальный код-каркас</em>, не идеи в воздухе.</p>
+
+  <div class="choreo-grid">
+    <div class="choreo-card">
+      <div class="timeline">
+        <span>0vh</span>
+        <span class="active">50vh</span>
+        <span>100vh</span>
+        <span>150vh</span>
+        <span>200vh</span>
+      </div>
+      <div class="body">
+        <h4>Hero · <em>type-reveal + Ken Burns</em></h4>
+        <p>Полный экран. На скролле 0→0.4 заголовок проявляется по словам через blur-mask. Параллельно фоновое фото медленно зумится 1.0 → 1.05.</p>
+<pre class="code"><span class="c">// Framer Motion + Lenis</span>
+<span class="k">const</span> y = <span class="v">useTransform</span>(scrollYProgress, [0, 1], [<span class="v">0</span>, <span class="v">-160</span>])
+<span class="k">const</span> blur = <span class="v">useTransform</span>(scrollYProgress, [0, .4], [<span class="v">12</span>, <span class="v">0</span>])
+&lt;<span class="k">motion.h1</span> style={{ filter: <span class="v">blur(${blur}px)</span> }}&gt;</pre>
+      </div>
+    </div>
+
+    <div class="choreo-card">
+      <div class="timeline">
+        <span>start</span>
+        <span class="active">+100vh</span>
+        <span>+200vh</span>
+        <span>+300vh</span>
+        <span>release</span>
+      </div>
+      <div class="body">
+        <h4>Sticky <em>scrub stages</em></h4>
+        <p>Секция pinned на 4 экрана. Скролл переключает 4 stage с разной типографикой и mockup-картинкой. Картинка меняется через clip-path swap.</p>
+<pre class="code"><span class="c">// position: sticky + scrollYProgress thresholds</span>
+&lt;<span class="k">section</span> className=<span class="v">"h-[400vh] relative"</span>&gt;
+  &lt;<span class="k">div</span> className=<span class="v">"sticky top-0 h-screen"</span>&gt;
+    {stages[<span class="v">stage</span>]} &lt;<span class="k">img</span> style={clip}/&gt;</pre>
+      </div>
+    </div>
+
+    <div class="choreo-card">
+      <div class="timeline">
+        <span>0vh</span>
+        <span class="active">in-view</span>
+        <span>past</span>
+      </div>
+      <div class="body">
+        <h4>Stagger <em>cards entrance</em></h4>
+        <p>Сетка 3×3. На вход в viewport карточки появляются по диагонали с задержкой 60ms каждая. Y +12, blur 8 → 0, opacity 0 → 1.</p>
+<pre class="code"><span class="k">const</span> parent = { animate: { transition: { staggerChildren: <span class="v">0.06</span> } } }
+<span class="k">const</span> child  = { initial: { y: <span class="v">12</span>, opacity: <span class="v">0</span>, filter: <span class="v">"blur(8px)"</span> },
+  animate: { y: <span class="v">0</span>, opacity: <span class="v">1</span>, filter: <span class="v">"blur(0)"</span> } }</pre>
+      </div>
+    </div>
+
+    <div class="choreo-card">
+      <div class="timeline">
+        <span>0vh</span>
+        <span class="active">center</span>
+        <span>past</span>
+      </div>
+      <div class="body">
+        <h4>Image <em>cinematic zoom</em></h4>
+        <p>Картинка 100vh × 100vw. На прохождении центра viewport — scale 1.0 → 1.15, brightness 0.9 → 1.0. Текст-overlay фейдит при достижении центра.</p>
+<pre class="code"><span class="k">const</span> scale = <span class="v">useTransform</span>(scrollY, [<span class="v">in</span>, <span class="v">center</span>, <span class="v">out</span>], [<span class="v">1</span>,<span class="v">1.15</span>,<span class="v">1.05</span>])
+&lt;<span class="k">motion.img</span> style={{ scale, transformOrigin: <span class="v">"center"</span> }}/&gt;</pre>
+      </div>
+    </div>
+
+    <div class="choreo-card">
+      <div class="timeline">
+        <span>0vh</span>
+        <span class="active">200vh</span>
+        <span>release</span>
+      </div>
+      <div class="body">
+        <h4>Horizontal <em>pinned scroll</em></h4>
+        <p>Section pinned на 200vh. Внутри — горизонтальный flexbox сдвигается влево по мере вертикального скролла. Идеально для cases / showcase.</p>
+<pre class="code"><span class="k">const</span> x = <span class="v">useTransform</span>(scrollYProgress, [0, <span class="v">1</span>], [<span class="v">"0%"</span>, <span class="v">"-66%"</span>])
+&lt;<span class="k">motion.div</span> style={{ x }} className=<span class="v">"flex w-[300vw]"</span>&gt;</pre>
+      </div>
+    </div>
+
+    <div class="choreo-card">
+      <div class="timeline">
+        <span>idle</span>
+        <span class="active">hover</span>
+      </div>
+      <div class="body">
+        <h4>Magnetic <em>CTA + tilt</em></h4>
+        <p>Кнопка тянется к курсору в радиусе 80px (translate * 0.3). При hover — gradient bg + +2° tilt. На отпускании — пружинит обратно.</p>
+<pre class="code"><span class="k">const</span> handle = (e) =&gt; { x.<span class="v">set</span>((e.clientX - cx) * <span class="v">.3</span>) }
+&lt;<span class="k">motion.button</span> style={{ x, y, rotate: <span class="v">tilt</span> }}
+  transition={{ type: <span class="v">"spring"</span>, stiffness: <span class="v">200</span> }}/&gt;</pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-meta meta-bl">SCROLL CHOREOGRAPHY</div>
+  <div class="page-meta meta-br">DV / 11½</div>
+</section>
+
+<!-- ╔════════════════════════════════════════════════════╗
+     ║  12 — INSPIRATION REFERENCES                       ║
+     ╚════════════════════════════════════════════════════╝ -->
+<section class="page">
+  <div class="page-meta meta-tl">SECTION 12</div>
+  <div class="page-meta meta-tr">P. 24 · INSPIRATION</div>
+  <div class="section-header">
+    <span class="section-num">⌘ 12</span>
+    <h2 class="section-title">Inspi<em>ration</em></h2>
+  </div>
+
+  <p class="lead-text" style="max-width: 880px;">10 открытых лендингов, которые стоит изучить лично. Открой каждый, проскролль, отметь что взять, что оставить.</p>
+
+  <div class="ref-grid">
+    <div class="ref-card">
+      <span class="ref-num">01</span>
+      <div class="ref-content">
+        <h4 class="ref-name">Linear</h4>
+        <a class="ref-url">linear.app</a>
+        <p class="ref-takeaway"><strong>Что взять:</strong> editorial type, sticky-scroll секции, type-reveal headlines, премиум-минимум. <em style="color: var(--aurum);">Refer для SYLAR · B + XeroCode · A.</em></p>
+      </div>
+    </div>
+
+    <div class="ref-card">
+      <span class="ref-num">02</span>
+      <div class="ref-content">
+        <h4 class="ref-name">Vercel</h4>
+        <a class="ref-url">vercel.com</a>
+        <p class="ref-takeaway"><strong>Что взять:</strong> bento-grid, infrastructure-vibe, terminal mockups, dev-friendly tone. <em style="color: var(--aurum);">Refer для SYLAR · A + XeroCode · C.</em></p>
+      </div>
+    </div>
+
+    <div class="ref-card">
+      <span class="ref-num">03</span>
+      <div class="ref-content">
+        <h4 class="ref-name">Stripe</h4>
+        <a class="ref-url">stripe.com</a>
+        <p class="ref-takeaway"><strong>Что взять:</strong> cinema-grade gradient mesh, parallax, scroll-driven product showcases, premium-but-technical. <em style="color: var(--aurum);">XeroCode · B (liquid).</em></p>
+      </div>
+    </div>
+
+    <div class="ref-card">
+      <span class="ref-num">04</span>
+      <div class="ref-content">
+        <h4 class="ref-name">Mercury Bank</h4>
+        <a class="ref-url">mercury.com</a>
+        <p class="ref-takeaway"><strong>Что взять:</strong> editorial dark, oversized italic numerals, magazine-energy для финансового продукта. <em style="color: var(--aurum);">SYLAR · B.</em></p>
+      </div>
+    </div>
+
+    <div class="ref-card">
+      <span class="ref-num">05</span>
+      <div class="ref-content">
+        <h4 class="ref-name">Arc Browser</h4>
+        <a class="ref-url">arc.net</a>
+        <p class="ref-takeaway"><strong>Что взять:</strong> character-driven, mascot, лёгкая playful-tone, animated mascot Boba/Foo. <em style="color: var(--aurum);">XeroCode · A (mascot Xero refined).</em></p>
+      </div>
+    </div>
+
+    <div class="ref-card">
+      <span class="ref-num">06</span>
+      <div class="ref-content">
+        <h4 class="ref-name">Resend</h4>
+        <a class="ref-url">resend.com</a>
+        <p class="ref-takeaway"><strong>Что взять:</strong> editorial dark, очень острая типографика, dev-product эстетика без bento-перебора. <em style="color: var(--aurum);">SYLAR · C + XeroCode · A.</em></p>
+      </div>
+    </div>
+
+    <div class="ref-card">
+      <span class="ref-num">07</span>
+      <div class="ref-content">
+        <h4 class="ref-name">Vanta</h4>
+        <a class="ref-url">vanta.com</a>
+        <p class="ref-takeaway"><strong>Что взять:</strong> compliance-first design, badge rows, customer logos, серьёзный enterprise-tone. <em style="color: var(--aurum);">RoleFlow · B (Trust).</em></p>
+      </div>
+    </div>
+
+    <div class="ref-card">
+      <span class="ref-num">08</span>
+      <div class="ref-content">
+        <h4 class="ref-name">Datadog</h4>
+        <a class="ref-url">datadoghq.com</a>
+        <p class="ref-takeaway"><strong>Что взять:</strong> dashboard-aesthetic, live data, status-indicators, screenshots реальных дашбордов. <em style="color: var(--aurum);">RoleFlow · A (SOC).</em></p>
+      </div>
+    </div>
+
+    <div class="ref-card">
+      <span class="ref-num">09</span>
+      <div class="ref-content">
+        <h4 class="ref-name">1Password</h4>
+        <a class="ref-url">1password.com</a>
+        <p class="ref-takeaway"><strong>Что взять:</strong> editorial-defense, photography с теплым тоном, manifesto-style copy для security. <em style="color: var(--aurum);">RoleFlow · C.</em></p>
+      </div>
+    </div>
+
+    <div class="ref-card">
+      <span class="ref-num">10</span>
+      <div class="ref-content">
+        <h4 class="ref-name">Fly.io</h4>
+        <a class="ref-url" href="https://fly.io" target="_blank">fly.io</a>
+        <p class="ref-takeaway"><strong>Что взять:</strong> hacker-меня-editorial mix, terminal mockups, founder-led tone, raw но aesthetic. <em style="color: var(--aurum);">SYLAR · C (Studio Lab).</em></p>
+      </div>
+    </div>
+
+    <div class="ref-card">
+      <span class="ref-num">11</span>
+      <div class="ref-content">
+        <h4 class="ref-name">Are.na</h4>
+        <a class="ref-url" href="https://www.are.na" target="_blank">are.na</a>
+        <p class="ref-takeaway"><strong>Что взять:</strong> карта-как-интерфейс, узлы и связи, минималистичный canvas без лишнего хрома. Главный референс для <em style="color: var(--aurum);">SYLAR · B (Living Map).</em></p>
+      </div>
+    </div>
+
+    <div class="ref-card">
+      <span class="ref-num">12</span>
+      <div class="ref-content">
+        <h4 class="ref-name">Obsidian Graph</h4>
+        <a class="ref-url" href="https://obsidian.md" target="_blank">obsidian.md</a>
+        <p class="ref-takeaway"><strong>Что взять:</strong> graph-view с притягивающимися узлами, magnetic-курсор, edges светятся при пересечении. Прямая основа для <em style="color: var(--aurum);">SYLAR · B canvas-механики.</em></p>
+      </div>
+    </div>
+
+    <div class="ref-card">
+      <span class="ref-num">13</span>
+      <div class="ref-content">
+        <h4 class="ref-name">Rauno · CMD-K</h4>
+        <a class="ref-url" href="https://rauno.me" target="_blank">rauno.me</a>
+        <p class="ref-takeaway"><strong>Что взять:</strong> микро-анимации (magnetic CTA, tilt cards, hash scramble), детальный crafted-feel. <em style="color: var(--aurum);">Animation library — все 22 паттерна.</em></p>
+      </div>
+    </div>
+
+    <div class="ref-card">
+      <span class="ref-num">14</span>
+      <div class="ref-content">
+        <h4 class="ref-name">Anthropic</h4>
+        <a class="ref-url" href="https://anthropic.com" target="_blank">anthropic.com</a>
+        <p class="ref-takeaway"><strong>Что взять:</strong> editorial с серифом, теплая палитра (cream/aurum/black), длинная читательская типографика на R&D-продукт. <em style="color: var(--aurum);">XeroCode · A полировка.</em></p>
+      </div>
+    </div>
+
+    <div class="ref-card">
+      <span class="ref-num">15</span>
+      <div class="ref-content">
+        <h4 class="ref-name">Pieter Levels</h4>
+        <a class="ref-url" href="https://levels.io" target="_blank">levels.io</a>
+        <p class="ref-takeaway"><strong>Что взять:</strong> founder-led, raw, прозрачные числа в реальном времени (revenue, users), монохромная честность. <em style="color: var(--aurum);">SYLAR · C tone.</em></p>
+      </div>
+    </div>
+
+    <div class="ref-card">
+      <span class="ref-num">16</span>
+      <div class="ref-content">
+        <h4 class="ref-name">Apple Vision Pro</h4>
+        <a class="ref-url" href="https://www.apple.com/apple-vision-pro/" target="_blank">apple.com/apple-vision-pro</a>
+        <p class="ref-takeaway"><strong>Что взять:</strong> sticky horizontal scroll, cinematic image zoom (Ken Burns на product shots), drama в типографике. <em style="color: var(--aurum);">Scroll choreography master-class.</em></p>
+      </div>
+    </div>
+
+    <div class="ref-card">
+      <span class="ref-num">17</span>
+      <div class="ref-content">
+        <h4 class="ref-name">Framer Sites</h4>
+        <a class="ref-url" href="https://www.framer.com/templates/" target="_blank">framer.com/templates</a>
+        <p class="ref-takeaway"><strong>Что взять:</strong> публично доступные шаблоны для разборки CSS/animation, готовые motion-recipes. <em style="color: var(--aurum);">Hand-picked: «Linear», «Nuxt», «Sandbox».</em></p>
+      </div>
+    </div>
+
+    <div class="ref-card">
+      <span class="ref-num">18</span>
+      <div class="ref-content">
+        <h4 class="ref-name">Awwwards · SOTM</h4>
+        <a class="ref-url" href="https://www.awwwards.com/sites_of_the_month/" target="_blank">awwwards.com/sites_of_the_month</a>
+        <p class="ref-takeaway"><strong>Что взять:</strong> ежемесячный поток лучших lендингов с проигрываемыми скроллами. Раз в месяц обновлять «look book» команды. <em style="color: var(--aurum);">Долгосрочный источник.</em></p>
+      </div>
+    </div>
+  </div>
+
+  <p class="row-label">📌 Open every URL — проскролль каждый сайт минимум 30 секунд</p>
+  <p class="body-text" style="max-width: 880px;">Анализ референса = открыть DevTools → Network → Performance, прокрутить страницу до конца, отметить скрин-зоны и засечь FPS. Скриншоты в Figma board. Текст вынести в Notion. Это <em style="color: var(--aurum);">обязательная домашка</em> до старта реализации.</p>
+
+  <div class="page-meta meta-bl">INSPIRATION</div>
+  <div class="page-meta meta-br">DV / 12</div>
+</section>
+
+<!-- ╔════════════════════════════════════════════════════╗
+     ║  12.5 — CROSS-PRODUCT BRAND DNA                    ║
+     ╚════════════════════════════════════════════════════╝ -->
+<section class="page">
+  <div class="page-meta meta-tl">SECTION 12.5 · CROSS-DNA</div>
+  <div class="page-meta meta-tr">P. 25 · BRAND DNA</div>
+  <div class="section-header">
+    <span class="section-num">⌘ 12½</span>
+    <h2 class="section-title">Cross-product <em>DNA</em></h2>
+  </div>
+
+  <p class="lead-text" style="max-width: 880px;">Три продукта могут выглядеть кардинально по-разному — но <em>пять видимых маркеров</em> читаются на каждом. Это и есть «понимание что это наша».</p>
+
+  <div class="dna-cross">
+    <div class="dna-cross-card product-sylar">
+      <p class="pname">▸ SYLAR</p>
+      <div class="demo">An <em>operating system</em> for AI&nbsp;work.</div>
+      <p class="marker"><span class="key">⌘ marker</span> ⌘ NN page-numbering</p>
+      <p class="marker"><span class="key">accent</span> AURUM #C9A55C</p>
+      <p class="marker"><span class="key">italic</span> Instrument Serif Italic</p>
+      <p class="marker"><span class="key">mono</span> JetBrains Mono labels</p>
+      <p class="marker"><span class="key">easing</span> cubic-bezier(.32,.72,0,1)</p>
+    </div>
+
+    <div class="dna-cross-card product-xero">
+      <p class="pname">▸ XEROCODE</p>
+      <div class="demo">Multi-model AI <em>for teams.</em></div>
+      <p class="marker"><span class="key">⌘ marker</span> ⌘ NN page-numbering</p>
+      <p class="marker"><span class="key">accent</span> VIOLET #7C5CFF + AURUM</p>
+      <p class="marker"><span class="key">italic</span> Playfair Italic</p>
+      <p class="marker"><span class="key">mono</span> JetBrains Mono labels</p>
+      <p class="marker"><span class="key">easing</span> cubic-bezier(.32,.72,0,1)</p>
+    </div>
+
+    <div class="dna-cross-card product-rf">
+      <p class="pname">▸ ROLEFLOW</p>
+      <div class="demo">Govern AI <em>across the enterprise.</em></div>
+      <p class="marker"><span class="key">⌘ marker</span> ⌘ NN page-numbering</p>
+      <p class="marker"><span class="key">accent</span> AURORA #22C55E + AURUM</p>
+      <p class="marker"><span class="key">italic</span> Instrument Serif Italic</p>
+      <p class="marker"><span class="key">mono</span> JetBrains Mono labels</p>
+      <p class="marker"><span class="key">easing</span> cubic-bezier(.32,.72,0,1)</p>
+    </div>
+  </div>
+
+  <p class="row-label">Что НЕ должно отличаться между продуктами</p>
+  <div class="anatomy-grid" style="grid-template-columns: repeat(3, 1fr);">
+    <div class="anatomy-card">
+      <p class="a-num">▸ DNA · 01</p>
+      <h4 class="a-name">Page meta <em>tags</em></h4>
+      <div class="a-vis" style="display: flex; align-items: center; justify-content: space-between; padding: 10px;">
+        <span style="font-family: var(--font-mono); font-size: 9px; color: var(--ink-400); letter-spacing: 0.2em;">SECTION 02 · S/A</span>
+        <span style="font-family: var(--font-mono); font-size: 9px; color: var(--aurum); letter-spacing: 0.2em;">⌘ 02</span>
+      </div>
+      <p class="a-spec">tl <b>SECTION NN</b> + tr <b>⌘ NN</b><br>JetBrains Mono · 10/11px · 0.2em tracking</p>
+    </div>
+
+    <div class="anatomy-card">
+      <p class="a-num">▸ DNA · 02</p>
+      <h4 class="a-name">Italic <em>emphasis</em></h4>
+      <div class="a-vis" style="display: flex; align-items: center; padding: 10px;">
+        <span style="font-family: var(--font-display); font-size: 22px; color: var(--ink-50); letter-spacing: -0.02em;">Build with <em style="font-style: italic; color: var(--aurum);">italic.</em></span>
+      </div>
+      <p class="a-spec">Один кусок заголовка курсивом + цветом продукта<br>Никогда не курсивим целое предложение</p>
+    </div>
+
+    <div class="anatomy-card">
+      <p class="a-num">▸ DNA · 03</p>
+      <h4 class="a-name">Aurum <em>touchpoint</em></h4>
+      <div class="a-vis" style="display: flex; align-items: center; gap: 8px; padding: 10px;">
+        <span style="display: inline-block; width: 4px; height: 24px; background: var(--aurum);"></span>
+        <span style="font-family: var(--font-mono); font-size: 10px; color: var(--ink-300); letter-spacing: 0.2em;">▸ AURUM 4PX BAR</span>
+      </div>
+      <p class="a-spec">Каждый продукт оставляет <b>одну золотую полоску</b> где-то в layout — sigil происхождения от SYLAR</p>
+    </div>
+
+    <div class="anatomy-card">
+      <p class="a-num">▸ DNA · 04</p>
+      <h4 class="a-name">Footer <em>signature</em></h4>
+      <div class="a-vis" style="display: flex; align-items: center; justify-content: space-between; padding: 10px;">
+        <span style="font-family: var(--font-mono); font-size: 9px; color: var(--ink-400); letter-spacing: 0.2em;">© SYLAR · MMXXVI</span>
+        <span style="font-family: var(--font-instrument); font-style: italic; font-size: 11px; color: var(--aurum);">@SYL4R</span>
+      </div>
+      <p class="a-spec">Всегда: год римскими + <b>@SYL4R</b> курсивом aurum в правом нижнем</p>
+    </div>
+
+    <div class="anatomy-card">
+      <p class="a-num">▸ DNA · 05</p>
+      <h4 class="a-name">Easing <em>signature</em></h4>
+      <div class="a-vis" style="display: flex; align-items: center; padding: 10px; gap: 10px;">
+        <span style="font-family: var(--font-mono); font-size: 9px; color: var(--ink-300);">cubic-bezier</span>
+        <span style="font-family: var(--font-mono); font-size: 10px; color: var(--aurum); letter-spacing: 0.05em;">(.32, .72, 0, 1)</span>
+      </div>
+      <p class="a-spec">Один и тот же <b>ease-emphasis</b> на всех продуктах<br>Это «походка» бренда — ощущается даже без логотипа</p>
+    </div>
+
+    <div class="anatomy-card">
+      <p class="a-num">▸ DNA · 06</p>
+      <h4 class="a-name">CTA <em>shape</em></h4>
+      <div class="a-vis" style="display: flex; align-items: center; padding: 10px;">
+        <span style="display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border: 1px solid var(--aurum); color: var(--aurum); font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.15em; border-radius: 4px;">START NOW <span style="color: var(--aurum);">→</span></span>
+      </div>
+      <p class="a-spec">CTA — всегда <b>прямоугольный</b>, mono caps, тонкая обводка цвета продукта<br>Без gradient-кнопок и blur-glass</p>
+    </div>
+  </div>
+
+  <div class="page-meta meta-bl">CROSS-PRODUCT DNA</div>
+  <div class="page-meta meta-br">DV / 12½</div>
+</section>
+
+<!-- ╔════════════════════════════════════════════════════╗
+     ║  13 — DECISION MATRIX                              ║
+     ╚════════════════════════════════════════════════════╝ -->
+<section class="page">
+  <div class="page-meta meta-tl">SECTION 13</div>
+  <div class="page-meta meta-tr">P. 26 · DECISION</div>
+  <div class="section-header">
+    <span class="section-num">⌘ 13</span>
+    <h2 class="section-title">Как <em>выбрать</em></h2>
+  </div>
+
+  <p class="lead-text" style="max-width: 880px;">9 направлений × 3 продукта = до <em>27 комбинаций</em>. Чтобы не запутаться — фильтр через приоритет аудитории.</p>
+
+  <div class="row-label">Если приоритет — DEV/TECH аудитория</div>
+  <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;">
+    <div class="meta-card dir-sylar">
+      <span class="accent-bar"></span>
+      <p class="label">▸ SYLAR</p>
+      <p class="value"><strong>SYLAR · A — Infrastructure</strong><br>(Vercel-vibe, чистый, технический)</p>
+    </div>
+    <div class="meta-card dir-xero">
+      <span class="accent-bar"></span>
+      <p class="label">▸ XEROCODE</p>
+      <p class="value"><strong>XeroCode · C — Bento Brutalist</strong><br>(scannable, product-first, dev-friendly)</p>
+    </div>
+    <div class="meta-card dir-rf">
+      <span class="accent-bar"></span>
+      <p class="label">▸ ROLEFLOW</p>
+      <p class="value"><strong>RoleFlow · A — SOC Dashboard</strong><br>(SecOps live data)</p>
+    </div>
+  </div>
+
+  <div class="row-label">Если приоритет — CREATIVE / SMB аудитория</div>
+  <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;">
+    <div class="meta-card dir-sylar">
+      <span class="accent-bar"></span>
+      <p class="label">▸ SYLAR</p>
+      <p class="value"><strong>SYLAR · B — Living Map</strong><br>(интерактивная карта продуктов)</p>
+    </div>
+    <div class="meta-card dir-xero">
+      <span class="accent-bar"></span>
+      <p class="label">▸ XEROCODE</p>
+      <p class="value"><strong>XeroCode · A — Editorial Italic</strong><br>(текущее, premium-creative)</p>
+    </div>
+    <div class="meta-card dir-rf">
+      <span class="accent-bar"></span>
+      <p class="label">▸ ROLEFLOW</p>
+      <p class="value"><strong>RoleFlow · C — Editorial Defense</strong><br>(thought-leadership)</p>
+    </div>
+  </div>
+
+  <div class="row-label">Если приоритет — ENTERPRISE / CISO аудитория</div>
+  <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;">
+    <div class="meta-card dir-sylar">
+      <span class="accent-bar"></span>
+      <p class="label">▸ SYLAR</p>
+      <p class="value"><strong>SYLAR · A — Infrastructure</strong><br>(трастовый, technical-premium)</p>
+    </div>
+    <div class="meta-card dir-xero">
+      <span class="accent-bar"></span>
+      <p class="label">▸ XEROCODE</p>
+      <p class="value"><strong>XeroCode · C — Bento Brutalist</strong><br>(product-clarity для покупателя)</p>
+    </div>
+    <div class="meta-card dir-rf">
+      <span class="accent-bar"></span>
+      <p class="label">▸ ROLEFLOW</p>
+      <p class="value"><strong>RoleFlow · B — Enterprise Trust</strong><br>(compliance-first для CISO)</p>
+    </div>
+  </div>
+
+  <div class="spacer-md"></div>
+
+  <p class="row-label">Моя ставка (subjective)</p>
+  <div style="background: linear-gradient(135deg, rgba(201,165,92,0.08), rgba(201,165,92,0.02)); border: 1px solid rgba(201,165,92,0.3); border-radius: 16px; padding: 32px;">
+    <p style="font-family: var(--font-display); font-style: italic; font-size: 24px; color: var(--ink-50); line-height: 1.4; margin-bottom: 16px;">«<em style="color: var(--aurum);">SYLAR · B — Living Map</em> + <em style="color: var(--xero-violet);">XeroCode · A — Editorial Italic</em> + <em style="color: var(--rf-aurora);">RoleFlow · B — Enterprise Trust</em>»</p>
+    <p style="color: var(--ink-200); font-size: 15px; line-height: 1.65;"><strong style="color: var(--aurum);">SYLAR-зонт</strong> получает <strong>Living Map</strong> — интерактивную карту с двумя планетами-продуктами. Это <em>не «ультра-премиум»</em>, не «editorial luxury» и не «ещё один SaaS landing». Это <strong>аттракцион</strong>: человек прилетает на sylar.com и сразу видит карту своих будущих инструментов. Память от такого опыта в 10× выше стандартного hero+features+pricing.</p>
+    <p style="color: var(--ink-200); font-size: 15px; line-height: 1.65; margin-top: 12px;"><strong style="color: var(--xero-violet);">XeroCode</strong> остаётся в <strong>Editorial Italic</strong> — это его душа, и она уже работает на v3.</p>
+    <p style="color: var(--ink-200); font-size: 15px; line-height: 1.65; margin-top: 12px;"><strong style="color: var(--rf-aurora);">RoleFlow</strong> идёт в <strong>Enterprise Trust</strong> — это язык CISO/CIO, которые принимают решение о покупке. SOC-Dashboard остаётся как live demo внутри.</p>
+    <p style="color: var(--ink-200); font-size: 15px; line-height: 1.65; margin-top: 16px; padding-top: 16px; border-top: 1px solid rgba(201,165,92,0.2);"><strong style="color: var(--aurum);">Cross-product DNA</strong> (раздел 12½) гарантирует что несмотря на радикально разные фронты — все три читаются как «одна семья»: ⌘ marker, Aurum touchpoint, italic emphasis, JetBrains Mono labels, единый ease.</p>
+  </div>
+
+  <div class="page-meta meta-bl">DECISION MATRIX</div>
+  <div class="page-meta meta-br">DV / 13</div>
+</section>
+
+<!-- FOOTER -->
+<section style="text-align: center; padding: 96px 32px; background: var(--obsidian); border-top: 1px solid var(--slate-700);">
+  <p style="font-family: var(--font-display); font-style: italic; font-size: 28px; color: var(--ink-200); max-width: 720px; margin: 0 auto 32px; line-height: 1.4;">«9 направлений. <em style="color: var(--aurum);">1 ДНК.</em><br>Один из них — <em style="color: var(--aurum);">наш</em>.»</p>
+  <p style="font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.3em; text-transform: uppercase; color: var(--ink-400);">SYLAR · DESIGN VISIONS · v1.0 · MMXXVI</p>
+  <p style="font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.3em; text-transform: uppercase; color: var(--ink-400); margin-top: 16px; opacity: 0.6;">forged by <span style="color: var(--aurum); font-style: italic;">@SYL4R</span></p>
+</section>
+
+<script>
+const io = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) entry.target.classList.add('visible');
+  });
+}, { threshold: 0.05 });
+document.querySelectorAll('.page').forEach(el => {
+  el.classList.add('reveal');
+  io.observe(el);
+});
+</script>
+</body>
+</html>

@@ -44,7 +44,6 @@ export function AboutSubPage({ onBack, onCTA }: Props) {
         num="06"
         title={<>О <em style={{ color: "var(--amber-500)", fontStyle: "italic", fontWeight: 400 }}>нас.</em></>}
         subtitle="Ускоряем работу бизнеса с помощью AI-команды из 430+ моделей. Multi-model first. BYOK first. Made in Russia."
-        tag={{ label: "MMXXVI · Москва · Россия", accent: "var(--amber-500)" }}
         onBack={onBack}
       />
 

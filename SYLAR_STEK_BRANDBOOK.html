@@ -1,0 +1,2097 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SYLAR STEK — Brand Book v1.0</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,800;1,400;1,700;1,800&family=Manrope:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+<style>
+/* ╔════════════════════════════════════════════════════╗
+   ║  SYLAR STEK · DESIGN TOKENS                        ║
+   ║  Parent brand · standalone identity                ║
+   ╚════════════════════════════════════════════════════╝ */
+
+:root {
+  /* Parent — SYLAR STEK · Obsidian + Aurum + Platinum */
+  --obsidian:    #050510;
+  --abyss:       #0A0A14;
+  --slate-900:   #14141C;
+  --slate-800:   #1E1E2A;
+  --slate-700:   #2A2A3C;
+  --slate-600:   #3D3D52;
+  --slate-500:   #5A5A75;
+
+  --platinum-50:  #F8F8FB;
+  --platinum-100: #E8E8EC;
+  --platinum-200: #C7C7CF;
+  --platinum-300: #A0A0AC;
+  --platinum-400: #75757F;
+
+  --aurum:       #C9A55C;     /* signature gold */
+  --aurum-soft:  #C9A55C20;
+  --aurum-glow:  #C9A55C40;
+  --aurum-bright:#E4BD6A;
+
+  /* Sub-brand · XeroCode (creative platform) */
+  --xero-violet: #7C5CFF;
+  --xero-cyan:   #00D4FF;
+  --xero-amber:  #FFB547;
+
+  /* Sub-brand · RoleFlow (governance & audit) */
+  --rf-aurora:   #22C55E;
+  --rf-steel:    #4A6FA5;
+  --rf-alert:    #FF3B5C;
+  --rf-shield:   #2D5A8C;
+
+  /* Gradients */
+  --grad-aurum:    linear-gradient(135deg, #C9A55C 0%, #E4BD6A 100%);
+  --grad-xero:     linear-gradient(135deg, #7C5CFF 0%, #00D4FF 100%);
+  --grad-rf:       linear-gradient(135deg, #22C55E 0%, #4A6FA5 100%);
+  --grad-mesh-sylar:
+    radial-gradient(ellipse 60% 50% at 30% 30%, rgba(201,165,92,0.15) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 50% at 70% 70%, rgba(74,111,165,0.10) 0%, transparent 60%),
+    #050510;
+  --grad-mesh-xero:
+    radial-gradient(ellipse 60% 50% at 30% 20%, rgba(124,92,255,0.30) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 50% at 70% 80%, rgba(0,212,255,0.20) 0%, transparent 60%),
+    #050510;
+  --grad-mesh-rf:
+    radial-gradient(ellipse 60% 50% at 30% 30%, rgba(34,197,94,0.18) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 50% at 70% 70%, rgba(74,111,165,0.20) 0%, transparent 60%),
+    #050510;
+
+  /* Typography */
+  --font-display: 'DM Serif Display', 'Playfair Display', Georgia, serif;   /* SYLAR signature */
+  --font-serif:   'Playfair Display', Georgia, serif;
+  --font-sans:    'Manrope', -apple-system, sans-serif;
+  --font-body:    'Inter', -apple-system, sans-serif;
+  --font-mono:    'JetBrains Mono', 'SF Mono', monospace;
+
+  --ease-emphasis: cubic-bezier(0.32, 0.72, 0, 1);
+  --ease-smooth:   cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--obsidian);
+  color: var(--platinum-100);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.6;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+::selection { background: var(--aurum); color: var(--obsidian); }
+
+/* ╔════════════════════════════════════════════════════╗
+   ║  PAGE LAYOUT                                       ║
+   ╚════════════════════════════════════════════════════╝ */
+
+.page {
+  min-height: 100vh;
+  width: 100%;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 64px 80px;
+  border-bottom: 1px solid var(--slate-700);
+  overflow: hidden;
+}
+.page::before, .page::after {
+  content: '';
+  position: absolute;
+  width: 16px; height: 16px;
+  border: 1px solid var(--slate-500);
+}
+.page::before { top: 24px; left: 24px; border-right: none; border-bottom: none; }
+.page::after { bottom: 24px; right: 24px; border-left: none; border-top: none; }
+
+.page-meta {
+  position: absolute;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.25em;
+  color: var(--platinum-400);
+  text-transform: uppercase;
+}
+.meta-tl { top: 36px; left: 60px; }
+.meta-tr { top: 36px; right: 60px; }
+.meta-bl { bottom: 36px; left: 60px; }
+.meta-br { bottom: 36px; right: 60px; }
+
+/* ╔════════════════════════════════════════════════════╗
+   ║  COVER · SYLAR STEK                                ║
+   ╚════════════════════════════════════════════════════╝ */
+
+.cover {
+  background: var(--obsidian);
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.cover::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--grad-mesh-sylar);
+  opacity: 0.7;
+}
+.cover > * { position: relative; z-index: 2; }
+
+/* Stacked layers visual — geometric brand mark */
+.brand-mark-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 56px;
+}
+.brand-mark-stack .layer {
+  width: 60px;
+  height: 4px;
+  background: var(--aurum);
+  border-radius: 2px;
+  box-shadow: 0 0 24px var(--aurum-glow);
+}
+.brand-mark-stack .layer.l1 { width: 100px; opacity: 1; }
+.brand-mark-stack .layer.l2 { width: 80px; opacity: 0.7; }
+.brand-mark-stack .layer.l3 { width: 60px; opacity: 0.4; }
+
+.cover-name {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(72px, 12vw, 200px);
+  line-height: 0.9;
+  color: var(--platinum-50);
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+  margin-bottom: 8px;
+}
+.cover-name .stek {
+  font-style: italic;
+  color: transparent;
+  background: var(--grad-aurum);
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+.cover-tagline {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: clamp(20px, 2.5vw, 32px);
+  color: var(--platinum-200);
+  font-weight: 400;
+  margin-top: 24px;
+}
+.cover-tagline em {
+  color: var(--aurum);
+  font-weight: 700;
+  font-style: italic;
+}
+.cover-sub {
+  margin-top: 32px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.4em;
+  text-transform: uppercase;
+  color: var(--platinum-300);
+}
+
+/* Sub-brand badges row */
+.cover-products {
+  margin-top: 64px;
+  display: flex;
+  gap: 32px;
+  align-items: center;
+  justify-content: center;
+}
+.product-badge {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 24px;
+  background: rgba(255,255,255,0.02);
+  border: 1px solid var(--slate-700);
+  border-radius: 100px;
+  transition: all 250ms;
+}
+.product-badge:hover { border-color: var(--aurum); background: rgba(201,165,92,0.05); }
+.product-badge .dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+}
+.product-badge.xero .dot { background: var(--xero-violet); box-shadow: 0 0 12px var(--xero-violet); }
+.product-badge.rf .dot { background: var(--rf-aurora); box-shadow: 0 0 12px var(--rf-aurora); }
+.product-badge .label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  color: var(--platinum-200);
+  text-transform: uppercase;
+}
+.product-badge .name {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 18px;
+  color: var(--platinum-50);
+}
+
+/* ╔════════════════════════════════════════════════════╗
+   ║  SECTION HEADER                                    ║
+   ╚════════════════════════════════════════════════════╝ */
+
+.section-header {
+  display: flex;
+  align-items: baseline;
+  gap: 32px;
+  margin-bottom: 80px;
+  padding-bottom: 32px;
+  border-bottom: 1px solid var(--slate-700);
+}
+.section-num {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  letter-spacing: 0.3em;
+  color: var(--aurum);
+  font-weight: 500;
+}
+.section-title {
+  font-family: var(--font-display);
+  font-size: clamp(56px, 7vw, 96px);
+  font-weight: 400;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  color: var(--platinum-50);
+}
+.section-title em {
+  font-style: italic;
+  color: var(--aurum);
+}
+.section-title .xero { background: var(--grad-xero); -webkit-background-clip: text; background-clip: text; color: transparent; font-style: italic; }
+.section-title .rf { background: var(--grad-rf); -webkit-background-clip: text; background-clip: text; color: transparent; font-style: italic; }
+
+/* ╔════════════════════════════════════════════════════╗
+   ║  TOC                                               ║
+   ╚════════════════════════════════════════════════════╝ */
+
+.toc-list { display: flex; flex-direction: column; gap: 0; margin-top: 48px; }
+.toc-item {
+  display: flex;
+  align-items: baseline;
+  padding: 28px 0;
+  border-bottom: 1px solid var(--slate-700);
+  font-family: var(--font-display);
+  font-size: 36px;
+  color: var(--platinum-100);
+  text-decoration: none;
+  transition: all 0.3s var(--ease-smooth);
+  cursor: pointer;
+}
+.toc-item:hover {
+  color: var(--aurum);
+  padding-left: 24px;
+}
+.toc-num {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: var(--platinum-400);
+  letter-spacing: 0.2em;
+  min-width: 80px;
+  font-weight: 500;
+}
+.toc-name { flex: 1; font-weight: 400; }
+.toc-name em { font-style: italic; color: var(--aurum); }
+.toc-tag {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--platinum-400);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border: 1px solid var(--slate-700);
+  border-radius: 100px;
+  margin-left: 16px;
+}
+.toc-tag.xero { color: var(--xero-violet); border-color: rgba(124,92,255,0.3); }
+.toc-tag.rf { color: var(--rf-aurora); border-color: rgba(34,197,94,0.3); }
+
+/* ╔════════════════════════════════════════════════════╗
+   ║  MANIFEST                                          ║
+   ╚════════════════════════════════════════════════════╝ */
+
+.manifest-quote {
+  font-family: var(--font-display);
+  font-size: clamp(40px, 5vw, 72px);
+  line-height: 1.15;
+  font-weight: 400;
+  font-style: italic;
+  color: var(--platinum-50);
+  max-width: 1100px;
+  margin: 0 auto;
+  text-align: center;
+}
+.manifest-quote em {
+  color: var(--aurum);
+  font-weight: 700;
+}
+.manifest-author {
+  margin-top: 48px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.3em;
+  color: var(--platinum-400);
+  text-transform: uppercase;
+  text-align: center;
+}
+.principles {
+  margin-top: 120px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 48px;
+}
+.principle {
+  border-top: 1px solid var(--aurum);
+  padding-top: 32px;
+}
+.principle-num {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.3em;
+  color: var(--aurum);
+  margin-bottom: 16px;
+}
+.principle-title {
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 400;
+  color: var(--platinum-50);
+  margin-bottom: 16px;
+  letter-spacing: -0.02em;
+}
+.principle-body {
+  color: var(--platinum-200);
+  font-size: 15px;
+  line-height: 1.7;
+}
+
+/* ╔════════════════════════════════════════════════════╗
+   ║  ARCHITECTURE — THE TWO PRODUCTS                   ║
+   ╚════════════════════════════════════════════════════╝ */
+
+.architecture-stack {
+  display: grid;
+  grid-template-rows: auto auto auto;
+  gap: 32px;
+  margin-top: 64px;
+}
+.arch-layer {
+  position: relative;
+  padding: 40px 32px;
+  border-radius: 24px;
+  border: 1px solid var(--slate-700);
+  overflow: hidden;
+}
+.arch-layer-meta {
+  position: absolute;
+  top: 16px; right: 16px;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.3em;
+  color: var(--platinum-400);
+  text-transform: uppercase;
+}
+.arch-layer.parent {
+  background: linear-gradient(135deg, rgba(201,165,92,0.06), rgba(201,165,92,0.02));
+  border-color: rgba(201,165,92,0.3);
+}
+.arch-layer.products {
+  background: var(--abyss);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  padding: 32px;
+}
+.arch-product {
+  position: relative;
+  padding: 32px;
+  border-radius: 16px;
+  border: 1px solid var(--slate-700);
+  background: var(--slate-900);
+  transition: all 250ms;
+}
+.arch-product:hover { transform: translateY(-4px); }
+.arch-product.xero { border-color: rgba(124,92,255,0.3); }
+.arch-product.xero:hover { border-color: var(--xero-violet); box-shadow: 0 16px 32px rgba(124,92,255,0.2); }
+.arch-product.rf { border-color: rgba(34,197,94,0.3); }
+.arch-product.rf:hover { border-color: var(--rf-aurora); box-shadow: 0 16px 32px rgba(34,197,94,0.2); }
+.arch-product-name {
+  font-family: var(--font-display);
+  font-size: 36px;
+  font-weight: 400;
+  color: var(--platinum-50);
+  letter-spacing: -0.02em;
+  margin-bottom: 8px;
+}
+.arch-product-name em {
+  font-style: italic;
+}
+.arch-product.xero .arch-product-name em {
+  background: var(--grad-xero);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.arch-product.rf .arch-product-name em {
+  background: var(--grad-rf);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.arch-product-tagline {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  margin-bottom: 20px;
+}
+.arch-product.xero .arch-product-tagline { color: var(--xero-violet); }
+.arch-product.rf .arch-product-tagline { color: var(--rf-aurora); }
+.arch-product-desc {
+  color: var(--platinum-200);
+  font-size: 14px;
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+.arch-features {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.arch-features li {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  padding: 4px 10px;
+  border: 1px solid var(--slate-700);
+  border-radius: 100px;
+  color: var(--platinum-300);
+  letter-spacing: 0.05em;
+}
+.arch-product.xero .arch-features li { color: var(--xero-violet); border-color: rgba(124,92,255,0.25); }
+.arch-product.rf .arch-features li { color: var(--rf-aurora); border-color: rgba(34,197,94,0.25); }
+
+.arch-bridge {
+  position: relative;
+  text-align: center;
+  padding: 24px;
+  background: rgba(201,165,92,0.04);
+  border: 1px dashed rgba(201,165,92,0.4);
+  border-radius: 16px;
+}
+.arch-bridge-tag {
+  display: inline-block;
+  padding: 6px 16px;
+  background: var(--obsidian);
+  color: var(--aurum);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.3em;
+  border-radius: 100px;
+  border: 1px solid rgba(201,165,92,0.4);
+  margin-bottom: 12px;
+  text-transform: uppercase;
+}
+.arch-bridge-text {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 18px;
+  color: var(--platinum-200);
+}
+.arch-bridge-text em { color: var(--aurum); font-weight: 700; }
+
+/* ╔════════════════════════════════════════════════════╗
+   ║  COLOR PALETTE                                     ║
+   ╚════════════════════════════════════════════════════╝ */
+
+.palette-row {
+  margin-bottom: 48px;
+}
+.palette-row-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--aurum);
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--slate-700);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.palette-row-label::before {
+  content: '';
+  display: inline-block;
+  width: 24px;
+  height: 1px;
+  background: var(--aurum);
+}
+.swatch-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+}
+.swatch {
+  aspect-ratio: 3/4;
+  border-radius: 12px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+  overflow: hidden;
+}
+.swatch-name {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+.swatch-hex {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 500;
+}
+.swatch.dark-text { color: var(--obsidian); }
+.swatch.light-text { color: var(--platinum-50); }
+
+/* ╔════════════════════════════════════════════════════╗
+   ║  TYPOGRAPHY                                        ║
+   ╚════════════════════════════════════════════════════╝ */
+
+.type-spec {
+  display: grid;
+  grid-template-columns: 1fr 3fr;
+  gap: 48px;
+  padding: 48px 0;
+  border-top: 1px solid var(--slate-700);
+  align-items: baseline;
+}
+.type-spec:last-child { border-bottom: 1px solid var(--slate-700); }
+.type-meta {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--platinum-400);
+  line-height: 1.8;
+}
+.type-meta strong { color: var(--aurum); display: block; margin-bottom: 4px; }
+.type-sample-display {
+  font-family: var(--font-display);
+  font-size: 96px;
+  font-weight: 400;
+  line-height: 1;
+  color: var(--platinum-50);
+  letter-spacing: -0.03em;
+}
+.type-sample-display em {
+  font-style: italic;
+  color: var(--aurum);
+}
+.type-sample-h1 { font-family: var(--font-sans); font-size: 56px; font-weight: 800; line-height: 1.1; color: var(--platinum-50); letter-spacing: -0.02em; }
+.type-sample-body { font-family: var(--font-body); font-size: 18px; line-height: 1.7; color: var(--platinum-100); }
+.type-sample-mono { font-family: var(--font-mono); font-size: 16px; color: var(--aurum-bright); }
+
+/* ╔════════════════════════════════════════════════════╗
+   ║  TWO-COL                                           ║
+   ╚════════════════════════════════════════════════════╝ */
+
+.two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 80px;
+  align-items: start;
+}
+.col-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--platinum-400);
+  margin-bottom: 24px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--slate-700);
+}
+.lead-text {
+  font-family: var(--font-display);
+  font-size: 36px;
+  line-height: 1.3;
+  color: var(--platinum-50);
+  font-weight: 400;
+  margin-bottom: 32px;
+  letter-spacing: -0.01em;
+}
+.lead-text em { color: var(--aurum); font-style: italic; }
+.body-text {
+  color: var(--platinum-200);
+  font-size: 16px;
+  line-height: 1.75;
+  margin-bottom: 16px;
+}
+
+/* ╔════════════════════════════════════════════════════╗
+   ║  PRODUCT SPEC PAGE (XeroCode / RoleFlow)          ║
+   ╚════════════════════════════════════════════════════╝ */
+
+.product-hero {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 48px;
+  align-items: center;
+  margin-bottom: 64px;
+}
+.product-hero-meta {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  margin-bottom: 16px;
+}
+.product-hero-name {
+  font-family: var(--font-display);
+  font-size: clamp(56px, 7vw, 88px);
+  font-weight: 400;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  margin-bottom: 24px;
+}
+.product-hero-tagline {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 28px;
+  line-height: 1.4;
+  color: var(--platinum-200);
+  font-weight: 400;
+  max-width: 480px;
+}
+.product-mockup-frame {
+  aspect-ratio: 4/3;
+  border-radius: 24px;
+  border: 1px solid var(--slate-700);
+  overflow: hidden;
+  position: relative;
+}
+.product-mockup-frame.xero { background: var(--grad-mesh-xero); }
+.product-mockup-frame.rf { background: var(--grad-mesh-rf); }
+.product-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 64px;
+}
+.stat-card {
+  background: var(--slate-900);
+  border: 1px solid var(--slate-700);
+  border-radius: 16px;
+  padding: 24px;
+  position: relative;
+  overflow: hidden;
+}
+.stat-card .accent-bar {
+  position: absolute; top: 0; left: 0; right: 0; height: 3px;
+}
+.stat-card.xero .accent-bar { background: var(--xero-violet); }
+.stat-card.rf .accent-bar { background: var(--rf-aurora); }
+.stat-card .num {
+  font-family: var(--font-display);
+  font-size: 48px;
+  font-weight: 400;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  margin-bottom: 8px;
+}
+.stat-card.xero .num { background: var(--grad-xero); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.stat-card.rf .num { background: var(--grad-rf); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.stat-card .label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  color: var(--platinum-400);
+  text-transform: uppercase;
+}
+
+/* ╔════════════════════════════════════════════════════╗
+   ║  CROSS-SELL JOURNEY                                ║
+   ╚════════════════════════════════════════════════════╝ */
+
+.journey {
+  background: var(--slate-900);
+  border: 1px solid var(--slate-700);
+  border-radius: 24px;
+  padding: 48px;
+  margin-bottom: 24px;
+  position: relative;
+}
+.journey-tag {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.3em;
+  padding: 4px 12px;
+  border-radius: 100px;
+  background: var(--aurum-soft);
+  color: var(--aurum);
+  text-transform: uppercase;
+  margin-bottom: 16px;
+}
+.journey-title {
+  font-family: var(--font-display);
+  font-size: 32px;
+  font-weight: 400;
+  color: var(--platinum-50);
+  letter-spacing: -0.02em;
+  margin-bottom: 24px;
+  line-height: 1.2;
+}
+.journey-title em { color: var(--aurum); font-style: italic; }
+.journey-flow {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr auto 1fr;
+  gap: 16px;
+  align-items: center;
+}
+.journey-step {
+  padding: 24px;
+  background: var(--abyss);
+  border: 1px solid var(--slate-700);
+  border-radius: 16px;
+  text-align: center;
+  position: relative;
+}
+.journey-step.xero { border-color: rgba(124,92,255,0.3); }
+.journey-step.rf { border-color: rgba(34,197,94,0.3); }
+.journey-step .product {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.journey-step.xero .product { color: var(--xero-violet); }
+.journey-step.rf .product { color: var(--rf-aurora); }
+.journey-step.bridge .product { color: var(--aurum); }
+.journey-step .action {
+  font-family: var(--font-display);
+  font-size: 17px;
+  color: var(--platinum-100);
+  letter-spacing: -0.01em;
+  line-height: 1.35;
+}
+.journey-step .action em { font-style: italic; color: var(--aurum); }
+.journey-arrow {
+  font-family: var(--font-mono);
+  font-size: 24px;
+  color: var(--aurum);
+  font-weight: 700;
+}
+
+/* ╔════════════════════════════════════════════════════╗
+   ║  PRICING TABLE                                     ║
+   ╚════════════════════════════════════════════════════╝ */
+
+.price-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 32px;
+  font-family: var(--font-mono);
+}
+.price-table thead th {
+  text-align: left;
+  padding: 16px;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--platinum-400);
+  border-bottom: 1px solid var(--slate-700);
+  font-weight: 500;
+}
+.price-table thead th.xero { color: var(--xero-violet); }
+.price-table thead th.rf { color: var(--rf-aurora); }
+.price-table thead th.combo { color: var(--aurum); }
+.price-table tbody td {
+  padding: 18px 16px;
+  border-bottom: 1px solid var(--slate-800);
+  font-size: 14px;
+  color: var(--platinum-200);
+}
+.price-table tbody td:first-child {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 16px;
+  color: var(--platinum-50);
+}
+.price-table .price {
+  font-family: var(--font-display);
+  font-size: 18px;
+  letter-spacing: -0.02em;
+}
+.price-table .price.xero { color: var(--xero-violet); }
+.price-table .price.rf { color: var(--rf-aurora); }
+.price-table .price.combo { color: var(--aurum); font-weight: 700; }
+.price-table .save {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.15em;
+  padding: 2px 6px;
+  background: var(--aurum-soft);
+  color: var(--aurum);
+  border-radius: 4px;
+  margin-left: 8px;
+}
+
+/* ╔════════════════════════════════════════════════════╗
+   ║  WEB MOCK                                          ║
+   ╚════════════════════════════════════════════════════╝ */
+
+.web-mock {
+  background: var(--obsidian);
+  border: 1px solid var(--slate-700);
+  border-radius: 16px;
+  overflow: hidden;
+  margin-top: 32px;
+}
+.web-mock-bar {
+  background: var(--slate-900);
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--slate-700);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.web-mock-dots { display: flex; gap: 6px; }
+.web-mock-dots span { width: 11px; height: 11px; border-radius: 50%; background: var(--slate-600); }
+.web-mock-dots span:nth-child(1) { background: #FF5F56; }
+.web-mock-dots span:nth-child(2) { background: #FFBD2E; }
+.web-mock-dots span:nth-child(3) { background: #27C93F; }
+.web-mock-url {
+  flex: 1;
+  background: var(--abyss);
+  padding: 6px 14px;
+  border-radius: 6px;
+  border: 1px solid var(--slate-700);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--platinum-200);
+}
+.web-mock-url .domain { color: var(--aurum); }
+.web-mock-body {
+  padding: 56px 48px;
+  min-height: 380px;
+  position: relative;
+  background: var(--grad-mesh-sylar);
+}
+.web-mock-nav {
+  position: absolute;
+  top: 24px; left: 48px; right: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.web-mock-logo {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  color: var(--platinum-50);
+}
+.web-mock-logo .stek {
+  font-style: italic;
+  background: var(--grad-aurum);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.web-mock-menu {
+  display: flex;
+  gap: 16px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  color: var(--platinum-300);
+  text-transform: uppercase;
+}
+.web-mock-menu .active { color: var(--aurum); }
+.web-mock-content {
+  margin-top: 64px;
+  text-align: center;
+}
+.web-mock-content h1 {
+  font-family: var(--font-display);
+  font-size: 56px;
+  font-weight: 400;
+  color: var(--platinum-50);
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+  margin-bottom: 16px;
+}
+.web-mock-content h1 em { font-style: italic; color: var(--aurum); }
+.web-mock-content p {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 20px;
+  color: var(--platinum-200);
+  margin-bottom: 32px;
+}
+.web-mock-products-row {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  margin-top: 24px;
+}
+.web-mock-product-tile {
+  flex: 1;
+  max-width: 280px;
+  padding: 24px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--slate-700);
+  border-radius: 12px;
+  text-align: left;
+  cursor: pointer;
+  transition: all 250ms;
+}
+.web-mock-product-tile:hover { transform: translateY(-2px); }
+.web-mock-product-tile.xero:hover { border-color: var(--xero-violet); box-shadow: 0 8px 24px rgba(124,92,255,0.2); }
+.web-mock-product-tile.rf:hover { border-color: var(--rf-aurora); box-shadow: 0 8px 24px rgba(34,197,94,0.2); }
+.web-mock-product-tile .pt-tag {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.web-mock-product-tile.xero .pt-tag { color: var(--xero-violet); }
+.web-mock-product-tile.rf .pt-tag { color: var(--rf-aurora); }
+.web-mock-product-tile .pt-name {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 24px;
+  color: var(--platinum-50);
+  margin-bottom: 6px;
+}
+.web-mock-product-tile .pt-tagline {
+  font-size: 13px;
+  color: var(--platinum-300);
+  margin-bottom: 12px;
+}
+.web-mock-product-tile .pt-cta {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+.web-mock-product-tile.xero .pt-cta { color: var(--xero-violet); }
+.web-mock-product-tile.rf .pt-cta { color: var(--rf-aurora); }
+
+/* ╔════════════════════════════════════════════════════╗
+   ║  MISC / VOICE                                      ║
+   ╚════════════════════════════════════════════════════╝ */
+
+.voice-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-top: 32px;
+}
+.voice-card {
+  padding: 28px;
+  border: 1px solid var(--slate-700);
+  border-radius: 16px;
+  background: var(--slate-900);
+  position: relative;
+  overflow: hidden;
+}
+.voice-card .accent-line {
+  position: absolute; top: 0; left: 0; right: 0; height: 3px;
+}
+.voice-card.sylar .accent-line { background: var(--aurum); }
+.voice-card.xero .accent-line { background: var(--xero-violet); }
+.voice-card.rf .accent-line { background: var(--rf-aurora); }
+.voice-card .vc-tag {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+.voice-card.sylar .vc-tag { color: var(--aurum); }
+.voice-card.xero .vc-tag { color: var(--xero-violet); }
+.voice-card.rf .vc-tag { color: var(--rf-aurora); }
+.voice-card .vc-name {
+  font-family: var(--font-display);
+  font-size: 28px;
+  color: var(--platinum-50);
+  letter-spacing: -0.02em;
+  margin-bottom: 16px;
+}
+.voice-card .vc-quote {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 17px;
+  line-height: 1.5;
+  color: var(--platinum-200);
+  margin-bottom: 16px;
+}
+.voice-card ul {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.voice-card ul li {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--platinum-300);
+  letter-spacing: 0.05em;
+  padding-left: 16px;
+  position: relative;
+}
+.voice-card ul li::before {
+  content: '▸';
+  position: absolute;
+  left: 0;
+  font-weight: 700;
+}
+.voice-card.sylar ul li::before { color: var(--aurum); }
+.voice-card.xero ul li::before { color: var(--xero-violet); }
+.voice-card.rf ul li::before { color: var(--rf-aurora); }
+
+/* ╔════════════════════════════════════════════════════╗
+   ║  FOOTER                                            ║
+   ╚════════════════════════════════════════════════════╝ */
+
+.footer {
+  text-align: center;
+  padding: 120px 80px 80px;
+  background: var(--obsidian);
+  border-top: 1px solid var(--slate-700);
+}
+.footer-quote {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 32px;
+  color: var(--platinum-200);
+  max-width: 720px;
+  margin: 0 auto 48px;
+  line-height: 1.4;
+}
+.footer-quote em { color: var(--aurum); font-style: italic; font-weight: 700; }
+.footer-meta {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--platinum-400);
+}
+
+/* ╔════════════════════════════════════════════════════╗
+   ║  UTILS                                             ║
+   ╚════════════════════════════════════════════════════╝ */
+
+.spacer-md { height: 64px; }
+.spacer-lg { height: 96px; }
+ul.clean { list-style: none; padding: 0; }
+ul.clean li {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--slate-800);
+  color: var(--platinum-200);
+  font-size: 15px;
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+ul.clean li::before {
+  content: '▸';
+  color: var(--aurum);
+  font-weight: 700;
+}
+.code-block {
+  background: var(--obsidian);
+  border: 1px solid var(--slate-700);
+  border-radius: 12px;
+  padding: 24px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--aurum-bright);
+  line-height: 1.7;
+  overflow-x: auto;
+  white-space: pre;
+  margin: 24px 0;
+}
+.code-block .comment { color: var(--platinum-400); }
+.code-block .key { color: var(--xero-violet); }
+.code-block .val { color: var(--rf-aurora); }
+.code-block .gold { color: var(--aurum); }
+
+@media (max-width: 1024px) {
+  .page { padding: 48px 32px; }
+  .meta-tl, .meta-tr { top: 24px; }
+  .meta-bl, .meta-br { bottom: 24px; }
+  .meta-tl, .meta-bl { left: 32px; }
+  .meta-tr, .meta-br { right: 32px; }
+  .principles { grid-template-columns: 1fr; gap: 32px; }
+  .two-col { grid-template-columns: 1fr; gap: 48px; }
+  .swatch-grid { grid-template-columns: repeat(3, 1fr); }
+  .voice-grid { grid-template-columns: 1fr; }
+  .product-stats-grid { grid-template-columns: repeat(2, 1fr); }
+  .product-hero { grid-template-columns: 1fr; }
+  .arch-layer.products { grid-template-columns: 1fr; }
+  .journey-flow { grid-template-columns: 1fr; }
+  .journey-arrow { transform: rotate(90deg); }
+  .web-mock-products-row { flex-direction: column; }
+  .type-spec { grid-template-columns: 1fr; gap: 16px; }
+  .type-sample-display { font-size: 56px; }
+  .type-sample-h1 { font-size: 36px; }
+}
+
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.7s var(--ease-emphasis), transform 0.7s var(--ease-emphasis);
+}
+.reveal.visible { opacity: 1; transform: translateY(0); }
+</style>
+</head>
+<body>
+
+<!-- ╔════════════════════════════════════════════════════╗
+     ║  00 — COVER                                        ║
+     ╚════════════════════════════════════════════════════╝ -->
+<section class="page cover">
+  <div class="page-meta meta-tl">SYLAR · BRAND BOOK</div>
+  <div class="page-meta meta-tr">VOL. I · V1.0</div>
+
+  <div class="brand-mark-stack">
+    <div class="layer l3"></div>
+    <div class="layer l2"></div>
+    <div class="layer l1"></div>
+  </div>
+
+  <h1 class="cover-name">SYLAR <span class="stek">STEK</span></h1>
+  <p class="cover-tagline">AI-стек для бизнеса. <em>Один стандарт. Два продукта.</em></p>
+  <p class="cover-sub">SYSTEM LAYER STACK · MULTI-PRODUCT ECOSYSTEM</p>
+
+  <div class="cover-products">
+    <div class="product-badge xero">
+      <span class="dot"></span>
+      <span class="label">PRODUCT 01</span>
+      <span class="name">XeroCode</span>
+    </div>
+    <div class="product-badge rf">
+      <span class="dot"></span>
+      <span class="label">PRODUCT 02</span>
+      <span class="name">RoleFlow AI</span>
+    </div>
+  </div>
+
+  <div class="page-meta meta-bl">EST · MMXXVI</div>
+  <div class="page-meta meta-br">MOSCOW · RU</div>
+</section>
+
+<!-- ╔════════════════════════════════════════════════════╗
+     ║  TOC                                               ║
+     ╚════════════════════════════════════════════════════╝ -->
+<section class="page">
+  <div class="page-meta meta-tl">CONTENTS</div>
+  <div class="page-meta meta-tr">P. 01</div>
+  <div class="section-header">
+    <span class="section-num">⌘ 00</span>
+    <h2 class="section-title">Содер<em>жание</em></h2>
+  </div>
+  <div class="toc-list">
+    <a class="toc-item" href="#manifest"><span class="toc-num">01</span><span class="toc-name">Манифест зонтика</span><span class="toc-tag">SYLAR</span></a>
+    <a class="toc-item" href="#identity"><span class="toc-num">02</span><span class="toc-name">Идентичность бренда</span><span class="toc-tag">SYLAR</span></a>
+    <a class="toc-item" href="#architecture"><span class="toc-num">03</span><span class="toc-name"><em>Архитектура — два продукта</em></span><span class="toc-tag">SYLAR</span></a>
+    <a class="toc-item" href="#color"><span class="toc-num">04</span><span class="toc-name">Цвет и подцвета</span><span class="toc-tag">SYLAR</span></a>
+    <a class="toc-item" href="#typography"><span class="toc-num">05</span><span class="toc-name">Типографика</span><span class="toc-tag">SYLAR</span></a>
+    <a class="toc-item" href="#voice"><span class="toc-num">06</span><span class="toc-name">Голос — три тона</span><span class="toc-tag">SYLAR</span></a>
+    <a class="toc-item" href="#xero-spec"><span class="toc-num">07</span><span class="toc-name">XeroCode — спецификация</span><span class="toc-tag xero">XERO</span></a>
+    <a class="toc-item" href="#rf-spec"><span class="toc-num">08</span><span class="toc-name">RoleFlow — спецификация</span><span class="toc-tag rf">RF</span></a>
+    <a class="toc-item" href="#cross"><span class="toc-num">09</span><span class="toc-name"><em>Cross-sell — мост между продуктами</em></span><span class="toc-tag">SYLAR</span></a>
+    <a class="toc-item" href="#pricing"><span class="toc-num">10</span><span class="toc-name">Совмещённые цены</span><span class="toc-tag">SYLAR</span></a>
+    <a class="toc-item" href="#web"><span class="toc-num">11</span><span class="toc-name">Сайт — мок зонтика</span><span class="toc-tag">SYLAR</span></a>
+    <a class="toc-item" href="#impl"><span class="toc-num">12</span><span class="toc-name">Реализация и roadmap</span><span class="toc-tag">SYLAR</span></a>
+  </div>
+  <div class="page-meta meta-bl">SYLAR STEK BRAND BOOK V1.0</div>
+  <div class="page-meta meta-br">12 SECTIONS</div>
+</section>
+
+<!-- ╔════════════════════════════════════════════════════╗
+     ║  01 — MANIFEST                                     ║
+     ╚════════════════════════════════════════════════════╝ -->
+<section class="page" id="manifest">
+  <div class="page-meta meta-tl">SECTION 01</div>
+  <div class="page-meta meta-tr">P. 02</div>
+  <div class="section-header">
+    <span class="section-num">⌘ 01</span>
+    <h2 class="section-title">Мани<em>фест</em></h2>
+  </div>
+
+  <div style="text-align: center; margin: auto 0;">
+    <p class="manifest-quote">«Бизнесу не нужен <em>ещё один AI</em>. Бизнесу нужен <em>стек</em>, на который можно положиться.»</p>
+    <p class="manifest-author">— SYLAR STEK Founding Principle</p>
+  </div>
+
+  <div class="principles">
+    <div class="principle">
+      <p class="principle-num">№ 01 · ECOSYSTEM</p>
+      <h3 class="principle-title">Один <em style="color:var(--aurum); font-style:italic;">стандарт.</em> Два продукта.</h3>
+      <p class="principle-body">SYLAR STEK — не один SaaS, а инфраструктура. XeroCode даёт командам инструменты ИИ. RoleFlow даёт безопасность и аудит. Один аккаунт, один билинг, единый дизайн-стандарт.</p>
+    </div>
+    <div class="principle">
+      <p class="principle-num">№ 02 · CROSS-SELL</p>
+      <h3 class="principle-title">Каждый <em style="color:var(--aurum); font-style:italic;">продаёт</em> другого.</h3>
+      <p class="principle-body">Юзер XeroCode → доходит до 50 человек в команде → CISO просит DLP → выкатывается RoleFlow. Аудит RoleFlow → выявляет 12 микропотерь → закрываются связками XeroCode. Замкнутая воронка.</p>
+    </div>
+    <div class="principle">
+      <p class="principle-num">№ 03 · SOVEREIGN</p>
+      <h3 class="principle-title">Сделано в России. Для <em style="color:var(--aurum); font-style:italic;">русского бизнеса.</em></h3>
+      <p class="principle-body">1С · Битрикс · ЭДО · 152-ФЗ · ЮKassa · on-premise · KII · СБП · НДС-договоры. Не «адаптация западного продукта», а нативная архитектура под местный enterprise.</p>
+    </div>
+  </div>
+
+  <div class="page-meta meta-bl">MANIFEST</div>
+  <div class="page-meta meta-br">SYLAR / 01</div>
+</section>
+
+<!-- ╔════════════════════════════════════════════════════╗
+     ║  02 — IDENTITY                                     ║
+     ╚════════════════════════════════════════════════════╝ -->
+<section class="page" id="identity">
+  <div class="page-meta meta-tl">SECTION 02</div>
+  <div class="page-meta meta-tr">P. 04</div>
+  <div class="section-header">
+    <span class="section-num">⌘ 02</span>
+    <h2 class="section-title">Идентич<em>ность</em></h2>
+  </div>
+
+  <div class="two-col">
+    <div>
+      <p class="col-label">КОНЦЕПЦИЯ</p>
+      <p class="lead-text">SYLAR STEK — <em>System Layer Stack.</em> Стек слоёв, на которые опирается бизнес. Каждый слой — отдельный продукт. Все слои — единый стандарт.</p>
+      <p class="body-text">Архетип бренда — <strong style="color:var(--aurum)">Architect</strong>. Не «помощник», не «инструмент», а инфраструктура. Сдержанная, серьёзная, премиум.</p>
+      <p class="body-text">Визуальная метафора — <strong style="color:var(--aurum)">три горизонтальные полосы</strong>, образующие стек. Топовая (l1) — самая широкая и чёткая, нижние (l2, l3) — выходят в перспективу с уменьшением. Это не «декорация», а семантика: каждый продукт = один слой стека.</p>
+      <p class="body-text">Цвет — <strong style="color:var(--aurum)">aurum (золотой охот)</strong> — премиум-нейтрал. Не яркий, не дешёвый, не банальный. Между бронзой и шампанским.</p>
+    </div>
+    <div>
+      <p class="col-label">МАРКА · LOGO STACK</p>
+      <div style="background: var(--slate-900); border: 1px solid var(--slate-700); border-radius: 16px; padding: 56px 48px; text-align: center;">
+        <div class="brand-mark-stack" style="margin-bottom: 32px;">
+          <div class="layer l3"></div>
+          <div class="layer l2"></div>
+          <div class="layer l1"></div>
+        </div>
+        <h1 class="cover-name" style="font-size: 88px; margin-bottom: 0;">SYLAR <span class="stek">STEK</span></h1>
+      </div>
+
+      <div style="margin-top: 24px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+        <div style="padding: 20px; background: var(--slate-900); border: 1px solid var(--slate-700); border-radius: 12px;">
+          <p style="font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.25em; color: var(--platinum-400); text-transform: uppercase; margin-bottom: 8px;">▸ FULL</p>
+          <h3 style="font-family: var(--font-display); font-size: 26px; color: var(--platinum-50); letter-spacing: -0.02em;">SYLAR <span style="font-style: italic; background: var(--grad-aurum); -webkit-background-clip: text; background-clip: text; color: transparent;">STEK</span></h3>
+        </div>
+        <div style="padding: 20px; background: var(--slate-900); border: 1px solid var(--slate-700); border-radius: 12px;">
+          <p style="font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.25em; color: var(--platinum-400); text-transform: uppercase; margin-bottom: 8px;">▸ COMPACT</p>
+          <h3 style="font-family: var(--font-display); font-size: 26px; color: var(--platinum-50); letter-spacing: -0.02em;">S/<span style="font-style: italic; color: var(--aurum);">S</span></h3>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-meta meta-bl">IDENTITY</div>
+  <div class="page-meta meta-br">SYLAR / 02</div>
+</section>
+
+<!-- ╔════════════════════════════════════════════════════╗
+     ║  03 — ARCHITECTURE · TWO PRODUCTS                  ║
+     ╚════════════════════════════════════════════════════╝ -->
+<section class="page" id="architecture">
+  <div class="page-meta meta-tl">SECTION 03</div>
+  <div class="page-meta meta-tr">P. 06</div>
+  <div class="section-header">
+    <span class="section-num">⌘ 03</span>
+    <h2 class="section-title"><em>Архитектура</em></h2>
+  </div>
+
+  <p class="lead-text" style="text-align: center; max-width: 820px; margin: 0 auto 32px;">Два продукта. <em>Один стек.</em> Каждый стоит на ногах сам, вместе — закрывают полный AI-цикл бизнеса от создания до контроля.</p>
+
+  <div class="architecture-stack">
+
+    <!-- Parent layer -->
+    <div class="arch-layer parent">
+      <span class="arch-layer-meta">FOUNDATION LAYER</span>
+      <h3 style="font-family: var(--font-display); font-size: 36px; color: var(--platinum-50); letter-spacing: -0.02em; margin-bottom: 12px;">SYLAR <span style="font-style: italic; background: var(--grad-aurum); -webkit-background-clip: text; background-clip: text; color: transparent;">STEK</span></h3>
+      <p style="color: var(--platinum-200); font-size: 15px; line-height: 1.6; max-width: 720px;">Зонтичный бренд. Единый аккаунт · единый billing · общий бренд-стандарт · cross-product API · общая база компании. Здесь живёт identity, voice, design system. Отсюда продаются оба продукта.</p>
+    </div>
+
+    <!-- Two products -->
+    <div class="arch-layer products">
+      <div class="arch-product xero">
+        <span style="position: absolute; top: 16px; right: 16px; font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.25em; color: var(--xero-violet); text-transform: uppercase;">PRODUCT 01</span>
+        <h3 class="arch-product-name">Xero<em>Code</em></h3>
+        <p class="arch-product-tagline">▸ Creative AI Platform</p>
+        <p class="arch-product-desc">Multi-model AI-платформа. 430+ моделей, BYOK, 8 workspaces (Chat · Code · Image · Video · Sound · Text · Orchestration · Corporate). Self-serve, B2C-first, быстрая монетизация.</p>
+        <ul class="arch-features">
+          <li>BYOK ∞</li>
+          <li>430+ моделей</li>
+          <li>8 workspaces</li>
+          <li>5 DAG-режимов</li>
+          <li>CLI · Desktop · Web</li>
+          <li>Free → Prime</li>
+        </ul>
+      </div>
+      <div class="arch-product rf">
+        <span style="position: absolute; top: 16px; right: 16px; font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.25em; color: var(--rf-aurora); text-transform: uppercase;">PRODUCT 02</span>
+        <h3 class="arch-product-name">Role<em>Flow</em></h3>
+        <p class="arch-product-tagline">▸ AI Governance &amp; Audit</p>
+        <p class="arch-product-desc">Безопасный AI-слой для enterprise. AI-DLP Gateway, Model Router, Prompt Firewall, Safety Panel. Audit ролей и процессов. Connect (overlay) или Workspace (standalone).</p>
+        <ul class="arch-features">
+          <li>AI-DLP Gateway</li>
+          <li>Role Audit</li>
+          <li>1С · Битрикс · amoCRM</li>
+          <li>Shadow AI Detector</li>
+          <li>On-prem · SSO</li>
+          <li>Enterprise · от 89k ₽</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Bridge -->
+    <div class="arch-bridge">
+      <span class="arch-bridge-tag">⟷ CROSS-SELL BRIDGE</span>
+      <p class="arch-bridge-text">Каждый юзер <em>XeroCode</em> — потенциальный клиент <em>RoleFlow.</em><br>Каждый аудит <em>RoleFlow</em> — точка продажи <em>XeroCode.</em></p>
+    </div>
+
+  </div>
+
+  <div class="spacer-md"></div>
+
+  <p class="palette-row-label">Логика разделения</p>
+  <table style="width: 100%; border-collapse: collapse; font-family: var(--font-body);">
+    <thead>
+      <tr style="border-bottom: 1px solid var(--slate-700);">
+        <th style="text-align: left; padding: 16px; font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--platinum-400); font-weight: 500;">Параметр</th>
+        <th style="text-align: left; padding: 16px; font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--xero-violet); font-weight: 500;">XeroCode</th>
+        <th style="text-align: left; padding: 16px; font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--rf-aurora); font-weight: 500;">RoleFlow</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr style="border-bottom: 1px solid var(--slate-800);">
+        <td style="padding: 14px 16px; color: var(--platinum-100); font-style: italic; font-family: var(--font-serif);">Покупатель</td>
+        <td style="padding: 14px 16px; color: var(--platinum-200); font-size: 14px;">Разработчик · маркетолог · фрилансер · SMB-владелец</td>
+        <td style="padding: 14px 16px; color: var(--platinum-200); font-size: 14px;">CISO · CFO · Compliance Officer · IT-директор</td>
+      </tr>
+      <tr style="border-bottom: 1px solid var(--slate-800);">
+        <td style="padding: 14px 16px; color: var(--platinum-100); font-style: italic; font-family: var(--font-serif);">Sales motion</td>
+        <td style="padding: 14px 16px; color: var(--platinum-200); font-size: 14px;">Self-serve · оплата картой · 5 минут</td>
+        <td style="padding: 14px 16px; color: var(--platinum-200); font-size: 14px;">Sales-led · NDA · аудит · 3-9 мес</td>
+      </tr>
+      <tr style="border-bottom: 1px solid var(--slate-800);">
+        <td style="padding: 14px 16px; color: var(--platinum-100); font-style: italic; font-family: var(--font-serif);">Гонорар</td>
+        <td style="padding: 14px 16px; color: var(--xero-violet); font-family: var(--font-mono);">490 — 9 990 ₽/мес индивид</td>
+        <td style="padding: 14px 16px; color: var(--rf-aurora); font-family: var(--font-mono);">89 000 — 999 000+ ₽/мес enterprise</td>
+      </tr>
+      <tr style="border-bottom: 1px solid var(--slate-800);">
+        <td style="padding: 14px 16px; color: var(--platinum-100); font-style: italic; font-family: var(--font-serif);">Главный KPI</td>
+        <td style="padding: 14px 16px; color: var(--platinum-200); font-size: 14px;">Готовый файл / задача за минуту</td>
+        <td style="padding: 14px 16px; color: var(--platinum-200); font-size: 14px;">Возвращённые человеко-часы · 0 утечек</td>
+      </tr>
+      <tr style="border-bottom: 1px solid var(--slate-800);">
+        <td style="padding: 14px 16px; color: var(--platinum-100); font-style: italic; font-family: var(--font-serif);">Делает работу</td>
+        <td style="padding: 14px 16px; color: var(--platinum-200); font-size: 14px;">«AI doesn't chat. AI works.»</td>
+        <td style="padding: 14px 16px; color: var(--platinum-200); font-size: 14px;">«AI, который не утечёт.»</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="page-meta meta-bl">ARCHITECTURE</div>
+  <div class="page-meta meta-br">SYLAR / 03</div>
+</section>
+
+<!-- ╔════════════════════════════════════════════════════╗
+     ║  04 — COLOR                                        ║
+     ╚════════════════════════════════════════════════════╝ -->
+<section class="page" id="color">
+  <div class="page-meta meta-tl">SECTION 04</div>
+  <div class="page-meta meta-tr">P. 12</div>
+  <div class="section-header">
+    <span class="section-num">⌘ 04</span>
+    <h2 class="section-title"><em>Цвет</em></h2>
+  </div>
+
+  <p class="lead-text" style="max-width: 820px; margin-bottom: 56px;">Каждый бренд — своя палитра. Зонтик нейтрален и премиален. Под-бренды — индивидуальны и узнаваемы. <em>Не миксуются между собой.</em></p>
+
+  <div class="palette-row">
+    <p class="palette-row-label">SYLAR STEK · Obsidian + Aurum (зонтик)</p>
+    <div class="swatch-grid">
+      <div class="swatch light-text" style="background:#050510"><span class="swatch-name">Obsidian</span><span class="swatch-hex">#050510</span></div>
+      <div class="swatch light-text" style="background:#0A0A14"><span class="swatch-name">Abyss</span><span class="swatch-hex">#0A0A14</span></div>
+      <div class="swatch light-text" style="background:#1E1E2A"><span class="swatch-name">Slate 800</span><span class="swatch-hex">#1E1E2A</span></div>
+      <div class="swatch dark-text" style="background:#C9A55C"><span class="swatch-name">Aurum ⭐</span><span class="swatch-hex">#C9A55C</span></div>
+      <div class="swatch dark-text" style="background:#E8E8EC"><span class="swatch-name">Platinum 100</span><span class="swatch-hex">#E8E8EC</span></div>
+    </div>
+  </div>
+
+  <div class="palette-row">
+    <p class="palette-row-label" style="color: var(--xero-violet);">XeroCode · Violet + Cyan (creative)</p>
+    <div class="swatch-grid">
+      <div class="swatch light-text" style="background:#7C5CFF"><span class="swatch-name">Violet 500 ⭐</span><span class="swatch-hex">#7C5CFF</span></div>
+      <div class="swatch dark-text" style="background:#A88AFF"><span class="swatch-name">Violet 300</span><span class="swatch-hex">#A88AFF</span></div>
+      <div class="swatch dark-text" style="background:#00D4FF"><span class="swatch-name">Cyan 500</span><span class="swatch-hex">#00D4FF</span></div>
+      <div class="swatch dark-text" style="background:#FFB547"><span class="swatch-name">Solar 500</span><span class="swatch-hex">#FFB547</span></div>
+      <div class="swatch light-text" style="background:#FF3B5C"><span class="swatch-name">Crimson</span><span class="swatch-hex">#FF3B5C</span></div>
+    </div>
+  </div>
+
+  <div class="palette-row">
+    <p class="palette-row-label" style="color: var(--rf-aurora);">RoleFlow · Aurora + Steel (governance)</p>
+    <div class="swatch-grid">
+      <div class="swatch dark-text" style="background:#22C55E"><span class="swatch-name">Aurora ⭐</span><span class="swatch-hex">#22C55E</span></div>
+      <div class="swatch light-text" style="background:#4A6FA5"><span class="swatch-name">Steel 500</span><span class="swatch-hex">#4A6FA5</span></div>
+      <div class="swatch light-text" style="background:#2D5A8C"><span class="swatch-name">Shield 700</span><span class="swatch-hex">#2D5A8C</span></div>
+      <div class="swatch light-text" style="background:#FF3B5C"><span class="swatch-name">Alert</span><span class="swatch-hex">#FF3B5C</span></div>
+      <div class="swatch dark-text" style="background:#FFB547"><span class="swatch-name">Warning</span><span class="swatch-hex">#FFB547</span></div>
+    </div>
+  </div>
+
+  <p class="palette-row-label" style="margin-top: 64px;">Принципы использования</p>
+  <ul class="clean">
+    <li>SYLAR STEK страницы (главная, About, Contacts) — Obsidian + Aurum, премиум-нейтрал.</li>
+    <li>XeroCode страницы — Violet 500 как primary. Cyan, Solar — поддержка.</li>
+    <li>RoleFlow страницы — Aurora 500 как primary. Steel, Shield — поддержка. Alert — для security-инцидентов.</li>
+    <li>Не миксовать палитры под-брендов. XeroCode не заходит на RoleFlow страницы (и наоборот).</li>
+    <li>Aurum — единственный цвет, который может появляться на любом продукте. Это «маркер зонтика».</li>
+  </ul>
+
+  <div class="page-meta meta-bl">COLOR SYSTEM</div>
+  <div class="page-meta meta-br">SYLAR / 04</div>
+</section>
+
+<!-- ╔════════════════════════════════════════════════════╗
+     ║  05 — TYPOGRAPHY                                   ║
+     ╚════════════════════════════════════════════════════╝ -->
+<section class="page" id="typography">
+  <div class="page-meta meta-tl">SECTION 05</div>
+  <div class="page-meta meta-tr">P. 16</div>
+  <div class="section-header">
+    <span class="section-num">⌘ 05</span>
+    <h2 class="section-title">Типогра<em>фика</em></h2>
+  </div>
+
+  <div class="type-spec">
+    <div class="type-meta">
+      <strong>SYLAR DISPLAY</strong>
+      DM Serif Display<br>
+      Regular 400 / Italic<br>
+      96px / 1.0 / −3%
+    </div>
+    <div class="type-sample-display">SYLAR <em>STEK</em></div>
+  </div>
+
+  <div class="type-spec">
+    <div class="type-meta">
+      <strong>EDITORIAL</strong>
+      Playfair Display<br>
+      Bold + Italic<br>
+      72px / 1.1 / −3%
+    </div>
+    <div class="type-sample-display" style="font-family: var(--font-serif); font-size: 72px;">Стек становится <em>стандартом.</em></div>
+  </div>
+
+  <div class="type-spec">
+    <div class="type-meta">
+      <strong>DISPLAY · SANS</strong>
+      Manrope ExtraBold 800<br>
+      56px / 1.1 / −2%
+    </div>
+    <div class="type-sample-h1">AI-стек, на который<br>можно положиться.</div>
+  </div>
+
+  <div class="type-spec">
+    <div class="type-meta">
+      <strong>BODY</strong>
+      Inter Regular 400<br>
+      18px / 1.7 / 0
+    </div>
+    <div class="type-sample-body">SYLAR STEK объединяет XeroCode и RoleFlow AI под одним стандартом дизайна, безопасности и эксперимента. Единый аккаунт, единый billing, разные продукты для разных задач.</div>
+  </div>
+
+  <div class="type-spec">
+    <div class="type-meta">
+      <strong>MONO · DATA</strong>
+      JetBrains Mono Medium<br>
+      16px / 1.6 / +5%
+    </div>
+    <div class="type-sample-mono">--sylar-aurum: #C9A55C;<br>--xero-violet: #7C5CFF;<br>--rf-aurora: #22C55E;</div>
+  </div>
+
+  <div class="page-meta meta-bl">TYPE SYSTEM</div>
+  <div class="page-meta meta-br">SYLAR / 05</div>
+</section>
+
+<!-- ╔════════════════════════════════════════════════════╗
+     ║  06 — VOICE                                        ║
+     ╚════════════════════════════════════════════════════╝ -->
+<section class="page" id="voice">
+  <div class="page-meta meta-tl">SECTION 06</div>
+  <div class="page-meta meta-tr">P. 20</div>
+  <div class="section-header">
+    <span class="section-num">⌘ 06</span>
+    <h2 class="section-title">Голос — <em>три тона</em></h2>
+  </div>
+
+  <p class="lead-text" style="max-width: 820px;">У зонтика — премиум-сдержанный голос. У под-брендов — свои интонации, не конфликтующие с родителем.</p>
+
+  <div class="voice-grid">
+    <div class="voice-card sylar">
+      <span class="accent-line"></span>
+      <p class="vc-tag">▸ SYLAR STEK · Architect</p>
+      <h3 class="vc-name">Зонтик</h3>
+      <p class="vc-quote">«AI-стек для бизнеса. Один стандарт. Два продукта.»</p>
+      <ul>
+        <li>тон — корпоративный, премиум, инфраструктурный</li>
+        <li>обращение — на «вы», уважительно</li>
+        <li>метафоры — здания, фундаменты, стек, стандарт</li>
+        <li>язык — точный, без эмодзи, без сленга</li>
+        <li>скорость — медленная, основательная</li>
+      </ul>
+    </div>
+
+    <div class="voice-card xero">
+      <span class="accent-line"></span>
+      <p class="vc-tag">▸ XeroCode · Creator</p>
+      <h3 class="vc-name">Xero<em style="font-style:italic; background: var(--grad-xero); -webkit-background-clip: text; background-clip: text; color: transparent;">Code</em></h3>
+      <p class="vc-quote">«AI doesn't chat. AI works.»</p>
+      <ul>
+        <li>тон — энергичный, дерзкий, прямой</li>
+        <li>обращение — на «ты», по-приятельски</li>
+        <li>метафоры — оркестр, искра, скорость</li>
+        <li>язык — короткие фразы, цифры, чёткие KPI</li>
+        <li>скорость — быстрая, продуктовая</li>
+      </ul>
+    </div>
+
+    <div class="voice-card rf">
+      <span class="accent-line"></span>
+      <p class="vc-tag">▸ RoleFlow · Sentinel</p>
+      <h3 class="vc-name">Role<em style="font-style:italic; background: var(--grad-rf); -webkit-background-clip: text; background-clip: text; color: transparent;">Flow</em></h3>
+      <p class="vc-quote">«AI, который не утечёт.»</p>
+      <ul>
+        <li>тон — серьёзный, security-first, ответственный</li>
+        <li>обращение — на «вы», деловое</li>
+        <li>метафоры — щит, контур, контроль, аудит</li>
+        <li>язык — терминология ИБ, чёткие гарантии</li>
+        <li>скорость — взвешенная, обоснованная</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="page-meta meta-bl">VOICE</div>
+  <div class="page-meta meta-br">SYLAR / 06</div>
+</section>
+
+<!-- ╔════════════════════════════════════════════════════╗
+     ║  07 — XEROCODE SPEC                                ║
+     ╚════════════════════════════════════════════════════╝ -->
+<section class="page" id="xero-spec" style="background: var(--grad-mesh-xero);">
+  <div class="page-meta meta-tl">SECTION 07</div>
+  <div class="page-meta meta-tr">P. 24 · XERO</div>
+  <div class="section-header" style="border-bottom-color: rgba(124,92,255,0.3);">
+    <span class="section-num" style="color: var(--xero-violet);">⌘ 07</span>
+    <h2 class="section-title">Xero<span class="xero">Code</span></h2>
+  </div>
+
+  <div class="product-hero">
+    <div>
+      <p class="product-hero-meta" style="color: var(--xero-violet);">▸ PRODUCT 01 · CREATIVE AI PLATFORM</p>
+      <h1 class="product-hero-name" style="color: var(--platinum-50);">Xero<em style="font-style:italic; background: var(--grad-xero); -webkit-background-clip: text; background-clip: text; color: transparent;">Code</em></h1>
+      <p class="product-hero-tagline">«AI doesn't <em style="color:var(--xero-amber)">chat.</em> AI <em style="color:var(--xero-amber)">works.</em>»</p>
+      <div style="margin-top: 32px; display: flex; gap: 12px;">
+        <a style="display: inline-flex; align-items: center; gap: 8px; padding: 12px 24px; border-radius: 100px; background: var(--grad-xero); color: white; font-family: var(--font-sans); font-weight: 600; font-size: 14px; text-decoration: none;">Открыть xerocode.ru →</a>
+      </div>
+    </div>
+    <div class="product-mockup-frame xero">
+      <div style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 32px;">
+        <div style="font-family: var(--font-serif); font-size: 88px; font-weight: 700; line-height: 0.95; letter-spacing: -0.04em;">
+          <span style="color: var(--platinum-50);">XERO</span><span style="font-style: italic; background: var(--grad-xero); -webkit-background-clip: text; background-clip: text; color: transparent;">CODE</span>
+        </div>
+        <p style="font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.3em; color: var(--platinum-300); margin-top: 16px; text-transform: uppercase;">Multi-model · 430+ · BYOK</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="product-stats-grid">
+    <div class="stat-card xero"><span class="accent-bar"></span><div class="num">430+</div><div class="label">AI-моделей</div></div>
+    <div class="stat-card xero"><span class="accent-bar"></span><div class="num">8</div><div class="label">Workspaces</div></div>
+    <div class="stat-card xero"><span class="accent-bar"></span><div class="num">5</div><div class="label">DAG режимов</div></div>
+    <div class="stat-card xero"><span class="accent-bar"></span><div class="num">∞</div><div class="label">BYOK · Free</div></div>
+  </div>
+
+  <div class="two-col">
+    <div>
+      <p class="col-label" style="color: var(--xero-violet);">ДЛЯ КОГО</p>
+      <ul class="clean">
+        <li>Разработчик — pipe-friendly CLI, sandbox, git native</li>
+        <li>Маркетолог — генерит креативы, лендинги, email</li>
+        <li>Соло-фрилансер — экономит часы на типовых задачах</li>
+        <li>SMB-владелец — заменяет 5 SaaS-подписок одной</li>
+        <li>Студент / новичок — Free навсегда + BYOK</li>
+      </ul>
+    </div>
+    <div>
+      <p class="col-label" style="color: var(--xero-violet);">ТАРИФЫ</p>
+      <ul class="clean">
+        <li>Free — 0 ₽ — попробовать (BYOK ∞)</li>
+        <li>Go — 490 ₽/мес — новичок</li>
+        <li>Pro — 1 990 ₽/мес — соло-проф</li>
+        <li>Prime — 9 990 ₽/мес — power-user</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="page-meta meta-bl">XEROCODE</div>
+  <div class="page-meta meta-br">SYLAR / 07</div>
+</section>
+
+<!-- ╔════════════════════════════════════════════════════╗
+     ║  08 — ROLEFLOW SPEC                                ║
+     ╚════════════════════════════════════════════════════╝ -->
+<section class="page" id="rf-spec" style="background: var(--grad-mesh-rf);">
+  <div class="page-meta meta-tl">SECTION 08</div>
+  <div class="page-meta meta-tr">P. 28 · RF</div>
+  <div class="section-header" style="border-bottom-color: rgba(34,197,94,0.3);">
+    <span class="section-num" style="color: var(--rf-aurora);">⌘ 08</span>
+    <h2 class="section-title">Role<span class="rf">Flow</span></h2>
+  </div>
+
+  <div class="product-hero">
+    <div class="product-mockup-frame rf">
+      <div style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 32px;">
+        <div style="font-family: var(--font-serif); font-size: 88px; font-weight: 700; line-height: 0.95; letter-spacing: -0.04em;">
+          <span style="color: var(--platinum-50);">ROLE</span><span style="font-style: italic; background: var(--grad-rf); -webkit-background-clip: text; background-clip: text; color: transparent;">FLOW</span>
+        </div>
+        <p style="font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.3em; color: var(--platinum-300); margin-top: 16px; text-transform: uppercase;">DLP · AUDIT · GOVERNANCE</p>
+      </div>
+    </div>
+    <div>
+      <p class="product-hero-meta" style="color: var(--rf-aurora);">▸ PRODUCT 02 · AI GOVERNANCE</p>
+      <h1 class="product-hero-name" style="color: var(--platinum-50);">Role<em style="font-style:italic; background: var(--grad-rf); -webkit-background-clip: text; background-clip: text; color: transparent;">Flow</em></h1>
+      <p class="product-hero-tagline">«AI, который <em style="color: var(--rf-aurora)">не утечёт.</em><br>И который <em style="color: var(--rf-aurora)">возвращает время.</em>»</p>
+      <div style="margin-top: 32px; display: flex; gap: 12px;">
+        <a style="display: inline-flex; align-items: center; gap: 8px; padding: 12px 24px; border-radius: 100px; background: var(--grad-rf); color: white; font-family: var(--font-sans); font-weight: 600; font-size: 14px; text-decoration: none;">Открыть roleflow.ai →</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="product-stats-grid">
+    <div class="stat-card rf"><span class="accent-bar"></span><div class="num">10×</div><div class="label">Возвр. часов / мес</div></div>
+    <div class="stat-card rf"><span class="accent-bar"></span><div class="num">0</div><div class="label">Утечек данных</div></div>
+    <div class="stat-card rf"><span class="accent-bar"></span><div class="num">3-9</div><div class="label">мес окупаемость</div></div>
+    <div class="stat-card rf"><span class="accent-bar"></span><div class="num">100%</div><div class="label">Логи AI запросов</div></div>
+  </div>
+
+  <div class="two-col">
+    <div>
+      <p class="col-label" style="color: var(--rf-aurora);">ДЛЯ КОГО</p>
+      <ul class="clean">
+        <li>CISO / IT-директор — нужен контроль AI в компании</li>
+        <li>CFO — нужен KPI «возвращённые человеко-часы»</li>
+        <li>Compliance — 152-ФЗ, ИБ-аудиты, DLP-требования</li>
+        <li>Команды 20-200 человек — Shadow AI стал проблемой</li>
+        <li>Холдинги · банки · госсектор — on-prem, SSO, SIEM</li>
+      </ul>
+    </div>
+    <div>
+      <p class="col-label" style="color: var(--rf-aurora);">ПАКЕТЫ</p>
+      <ul class="clean">
+        <li>Express AI Audit — 199 000 ₽ единоразово (5 дней)</li>
+        <li>Workspace · Team — 49 000 ₽/мес (standalone)</li>
+        <li>Connect · Pro — 199 000 ₽/мес (overlay 1С/Б24)</li>
+        <li>Hybrid · Business — 299 000 ₽/мес (overlay+standalone)</li>
+        <li>Enterprise — от 999 000 ₽/мес (on-prem · custom)</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="page-meta meta-bl">ROLEFLOW</div>
+  <div class="page-meta meta-br">SYLAR / 08</div>
+</section>
+
+<!-- ╔════════════════════════════════════════════════════╗
+     ║  09 — CROSS-SELL JOURNEY                           ║
+     ╚════════════════════════════════════════════════════╝ -->
+<section class="page" id="cross">
+  <div class="page-meta meta-tl">SECTION 09</div>
+  <div class="page-meta meta-tr">P. 32</div>
+  <div class="section-header">
+    <span class="section-num">⌘ 09</span>
+    <h2 class="section-title"><em>Cross-sell</em> мост</h2>
+  </div>
+
+  <p class="lead-text" style="max-width: 820px;">Главное преимущество зонтика — <em>каждый продукт продаёт другого.</em> Воронки не конкурируют — они кормят друг друга.</p>
+
+  <div class="journey">
+    <span class="journey-tag">▸ Journey 01 · BOTTOM-UP</span>
+    <h3 class="journey-title">Соло-разработчик → команда → <em>CISO</em>.</h3>
+    <div class="journey-flow">
+      <div class="journey-step xero">
+        <p class="product">XeroCode · Pro</p>
+        <p class="action">Один разработчик платит 1 990 ₽/мес и пользуется AI-инструментами.</p>
+      </div>
+      <span class="journey-arrow">→</span>
+      <div class="journey-step xero">
+        <p class="product">XeroCode · Team</p>
+        <p class="action">Команда из 20 человек переходит на корп-аккаунт. Бюджет растёт.</p>
+      </div>
+      <span class="journey-arrow">→</span>
+      <div class="journey-step rf">
+        <p class="product">RoleFlow · Workspace</p>
+        <p class="action">CISO видит: «AI используется 50 раз в день — нет логов и DLP» → <em>выкатывает RoleFlow</em>.</p>
+      </div>
+    </div>
+    <p style="margin-top: 24px; color: var(--platinum-300); font-size: 14px; padding: 16px; background: var(--abyss); border-radius: 12px; border: 1px solid var(--slate-700);">
+      <strong style="color: var(--aurum); font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; display: block; margin-bottom: 6px;">▸ Результат для SYLAR STEK</strong>
+      LTV вырос с 24 000 ₽/год (Pro × 1) до ~3 600 000 ₽/год (RoleFlow Workspace + 20 XeroCode-seats). <strong style="color: var(--aurum);">×150 рост LTV</strong> за 18 месяцев.
+    </p>
+  </div>
+
+  <div class="journey">
+    <span class="journey-tag">▸ Journey 02 · TOP-DOWN</span>
+    <h3 class="journey-title">CISO начал с аудита → <em>команда подсела</em> на инструменты.</h3>
+    <div class="journey-flow">
+      <div class="journey-step rf">
+        <p class="product">RoleFlow · Express Audit</p>
+        <p class="action">Компания заказывает аудит 100 кейсов за 199 000 ₽.</p>
+      </div>
+      <span class="journey-arrow">→</span>
+      <div class="journey-step rf">
+        <p class="product">RoleFlow · Connect</p>
+        <p class="action">Аудит выявил 12 микропотерь · подключают 1С + Битрикс через RoleFlow.</p>
+      </div>
+      <span class="journey-arrow">→</span>
+      <div class="journey-step xero">
+        <p class="product">XeroCode · 50 seats</p>
+        <p class="action">Чтобы команда могла <em>создавать</em> через AI — выдают XeroCode 50 сотрудникам.</p>
+      </div>
+    </div>
+    <p style="margin-top: 24px; color: var(--platinum-300); font-size: 14px; padding: 16px; background: var(--abyss); border-radius: 12px; border: 1px solid var(--slate-700);">
+      <strong style="color: var(--aurum); font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; display: block; margin-bottom: 6px;">▸ Результат для SYLAR STEK</strong>
+      Один enterprise-клиент с MRR 199 000 ₽ → стал клиентом с MRR ~1 200 000 ₽ (RoleFlow Connect + XeroCode-seats × 50). <strong style="color: var(--aurum);">×6 рост за 6 месяцев.</strong>
+    </p>
+  </div>
+
+  <div class="journey">
+    <span class="journey-tag">▸ Journey 03 · BUNDLE</span>
+    <h3 class="journey-title">Сразу <em>оба продукта</em> в одной сделке.</h3>
+    <div class="journey-flow">
+      <div class="journey-step bridge">
+        <p class="product">SYLAR STEK Bundle</p>
+        <p class="action">Холдинг покупает <em>Bundle Enterprise</em> — XeroCode для 100 сотрудников + RoleFlow Connect для CISO.</p>
+      </div>
+      <span class="journey-arrow">→</span>
+      <div class="journey-step xero">
+        <p class="product">XeroCode</p>
+        <p class="action">100 seats · все workspace · MCP · API · Telegram bot.</p>
+      </div>
+      <span class="journey-arrow">→</span>
+      <div class="journey-step rf">
+        <p class="product">RoleFlow</p>
+        <p class="action">DLP · audit · 1С/Б24/ЭДО · Shadow AI Detector · Safety Panel.</p>
+      </div>
+    </div>
+    <p style="margin-top: 24px; color: var(--platinum-300); font-size: 14px; padding: 16px; background: var(--abyss); border-radius: 12px; border: 1px solid var(--slate-700);">
+      <strong style="color: var(--aurum); font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; display: block; margin-bottom: 6px;">▸ Bundle Pricing</strong>
+      <strong style="color: var(--aurum);">−25% от суммы</strong> отдельных тарифов. Один договор, один счёт, один аккаунт-менеджер.
+    </p>
+  </div>
+
+  <div class="page-meta meta-bl">CROSS-SELL</div>
+  <div class="page-meta meta-br">SYLAR / 09</div>
+</section>
+
+<!-- ╔════════════════════════════════════════════════════╗
+     ║  10 — PRICING                                      ║
+     ╚════════════════════════════════════════════════════╝ -->
+<section class="page" id="pricing">
+  <div class="page-meta meta-tl">SECTION 10</div>
+  <div class="page-meta meta-tr">P. 36</div>
+  <div class="section-header">
+    <span class="section-num">⌘ 10</span>
+    <h2 class="section-title">Совмещённые <em>цены</em></h2>
+  </div>
+
+  <p class="lead-text" style="max-width: 820px;">Каждый продукт продаётся отдельно. Bundle SYLAR STEK даёт <em>−25%</em> и единый аккаунт. Идеально для компаний, которым нужны оба слоя.</p>
+
+  <table class="price-table">
+    <thead>
+      <tr>
+        <th>Тариф</th>
+        <th class="xero">XeroCode</th>
+        <th class="rf">RoleFlow</th>
+        <th class="combo">SYLAR STEK Bundle</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Solo / Indie</td>
+        <td class="price xero">Free — Pro · до 1 990 ₽/мес</td>
+        <td>—</td>
+        <td>—</td>
+      </tr>
+      <tr>
+        <td>Power User</td>
+        <td class="price xero">Prime · 9 990 ₽/мес</td>
+        <td>—</td>
+        <td>—</td>
+      </tr>
+      <tr>
+        <td>SMB · Team (до 20)</td>
+        <td class="price xero">XeroCode Team · 49 990 ₽/мес</td>
+        <td class="price rf">RoleFlow Workspace · 49 000 ₽/мес</td>
+        <td class="price combo">74 990 ₽/мес <span class="save">−25%</span></td>
+      </tr>
+      <tr>
+        <td>Mid-market (до 50)</td>
+        <td class="price xero">+ 4 990 ₽/seat</td>
+        <td class="price rf">RoleFlow Connect Pro · 199 000 ₽/мес</td>
+        <td class="price combo">от 299 000 ₽/мес <span class="save">−25%</span></td>
+      </tr>
+      <tr>
+        <td>Enterprise (50+)</td>
+        <td class="price xero">Enterprise · от 199 000 ₽/мес</td>
+        <td class="price rf">от 999 000 ₽/мес</td>
+        <td class="price combo">от 899 000 ₽/мес <span class="save">−25%</span></td>
+      </tr>
+      <tr>
+        <td>On-premise · Custom</td>
+        <td class="price xero">договорная</td>
+        <td class="price rf">договорная</td>
+        <td class="price combo">SYLAR Enterprise+ · договорная</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="spacer-md"></div>
+
+  <p class="palette-row-label">Что входит в Bundle (всегда)</p>
+  <ul class="clean">
+    <li><strong style="color: var(--aurum);">Один аккаунт</strong> — sso между xerocode.ru и roleflow.ai</li>
+    <li><strong style="color: var(--aurum);">Один билинг</strong> — единый счёт + НДС-документы для юр.лиц</li>
+    <li><strong style="color: var(--aurum);">Cross-product API</strong> — данные XeroCode видны в RoleFlow Audit Engine</li>
+    <li><strong style="color: var(--aurum);">Единый dashboard</strong> — обзор обоих продуктов из единого личного кабинета</li>
+    <li><strong style="color: var(--aurum);">Один аккаунт-менеджер</strong> для Mid-market+ и Enterprise</li>
+  </ul>
+
+  <div class="page-meta meta-bl">PRICING</div>
+  <div class="page-meta meta-br">SYLAR / 10</div>
+</section>
+
+<!-- ╔════════════════════════════════════════════════════╗
+     ║  11 — WEB MOCK                                     ║
+     ╚════════════════════════════════════════════════════╝ -->
+<section class="page" id="web">
+  <div class="page-meta meta-tl">SECTION 11</div>
+  <div class="page-meta meta-tr">P. 40</div>
+  <div class="section-header">
+    <span class="section-num">⌘ 11</span>
+    <h2 class="section-title">Сайт — <em>мок</em></h2>
+  </div>
+
+  <p class="lead-text" style="max-width: 820px;">Главная sylarstek.com — единый зонтик. Кликами уводит на <em>xerocode.ru</em> или <em>roleflow.ai</em>. У каждого под-бренда — свой полный сайт.</p>
+
+  <!-- Mock 1: SYLAR umbrella -->
+  <p class="palette-row-label" style="margin-top: 32px;">▸ sylarstek.com · зонтичная главная</p>
+  <div class="web-mock">
+    <div class="web-mock-bar">
+      <div class="web-mock-dots"><span></span><span></span><span></span></div>
+      <div class="web-mock-url">https://<span class="domain">sylarstek.com</span></div>
+    </div>
+    <div class="web-mock-body">
+      <div class="web-mock-nav">
+        <span class="web-mock-logo">SYLAR <span class="stek">STEK</span></span>
+        <div class="web-mock-menu">
+          <span class="active">Stack</span>
+          <span>XeroCode</span>
+          <span>RoleFlow</span>
+          <span>Bundle</span>
+          <span>Контакты</span>
+        </div>
+      </div>
+      <div class="web-mock-content">
+        <h1>AI-стек, на который можно <em>положиться.</em></h1>
+        <p>Одна экосистема. Два продукта. Создаём с XeroCode. Контролируем с RoleFlow.</p>
+        <div class="web-mock-products-row">
+          <div class="web-mock-product-tile xero">
+            <p class="pt-tag">▸ PRODUCT 01</p>
+            <p class="pt-name">Xero<em style="font-style: italic; background: var(--grad-xero); -webkit-background-clip: text; background-clip: text; color: transparent;">Code</em></p>
+            <p class="pt-tagline">Multi-model AI-платформа · 430+ моделей · BYOK · 8 workspaces.</p>
+            <p class="pt-cta">Открыть xerocode.ru →</p>
+          </div>
+          <div class="web-mock-product-tile rf">
+            <p class="pt-tag">▸ PRODUCT 02</p>
+            <p class="pt-name">Role<em style="font-style: italic; background: var(--grad-rf); -webkit-background-clip: text; background-clip: text; color: transparent;">Flow</em></p>
+            <p class="pt-tagline">AI Governance · DLP · Role Audit · 1С / Битрикс / ЭДО.</p>
+            <p class="pt-cta">Открыть roleflow.ai →</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mock 2: XeroCode -->
+  <p class="palette-row-label" style="margin-top: 64px; color: var(--xero-violet);">▸ xerocode.ru · сайт продукта 01</p>
+  <div class="web-mock">
+    <div class="web-mock-bar">
+      <div class="web-mock-dots"><span></span><span></span><span></span></div>
+      <div class="web-mock-url">https://<span class="domain" style="color: var(--xero-violet);">xerocode.ru</span></div>
+    </div>
+    <div class="web-mock-body" style="background: var(--grad-mesh-xero);">
+      <div class="web-mock-nav">
+        <span class="web-mock-logo">XERO<span style="font-style: italic; background: var(--grad-xero); -webkit-background-clip: text; background-clip: text; color: transparent;">CODE</span></span>
+        <div class="web-mock-menu">
+          <span class="active" style="color: var(--xero-violet);">Возможности</span>
+          <span>Тарифы</span>
+          <span>Бизнесу</span>
+          <span>CLI</span>
+          <span style="color: var(--aurum);">↗ RoleFlow</span>
+        </div>
+      </div>
+      <div class="web-mock-content">
+        <h1>AI doesn't <em style="background: var(--grad-xero); -webkit-background-clip: text; background-clip: text; color: transparent; font-style: italic;">chat.</em><br>AI <em style="background: var(--grad-xero); -webkit-background-clip: text; background-clip: text; color: transparent; font-style: italic;">works.</em></h1>
+        <p>430+ моделей · BYOK ∞ · 8 workspaces · готовые PPTX/DOCX/XLSX</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mock 3: RoleFlow -->
+  <p class="palette-row-label" style="margin-top: 64px; color: var(--rf-aurora);">▸ roleflow.ai · сайт продукта 02</p>
+  <div class="web-mock">
+    <div class="web-mock-bar">
+      <div class="web-mock-dots"><span></span><span></span><span></span></div>
+      <div class="web-mock-url">https://<span class="domain" style="color: var(--rf-aurora);">roleflow.ai</span></div>
+    </div>
+    <div class="web-mock-body" style="background: var(--grad-mesh-rf);">
+      <div class="web-mock-nav">
+        <span class="web-mock-logo">ROLE<span style="font-style: italic; background: var(--grad-rf); -webkit-background-clip: text; background-clip: text; color: transparent;">FLOW</span></span>
+        <div class="web-mock-menu">
+          <span class="active" style="color: var(--rf-aurora);">Audit</span>
+          <span>Governance</span>
+          <span>Connect</span>
+          <span>Enterprise</span>
+          <span style="color: var(--aurum);">↗ XeroCode</span>
+        </div>
+      </div>
+      <div class="web-mock-content">
+        <h1>AI, который <em style="background: var(--grad-rf); -webkit-background-clip: text; background-clip: text; color: transparent; font-style: italic;">не утечёт.</em></h1>
+        <p>Audit ролей · DLP-шлюз · 1С / Битрикс / ЭДО · возвращённые человеко-часы</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-meta meta-bl">WEB MOCK</div>
+  <div class="page-meta meta-br">SYLAR / 11</div>
+</section>
+
+<!-- ╔════════════════════════════════════════════════════╗
+     ║  12 — IMPLEMENTATION                               ║
+     ╚════════════════════════════════════════════════════╝ -->
+<section class="page" id="impl">
+  <div class="page-meta meta-tl">SECTION 12</div>
+  <div class="page-meta meta-tr">P. 44</div>
+  <div class="section-header">
+    <span class="section-num">⌘ 12</span>
+    <h2 class="section-title">Реали<em>зация</em></h2>
+  </div>
+
+  <div class="two-col">
+    <div>
+      <p class="col-label">ДОМЕНЫ &amp; ИНФРА</p>
+      <ul class="clean">
+        <li><strong style="color: var(--aurum);">sylarstek.com</strong> — зонтичная главная (запустить 1-я)</li>
+        <li><strong style="color: var(--xero-violet);">xerocode.ru</strong> — продукт 01 (уже live)</li>
+        <li><strong style="color: var(--rf-aurora);">roleflow.ai</strong> — продукт 02 (купить, поднять)</li>
+        <li>Единый SSO — auth.sylarstek.com</li>
+        <li>Единый billing — bill.sylarstek.com</li>
+        <li>Cross-product API — sylarstek.com/api</li>
+      </ul>
+    </div>
+    <div>
+      <p class="col-label">ROADMAP · 6 МЕСЯЦЕВ</p>
+      <div class="code-block"><span class="comment">// Q2 2026 (май–июнь)</span>
+<span class="key">M1.</span> <span class="gold">Купить</span> roleflow.ai · sylarstek.com
+<span class="key">M2.</span> <span class="gold">Запустить</span> sylarstek.com (зонтик)
+<span class="key">M3.</span> <span class="gold">SSO</span> между всеми доменами
+
+<span class="comment">// Q3 2026 (июль–август)</span>
+<span class="key">M4.</span> Pilot RoleFlow Express Audit (3 клиента)
+<span class="key">M5.</span> roleflow.ai full-launch
+<span class="key">M6.</span> Bundle pricing на всех сайтах
+
+<span class="comment">// Q4 2026 (сентябрь–октябрь)</span>
+<span class="key">M7.</span> Cross-product API · единый dashboard
+<span class="key">M8.</span> SYLAR Enterprise sales-кампания
+<span class="key">M9.</span> Партнёрства — Solar, Kaspersky, Битрикс</div>
+    </div>
+  </div>
+
+  <div class="spacer-md"></div>
+
+  <p class="palette-row-label">Чеклист брендинга (что делаем сразу)</p>
+  <ul class="clean">
+    <li>SYLAR STEK logo — финализировать (3-stack mark + wordmark) · отрисовать в SVG</li>
+    <li>Brand-assets pack — 24 файла (логотипы / иконки / favicons / OG-images)</li>
+    <li>sylarstek.com — лендинг по этому брендбуку (1 неделя · повторяет Section 11)</li>
+    <li>Перебрендить XeroCode footer + about — добавить «часть SYLAR STEK»</li>
+    <li>Создать roleflow.ai стартовую страницу (coming soon + email-collect)</li>
+    <li>Pricing страницу с tabs: XeroCode / RoleFlow / Bundle</li>
+    <li>Email-кампания — анонс «нового зонтика» текущим юзерам XeroCode</li>
+    <li>PR-пост в Telegram-каналах ИБ / SaaS / стартап-сообществ</li>
+  </ul>
+
+  <div class="page-meta meta-bl">IMPLEMENTATION</div>
+  <div class="page-meta meta-br">SYLAR / 12</div>
+</section>
+
+<!-- ╔════════════════════════════════════════════════════╗
+     ║  FOOTER                                            ║
+     ╚════════════════════════════════════════════════════╝ -->
+<section class="footer">
+  <div class="brand-mark-stack" style="margin: 0 auto 32px;">
+    <div class="layer l3"></div>
+    <div class="layer l2"></div>
+    <div class="layer l1"></div>
+  </div>
+  <p class="footer-quote">«Один <em>стандарт</em>. Два продукта.<br>Полный AI-стек для бизнеса, на который можно <em>положиться</em>.»</p>
+  <p class="footer-meta">SYLAR STEK BRAND BOOK · v1.0 · MMXXVI · MOSCOW</p>
+</section>
+
+<script>
+const io = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) entry.target.classList.add('visible');
+  });
+}, { threshold: 0.1 });
+document.querySelectorAll('.page').forEach(el => {
+  el.classList.add('reveal');
+  io.observe(el);
+});
+</script>
+</body>
+</html>

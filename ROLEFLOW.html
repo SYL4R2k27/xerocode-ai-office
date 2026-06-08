@@ -1,0 +1,2814 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>RoleFlow — Operations Layer for the AI Era</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ╔══════════════════════════════════════════════════════════════╗
+   ║   ROLEFLOW · Final Brandbook · v 1.0                         ║
+   ║   Genre: tech-company, clean modernist, no luxury            ║
+   ║   Reference: humaan · Linear · Vercel · Stripe · Resend      ║
+   ╚══════════════════════════════════════════════════════════════╝ */
+
+:root {
+  /* Surfaces */
+  --bg:        #0A0A0B;
+  --bg-soft:   #131316;
+  --bg-tile:   #151519;
+  --cream:     #F4EFE3;
+  --cream-warm:#EDE5D2;
+  --cream-tile:#FFFAEE;
+
+  /* Text */
+  --on-bg:     #F4EFE3;
+  --on-bg-mute:#A8A8AC;
+  --on-bg-dim: #6E6E72;
+  --on-cream:  #0A0A0B;
+  --on-cream-mute: #5C5C62;
+  --on-cream-dim:  #8C8C92;
+
+  /* Lines */
+  --line-bg:    rgba(244,239,227,0.10);
+  --line-bg-strong: rgba(244,239,227,0.20);
+  --line-cream: rgba(10,10,11,0.10);
+  --line-cream-strong: rgba(10,10,11,0.20);
+
+  /* Accent — single warm sienna, restrained */
+  --accent:     #D4654A;
+  --accent-soft:#E08368;
+  --alert:      #C84830;
+
+  /* Type */
+  --display: 'Space Grotesk', system-ui, sans-serif;
+  --body:    'Inter', system-ui, sans-serif;
+  --mono:    'JetBrains Mono', ui-monospace, monospace;
+
+  --ease:      cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-soft: cubic-bezier(0.4, 0, 0.2, 1);
+
+  --pad-x: clamp(20px, 4vw, 64px);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+body {
+  background: var(--bg);
+  color: var(--on-bg);
+  font-family: var(--body);
+  font-size: 16px;
+  line-height: 1.55;
+  font-feature-settings: 'ss01', 'ss02', 'cv11';
+  font-variant-numeric: tabular-nums;
+  overflow-x: hidden;
+  -webkit-text-size-adjust: 100%;
+}
+::selection { background: var(--accent); color: var(--cream); }
+
+/* ╔══════════════════════════════════════════════════════════════╗
+   ║   NAV                                                        ║
+   ╚══════════════════════════════════════════════════════════════╝ */
+.nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  padding: 22px var(--pad-x);
+  display: flex; align-items: center; justify-content: space-between;
+  background: transparent;
+  transition: background 300ms var(--ease), backdrop-filter 300ms var(--ease);
+}
+.nav.scrolled {
+  background: rgba(10,10,11,0.78);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border-bottom: 1px solid var(--line-bg);
+}
+.nav-brand {
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 20px;
+  letter-spacing: -0.02em;
+  color: var(--on-bg);
+  text-decoration: none;
+  display: flex; align-items: center; gap: 10px;
+}
+.nav-brand .dot {
+  display: inline-block;
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+.nav-menu {
+  display: flex; gap: 36px;
+  font-size: 14px;
+  font-weight: 500;
+}
+.nav-menu a {
+  color: var(--on-bg);
+  text-decoration: none;
+  opacity: 0.78;
+  transition: opacity 200ms var(--ease);
+}
+.nav-menu a:hover { opacity: 1; }
+.nav-cta {
+  display: inline-flex; align-items: center; gap: 10px;
+  padding: 11px 20px;
+  background: var(--cream);
+  color: var(--on-cream);
+  font-family: var(--body);
+  font-size: 13px;
+  font-weight: 500;
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: transform 200ms var(--ease), background 200ms var(--ease);
+  text-decoration: none;
+}
+.nav-cta:hover { background: var(--accent); color: var(--cream); transform: translateY(-1px); }
+.nav-cta::after {
+  content: '↗';
+  font-size: 14px;
+  transition: transform 200ms var(--ease);
+}
+.nav-cta:hover::after { transform: translate(2px, -2px); }
+
+@media (max-width: 760px) {
+  .nav-menu { display: none; }
+}
+
+/* ╔══════════════════════════════════════════════════════════════╗
+   ║   HERO — karaoke scroll-reveal (Lovi-style)                  ║
+   ╚══════════════════════════════════════════════════════════════╝ */
+.hero {
+  min-height: 220vh;          /* tall — to allow scroll-driven text reveal */
+  padding: 160px var(--pad-x) 0;
+  position: relative;
+}
+.hero-sticky {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  display: flex; flex-direction: column;
+  justify-content: space-between;
+  padding: 60px 0 80px;
+}
+.hero-eyebrow {
+  font-family: var(--mono);
+  font-size: 11.5px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--accent);
+  display: flex; align-items: center; gap: 12px;
+}
+.hero-eyebrow::before {
+  content: '';
+  display: inline-block;
+  width: 32px; height: 1px;
+  background: var(--accent);
+}
+.hero-text {
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: clamp(28px, 4.2vw, 64px);
+  line-height: 1.18;
+  letter-spacing: -0.025em;
+  color: var(--on-bg);
+  max-width: 1180px;
+  margin-top: 56px;
+}
+.hero-text .line {
+  display: block;
+  margin-bottom: 0.18em;
+}
+/* Karaoke effect — words start dim, illuminate on scroll */
+.hero-text .w {
+  display: inline-block;
+  color: var(--on-bg-dim);
+  opacity: 0.22;
+  transition: color 240ms var(--ease), opacity 240ms var(--ease);
+  margin-right: 0.28em;
+}
+.hero-text .w.lit {
+  color: var(--on-bg);
+  opacity: 1;
+}
+.hero-text .w.accent.lit {
+  color: var(--accent);
+}
+.hero-text .w.dim {
+  color: var(--on-bg-dim);
+  opacity: 0.35;
+}
+
+.hero-bottom {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr 1fr;
+  gap: 56px;
+  align-items: end;
+}
+.hero-sub {
+  font-family: var(--body);
+  font-size: 16.5px;
+  line-height: 1.55;
+  color: var(--on-bg-mute);
+  max-width: 480px;
+  font-weight: 400;
+}
+.hero-sub strong { color: var(--on-bg); font-weight: 500; }
+
+.hero-meta {
+  display: flex; flex-direction: column; gap: 3px;
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--on-bg-dim);
+}
+.hero-meta strong { color: var(--on-bg); font-weight: 500; }
+
+.hero-actions {
+  display: flex; gap: 14px;
+  align-self: end;
+  justify-self: end;
+}
+.btn-primary {
+  display: inline-flex; align-items: center; gap: 12px;
+  padding: 18px 32px;
+  background: var(--accent);
+  color: var(--cream);
+  font-family: var(--body);
+  font-size: 14px;
+  font-weight: 500;
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: transform 200ms var(--ease), background 200ms var(--ease);
+  text-decoration: none;
+}
+.btn-primary:hover { background: var(--accent-soft); transform: translateY(-2px); }
+.btn-primary::after { content: '→'; transition: transform 200ms var(--ease); }
+.btn-primary:hover::after { transform: translateX(4px); }
+
+@media (max-width: 980px) {
+  .hero-bottom { grid-template-columns: 1fr; gap: 32px; }
+  .hero-actions { justify-self: start; }
+}
+
+/* ╔══════════════════════════════════════════════════════════════╗
+   ║   SECTION                                                    ║
+   ╚══════════════════════════════════════════════════════════════╝ */
+.section {
+  padding: 140px var(--pad-x);
+  position: relative;
+}
+.section.cream {
+  background: var(--cream);
+  color: var(--on-cream);
+}
+.section-num {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 24px;
+  display: flex; align-items: center; gap: 12px;
+}
+.section-num::before {
+  content: '';
+  display: inline-block;
+  width: 24px; height: 1px;
+  background: var(--accent);
+}
+
+/* ╔══════════════════════════════════════════════════════════════╗
+   ║   MANIFESTO                                                  ║
+   ╚══════════════════════════════════════════════════════════════╝ */
+.manifesto {
+  display: grid;
+  grid-template-columns: 1fr 5fr;
+  gap: 60px;
+  align-items: start;
+}
+.manifesto-meta {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--on-bg-dim);
+  position: sticky;
+  top: 120px;
+}
+.manifesto-text {
+  font-family: var(--display);
+  font-weight: 400;
+  font-size: clamp(28px, 3.4vw, 52px);
+  line-height: 1.18;
+  letter-spacing: -0.02em;
+  color: var(--on-bg);
+  max-width: 1100px;
+}
+.manifesto-text .accent { color: var(--accent); }
+.manifesto-text .mute { color: var(--on-bg-dim); }
+.cream .manifesto-text { color: var(--on-cream); }
+.cream .manifesto-text .mute { color: var(--on-cream-dim); }
+.cream .manifesto-meta { color: var(--on-cream-dim); }
+
+@media (max-width: 980px) {
+  .manifesto { grid-template-columns: 1fr; gap: 24px; }
+  .manifesto-meta { position: static; }
+}
+
+/* ╔══════════════════════════════════════════════════════════════╗
+   ║   FORMULA BLOCK                                              ║
+   ╚══════════════════════════════════════════════════════════════╝ */
+.formula {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0;
+  margin-top: 80px;
+  border-top: 1px solid var(--line-bg-strong);
+}
+.cream .formula { border-color: var(--line-cream-strong); }
+.formula-cell {
+  padding: 36px 32px 0 0;
+  border-right: 1px solid var(--line-bg);
+}
+.cream .formula-cell { border-color: var(--line-cream); }
+.formula-cell:last-child { border-right: none; padding-right: 0; }
+.formula-affirm {
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: clamp(28px, 3vw, 40px);
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  color: var(--on-bg);
+  margin-bottom: 8px;
+}
+.cream .formula-affirm { color: var(--on-cream); }
+.formula-deny {
+  font-family: var(--display);
+  font-weight: 400;
+  font-size: clamp(20px, 2.2vw, 28px);
+  line-height: 1.2;
+  letter-spacing: -0.015em;
+  color: var(--on-bg-dim);
+}
+.cream .formula-deny { color: var(--on-cream-dim); }
+
+@media (max-width: 980px) {
+  .formula { grid-template-columns: 1fr; }
+  .formula-cell { border-right: none; border-bottom: 1px solid var(--line-bg); padding: 24px 0; }
+}
+
+/* ╔══════════════════════════════════════════════════════════════╗
+   ║   STAT ROW                                                   ║
+   ╚══════════════════════════════════════════════════════════════╝ */
+.stat-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0;
+  margin-top: 80px;
+  border-top: 1px solid var(--line-bg-strong);
+}
+.cream .stat-row { border-color: var(--line-cream-strong); }
+.stat-cell {
+  padding: 36px 32px 36px 0;
+  border-right: 1px solid var(--line-bg);
+}
+.cream .stat-cell { border-color: var(--line-cream); }
+.stat-cell:last-child { border-right: none; padding-right: 0; }
+.stat-num {
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: clamp(56px, 6vw, 88px);
+  line-height: 0.95;
+  letter-spacing: -0.04em;
+  color: var(--on-bg);
+}
+.stat-num .unit { color: var(--accent); }
+.cream .stat-num { color: var(--on-cream); }
+.stat-label {
+  font-family: var(--body);
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--on-bg-mute);
+  margin-top: 16px;
+  max-width: 240px;
+}
+.cream .stat-label { color: var(--on-cream-mute); }
+.stat-source {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--on-bg-dim);
+  margin-top: 12px;
+}
+.cream .stat-source { color: var(--on-cream-dim); }
+
+@media (max-width: 980px) {
+  .stat-row { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* ╔══════════════════════════════════════════════════════════════╗
+   ║   TWO FACES PRODUCT                                          ║
+   ╚══════════════════════════════════════════════════════════════╝ */
+.faces {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1px;
+  background: var(--line-cream-strong);
+  border: 1px solid var(--line-cream-strong);
+  margin-top: 60px;
+}
+.face {
+  background: var(--cream);
+  padding: 56px 48px;
+  display: flex; flex-direction: column;
+  position: relative;
+  min-height: 460px;
+  overflow: hidden;
+  transition: background 250ms var(--ease);
+}
+.face:hover { background: var(--cream-warm); }
+.face-num {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 18px;
+}
+.face-title {
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: 44px;
+  line-height: 1.02;
+  letter-spacing: -0.03em;
+  color: var(--on-cream);
+  margin-bottom: 24px;
+  max-width: 480px;
+}
+.face-desc {
+  font-family: var(--body);
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--on-cream-mute);
+  margin-bottom: 32px;
+  max-width: 460px;
+}
+.face-list {
+  list-style: none;
+  margin-top: auto;
+  border-top: 1px solid var(--line-cream);
+}
+.face-list li {
+  padding: 14px 0 14px 22px;
+  position: relative;
+  font-size: 14.5px;
+  color: var(--on-cream);
+  line-height: 1.55;
+  border-bottom: 1px solid var(--line-cream);
+}
+.face-list li:last-child { border-bottom: none; }
+.face-list li::before {
+  content: '+';
+  position: absolute; left: 0;
+  color: var(--accent);
+  font-weight: 500;
+  font-size: 18px;
+  line-height: 1.55;
+}
+.face-list li strong { font-weight: 500; }
+
+@media (max-width: 760px) {
+  .faces { grid-template-columns: 1fr; }
+  .face { padding: 40px 28px; min-height: auto; }
+  .face-title { font-size: 32px; }
+}
+
+/* ╔══════════════════════════════════════════════════════════════╗
+   ║   PILLARS (4 modules)                                        ║
+   ╚══════════════════════════════════════════════════════════════╝ */
+.pillars-head {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 60px;
+  align-items: end;
+  margin-bottom: 80px;
+}
+.pillars-title {
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: clamp(40px, 5vw, 80px);
+  line-height: 1.0;
+  letter-spacing: -0.03em;
+  color: var(--on-bg);
+}
+.cream .pillars-title { color: var(--on-cream); }
+.pillars-sub {
+  font-family: var(--body);
+  font-size: 17px;
+  line-height: 1.55;
+  color: var(--on-bg-mute);
+  max-width: 460px;
+  justify-self: end;
+}
+.cream .pillars-sub { color: var(--on-cream-mute); }
+
+.pillars-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1px;
+  background: var(--line-bg-strong);
+  border: 1px solid var(--line-bg-strong);
+}
+.cream .pillars-grid { background: var(--line-cream-strong); border-color: var(--line-cream-strong); }
+.pillar {
+  background: var(--bg);
+  padding: 52px 44px;
+  display: flex; flex-direction: column;
+  position: relative;
+  cursor: pointer;
+  transition: background 250ms var(--ease);
+  min-height: 380px;
+  overflow: hidden;
+}
+.cream .pillar { background: var(--cream); }
+.pillar:hover { background: var(--bg-soft); }
+.cream .pillar:hover { background: var(--cream-warm); }
+.pillar-num {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 18px;
+}
+.pillar-title {
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: 36px;
+  line-height: 1.05;
+  letter-spacing: -0.025em;
+  color: var(--on-bg);
+  margin-bottom: 20px;
+}
+.cream .pillar-title { color: var(--on-cream); }
+.pillar-desc {
+  font-family: var(--body);
+  font-size: 15.5px;
+  line-height: 1.6;
+  color: var(--on-bg-mute);
+  margin-bottom: 32px;
+  max-width: 440px;
+}
+.cream .pillar-desc { color: var(--on-cream-mute); }
+.pillar-modules {
+  display: flex; flex-wrap: wrap; gap: 6px;
+  margin-top: auto;
+}
+.pillar-modules span {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.12em;
+  padding: 6px 12px;
+  border: 1px solid var(--line-bg-strong);
+  color: var(--on-bg-mute);
+  border-radius: 999px;
+}
+.cream .pillar-modules span { border-color: var(--line-cream-strong); color: var(--on-cream-mute); }
+.pillar-arrow {
+  position: absolute;
+  top: 52px; right: 44px;
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  border: 1px solid var(--line-bg-strong);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+  color: var(--on-bg-mute);
+  transition: transform 250ms var(--ease), background 250ms var(--ease), color 250ms var(--ease), border-color 250ms var(--ease);
+}
+.cream .pillar-arrow { border-color: var(--line-cream-strong); color: var(--on-cream-mute); }
+.pillar:hover .pillar-arrow {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--cream);
+  transform: rotate(-45deg);
+}
+
+@media (max-width: 760px) {
+  .pillars-head { grid-template-columns: 1fr; gap: 24px; }
+  .pillars-sub { justify-self: start; }
+  .pillars-grid { grid-template-columns: 1fr; }
+  .pillar { padding: 40px 28px; min-height: 320px; }
+  .pillar-arrow { top: 32px; right: 28px; }
+}
+
+/* ╔══════════════════════════════════════════════════════════════╗
+   ║   QG / FEATURE DEEP                                          ║
+   ╚══════════════════════════════════════════════════════════════╝ */
+.feature {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 80px;
+  align-items: start;
+}
+.feature-text { position: sticky; top: 120px; }
+.feature-title {
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: clamp(40px, 5vw, 72px);
+  line-height: 1.02;
+  letter-spacing: -0.03em;
+  color: var(--on-bg);
+  margin-bottom: 32px;
+}
+.feature-title .accent { color: var(--accent); }
+.feature-text p {
+  font-family: var(--body);
+  font-size: 17px;
+  line-height: 1.65;
+  color: var(--on-bg-mute);
+  max-width: 480px;
+  margin-bottom: 18px;
+}
+.feature-text p strong { color: var(--on-bg); font-weight: 500; }
+
+.feature-list {
+  list-style: none;
+  margin-top: 36px;
+  border-top: 1px solid var(--line-bg);
+}
+.feature-list li {
+  padding: 22px 0;
+  border-bottom: 1px solid var(--line-bg);
+  display: grid;
+  grid-template-columns: 50px 1fr;
+  gap: 18px;
+  align-items: start;
+}
+.feature-list li .num {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  color: var(--accent);
+  padding-top: 4px;
+}
+.feature-list li h4 {
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: 21px;
+  letter-spacing: -0.015em;
+  color: var(--on-bg);
+  margin-bottom: 6px;
+}
+.feature-list li p { margin: 0; font-size: 14.5px; }
+
+.feature-visual {
+  background: var(--bg-soft);
+  border: 1px solid var(--line-bg);
+  border-radius: 8px;
+  padding: 36px;
+  min-height: 600px;
+  position: relative;
+  overflow: hidden;
+}
+.feature-visual-label {
+  font-family: var(--mono); font-size: 11px;
+  letter-spacing: 0.22em; color: var(--on-bg-dim);
+  text-transform: uppercase; margin-bottom: 24px;
+}
+
+/* QG flow */
+.qg-flow { display: flex; flex-direction: column; gap: 0; font-family: var(--mono); }
+.qg-step {
+  background: var(--bg); border: 1px solid var(--line-bg-strong);
+  padding: 16px 20px;
+  display: flex; justify-content: space-between; align-items: center;
+  transition: border-color 200ms var(--ease);
+}
+.qg-step .label {
+  font-size: 12px; letter-spacing: 0.12em;
+  color: var(--on-bg); font-weight: 500;
+}
+.qg-step .verdict {
+  font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--on-bg-dim);
+}
+.qg-step .verdict.ok { color: var(--accent); }
+.qg-step .verdict.fail { color: var(--alert); }
+.qg-arrow {
+  text-align: center; font-family: var(--mono); font-size: 14px;
+  color: var(--on-bg-dim); padding: 4px 0;
+}
+
+/* Privacy 5-layer stack */
+.priv-stack { display: flex; flex-direction: column; gap: 8px; }
+.priv-layer {
+  background: var(--bg); border: 1px solid var(--line-bg-strong);
+  padding: 18px 22px;
+  transition: border-color 200ms var(--ease);
+}
+.priv-layer:hover { border-color: var(--accent); }
+.priv-layer.primary { border-color: var(--accent); background: rgba(212,101,74,0.06); }
+.priv-layer .head {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 6px;
+}
+.priv-layer .l-name {
+  font-family: var(--display); font-weight: 500;
+  font-size: 16px; letter-spacing: -0.01em; color: var(--on-bg);
+}
+.priv-layer .l-tag {
+  font-family: var(--mono); font-size: 10px;
+  letter-spacing: 0.18em; color: var(--accent);
+  text-transform: uppercase;
+}
+.priv-layer .l-desc {
+  font-family: var(--mono); font-size: 11px;
+  color: var(--on-bg-mute); line-height: 1.5;
+}
+.priv-arrow {
+  text-align: center; font-family: var(--mono); font-size: 12px;
+  color: var(--on-bg-dim); padding: 2px 0;
+}
+
+@media (max-width: 980px) {
+  .feature { grid-template-columns: 1fr; gap: 40px; }
+  .feature-text { position: static; }
+  .feature-visual { min-height: 480px; padding: 24px; }
+}
+
+/* ╔══════════════════════════════════════════════════════════════╗
+   ║   ADAPTIVITY · vertical packs                                ║
+   ╚══════════════════════════════════════════════════════════════╝ */
+.adaptive-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+  background: var(--line-cream-strong);
+  border: 1px solid var(--line-cream-strong);
+  margin-top: 60px;
+}
+.adaptive-cell {
+  background: var(--cream);
+  padding: 32px 28px;
+  display: flex; flex-direction: column; gap: 12px;
+  min-height: 240px;
+  transition: background 200ms var(--ease);
+  position: relative;
+}
+.adaptive-cell:hover { background: var(--cream-tile); }
+.adaptive-cell.live {
+  background: var(--on-cream);
+  color: var(--cream);
+}
+.adaptive-cell.live:hover { background: var(--on-cream); }
+.adaptive-cell .ind {
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: 24px;
+  letter-spacing: -0.02em;
+  color: var(--on-cream);
+}
+.adaptive-cell.live .ind { color: var(--cream); }
+.adaptive-cell .stage {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--on-cream-dim);
+  margin-top: auto;
+}
+.adaptive-cell.live .stage { color: var(--accent); }
+.adaptive-cell .roles {
+  font-family: var(--mono);
+  font-size: 11.5px;
+  color: var(--on-cream-mute);
+  line-height: 1.6;
+}
+.adaptive-cell.live .roles { color: rgba(244,239,227,0.7); }
+.adaptive-cell .live-tag {
+  position: absolute; top: 24px; right: 24px;
+  font-family: var(--mono); font-size: 9px;
+  letter-spacing: 0.22em; color: var(--accent);
+  text-transform: uppercase; font-weight: 500;
+}
+.adaptive-cell .live-tag::before {
+  content: '●'; margin-right: 4px;
+  animation: pulse 2s var(--ease-soft) infinite;
+}
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+@media (max-width: 980px) {
+  .adaptive-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 540px) {
+  .adaptive-grid { grid-template-columns: 1fr; }
+}
+
+/* ╔══════════════════════════════════════════════════════════════╗
+   ║   MARQUEE                                                    ║
+   ╚══════════════════════════════════════════════════════════════╝ */
+.marquee {
+  padding: 56px 0;
+  border-top: 1px solid var(--line-bg-strong);
+  border-bottom: 1px solid var(--line-bg-strong);
+  overflow: hidden;
+  white-space: nowrap;
+  display: flex;
+  gap: 0;
+}
+.marquee-track {
+  display: inline-flex;
+  align-items: center;
+  gap: 80px;
+  animation: marquee 50s linear infinite;
+  padding-right: 80px;
+}
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+.marquee-item {
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: clamp(40px, 6vw, 80px);
+  line-height: 1;
+  letter-spacing: -0.03em;
+  color: var(--on-bg);
+  display: inline-flex; align-items: center; gap: 32px;
+}
+.marquee-item .accent { color: var(--accent); }
+.marquee-item::after {
+  content: '◆'; font-size: 0.4em; color: var(--accent); margin-left: 32px;
+}
+
+/* ╔══════════════════════════════════════════════════════════════╗
+   ║   AUDIT WEDGE                                                ║
+   ╚══════════════════════════════════════════════════════════════╝ */
+.audit-cta {
+  padding: 140px var(--pad-x);
+  background: var(--cream);
+  color: var(--on-cream);
+  position: relative;
+  overflow: hidden;
+}
+.audit-cta-grid {
+  display: grid;
+  grid-template-columns: 7fr 5fr;
+  gap: 80px;
+  align-items: end;
+}
+.audit-headline {
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: clamp(48px, 7vw, 116px);
+  line-height: 0.95;
+  letter-spacing: -0.04em;
+  color: var(--on-cream);
+  max-width: 900px;
+}
+.audit-headline .accent { color: var(--accent); }
+.audit-side {
+  display: flex; flex-direction: column; gap: 28px;
+}
+.audit-side p {
+  font-family: var(--body);
+  font-size: 17px;
+  line-height: 1.6;
+  color: var(--on-cream-mute);
+  max-width: 380px;
+}
+.audit-cta-btn {
+  display: inline-flex; align-items: center; justify-content: space-between;
+  padding: 22px 30px;
+  background: var(--on-cream);
+  color: var(--cream);
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: 21px;
+  letter-spacing: -0.02em;
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 200ms var(--ease), transform 200ms var(--ease);
+  text-decoration: none;
+  width: 100%; max-width: 380px;
+}
+.audit-cta-btn:hover { background: var(--accent); transform: translateY(-2px); }
+.audit-cta-btn::after { content: '→'; font-size: 24px; transition: transform 200ms var(--ease); }
+.audit-cta-btn:hover::after { transform: translateX(6px); }
+
+.audit-meta {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0;
+  margin-top: 100px;
+  border-top: 1px solid var(--line-cream-strong);
+}
+.audit-meta-cell {
+  padding: 32px 32px 0 0;
+  border-right: 1px solid var(--line-cream);
+}
+.audit-meta-cell:last-child { border-right: none; }
+.audit-meta-cell .lbl {
+  font-family: var(--mono); font-size: 10.5px;
+  letter-spacing: 0.22em; text-transform: uppercase;
+  color: var(--on-cream-dim); margin-bottom: 10px;
+}
+.audit-meta-cell .val {
+  font-family: var(--display);
+  font-weight: 500; font-size: 26px;
+  letter-spacing: -0.015em; color: var(--on-cream);
+}
+
+@media (max-width: 980px) {
+  .audit-cta-grid { grid-template-columns: 1fr; gap: 40px; }
+  .audit-meta { grid-template-columns: 1fr; }
+  .audit-meta-cell { border-right: none; border-bottom: 1px solid var(--line-cream); padding: 24px 0; }
+  .audit-meta-cell:last-child { border-bottom: none; }
+}
+
+/* ╔══════════════════════════════════════════════════════════════╗
+   ║   PILOT BLOCK · success-fee                                  ║
+   ╚══════════════════════════════════════════════════════════════╝ */
+.pilot-block {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 60px;
+  align-items: start;
+  margin-top: 60px;
+}
+.pilot-quote {
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: clamp(28px, 3.6vw, 48px);
+  line-height: 1.15;
+  letter-spacing: -0.025em;
+  color: var(--on-bg);
+}
+.pilot-quote .accent { color: var(--accent); }
+.pilot-mech {
+  background: var(--bg-soft);
+  border: 1px solid var(--line-bg);
+  padding: 32px;
+}
+.pilot-mech h4 {
+  font-family: var(--mono); font-size: 11px;
+  letter-spacing: 0.22em; text-transform: uppercase;
+  color: var(--accent); margin-bottom: 18px;
+}
+.pilot-mech-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 16px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--line-bg);
+  align-items: baseline;
+}
+.pilot-mech-row:last-child { border-bottom: none; }
+.pilot-mech-row .what {
+  font-family: var(--body); font-size: 14.5px;
+  color: var(--on-bg);
+}
+.pilot-mech-row .val {
+  font-family: var(--mono); font-size: 13px;
+  letter-spacing: 0.05em; color: var(--accent);
+  font-weight: 500;
+  text-align: right;
+}
+
+@media (max-width: 980px) {
+  .pilot-block { grid-template-columns: 1fr; gap: 32px; }
+}
+
+/* ╔══════════════════════════════════════════════════════════════╗
+   ║   PRICING                                                    ║
+   ╚══════════════════════════════════════════════════════════════╝ */
+.pricing-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+  background: var(--line-bg-strong);
+  border: 1px solid var(--line-bg-strong);
+  margin-top: 60px;
+}
+.tier {
+  background: var(--bg);
+  padding: 48px 32px;
+  display: flex; flex-direction: column;
+  position: relative;
+  min-height: 540px;
+}
+.tier.featured { background: var(--cream); color: var(--on-cream); }
+.tier-num {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 14px;
+}
+.tier-name {
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: 32px;
+  letter-spacing: -0.025em;
+  margin-bottom: 8px;
+  color: var(--on-bg);
+}
+.tier.featured .tier-name { color: var(--on-cream); }
+.tier-aud {
+  font-family: var(--body);
+  font-size: 13.5px;
+  color: var(--on-bg-mute);
+  margin-bottom: 32px;
+}
+.tier.featured .tier-aud { color: var(--on-cream-mute); }
+.tier-price {
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: 36px;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  color: var(--on-bg);
+}
+.tier.featured .tier-price { color: var(--on-cream); }
+.tier-price small {
+  font-family: var(--mono); font-size: 12px;
+  font-weight: 400; letter-spacing: 0.1em;
+  color: var(--on-bg-mute); text-transform: uppercase; margin-left: 8px;
+}
+.tier.featured .tier-price small { color: var(--on-cream-mute); }
+.tier-cycle {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--on-bg-dim);
+  margin-top: 12px;
+  padding-bottom: 28px; margin-bottom: 28px;
+  border-bottom: 1px solid var(--line-bg);
+}
+.tier.featured .tier-cycle { color: var(--on-cream-dim); border-color: var(--line-cream); }
+.tier ul {
+  list-style: none;
+  flex: 1;
+  margin-bottom: 28px;
+}
+.tier ul li {
+  padding: 8px 0 8px 22px;
+  position: relative;
+  font-size: 14px;
+  color: var(--on-bg-mute);
+  line-height: 1.55;
+}
+.tier.featured ul li { color: var(--on-cream-mute); }
+.tier ul li::before {
+  content: '+';
+  position: absolute; left: 0; top: 8px;
+  color: var(--accent); font-weight: 500; font-size: 16px;
+}
+.tier-cta {
+  display: inline-flex; align-items: center; gap: 10px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--on-bg);
+  font-family: var(--display);
+  font-weight: 500; font-size: 16px;
+  letter-spacing: -0.015em;
+  color: var(--on-bg);
+  text-decoration: none;
+  align-self: flex-start;
+  transition: gap 200ms var(--ease);
+}
+.tier.featured .tier-cta { color: var(--on-cream); border-color: var(--on-cream); }
+.tier-cta:hover { gap: 16px; }
+.tier-cta::after { content: '→'; }
+
+@media (max-width: 980px) {
+  .pricing-grid { grid-template-columns: 1fr; }
+}
+
+/* ╔══════════════════════════════════════════════════════════════╗
+   ║   ROADMAP                                                    ║
+   ╚══════════════════════════════════════════════════════════════╝ */
+.roadmap {
+  margin-top: 60px;
+  position: relative;
+}
+.roadmap::before {
+  content: '';
+  position: absolute;
+  left: 11px; top: 6px; bottom: 6px;
+  width: 1px; background: var(--line-bg-strong);
+}
+.rm-stage {
+  position: relative;
+  padding: 0 0 36px 60px;
+}
+.rm-stage::before {
+  content: '';
+  position: absolute;
+  left: 6px; top: 6px;
+  width: 12px; height: 12px;
+  border-radius: 50%;
+  background: var(--bg);
+  border: 2px solid var(--line-bg-strong);
+}
+.rm-stage.done::before {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+.rm-stage.live::before {
+  background: var(--bg);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 5px rgba(212,101,74,0.15);
+}
+.rm-when {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 8px;
+}
+.rm-stage.done .rm-when { color: var(--on-bg-dim); }
+.rm-what {
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: 26px;
+  letter-spacing: -0.02em;
+  color: var(--on-bg);
+  margin-bottom: 10px;
+}
+.rm-what .accent { color: var(--accent); }
+.rm-detail {
+  font-family: var(--body);
+  font-size: 14.5px;
+  color: var(--on-bg-mute);
+  line-height: 1.65;
+  max-width: 680px;
+}
+
+/* ╔══════════════════════════════════════════════════════════════╗
+   ║   STYLE SYSTEM SECTIONS                                      ║
+   ╚══════════════════════════════════════════════════════════════╝ */
+.swatch-board {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  border: 1px solid var(--line-bg);
+  margin-top: 32px;
+}
+.swatch {
+  padding: 28px 24px 32px;
+  position: relative;
+  border-right: 1px solid var(--line-bg);
+  min-height: 220px;
+  display: flex; flex-direction: column; justify-content: space-between;
+}
+.swatch:last-child { border-right: none; }
+.swatch .name {
+  font-family: var(--mono); font-size: 10px;
+  letter-spacing: 0.22em; text-transform: uppercase; font-weight: 500;
+}
+.swatch .hex {
+  font-family: var(--mono); font-size: 12px;
+  font-weight: 500; letter-spacing: 0.05em;
+}
+.swatch .role {
+  font-family: var(--mono); font-size: 10px;
+  letter-spacing: 0.15em; opacity: 0.75; margin-top: 4px;
+}
+.swatch.dark { background: var(--bg); color: var(--on-bg); }
+.swatch.dark .name { color: var(--accent); }
+.swatch.cream { background: var(--cream); color: var(--on-cream); }
+.swatch.cream .name { color: var(--accent); }
+.swatch.steel { background: #6E6E72; color: var(--cream); }
+.swatch.steel .name, .swatch.steel .hex, .swatch.steel .role { color: var(--cream); }
+.swatch.accent { background: var(--accent); color: var(--cream); }
+.swatch.accent .name, .swatch.accent .hex, .swatch.accent .role { color: var(--cream); }
+.swatch.alert { background: var(--alert); color: var(--cream); }
+.swatch.alert .name, .swatch.alert .hex, .swatch.alert .role { color: var(--cream); }
+
+@media (max-width: 760px) {
+  .swatch-board { grid-template-columns: repeat(2, 1fr); }
+  .swatch { border-right: none; border-bottom: 1px solid var(--line-bg); }
+}
+
+.type-row {
+  display: grid;
+  grid-template-columns: 120px 1fr 200px;
+  gap: 32px;
+  align-items: baseline;
+  padding: 28px 0;
+  border-bottom: 1px solid var(--line-bg);
+}
+.type-row .role-tag {
+  font-family: var(--mono); font-size: 10px;
+  letter-spacing: 0.22em; color: var(--accent);
+  text-transform: uppercase; font-weight: 500;
+}
+.type-row .sample { color: var(--on-bg); }
+.type-row .meta {
+  font-family: var(--mono); font-size: 10.5px;
+  letter-spacing: 0.05em; color: var(--on-bg-mute);
+  line-height: 1.7;
+}
+.type-row .meta b { color: var(--on-bg); font-weight: 500; }
+
+@media (max-width: 760px) {
+  .type-row { grid-template-columns: 1fr; gap: 12px; }
+}
+
+/* ╔══════════════════════════════════════════════════════════════╗
+   ║   FAQ                                                        ║
+   ╚══════════════════════════════════════════════════════════════╝ */
+.faq { margin-top: 60px; border-top: 1px solid var(--line-bg); }
+.faq details {
+  border-bottom: 1px solid var(--line-bg);
+}
+.faq summary {
+  list-style: none;
+  cursor: pointer;
+  padding: 28px 0;
+  display: flex; justify-content: space-between; align-items: center;
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: 22px;
+  letter-spacing: -0.02em;
+  color: var(--on-bg);
+  transition: color 200ms var(--ease);
+}
+.faq summary::-webkit-details-marker { display: none; }
+.faq summary:hover { color: var(--accent); }
+.faq summary::after {
+  content: '+';
+  font-size: 26px; font-weight: 400;
+  color: var(--accent);
+  transition: transform 250ms var(--ease);
+}
+.faq details[open] summary::after { transform: rotate(45deg); }
+.faq details > p {
+  padding: 0 60px 32px 0;
+  font-size: 16px;
+  line-height: 1.65;
+  color: var(--on-bg-mute);
+  max-width: 880px;
+}
+.faq details > p strong { color: var(--on-bg); font-weight: 500; }
+
+/* ╔══════════════════════════════════════════════════════════════╗
+   ║   FINAL                                                      ║
+   ╚══════════════════════════════════════════════════════════════╝ */
+.final-cta {
+  padding: 160px var(--pad-x);
+  border-top: 1px solid var(--line-bg-strong);
+}
+.final-cta h2 {
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: clamp(56px, 9vw, 184px);
+  line-height: 0.92;
+  letter-spacing: -0.045em;
+  color: var(--on-bg);
+  margin-bottom: 60px;
+  max-width: 1400px;
+}
+.final-cta h2 .accent { color: var(--accent); }
+.final-cta-actions {
+  display: flex; gap: 16px;
+  margin-top: 60px;
+  flex-wrap: wrap;
+}
+.final-btn {
+  display: inline-flex; align-items: center; gap: 12px;
+  padding: 22px 36px;
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: 18px;
+  letter-spacing: -0.015em;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 200ms var(--ease);
+  text-decoration: none;
+}
+.final-btn.primary { background: var(--accent); color: var(--cream); }
+.final-btn.primary:hover { background: var(--accent-soft); transform: translateY(-2px); }
+.final-btn.ghost { background: transparent; color: var(--on-bg); border: 1px solid var(--line-bg-strong); }
+.final-btn.ghost:hover { border-color: var(--on-bg); }
+.final-btn::after { content: '→'; transition: transform 200ms var(--ease); }
+.final-btn:hover::after { transform: translateX(4px); }
+
+/* ╔══════════════════════════════════════════════════════════════╗
+   ║   FOOTER                                                     ║
+   ╚══════════════════════════════════════════════════════════════╝ */
+.footer { padding: 80px var(--pad-x) 40px; border-top: 1px solid var(--line-bg); }
+.footer-wordmark {
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: clamp(80px, 18vw, 280px);
+  line-height: 0.85;
+  letter-spacing: -0.05em;
+  color: var(--on-bg);
+  margin-bottom: 80px;
+  display: flex; align-items: baseline; gap: 0.04em;
+}
+.footer-wordmark .dot {
+  display: inline-block;
+  width: 0.16em; height: 0.16em;
+  border-radius: 50%;
+  background: var(--accent);
+  margin-left: 0.05em;
+  transform: translateY(-0.04em);
+}
+.footer-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  gap: 60px;
+  padding-top: 40px;
+  border-top: 1px solid var(--line-bg);
+}
+.footer-brand p {
+  font-size: 14.5px; line-height: 1.6;
+  color: var(--on-bg-mute); max-width: 360px;
+}
+.footer-col h4 {
+  font-family: var(--mono); font-size: 10.5px;
+  letter-spacing: 0.22em; text-transform: uppercase;
+  color: var(--on-bg-dim); margin-bottom: 20px; font-weight: 500;
+}
+.footer-col ul { list-style: none; }
+.footer-col li { padding: 6px 0; font-size: 14px; }
+.footer-col a {
+  color: var(--on-bg); text-decoration: none;
+  opacity: 0.78; transition: opacity 200ms var(--ease);
+}
+.footer-col a:hover { opacity: 1; }
+.footer-bottom {
+  display: flex; justify-content: space-between;
+  margin-top: 80px; padding-top: 28px;
+  border-top: 1px solid var(--line-bg);
+  font-family: var(--mono); font-size: 11px;
+  letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--on-bg-dim);
+}
+
+@media (max-width: 980px) {
+  .footer-grid { grid-template-columns: 1fr 1fr; }
+  .footer-bottom { flex-direction: column; gap: 12px; }
+}
+
+/* ╔══════════════════════════════════════════════════════════════╗
+   ║   INLINE ICONS · in text flow                                ║
+   ╚══════════════════════════════════════════════════════════════╝ */
+.icn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 0.95em;
+  height: 0.95em;
+  margin: 0 0.12em;
+  vertical-align: -0.1em;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--cream);
+  font-family: var(--mono);
+  font-size: 0.5em;
+  font-weight: 600;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.icn.line {
+  background: transparent;
+  border: 1px solid var(--accent);
+  color: var(--accent);
+}
+.icn.dot { font-size: 0; width: 0.5em; height: 0.5em; }
+.icn.spark::before { content: '✦'; font-size: 0.7em; }
+.icn.lock::before { content: '◆'; font-size: 0.6em; }
+.icn.eye::before { content: '◉'; font-size: 0.7em; }
+.icn.shield::before { content: '◇'; font-size: 0.7em; }
+.icn.flow::before { content: '↻'; font-size: 0.7em; }
+.icn.target::before { content: '◎'; font-size: 0.7em; }
+
+/* ╔══════════════════════════════════════════════════════════════╗
+   ║   BROWSER FRAME · live console preview                       ║
+   ╚══════════════════════════════════════════════════════════════╝ */
+.live-section {
+  padding: 100px var(--pad-x) 140px;
+  background: linear-gradient(180deg, var(--cream-warm) 0%, var(--cream) 100%);
+  position: relative;
+  overflow: hidden;
+}
+.live-head {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 60px;
+  align-items: end;
+  margin-bottom: 60px;
+}
+.live-title {
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: clamp(40px, 5vw, 76px);
+  line-height: 1.0;
+  letter-spacing: -0.03em;
+  color: var(--on-cream);
+}
+.live-title .accent { color: var(--accent); }
+.live-sub {
+  font-family: var(--body);
+  font-size: 16.5px;
+  line-height: 1.6;
+  color: var(--on-cream-mute);
+  max-width: 460px;
+  justify-self: end;
+}
+.browser {
+  background: rgba(255,255,255,0.7);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--line-cream-strong);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 30px 80px rgba(10,10,11,0.12), 0 8px 24px rgba(10,10,11,0.06);
+  transition: transform 400ms var(--ease);
+}
+.browser:hover { transform: translateY(-4px); }
+.browser-bar {
+  padding: 14px 18px;
+  display: flex; align-items: center; gap: 14px;
+  background: rgba(244,239,227,0.85);
+  border-bottom: 1px solid var(--line-cream);
+}
+.browser-bar .dots { display: flex; gap: 6px; }
+.browser-bar .dots span {
+  width: 11px; height: 11px; border-radius: 50%;
+}
+.browser-bar .dots span:nth-child(1) { background: #FF5F57; }
+.browser-bar .dots span:nth-child(2) { background: #FEBC2E; }
+.browser-bar .dots span:nth-child(3) { background: #28C840; }
+.browser-bar .url {
+  flex: 1; padding: 6px 14px;
+  background: rgba(255,255,255,0.7);
+  border-radius: 6px;
+  font-family: var(--mono); font-size: 12px;
+  color: var(--on-cream-mute);
+  text-align: center;
+}
+.browser-body {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  min-height: 560px;
+  background: #FAFAFA;
+}
+.console-side {
+  background: var(--cream-warm);
+  padding: 24px 18px;
+  border-right: 1px solid var(--line-cream);
+  font-family: var(--body); font-size: 13.5px;
+}
+.console-side .brand {
+  display: flex; align-items: center; gap: 10px;
+  font-family: var(--display); font-weight: 600;
+  font-size: 16px; letter-spacing: -0.015em;
+  color: var(--on-cream);
+  margin-bottom: 24px;
+}
+.console-side .brand .dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--accent);
+}
+.console-side .label {
+  font-family: var(--mono); font-size: 9.5px;
+  letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--on-cream-dim);
+  margin: 22px 0 10px;
+}
+.console-side ul { list-style: none; }
+.console-side li {
+  padding: 7px 10px;
+  color: var(--on-cream-mute);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 200ms var(--ease);
+  display: flex; justify-content: space-between; align-items: center;
+}
+.console-side li:hover { background: rgba(10,10,11,0.05); color: var(--on-cream); }
+.console-side li.active {
+  background: var(--on-cream);
+  color: var(--cream);
+}
+.console-side li .num {
+  font-family: var(--mono); font-size: 10px;
+  background: var(--accent); color: var(--cream);
+  padding: 1px 6px; border-radius: 999px;
+}
+.console-side li.active .num { background: var(--accent); }
+
+.console-main { padding: 26px 32px 32px; }
+.console-main .crumb {
+  display: flex; align-items: center; gap: 10px;
+  font-family: var(--mono); font-size: 11px;
+  color: var(--on-cream-dim); letter-spacing: 0.1em;
+  margin-bottom: 18px;
+}
+.console-main .crumb b { color: var(--on-cream); font-weight: 500; }
+.console-main h3 {
+  font-family: var(--display); font-weight: 500;
+  font-size: 24px; letter-spacing: -0.02em;
+  color: var(--on-cream); margin-bottom: 8px;
+}
+.console-main .lead {
+  font-size: 13.5px; color: var(--on-cream-mute);
+  margin-bottom: 22px; max-width: 540px;
+}
+
+.source-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-bottom: 24px;
+}
+.source-card {
+  background: #FFFFFF;
+  border: 1px solid var(--line-cream);
+  border-radius: 8px;
+  padding: 12px 14px;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.source-card .nm {
+  font-family: var(--body); font-size: 12.5px;
+  color: var(--on-cream); font-weight: 500;
+  letter-spacing: -0.01em;
+}
+.source-card .src {
+  display: flex; align-items: center; gap: 6px;
+  font-family: var(--mono); font-size: 9.5px;
+  letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--on-cream-dim); font-weight: 600;
+}
+.source-card .src::before {
+  content: ''; width: 14px; height: 14px;
+  border-radius: 3px; background: var(--accent);
+  flex-shrink: 0;
+}
+.source-card .src.b1::before { background: #2563EB; }
+.source-card .src.b2::before { background: var(--alert); }
+.source-card .src.b3::before { background: var(--accent); }
+.source-card .src.b4::before { background: #0F172A; }
+
+.console-section {
+  padding: 18px 0;
+  border-top: 1px solid var(--line-cream);
+}
+.console-section .num-tag {
+  display: inline-block;
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  background: var(--cream-warm);
+  color: var(--on-cream);
+  font-family: var(--mono); font-size: 11px;
+  font-weight: 600;
+  text-align: center; line-height: 22px;
+  margin-right: 12px;
+  vertical-align: middle;
+}
+.console-section h4 {
+  display: inline-block;
+  font-family: var(--body); font-weight: 500;
+  font-size: 15px; color: var(--on-cream);
+  letter-spacing: -0.01em;
+  vertical-align: middle;
+}
+.console-section p {
+  font-family: var(--body); font-size: 13px;
+  line-height: 1.65; color: var(--on-cream-mute);
+  margin-top: 12px;
+}
+.console-section p b { color: var(--on-cream); font-weight: 500; }
+
+@media (max-width: 980px) {
+  .live-head { grid-template-columns: 1fr; gap: 24px; }
+  .live-sub { justify-self: start; }
+  .browser-body { grid-template-columns: 1fr; min-height: auto; }
+  .console-side { border-right: none; border-bottom: 1px solid var(--line-cream); }
+  .source-row { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* ╔══════════════════════════════════════════════════════════════╗
+   ║   FEATURED FINDINGS · scenarios                              ║
+   ╚══════════════════════════════════════════════════════════════╝ */
+.findings-head {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 60px;
+  align-items: end;
+  margin-bottom: 60px;
+}
+.findings-tag {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-family: var(--mono); font-size: 10.5px;
+  letter-spacing: 0.22em; text-transform: uppercase;
+  color: var(--on-bg-dim); font-weight: 500;
+  margin-top: 24px;
+}
+.findings-tag::before {
+  content: '◉'; color: var(--accent); font-size: 10px;
+}
+.findings-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: var(--line-bg-strong);
+  border: 1px solid var(--line-bg-strong);
+  margin-top: 40px;
+}
+.finding {
+  background: var(--bg);
+  padding: 36px 32px;
+  display: flex; flex-direction: column;
+  position: relative;
+  min-height: 320px;
+  transition: background 200ms var(--ease);
+}
+.finding:hover { background: var(--bg-soft); }
+.finding-tags {
+  display: flex; flex-wrap: wrap; gap: 6px;
+  margin-bottom: 22px;
+}
+.finding-tag {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-family: var(--mono); font-size: 10px;
+  letter-spacing: 0.15em; text-transform: uppercase;
+  font-weight: 500;
+  padding: 5px 10px;
+  border: 1px solid var(--line-bg-strong);
+  border-radius: 999px;
+  color: var(--on-bg-mute);
+}
+.finding-tag::before {
+  content: ''; width: 6px; height: 6px; border-radius: 50%;
+  background: var(--accent);
+}
+.finding-tag.t-fin::before { background: #4F46E5; }
+.finding-tag.t-hr::before  { background: #06B6D4; }
+.finding-tag.t-leg::before { background: #D4654A; }
+.finding-tag.t-sup::before { background: #10B981; }
+.finding-tag.t-sales::before { background: #EAB308; }
+.finding-tag.t-dev::before { background: #A855F7; }
+.finding-tag.t-mfg::before { background: #EC4899; }
+
+.finding-metric {
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: clamp(48px, 5vw, 64px);
+  line-height: 0.95;
+  letter-spacing: -0.04em;
+  color: var(--on-bg);
+  margin-bottom: 12px;
+}
+.finding-metric .accent { color: var(--accent); }
+.finding-metric .unit {
+  font-size: 0.5em;
+  color: var(--on-bg-mute);
+  letter-spacing: 0;
+  margin-left: 4px;
+}
+.finding-desc {
+  font-family: var(--body); font-size: 14px;
+  line-height: 1.6; color: var(--on-bg-mute);
+  margin-bottom: 24px;
+}
+.finding-desc b { color: var(--on-bg); font-weight: 500; }
+.finding-meta {
+  margin-top: auto;
+  padding-top: 20px;
+  border-top: 1px solid var(--line-bg);
+  display: flex; justify-content: space-between;
+  font-family: var(--mono); font-size: 10px;
+  letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--on-bg-dim);
+}
+.finding-meta b { color: var(--accent); font-weight: 600; }
+.finding-scenario {
+  position: absolute; top: 24px; right: 32px;
+  font-family: var(--mono); font-size: 9px;
+  letter-spacing: 0.22em; text-transform: uppercase;
+  color: var(--accent);
+  border: 1px solid rgba(212,101,74,0.35);
+  border-radius: 999px;
+  padding: 3px 9px;
+  background: rgba(212,101,74,0.06);
+}
+
+@media (max-width: 980px) {
+  .findings-head { grid-template-columns: 1fr; gap: 24px; }
+  .findings-grid { grid-template-columns: 1fr; }
+}
+
+/* ╔══════════════════════════════════════════════════════════════╗
+   ║   MICROBUG CATEGORIES · colored dot tags                     ║
+   ╚══════════════════════════════════════════════════════════════╝ */
+.bug-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-top: 36px;
+}
+.bug-cell {
+  background: var(--bg-tile);
+  border: 1px solid var(--line-bg);
+  border-radius: 8px;
+  padding: 18px 16px;
+  display: flex; flex-direction: column; gap: 8px;
+  transition: border-color 200ms var(--ease);
+  position: relative;
+}
+.bug-cell:hover { border-color: var(--accent); }
+.bug-cell .bug-dot {
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  margin-bottom: 4px;
+  position: relative;
+}
+.bug-cell .bug-dot::after {
+  content: '';
+  position: absolute; inset: -4px;
+  border-radius: 50%;
+  border: 1px solid currentColor;
+  opacity: 0.3;
+}
+.bug-cell .bug-name {
+  font-family: var(--body); font-size: 13.5px;
+  font-weight: 500; color: var(--on-bg);
+  letter-spacing: -0.005em;
+}
+.bug-cell .bug-count {
+  font-family: var(--mono); font-size: 10px;
+  letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--on-bg-dim);
+  margin-top: auto;
+}
+
+@media (max-width: 980px) {
+  .bug-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* ╔══════════════════════════════════════════════════════════════╗
+   ║   REVEAL                                                     ║
+   ╚══════════════════════════════════════════════════════════════╝ */
+.reveal {
+  opacity: 0;
+  transform: translateY(40px);
+  transition: opacity 1s var(--ease), transform 1s var(--ease);
+}
+.reveal.in {
+  opacity: 1;
+  transform: translateY(0);
+}
+.reveal-stagger > * {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.8s var(--ease), transform 0.8s var(--ease);
+}
+.reveal-stagger.in > *:nth-child(1) { transition-delay: 0ms; }
+.reveal-stagger.in > *:nth-child(2) { transition-delay: 80ms; }
+.reveal-stagger.in > *:nth-child(3) { transition-delay: 160ms; }
+.reveal-stagger.in > *:nth-child(4) { transition-delay: 240ms; }
+.reveal-stagger.in > * { opacity: 1; transform: translateY(0); }
+</style>
+</head>
+<body>
+
+<!-- ╔══════════════════════════════════════════════════════════════╗
+     ║  NAV                                                         ║
+     ╚══════════════════════════════════════════════════════════════╝ -->
+<nav class="nav" id="nav">
+  <a href="#" class="nav-brand">RoleFlow<span class="dot"></span></a>
+  <div class="nav-menu">
+    <a href="#product">Платформа</a>
+    <a href="#audit">Аудит</a>
+    <a href="#privacy">Безопасность</a>
+    <a href="#findings">Кейсы</a>
+  </div>
+  <a href="#audit" class="nav-cta">Записаться на аудит</a>
+</nav>
+
+<!-- ╔══════════════════════════════════════════════════════════════╗
+     ║  HERO — karaoke reveal                                       ║
+     ╚══════════════════════════════════════════════════════════════╝ -->
+<section class="hero" id="hero">
+  <div class="hero-sticky">
+    <div>
+      <p class="hero-eyebrow">Operations Layer for the AI Era</p>
+      <h1 class="hero-text" id="hero-text">
+        <span class="line"><span class="w">Сотрудники</span> <span class="w">уже</span> <span class="w">работают</span> <span class="w">с</span> <span class="w">AI.</span></span>
+        <span class="line"><span class="w">Через</span> <span class="w">личные</span> <span class="w">аккаунты.</span> <span class="w">Без</span> <span class="w">вашего</span> <span class="w">ведома.</span></span>
+        <span class="line"><span class="w accent">Мы</span> <span class="w accent">это</span> <span class="w accent">меняем.</span></span>
+        <span class="line"><span class="w">Возвращаем</span> <span class="w">потерянные</span> <span class="w">часы.</span> <span class="w accent">Закрываем</span> <span class="w accent">Shadow</span> <span class="w accent">AI.</span></span>
+      </h1>
+    </div>
+
+    <div class="hero-bottom">
+      <p class="hero-sub">RoleFlow — управляемый слой между сотрудниками и любой нейросетью. <strong>Один продукт. Два слоя. Один результат.</strong></p>
+
+      <div class="hero-meta">
+        <span><strong>Категория</strong></span>
+        <span>Operations Layer</span>
+        <span style="margin-top: 10px;"><strong>Покупатель</strong></span>
+        <span>COO · CISO · Owner</span>
+        <span style="margin-top: 10px;"><strong>Рынок</strong></span>
+        <span>РФ · СНГ</span>
+      </div>
+
+      <div class="hero-actions">
+        <a href="#audit" class="btn-primary">Записаться на аудит</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ╔══════════════════════════════════════════════════════════════╗
+     ║  01 · MANIFESTO                                              ║
+     ╚══════════════════════════════════════════════════════════════╝ -->
+<section class="section reveal">
+  <div class="manifesto">
+    <p class="manifesto-meta">01<br>—<br>Контекст</p>
+    <p class="manifesto-text">
+      <span class="mute">Сотрудники уже используют AI.</span> Через <span class="icn line eye"></span> личные аккаунты, через VPN, через мобильные. Запреты не работают. Корпоративные данные <span class="icn shield"></span> утекают в публичные модели. <span class="accent">Микробаги уходят клиентам.</span> Параллельно — каждый человек теряет <span class="icn flow"></span> 3–15 минут в день на мелкие действия, которые никто не считает. В сумме это <span class="accent">недели человеко-часов</span> в месяц.
+    </p>
+  </div>
+
+  <div class="formula">
+    <div class="formula-cell">
+      <p class="formula-affirm">Ускоряем людей.</p>
+      <p class="formula-deny">Не заменяем роли.</p>
+    </div>
+    <div class="formula-cell">
+      <p class="formula-affirm">Убираем микрорутину.</p>
+      <p class="formula-deny">Не ломаем процесс.</p>
+    </div>
+    <div class="formula-cell">
+      <p class="formula-affirm">Считаем эффект.</p>
+      <p class="formula-deny">Не продаём магию.</p>
+    </div>
+  </div>
+
+  <div class="stat-row">
+    <div class="stat-cell">
+      <div class="stat-num">78<span class="unit">%</span></div>
+      <p class="stat-label">сотрудников используют LLM минимум раз в неделю</p>
+      <p class="stat-source">McKinsey 2025</p>
+    </div>
+    <div class="stat-cell">
+      <div class="stat-num">66<span class="unit">%</span></div>
+      <p class="stat-label">делают это через Shadow AI без согласования IT</p>
+      <p class="stat-source">McKinsey 2025</p>
+    </div>
+    <div class="stat-cell">
+      <div class="stat-num">87<span class="unit">%</span></div>
+      <p class="stat-label">документов содержат микробаги в выводах AI</p>
+      <p class="stat-source">RoleFlow Pilot Q1 2026</p>
+    </div>
+    <div class="stat-cell">
+      <div class="stat-num">22<span class="unit">ч</span></div>
+      <p class="stat-label">средняя экономия на сотрудника в неделю</p>
+      <p class="stat-source">Pilot data Q1 2026</p>
+    </div>
+  </div>
+</section>
+
+<!-- ╔══════════════════════════════════════════════════════════════╗
+     ║  02 · TWO FACES PRODUCT                                      ║
+     ╚══════════════════════════════════════════════════════════════╝ -->
+<section class="section cream" id="product">
+  <div class="reveal">
+    <p class="section-num">02 — Продукт</p>
+    <div class="pillars-head">
+      <h2 class="pillars-title">Один продукт.<br>Два слоя.</h2>
+      <p class="pillars-sub">RoleFlow одновременно проводит ретроспективный аудит работы команды и контролирует все исходящие AI-запросы. Эти два слоя работают друг на друга: аудит подсвечивает узкие места, AI-контур закрывает их безопасно.</p>
+    </div>
+  </div>
+
+  <div class="faces reveal-stagger">
+    <div class="face">
+      <p class="face-num">01 — Audit Layer</p>
+      <h3 class="face-title">Ретроспективный анализ работы команды.</h3>
+      <p class="face-desc">Изучаем фактическую работу компании за 3–6 месяцев. Строим карту реальных ролей. Считаем потери человеко-часов на микрорутине. Находим скрытые должности внутри сотрудников.</p>
+      <ul class="face-list">
+        <li><strong>Process Loss Audit</strong> — ищет где теряется время</li>
+        <li><strong>Hidden Roles Map</strong> — кто что реально делает</li>
+        <li><strong>Microbug Catalogue</strong> — повторяющиеся мелкие ошибки</li>
+        <li><strong>Time-saved Calculator</strong> — измеряет эффект внедрения</li>
+      </ul>
+    </div>
+
+    <div class="face">
+      <p class="face-num">02 — Safe AI Layer</p>
+      <h3 class="face-title">Контролируемый проход к любой нейросети.</h3>
+      <p class="face-desc">Перехватываем все исходящие AI-запросы сотрудников. Маскируем PII, секреты, финансовые данные. Маршрутизируем к нужной модели. Проверяем выходы Quality Gate. Логируем каждый шаг.</p>
+      <ul class="face-list">
+        <li><strong>AI-DLP Gateway</strong> — маскирование данных перед egress</li>
+        <li><strong>Quality Gate</strong> — проверка выходов до клиента</li>
+        <li><strong>Model Router</strong> — нужная модель под нужную задачу</li>
+        <li><strong>Audit Trail</strong> — неизменяемый журнал на 5 лет</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ╔══════════════════════════════════════════════════════════════╗
+     ║  03 · LIVE CONSOLE PREVIEW                                   ║
+     ╚══════════════════════════════════════════════════════════════╝ -->
+<section class="live-section">
+  <div class="reveal">
+    <p class="section-num" style="color: var(--accent);">03 — Внутри</p>
+    <div class="live-head">
+      <h2 class="live-title">Так выглядит<br>отчёт <span class="accent">аудита.</span></h2>
+      <p class="live-sub">Каждое наблюдение в отчёте подкреплено источниками: какая система, какой разговор, какой документ. Аудитор открывает любой пункт и видит цепочку доказательств.</p>
+    </div>
+  </div>
+
+  <div class="browser reveal">
+    <div class="browser-bar">
+      <div class="dots"><span></span><span></span><span></span></div>
+      <div class="url">platform.roleflow.io / audit / X-Bank-540</div>
+    </div>
+    <div class="browser-body">
+      <aside class="console-side">
+        <div class="brand">RoleFlow<span class="dot"></span></div>
+        <p style="font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.18em; color: var(--on-cream-dim); text-transform: uppercase;">Welcome, Laurie</p>
+        <ul style="margin-top: 14px;">
+          <li><span>Forms</span></li>
+          <li><span>Researcher</span></li>
+          <li><span>Settings</span></li>
+          <li><span>Log out</span></li>
+        </ul>
+        <p class="label">Your Audits</p>
+        <ul>
+          <li class="active"><span>X-Bank · 540 seats</span><span class="num">7</span></li>
+          <li><span>+ New audit</span></li>
+          <li><span>View archive</span></li>
+        </ul>
+        <p class="label">Findings</p>
+        <ul>
+          <li><span>Shadow AI usage</span></li>
+          <li><span>Microbugs · LEGAL</span></li>
+          <li><span>Hidden roles</span></li>
+          <li><span>Time loss</span></li>
+        </ul>
+      </aside>
+      <main class="console-main">
+        <div class="crumb">
+          <span>← Back to Audits</span>
+        </div>
+        <h3>Audit Memo · X-Bank Q1 2026</h3>
+        <p class="lead">Анализ операционных потерь и Shadow AI usage за 14 дней discovery + интервью с 7 ролями. Ниже — выдержка из секции «Микробаги в юр. отделе».</p>
+
+        <div class="source-row">
+          <div class="source-card">
+            <p class="nm">Slack · #legal-team</p>
+            <p class="src b1">Communications</p>
+          </div>
+          <div class="source-card">
+            <p class="nm">Bitrix24 · Документы</p>
+            <p class="src b3">Records</p>
+          </div>
+          <div class="source-card">
+            <p class="nm">ChatGPT logs · proxy</p>
+            <p class="src b2">Shadow AI</p>
+          </div>
+          <div class="source-card">
+            <p class="nm">Quality Gate · pilot</p>
+            <p class="src b4">Inspection</p>
+          </div>
+        </div>
+
+        <div class="console-section">
+          <span class="num-tag">1</span>
+          <h4>Выдуманные ссылки на ст. ГК РФ в&nbsp;юр. документах</h4>
+          <p>В&nbsp;течение 14&nbsp;дней зафиксировано <b>5&nbsp;случаев</b> когда AI&nbsp;ссылался на несуществующие статьи закона в&nbsp;договорах. Один документ ушёл клиенту без ревью.&nbsp;Quality Gate ловит такие в&nbsp;200&nbsp;мс через citation check &mdash; в&nbsp;87% случаев на pilot.</p>
+        </div>
+
+        <div class="console-section">
+          <span class="num-tag">2</span>
+          <h4>Перегрузка роли «менеджер-диспетчер»</h4>
+          <p>Менеджер по&nbsp;продажам в&nbsp;FIN-отделе тратит <b>32% рабочего времени</b> на координацию между складом и&nbsp;логистикой &mdash; функция, которой нет в&nbsp;его JD. Это потеря 14&nbsp;часов в&nbsp;неделю, которые не&nbsp;учтены в&nbsp;текущей оргструктуре.</p>
+        </div>
+
+        <div class="console-section">
+          <span class="num-tag">3</span>
+          <h4>PII-экспозиция в&nbsp;ChatGPT</h4>
+          <p>Зафиксированы <b>847 запросов с&nbsp;ИНН</b> клиентов через личные аккаунты сотрудников FIN. Каждый случай &mdash; потенциальный 152-ФЗ инцидент. Pre-egress filter закрывает это автоматически на&nbsp;уровне корп-сети.</p>
+        </div>
+      </main>
+    </div>
+  </div>
+</section>
+
+<!-- ╔══════════════════════════════════════════════════════════════╗
+     ║  04 · 4 PILLARS                                              ║
+     ╚══════════════════════════════════════════════════════════════╝ -->
+<section class="section">
+  <div class="reveal">
+    <p class="section-num">04 — Платформа</p>
+    <div class="pillars-head">
+      <h2 class="pillars-title">Четыре функции.<br>Одна логика.</h2>
+      <p class="pillars-sub">12 модулей разделены на 4 столпа. Каждый запрос сотрудника проходит через все четыре. Каждое решение продукта работает на возврат человеко-часов и снижение риска утечки.</p>
+    </div>
+  </div>
+
+  <div class="pillars-grid reveal-stagger">
+    <div class="pillar">
+      <span class="pillar-arrow">↗</span>
+      <p class="pillar-num">01 — Govern</p>
+      <h3 class="pillar-title">Контроль доступа и&nbsp;данных.</h3>
+      <p class="pillar-desc">AI-DLP Gateway маскирует PII, секреты и финансовую отчётность до отправки в модель. RBAC синхронизируется с AD/Okta. Audit Trail неизменяем.</p>
+      <div class="pillar-modules">
+        <span>Discovery</span><span>Gateway</span><span>Policy</span><span>Audit</span>
+      </div>
+    </div>
+
+    <div class="pillar">
+      <span class="pillar-arrow">↗</span>
+      <p class="pillar-num">02 — Accelerate</p>
+      <h3 class="pillar-title">Готовые сценарии<br>под каждую роль.</h3>
+      <p class="pillar-desc">120+ playbooks под HR, FIN, SALES, LEGAL, SUPPORT. Workflow Studio drag-drop. Coach Mode учит писать промпты. Knowledge RAG с привязкой к роли.</p>
+      <div class="pillar-modules">
+        <span>Workflows</span><span>Templates</span><span>Coach</span><span>Knowledge</span>
+      </div>
+    </div>
+
+    <div class="pillar">
+      <span class="pillar-arrow">↗</span>
+      <p class="pillar-num">03 — Review</p>
+      <h3 class="pillar-title">Микробаги ловятся<br>до клиента.</h3>
+      <p class="pillar-desc">Quality Gate проверяет каждый ответ AI на галлюцинации, выдуманные цитаты, нарушение tone и кастомные правила. Cross-model review.</p>
+      <div class="pillar-modules">
+        <span>Hallucination</span><span>Citation</span><span>Tone</span><span>Rules</span>
+      </div>
+    </div>
+
+    <div class="pillar">
+      <span class="pillar-arrow">↗</span>
+      <p class="pillar-num">04 — Measure</p>
+      <h3 class="pillar-title">Эффект — в часах<br>и&nbsp;деньгах.</h3>
+      <p class="pillar-desc">Productivity Analytics измеряет реальный ROI: сэкономленные часы, снижение микробагов, окупаемость подписок. Privacy-by-design на уровне ролей.</p>
+      <div class="pillar-modules">
+        <span>ROI</span><span>Heatmap</span><span>Reports</span><span>Connect</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ╔══════════════════════════════════════════════════════════════╗
+     ║  04 · QUALITY GATE                                           ║
+     ╚══════════════════════════════════════════════════════════════╝ -->
+<section class="section">
+  <p class="section-num reveal">05 — Quality Gate</p>
+
+  <div class="feature">
+    <div class="feature-text reveal">
+      <h2 class="feature-title">Микробаги — главная скрытая стоимость <span class="accent">AI-внедрения.</span></h2>
+      <p>На пилоте в юр. фирме (180&nbsp;seats) Quality Gate поймал ошибки в&nbsp;<strong>87 из&nbsp;100 проверенных AI-выходов</strong>. Выдуманные ссылки на статьи ГК&nbsp;РФ. Двойной НДС в&nbsp;коммерческих предложениях. Несуществующие имена сотрудников в&nbsp;письмах клиентам.</p>
+      <p>Без Quality Gate эти ошибки уходят наружу. С Quality Gate — ловятся за&nbsp;<strong>200 миллисекунд</strong> до отправки.</p>
+
+      <ul class="feature-list">
+        <li>
+          <span class="num">01</span>
+          <div>
+            <h4>Hallucination check</h4>
+            <p>Cross-model review: если основной ответ дал Claude — проверяет GPT. И наоборот. Ищет факты, которых нет в источнике.</p>
+          </div>
+        </li>
+        <li>
+          <span class="num">02</span>
+          <div>
+            <h4>Citation check</h4>
+            <p>Все цифры, ссылки, цитаты сверяются с приложенным контекстом. Выдуманные URL и фабрикованные источники ловятся автоматически.</p>
+          </div>
+        </li>
+        <li>
+          <span class="num">03</span>
+          <div>
+            <h4>Tone check</h4>
+            <p>Embedding-similarity к корпоративным образцам tone-of-voice. Загружается один раз — 50 эталонных писем. Дальше работает на лету.</p>
+          </div>
+        </li>
+        <li>
+          <span class="num">04</span>
+          <div>
+            <h4>Factual rules</h4>
+            <p>Кастомные правила компании: «не обещай скидку больше 15%», «не упоминай конкурентов», «всегда указывай 152-ФЗ оговорку».</p>
+          </div>
+        </li>
+      </ul>
+    </div>
+
+    <div class="feature-visual reveal">
+      <p class="feature-visual-label">Pipeline · 200 ms</p>
+      <div class="qg-flow">
+        <div class="qg-step"><span class="label">AI Response</span><span class="verdict">Input</span></div>
+        <div class="qg-arrow">↓</div>
+        <div class="qg-step"><span class="label">Hallucination Check</span><span class="verdict ok">Pass · 0.91</span></div>
+        <div class="qg-arrow">↓</div>
+        <div class="qg-step"><span class="label">Citation Check</span><span class="verdict fail">Fail · URL</span></div>
+        <div class="qg-arrow">↓</div>
+        <div class="qg-step"><span class="label">Tone Check</span><span class="verdict ok">Pass · 0.84</span></div>
+        <div class="qg-arrow">↓</div>
+        <div class="qg-step"><span class="label">Factual Rules</span><span class="verdict ok">Pass</span></div>
+        <div class="qg-arrow">↓</div>
+        <div class="qg-step" style="border-color: var(--alert); background: rgba(200,72,48,0.06);">
+          <span class="label" style="color: var(--alert);">Verdict — Revise</span>
+          <span class="verdict fail">0.74 conf</span>
+        </div>
+      </div>
+      <p style="font-family: var(--mono); font-size: 11px; letter-spacing: 0.18em; color: var(--on-bg-dim); margin-top: 24px; line-height: 1.7;">
+        <span style="color: var(--accent);">▸</span> 87% реальных багов поймано<br>
+        <span style="color: var(--accent);">▸</span> 4% false positives<br>
+        <span style="color: var(--accent);">▸</span> Confidence &lt; 0.85 → эскалация
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ╔══════════════════════════════════════════════════════════════╗
+     ║  06 · FEATURED FINDINGS · scenario                           ║
+     ╚══════════════════════════════════════════════════════════════╝ -->
+<section class="section">
+  <div class="reveal">
+    <p class="section-num">06 — Featured Findings</p>
+    <div class="findings-head">
+      <h2 class="pillars-title">Реальные находки.<br>Из&nbsp;реальных команд.</h2>
+      <p class="pillars-sub">Каждый сценарий — что мы нашли в первые две недели аудита у пилотных клиентов. Имена компаний скрыты по NDA. Все цифры — из реальных кейсов или гипотетические сценарии с пометкой «Scenario».</p>
+    </div>
+    <p class="findings-tag">Pilot data Q1 2026 · ranked by impact</p>
+  </div>
+
+  <div class="findings-grid reveal-stagger">
+    <div class="finding">
+      <span class="finding-scenario">Scenario · LEGAL</span>
+      <div class="finding-tags">
+        <span class="finding-tag t-leg">Юр. отдел</span>
+        <span class="finding-tag t-fin">FIN</span>
+      </div>
+      <p class="finding-metric">−87<span class="accent">%</span></p>
+      <p class="finding-desc">микробагов в&nbsp;договорах. Quality Gate ловит выдуманные ссылки на&nbsp;статьи ГК&nbsp;РФ за <b>200&nbsp;мс</b>. На&nbsp;100 проверках поймано 87&nbsp;ошибок до&nbsp;отправки клиенту.</p>
+      <div class="finding-meta">
+        <span>Юр. фирма · 180&nbsp;seats</span>
+        <span><b>3 нед</b></span>
+      </div>
+    </div>
+
+    <div class="finding">
+      <span class="finding-scenario">Pilot · MFG</span>
+      <div class="finding-tags">
+        <span class="finding-tag t-mfg">Производство</span>
+        <span class="finding-tag t-leg">LEGAL</span>
+      </div>
+      <p class="finding-metric">14<span class="unit">ч/нед</span></p>
+      <p class="finding-desc">вернули менеджерам по&nbsp;продажам, которые тратили <b>32% времени</b> на координацию склада. Hidden Roles Map показал перегруз и&nbsp;вынес функцию в&nbsp;отдельную роль.</p>
+      <div class="finding-meta">
+        <span>Мебель · 120&nbsp;seats</span>
+        <span><b>4 нед</b></span>
+      </div>
+    </div>
+
+    <div class="finding">
+      <span class="finding-scenario">Scenario · SUP</span>
+      <div class="finding-tags">
+        <span class="finding-tag t-sup">Поддержка L1</span>
+        <span class="finding-tag t-dev">DEV</span>
+      </div>
+      <p class="finding-metric">3.4<span class="accent">×</span></p>
+      <p class="finding-desc">скорость обработки support-тикетов L1. Role Playbooks автоматизировали типовые ответы, Coach Mode подсказывает джунам формат. <b>Ранее 28&nbsp;мин &rarr; теперь 8&nbsp;мин</b> на тикет.</p>
+      <div class="finding-meta">
+        <span>Телеком · 5400&nbsp;seats</span>
+        <span><b>6 нед</b></span>
+      </div>
+    </div>
+
+    <div class="finding">
+      <span class="finding-scenario">Pilot · HR</span>
+      <div class="finding-tags">
+        <span class="finding-tag t-hr">HR</span>
+        <span class="finding-tag t-fin">Onboarding</span>
+      </div>
+      <p class="finding-metric">−68<span class="accent">%</span></p>
+      <p class="finding-desc">время на&nbsp;онбординг новых сотрудников. AI&nbsp;собрал чек-листы, подготовил доступы, напомнил buddy&apos;ям. <b>Раньше&nbsp;5&nbsp;дней &rarr; теперь&nbsp;1.5&nbsp;дня.</b></p>
+      <div class="finding-meta">
+        <span>Ритейл · 320&nbsp;seats</span>
+        <span><b>8 нед</b></span>
+      </div>
+    </div>
+
+    <div class="finding">
+      <span class="finding-scenario">Scenario · FIN</span>
+      <div class="finding-tags">
+        <span class="finding-tag t-fin">FIN</span>
+        <span class="finding-tag t-leg">Compliance</span>
+      </div>
+      <p class="finding-metric">847<span class="unit"> утечек</span></p>
+      <p class="finding-desc">PII-инцидентов с&nbsp;ИНН&nbsp;клиентов в&nbsp;ChatGPT через личные аккаунты&nbsp;FIN-отдела. <b>Каждый — потенциальный 152-ФЗ инцидент.</b> Pre-egress filter закрыл всё за&nbsp;14&nbsp;дней.</p>
+      <div class="finding-meta">
+        <span>Банк · 540&nbsp;seats</span>
+        <span><b>2 нед</b></span>
+      </div>
+    </div>
+
+    <div class="finding">
+      <span class="finding-scenario">Pilot · SALES</span>
+      <div class="finding-tags">
+        <span class="finding-tag t-sales">Продажи</span>
+        <span class="finding-tag t-leg">Compliance</span>
+      </div>
+      <p class="finding-metric">22<span class="unit">ч/нед</span></p>
+      <p class="finding-desc">средняя экономия на&nbsp;сотрудника в&nbsp;продажах. Coach Mode исправил <b>92% низкокачественных промптов</b> до&nbsp;отправки. Quality Gate поймал 4&nbsp;случая превышения скидочных полномочий.</p>
+      <div class="finding-meta">
+        <span>e-commerce · 240&nbsp;seats</span>
+        <span><b>5 нед</b></span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ╔══════════════════════════════════════════════════════════════╗
+     ║  07 · PRIVACY ARCHITECTURE — 5 LAYERS                        ║
+     ╚══════════════════════════════════════════════════════════════╝ -->
+<section class="section" id="privacy">
+  <p class="section-num reveal">07 — Privacy Architecture</p>
+
+  <div class="feature">
+    <div class="feature-text reveal">
+      <h2 class="feature-title">Доступ к&nbsp;3–6 месяцам данных. <span class="accent">Без утечек.</span></h2>
+      <p>Глубокий аудит требует доступа к перепискам, файлам, истории заказов. Это серьёзный privacy-блокер. <strong>Мы решаем его архитектурно</strong> — пятислойной защитой, через которую данные проходят перед тем как попасть в AI-движок.</p>
+      <p>Каждый слой можно проверить независимо. Любой ИБ-аудитор пройдёт по архитектуре и убедится: <strong>данные не вытекают.</strong></p>
+
+      <ul class="feature-list">
+        <li>
+          <span class="num">01</span>
+          <div>
+            <h4>Pre-egress Filter</h4>
+            <p>ФИО → стабильные псевдонимы. ИНН/СНИЛС/карты → REDACTED. Названия клиентов → [CLIENT-A]. AI видит структуру, не людей.</p>
+          </div>
+        </li>
+        <li>
+          <span class="num">02</span>
+          <div>
+            <h4>On-premise Audit Engine</h4>
+            <p>Локальная LLM (наш custom fine-tune на базе открытых моделей). Никаких внешних API в процессе аудита. Данные не покидают периметр.</p>
+          </div>
+        </li>
+        <li>
+          <span class="num">03</span>
+          <div>
+            <h4>Tiered Access Mode</h4>
+            <p>Три режима доступа AI: Hash-only · Structure-only · Full retention. Выбирает клиент. По умолчанию — Structure.</p>
+          </div>
+        </li>
+        <li>
+          <span class="num">04</span>
+          <div>
+            <h4>Customer-visible Audit Log</h4>
+            <p>Клиент видит каждый запрос AI к данным. Может отказать. Опционально — pre-approval на критичные данные.</p>
+          </div>
+        </li>
+        <li>
+          <span class="num">05</span>
+          <div>
+            <h4>Differential Privacy в выводе</h4>
+            <p>Финальный отчёт без per-person данных. Минимум 5 человек в любой агрегации. GDPR Art. 22 + ФЗ-152 одновременно.</p>
+          </div>
+        </li>
+      </ul>
+    </div>
+
+    <div class="feature-visual reveal">
+      <p class="feature-visual-label">5-слойная защита данных</p>
+      <div class="priv-stack">
+        <div class="priv-layer">
+          <div class="head">
+            <span class="l-name">Source Data</span>
+            <span class="l-tag">Input</span>
+          </div>
+          <p class="l-desc">1С · Битрикс · email · Telegram · WhatsApp · файлы</p>
+        </div>
+        <div class="priv-arrow">↓</div>
+        <div class="priv-layer primary">
+          <div class="head">
+            <span class="l-name">L1 · Pre-egress Filter</span>
+            <span class="l-tag">DLP</span>
+          </div>
+          <p class="l-desc">PII, секреты, имена → псевдонимы / REDACTED</p>
+        </div>
+        <div class="priv-arrow">↓</div>
+        <div class="priv-layer primary">
+          <div class="head">
+            <span class="l-name">L2 · Tiered Access Gate</span>
+            <span class="l-tag">Mode</span>
+          </div>
+          <p class="l-desc">Hash · Structure · Full — клиент выбирает</p>
+        </div>
+        <div class="priv-arrow">↓</div>
+        <div class="priv-layer primary">
+          <div class="head">
+            <span class="l-name">L3 · On-prem Audit Engine</span>
+            <span class="l-tag">Local LLM</span>
+          </div>
+          <p class="l-desc">Custom fine-tune · никаких внешних API</p>
+        </div>
+        <div class="priv-arrow">↓</div>
+        <div class="priv-layer primary">
+          <div class="head">
+            <span class="l-name">L4 · Customer Audit Log</span>
+            <span class="l-tag">Visible</span>
+          </div>
+          <p class="l-desc">Каждый запрос AI логируется и проверяем</p>
+        </div>
+        <div class="priv-arrow">↓</div>
+        <div class="priv-layer primary">
+          <div class="head">
+            <span class="l-name">L5 · Differential Privacy</span>
+            <span class="l-tag">Output</span>
+          </div>
+          <p class="l-desc">Только агрегаты · минимум 5 человек в группе</p>
+        </div>
+        <div class="priv-arrow">↓</div>
+        <div class="priv-layer">
+          <div class="head">
+            <span class="l-name">Findings Report</span>
+            <span class="l-tag">Out</span>
+          </div>
+          <p class="l-desc">PDF клиенту · нет per-person данных</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ╔══════════════════════════════════════════════════════════════╗
+     ║  06 · ADAPTIVITY                                             ║
+     ╚══════════════════════════════════════════════════════════════╝ -->
+<section class="section cream">
+  <div class="reveal">
+    <p class="section-num">08 — Адаптивность</p>
+    <div class="pillars-head">
+      <h2 class="pillars-title">Заходим куда угодно.<br>Понимаем боль.</h2>
+      <p class="pillars-sub">Старт с одной индустрии — мебельное производство. Затем — масштабирование на любой рынок: банки, телеком, ритейл, клиники, логистика. Архитектура одна. Vertical packs разные.</p>
+    </div>
+  </div>
+
+  <div class="adaptive-grid reveal-stagger">
+    <div class="adaptive-cell live">
+      <span class="live-tag">Live · Q2 2026</span>
+      <p class="ind">Мебельное<br>производство</p>
+      <p class="roles">менеджер · технолог · кладовщик · производство · монтаж</p>
+      <p class="stage">Pilot · референс</p>
+    </div>
+    <div class="adaptive-cell">
+      <p class="ind">Строительство</p>
+      <p class="roles">прораб · снабженец · контроль · сметчик</p>
+      <p class="stage">Q3 2026</p>
+    </div>
+    <div class="adaptive-cell">
+      <p class="ind">Ритейл одежды</p>
+      <p class="roles">баер · мерчандайзер · кассир · супервайзер</p>
+      <p class="stage">Q3 2026</p>
+    </div>
+    <div class="adaptive-cell">
+      <p class="ind">Логистика<br>и&nbsp;ВЭД</p>
+      <p class="roles">диспетчер · логист · таможня · документооборот</p>
+      <p class="stage">Q4 2026</p>
+    </div>
+    <div class="adaptive-cell">
+      <p class="ind">Клиники<br>и&nbsp;медицина</p>
+      <p class="roles">регистратор · врач · лаборант · медсестра</p>
+      <p class="stage">Q1 2027</p>
+    </div>
+    <div class="adaptive-cell">
+      <p class="ind">Банки<br>и&nbsp;финансы</p>
+      <p class="roles">операционист · риск · комплаенс · KYC</p>
+      <p class="stage">Q2 2027</p>
+    </div>
+    <div class="adaptive-cell">
+      <p class="ind">Телеком<br>и&nbsp;IT</p>
+      <p class="roles">support L1/L2 · продажа · техсопровождение</p>
+      <p class="stage">Q3 2027</p>
+    </div>
+    <div class="adaptive-cell">
+      <p class="ind">e-commerce<br>и&nbsp;маркетплейсы</p>
+      <p class="roles">селлер · контент · логистика · поддержка</p>
+      <p class="stage">Q3 2027</p>
+    </div>
+  </div>
+
+  <div class="formula" style="margin-top: 80px;">
+    <div class="formula-cell">
+      <p class="formula-affirm">Industry Templates.</p>
+      <p class="formula-deny">Готовая карта ролей под индустрию.</p>
+    </div>
+    <div class="formula-cell">
+      <p class="formula-affirm">Adaptive Engine.</p>
+      <p class="formula-deny">Сам определяет роли в новой компании.</p>
+    </div>
+    <div class="formula-cell">
+      <p class="formula-affirm">Vertical Packs.</p>
+      <p class="formula-deny">Свои connectors, DLP-rules, compliance.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ╔══════════════════════════════════════════════════════════════╗
+     ║  MARQUEE                                                     ║
+     ╚══════════════════════════════════════════════════════════════╝ -->
+<div class="marquee">
+  <div class="marquee-track">
+    <span class="marquee-item">14&nbsp;моделей</span>
+    <span class="marquee-item">5&nbsp;слоёв</span>
+    <span class="marquee-item">87% багов <span class="accent">поймано</span></span>
+    <span class="marquee-item">200ms latency</span>
+    <span class="marquee-item">22ч&nbsp;экономии</span>
+    <span class="marquee-item">SOC&nbsp;2 · ФЗ-152</span>
+    <span class="marquee-item">14&nbsp;моделей</span>
+    <span class="marquee-item">5&nbsp;слоёв</span>
+    <span class="marquee-item">87% багов <span class="accent">поймано</span></span>
+    <span class="marquee-item">200ms latency</span>
+    <span class="marquee-item">22ч&nbsp;экономии</span>
+    <span class="marquee-item">SOC&nbsp;2 · ФЗ-152</span>
+  </div>
+</div>
+
+<!-- ╔══════════════════════════════════════════════════════════════╗
+     ║  07 · AUDIT WEDGE                                            ║
+     ╚══════════════════════════════════════════════════════════════╝ -->
+<section class="audit-cta" id="audit">
+  <p class="section-num reveal" style="color: var(--accent);">09 — Точка входа</p>
+
+  <div class="audit-cta-grid reveal">
+    <h2 class="audit-headline">Не «попробуй бесплатно».<br>Покажем за&nbsp;<span class="accent">14&nbsp;дней.</span></h2>
+
+    <div class="audit-side">
+      <p>Express Audit — бесплатный 7-дневный скан: пассивная карта Shadow AI, выявление трёх ключевых ролей, краткий отчёт. Lead-magnet, без обязательств. Role Audit 100 — глубокий 4-недельный engagement с полной картой потерь и 30-страничным отчётом.</p>
+      <a href="#" class="audit-cta-btn">Express Audit · бесплатно</a>
+    </div>
+  </div>
+
+  <div class="audit-meta reveal">
+    <div class="audit-meta-cell">
+      <p class="lbl">Длительность</p>
+      <p class="val">7 дней / 4 недели</p>
+    </div>
+    <div class="audit-meta-cell">
+      <p class="lbl">Express</p>
+      <p class="val">Бесплатно</p>
+    </div>
+    <div class="audit-meta-cell">
+      <p class="lbl">Конверсия в&nbsp;платформу</p>
+      <p class="val">~60–70%</p>
+    </div>
+  </div>
+</section>
+
+<!-- ╔══════════════════════════════════════════════════════════════╗
+     ║  08 · PILOT — SUCCESS-FEE                                    ║
+     ╚══════════════════════════════════════════════════════════════╝ -->
+<section class="section">
+  <p class="section-num reveal">10 — Pilot Mode</p>
+
+  <div class="reveal">
+    <h2 class="pillars-title" style="max-width: 1100px;">Платите за&nbsp;результат.<br>Не за&nbsp;обещание.</h2>
+  </div>
+
+  <div class="pilot-block reveal">
+    <p class="pilot-quote">Для первых 3 пилотных клиентов — <span class="accent">success-fee.</span> Не вернули вам человеко-часы — не платите. Вернули — делим экономию.</p>
+
+    <div class="pilot-mech">
+      <h4>Механика</h4>
+      <div class="pilot-mech-row"><span class="what">Старт пилота</span><span class="val">бесплатно</span></div>
+      <div class="pilot-mech-row"><span class="what">Внедрение, инфраструктура</span><span class="val">за наш счёт</span></div>
+      <div class="pilot-mech-row"><span class="what">Минимальный порог</span><span class="val">100ч&nbsp;экономии</span></div>
+      <div class="pilot-mech-row"><span class="what">Срок измерения</span><span class="val">3 месяца</span></div>
+      <div class="pilot-mech-row"><span class="what">Доля&nbsp;RoleFlow</span><span class="val">по&nbsp;результату</span></div>
+      <div class="pilot-mech-row"><span class="what">Не достигли — не платите</span><span class="val">100% риск&nbsp;на нас</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ╔══════════════════════════════════════════════════════════════╗
+     ║  10 · ROADMAP                                                ║
+     ╚══════════════════════════════════════════════════════════════╝ -->
+<section class="section">
+  <div class="reveal">
+    <p class="section-num">11 — Roadmap</p>
+    <div class="pillars-head">
+      <h2 class="pillars-title">Мебель → масштаб.<br>Поэтапно.</h2>
+      <p class="pillars-sub">Старт с узкой зоны, где знаем боль детально. Затем расширение по близким индустриям. На 25-м клиенте Adaptive Engine начинает обрабатывать новые отрасли сам, без ручного template'а.</p>
+    </div>
+  </div>
+
+  <div class="roadmap reveal">
+    <div class="rm-stage done">
+      <p class="rm-when">Q1 2026 · DONE</p>
+      <h3 class="rm-what">Brand &amp; <span class="accent">research foundation.</span></h3>
+      <p class="rm-detail">Этот документ. Манифест. Архитектура. Первый research kit для мебельной индустрии. Подготовка к pilot'ам.</p>
+    </div>
+    <div class="rm-stage live">
+      <p class="rm-when">Q2 2026 · LIVE</p>
+      <h3 class="rm-what">Pilot Wave 1 · <span class="accent">мебель.</span></h3>
+      <p class="rm-detail">3 пилотных клиента в мебельном производстве по success-fee. Express Audit MVP. Первая версия Industry Template. Custom fine-tune модели начинается параллельно.</p>
+    </div>
+    <div class="rm-stage">
+      <p class="rm-when">Q3 2026</p>
+      <h3 class="rm-what">Pilot Wave 2 · смежные индустрии.</h3>
+      <p class="rm-detail">Расширение на строительство и ритейл одежды. Adaptive Engine alpha — учится определять роли без template'а. Первая версия on-prem deployment для тестов.</p>
+    </div>
+    <div class="rm-stage">
+      <p class="rm-when">Q4 2026</p>
+      <h3 class="rm-what">Commercial launch.</h3>
+      <p class="rm-detail">Полный запуск Core для частных клиентов. Реестр российского ПО (для будущего 44-ФЗ). 5+ платных клиентов. Первая годовая подписка.</p>
+    </div>
+    <div class="rm-stage">
+      <p class="rm-when">2027 H1</p>
+      <h3 class="rm-what">Vertical expansion.</h3>
+      <p class="rm-detail">Логистика · клиники · банки · телеком · e-commerce. 8–10 vertical packs. Adaptive Engine GA. Первый госзаказ через 44-ФЗ.</p>
+    </div>
+    <div class="rm-stage">
+      <p class="rm-when">2027 H2</p>
+      <h3 class="rm-what">Universal product.</h3>
+      <p class="rm-detail">15+ verticals. Audit любой компании за 14 дней без ручной настройки. Movement в СНГ — Казахстан, Беларусь, Армения.</p>
+    </div>
+    <div class="rm-stage">
+      <p class="rm-when">2028+</p>
+      <h3 class="rm-what">International expansion.</h3>
+      <p class="rm-detail">МENA · APAC · LATAM. Universal product работает на любой стек, любой compliance, любой язык.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ╔══════════════════════════════════════════════════════════════╗
+     ║  11 · STYLE — palette                                        ║
+     ╚══════════════════════════════════════════════════════════════╝ -->
+<section class="section">
+  <p class="section-num reveal">12 — Style System</p>
+
+  <div class="reveal">
+    <h2 class="pillars-title" style="max-width: 900px; margin-bottom: 24px;">Tech-компания.<br>Без уклонов.</h2>
+    <p class="pillars-sub" style="max-width: 700px; margin-bottom: 40px;">Чистая идеология: tech-product, без luxury, без премиум-маркетинга, без cyberpunk. Ориентир — Linear, Vercel, Stripe, Resend, Anthropic, humaan. Делаем функцию, не образ.</p>
+  </div>
+
+  <h3 class="h3" style="font-family: var(--display); font-weight: 500; font-size: 28px; letter-spacing: -0.02em; color: var(--on-bg); margin-top: 40px; margin-bottom: 16px;">Палитра</h3>
+  <div class="swatch-board reveal">
+    <div class="swatch dark">
+      <div>
+        <p class="name">Carbon</p>
+        <p class="hex">#0A0A0B</p>
+      </div>
+      <p class="role">основной фон</p>
+    </div>
+    <div class="swatch cream">
+      <div>
+        <p class="name">Cream</p>
+        <p class="hex">#F4EFE3</p>
+      </div>
+      <p class="role">контрастная поверхность</p>
+    </div>
+    <div class="swatch steel">
+      <div>
+        <p class="name">Steel</p>
+        <p class="hex">#6E6E72</p>
+      </div>
+      <p class="role">secondary text · labels</p>
+    </div>
+    <div class="swatch accent">
+      <div>
+        <p class="name">Sienna</p>
+        <p class="hex">#D4654A</p>
+      </div>
+      <p class="role">единственный акцент</p>
+    </div>
+    <div class="swatch alert">
+      <div>
+        <p class="name">Alert</p>
+        <p class="hex">#C84830</p>
+      </div>
+      <p class="role">только: blocked · risk</p>
+    </div>
+  </div>
+
+  <h3 class="h3" style="font-family: var(--display); font-weight: 500; font-size: 28px; letter-spacing: -0.02em; color: var(--on-bg); margin-top: 80px; margin-bottom: 16px;">Шрифты</h3>
+  <div class="reveal">
+    <div class="type-row">
+      <span class="role-tag">Display</span>
+      <span class="sample" style="font-family: var(--display); font-weight: 500; font-size: 64px; letter-spacing: -0.04em; line-height: 0.95;">Возвращаем <span style="color: var(--accent);">часы</span></span>
+      <span class="meta">Space Grotesk 500<br>−4% tracking<br><b>Hero · headlines</b></span>
+    </div>
+    <div class="type-row">
+      <span class="role-tag">H2</span>
+      <span class="sample" style="font-family: var(--display); font-weight: 500; font-size: 40px; letter-spacing: -0.025em;">Section title</span>
+      <span class="meta">Space Grotesk 500<br>40px / 1.05<br><b>Section opener</b></span>
+    </div>
+    <div class="type-row">
+      <span class="role-tag">Body</span>
+      <span class="sample" style="font-family: var(--body); font-size: 17px; line-height: 1.65; color: var(--on-bg-mute);">RoleFlow перехватывает все исходящие AI-запросы. Маскирует утечки. Логирует каждый шаг.</span>
+      <span class="meta">Inter 400<br>17px / 1.65<br><b>Paragraphs</b></span>
+    </div>
+    <div class="type-row">
+      <span class="role-tag">Mono</span>
+      <span class="sample" style="font-family: var(--mono); font-size: 12px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--accent);">▸ AUDIT TRAIL · 14:32:07 MSK</span>
+      <span class="meta">JetBrains Mono 500<br>+22% tracking<br><b>Labels · technical</b></span>
+    </div>
+  </div>
+
+  <h3 class="h3" style="font-family: var(--display); font-weight: 500; font-size: 28px; letter-spacing: -0.02em; color: var(--on-bg); margin-top: 80px; margin-bottom: 16px;">Что запрещено</h3>
+  <div class="reveal" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--line-bg-strong); border: 1px solid var(--line-bg-strong); margin-top: 20px;">
+    <div style="padding: 18px 20px; background: var(--bg);"><p style="font-family: var(--mono); font-size: 11px; color: var(--alert); letter-spacing: 0.15em;">✕ italic emphasis</p></div>
+    <div style="padding: 18px 20px; background: var(--bg);"><p style="font-family: var(--mono); font-size: 11px; color: var(--alert); letter-spacing: 0.15em;">✕ neon · gradients</p></div>
+    <div style="padding: 18px 20px; background: var(--bg);"><p style="font-family: var(--mono); font-size: 11px; color: var(--alert); letter-spacing: 0.15em;">✕ glassmorphism</p></div>
+    <div style="padding: 18px 20px; background: var(--bg);"><p style="font-family: var(--mono); font-size: 11px; color: var(--alert); letter-spacing: 0.15em;">✕ 3D · particles</p></div>
+    <div style="padding: 18px 20px; background: var(--bg);"><p style="font-family: var(--mono); font-size: 11px; color: var(--alert); letter-spacing: 0.15em;">✕ cyberpunk эстетика</p></div>
+    <div style="padding: 18px 20px; background: var(--bg);"><p style="font-family: var(--mono); font-size: 11px; color: var(--alert); letter-spacing: 0.15em;">✕ luxury · premium</p></div>
+    <div style="padding: 18px 20px; background: var(--bg);"><p style="font-family: var(--mono); font-size: 11px; color: var(--alert); letter-spacing: 0.15em;">✕ AI-particles · mesh</p></div>
+    <div style="padding: 18px 20px; background: var(--bg);"><p style="font-family: var(--mono); font-size: 11px; color: var(--alert); letter-spacing: 0.15em;">✕ smiling teams · stock</p></div>
+  </div>
+</section>
+
+<!-- ╔══════════════════════════════════════════════════════════════╗
+     ║  12 · FAQ                                                    ║
+     ╚══════════════════════════════════════════════════════════════╝ -->
+<section class="section">
+  <div class="reveal">
+    <p class="section-num">13 — Часто спрашивают</p>
+    <h2 class="pillars-title" style="max-width: 900px;">Вопросы. И ответы.</h2>
+  </div>
+
+  <div class="faq reveal">
+    <details>
+      <summary>RoleFlow видит содержимое промптов и переписки?</summary>
+      <p>Это решает клиент. Три режима: <strong>Hash-only</strong> (только метаданные), <strong>Structure-only</strong> (метаданные + структура процессов без содержимого), <strong>Full retention</strong> (полный текст в HSM-зоне с подписью клиента). По умолчанию — Structure-only. Любой режим проходит через 5-слойную privacy-архитектуру.</p>
+    </details>
+    <details>
+      <summary>Что включает success-fee пилот?</summary>
+      <p>Старт — <strong>бесплатно</strong>. Внедрение и инфраструктура — за наш счёт. По истечении 3 месяцев измеряется реальная экономия человеко-часов. Если экономия меньше 100 часов — клиент не платит ничего. Если больше — RoleFlow получает <strong>долю по результату</strong> по индивидуально согласованной формуле. Доступно для первых 3 пилотных клиентов в каждой новой индустрии.</p>
+    </details>
+    <details>
+      <summary>Как обходим privacy-blocker для 3–6 месячной ретроспективы?</summary>
+      <p>Архитектурно. Перед попаданием в Audit Engine данные проходят через 5 слоёв защиты. <strong>Pre-egress filter</strong> заменяет ФИО на стабильные псевдонимы, ИНН/СНИЛС/карты — на REDACTED-токены, имена клиентов — на CLIENT-A/B/C. <strong>On-prem Audit Engine</strong> (наша custom fine-tune модель) работает локально, без внешних API. <strong>Differential privacy</strong> в выводе гарантирует минимум 5 человек в любой агрегации.</p>
+    </details>
+    <details>
+      <summary>Что за «custom fine-tuned LLM» в Enterprise?</summary>
+      <p>Для on-prem deployment мы тренируем собственную модель на базе открытых архитектур (Llama, Qwen, GigaChat-base). Она специализирована именно на задачах аудита ролей и поиска микробагов — это компактнее и точнее чем универсальный GPT-5/Claude. Развёртывается на железе клиента, никаких внешних API не требует.</p>
+    </details>
+    <details>
+      <summary>Что произойдёт, если RoleFlow Gateway упадёт? AI перестанет работать?</summary>
+      <p>Нет. Gateway работает в режиме <strong>fail-open</strong> для разрешённых ролей: если control plane недоступен больше 30 секунд, запросы идут напрямую в провайдер с пометкой «degraded mode». Audit-лог пишется локально и синхронизируется при восстановлении. Для критических ролей можно включить fail-closed.</p>
+    </details>
+    <details>
+      <summary>Сколько занимает внедрение?</summary>
+      <p>Express Audit — <strong>7 дней</strong>. Role Audit 100 — <strong>4 недели</strong>. Полный roll-out Core (после аудита) — <strong>6–8 недель</strong> поэтапно по отделам. Полный SOC 2 / ФЗ-152 audit-ready — <strong>12 недель</strong>. На enterprise-тарифе ведёт customer success engineer.</p>
+    </details>
+    <details>
+      <summary>Можно купить через тендер / 44-ФЗ?</summary>
+      <p>Подготовка ведётся параллельно с коммерческим запуском. Реестр российского ПО — Q4 2026. Поставка через 44-ФЗ / 223-ФЗ — с Q1 2027. До этого — прямые контракты с частными клиентами. Юр. лицо — ООО «Сайлар Групп», ИНН по запросу.</p>
+    </details>
+    <details>
+      <summary>Чем отличаемся от Positive Technologies / BI.ZONE / Kaspersky?</summary>
+      <p>Они — <strong>классическая ИБ</strong>: DLP, SOC, SIEM, EDR, пентест, compliance. Мы — <strong>operations layer для AI-эры</strong>. Не конкурируем, а дополняем. Их продукты закрывают периметр сети. Наш — конкретный пограничный слой между сотрудниками и внешними AI-инструментами + retro-аудит реальной работы команды. Можем работать поверх их инфраструктуры.</p>
+    </details>
+  </div>
+</section>
+
+<!-- ╔══════════════════════════════════════════════════════════════╗
+     ║  FINAL CTA                                                   ║
+     ╚══════════════════════════════════════════════════════════════╝ -->
+<section class="final-cta">
+  <h2 class="reveal">Готовы увидеть как ваша команда<br>работает<br><span class="accent">на самом деле?</span></h2>
+
+  <div class="final-cta-actions reveal">
+    <a href="#" class="final-btn primary">Express Audit · бесплатно</a>
+    <a href="#" class="final-btn ghost">Связаться с продажами</a>
+  </div>
+</section>
+
+<!-- ╔══════════════════════════════════════════════════════════════╗
+     ║  FOOTER                                                      ║
+     ╚══════════════════════════════════════════════════════════════╝ -->
+<footer class="footer">
+  <div class="footer-wordmark">RoleFlow<span class="dot"></span></div>
+
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <p>Operations Layer for the AI Era. Возвращает человеко-часы и закрывает Shadow AI в крупном и среднем бизнесе. Часть SYLAR Group.</p>
+    </div>
+
+    <div class="footer-col">
+      <h4>Платформа</h4>
+      <ul>
+        <li><a href="#">Audit Layer</a></li>
+        <li><a href="#">AI-DLP Gateway</a></li>
+        <li><a href="#">Quality Gate</a></li>
+        <li><a href="#">Audit Trail</a></li>
+        <li><a href="#">Integrations</a></li>
+      </ul>
+    </div>
+
+    <div class="footer-col">
+      <h4>Документы</h4>
+      <ul>
+        <li><a href="#">Trust Center</a></li>
+        <li><a href="#">SOC 2 Report</a></li>
+        <li><a href="#">ФЗ-152 Справка</a></li>
+        <li><a href="#">DPA · GDPR</a></li>
+        <li><a href="#">Status / Uptime</a></li>
+      </ul>
+    </div>
+
+    <div class="footer-col">
+      <h4>Компания</h4>
+      <ul>
+        <li><a href="#">О SYLAR Group</a></li>
+        <li><a href="#">Customer Stories</a></li>
+        <li><a href="#">Карьера</a></li>
+        <li><a href="#">Press</a></li>
+        <li><a href="#">Контакты</a></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="footer-bottom">
+    <span>© RoleFlow · SYLAR · MMXXVI</span>
+    <span>Реестр российского ПО · ФЗ-152</span>
+    <span>Forged by SYL4R</span>
+  </div>
+</footer>
+
+<script>
+const nav = document.getElementById('nav');
+window.addEventListener('scroll', () => {
+  if (window.scrollY > 40) nav.classList.add('scrolled');
+  else nav.classList.remove('scrolled');
+}, { passive: true });
+
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) entry.target.classList.add('in');
+  });
+}, { threshold: 0.12, rootMargin: '0px 0px -80px 0px' });
+document.querySelectorAll('.reveal, .reveal-stagger').forEach(el => observer.observe(el));
+
+document.querySelectorAll('.btn-primary, .audit-cta-btn, .final-btn.primary, .nav-cta').forEach(btn => {
+  btn.addEventListener('mousemove', (e) => {
+    const rect = btn.getBoundingClientRect();
+    const x = e.clientX - rect.left - rect.width / 2;
+    const y = e.clientY - rect.top - rect.height / 2;
+    btn.style.transform = `translate(${x * 0.18}px, ${y * 0.25}px)`;
+  });
+  btn.addEventListener('mouseleave', () => { btn.style.transform = ''; });
+});
+
+// ── Karaoke scroll-reveal ──────────────────────────────────────
+// Слова в hero-text "загораются" по мере скролла внутри sticky-блока
+(function initKaraoke() {
+  const heroSection = document.getElementById('hero');
+  const words = document.querySelectorAll('#hero-text .w');
+  if (!heroSection || !words.length) return;
+
+  const total = words.length;
+
+  const onScroll = () => {
+    const rect = heroSection.getBoundingClientRect();
+    const sectionHeight = heroSection.offsetHeight;
+    const viewportH = window.innerHeight;
+    // scroll progress: from 0 (sticky just locked) to 1 (sticky about to release)
+    // progress activates after small offset to keep first frame static
+    const scrolled = -rect.top;
+    const totalScroll = sectionHeight - viewportH;
+    let progress = scrolled / totalScroll;
+    progress = Math.max(0, Math.min(1, progress));
+
+    // We want all words lit by 70% scroll, so multiply
+    const adjusted = Math.min(1, progress * 1.4);
+    const litCount = Math.floor(adjusted * total);
+
+    words.forEach((w, i) => {
+      if (i < litCount) {
+        w.classList.add('lit');
+      } else {
+        w.classList.remove('lit');
+      }
+    });
+  };
+
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll(); // initialize
+})();
+</script>
+</body>
+</html>

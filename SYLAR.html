@@ -1,0 +1,1154 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SYLAR — Operating Layers for the Modern Work</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ╔══════════════════════════════════════════════════════════════╗
+   ║   SYLAR · Umbrella Brandbook · v 1.0                         ║
+   ║   Genre: tech-studio · clean modernist · no luxury           ║
+   ╚══════════════════════════════════════════════════════════════╝ */
+
+:root {
+  --bg:        #0A0A0B;
+  --bg-soft:   #131316;
+  --bg-tile:   #151519;
+  --cream:     #F4EFE3;
+  --cream-warm:#EDE5D2;
+
+  --on-bg:     #F4EFE3;
+  --on-bg-mute:#A8A8AC;
+  --on-bg-dim: #6E6E72;
+  --on-cream:  #0A0A0B;
+  --on-cream-mute: #5C5C62;
+  --on-cream-dim:  #8C8C92;
+
+  --line-bg:    rgba(244,239,227,0.10);
+  --line-bg-strong: rgba(244,239,227,0.20);
+  --line-cream: rgba(10,10,11,0.10);
+  --line-cream-strong: rgba(10,10,11,0.20);
+
+  --accent:     #D4654A;
+  --accent-soft:#E08368;
+
+  /* Product-specific accents (for two products section) */
+  --xero:       #7C5CFF;
+  --xero-soft:  #9B82FF;
+  --rf:         #D4654A;
+
+  --display: 'Space Grotesk', system-ui, sans-serif;
+  --body:    'Inter', system-ui, sans-serif;
+  --mono:    'JetBrains Mono', ui-monospace, monospace;
+
+  --ease:      cubic-bezier(0.22, 1, 0.36, 1);
+  --pad-x: clamp(20px, 4vw, 64px);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; }
+body {
+  background: var(--bg);
+  color: var(--on-bg);
+  font-family: var(--body);
+  font-size: 16px;
+  line-height: 1.55;
+  font-feature-settings: 'ss01', 'ss02', 'cv11';
+  font-variant-numeric: tabular-nums;
+  overflow-x: hidden;
+}
+::selection { background: var(--accent); color: var(--cream); }
+
+/* ── NAV ──────────────────────────────────────────────────────── */
+.nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  padding: 22px var(--pad-x);
+  display: flex; align-items: center; justify-content: space-between;
+  background: transparent;
+  transition: background 300ms var(--ease);
+}
+.nav.scrolled {
+  background: rgba(10,10,11,0.78);
+  backdrop-filter: blur(18px);
+  border-bottom: 1px solid var(--line-bg);
+}
+.nav-brand {
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 22px;
+  letter-spacing: -0.04em;
+  color: var(--on-bg);
+  text-decoration: none;
+  display: flex; align-items: center; gap: 10px;
+}
+.nav-brand .dot {
+  display: inline-block;
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+.nav-menu { display: flex; gap: 36px; font-size: 14px; font-weight: 500; }
+.nav-menu a { color: var(--on-bg); text-decoration: none; opacity: 0.78; transition: opacity 200ms; }
+.nav-menu a:hover { opacity: 1; }
+.nav-cta {
+  display: inline-flex; align-items: center; gap: 10px;
+  padding: 11px 20px;
+  background: var(--cream);
+  color: var(--on-cream);
+  font-size: 13px; font-weight: 500;
+  border: none; border-radius: 999px;
+  cursor: pointer;
+  transition: all 200ms var(--ease);
+  text-decoration: none;
+}
+.nav-cta:hover { background: var(--accent); color: var(--cream); transform: translateY(-1px); }
+.nav-cta::after { content: '↗'; font-size: 14px; transition: transform 200ms; }
+.nav-cta:hover::after { transform: translate(2px, -2px); }
+
+@media (max-width: 760px) { .nav-menu { display: none; } }
+
+/* ── HERO with karaoke reveal ────────────────────────────────── */
+.hero {
+  min-height: 240vh;
+  padding: 160px var(--pad-x) 0;
+  position: relative;
+}
+.hero-sticky {
+  position: sticky; top: 0;
+  height: 100vh;
+  display: flex; flex-direction: column;
+  justify-content: space-between;
+  padding: 60px 0 80px;
+}
+.hero-eyebrow {
+  font-family: var(--mono);
+  font-size: 11.5px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--accent);
+  display: flex; align-items: center; gap: 12px;
+}
+.hero-eyebrow::before {
+  content: '';
+  display: inline-block;
+  width: 32px; height: 1px;
+  background: var(--accent);
+}
+.hero-text {
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: clamp(28px, 4.4vw, 72px);
+  line-height: 1.16;
+  letter-spacing: -0.025em;
+  max-width: 1240px;
+  margin-top: 56px;
+}
+.hero-text .line { display: block; margin-bottom: 0.16em; }
+.hero-text .w {
+  display: inline-block;
+  color: var(--on-bg-dim);
+  opacity: 0.22;
+  transition: color 240ms var(--ease), opacity 240ms var(--ease);
+  margin-right: 0.28em;
+}
+.hero-text .w.lit { color: var(--on-bg); opacity: 1; }
+.hero-text .w.accent.lit { color: var(--accent); }
+
+.hero-bottom {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr 1fr;
+  gap: 56px;
+  align-items: end;
+}
+.hero-sub {
+  font-size: 16.5px;
+  line-height: 1.55;
+  color: var(--on-bg-mute);
+  max-width: 500px;
+}
+.hero-sub strong { color: var(--on-bg); font-weight: 500; }
+.hero-meta {
+  display: flex; flex-direction: column; gap: 3px;
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--on-bg-dim);
+}
+.hero-meta strong { color: var(--on-bg); font-weight: 500; }
+.hero-actions { align-self: end; justify-self: end; }
+.btn-primary {
+  display: inline-flex; align-items: center; gap: 12px;
+  padding: 18px 32px;
+  background: var(--accent);
+  color: var(--cream);
+  font-size: 14px; font-weight: 500;
+  border: none; border-radius: 999px;
+  cursor: pointer;
+  transition: all 200ms var(--ease);
+  text-decoration: none;
+}
+.btn-primary:hover { background: var(--accent-soft); transform: translateY(-2px); }
+.btn-primary::after { content: '→'; transition: transform 200ms; }
+.btn-primary:hover::after { transform: translateX(4px); }
+
+@media (max-width: 980px) {
+  .hero-bottom { grid-template-columns: 1fr; gap: 32px; }
+  .hero-actions { justify-self: start; }
+}
+
+/* ── SECTION ──────────────────────────────────────────────────── */
+.section {
+  padding: 140px var(--pad-x);
+  position: relative;
+}
+.section.cream { background: var(--cream); color: var(--on-cream); }
+.section-num {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 24px;
+  display: flex; align-items: center; gap: 12px;
+}
+.section-num::before {
+  content: '';
+  display: inline-block;
+  width: 24px; height: 1px;
+  background: var(--accent);
+}
+
+.section-head {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 60px;
+  align-items: end;
+  margin-bottom: 60px;
+}
+.section-title {
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: clamp(40px, 5vw, 80px);
+  line-height: 1.0;
+  letter-spacing: -0.03em;
+  color: var(--on-bg);
+}
+.cream .section-title { color: var(--on-cream); }
+.section-title .accent { color: var(--accent); }
+.section-sub {
+  font-size: 17px;
+  line-height: 1.55;
+  color: var(--on-bg-mute);
+  max-width: 460px;
+  justify-self: end;
+}
+.cream .section-sub { color: var(--on-cream-mute); }
+
+@media (max-width: 980px) {
+  .section-head { grid-template-columns: 1fr; gap: 24px; }
+  .section-sub { justify-self: start; }
+}
+
+/* ── MANIFESTO ────────────────────────────────────────────────── */
+.manifesto {
+  display: grid;
+  grid-template-columns: 1fr 5fr;
+  gap: 60px;
+  align-items: start;
+}
+.manifesto-meta {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--on-bg-dim);
+  position: sticky;
+  top: 120px;
+}
+.manifesto-text {
+  font-family: var(--display);
+  font-weight: 400;
+  font-size: clamp(26px, 3.2vw, 48px);
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  color: var(--on-bg);
+  max-width: 1100px;
+}
+.manifesto-text .accent { color: var(--accent); }
+.manifesto-text .mute { color: var(--on-bg-dim); }
+.cream .manifesto-text { color: var(--on-cream); }
+.cream .manifesto-text .mute { color: var(--on-cream-dim); }
+.cream .manifesto-meta { color: var(--on-cream-dim); }
+
+@media (max-width: 980px) {
+  .manifesto { grid-template-columns: 1fr; gap: 24px; }
+  .manifesto-meta { position: static; }
+}
+
+/* ── PRINCIPLES ──────────────────────────────────────────────── */
+.principles {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0;
+  margin-top: 80px;
+  border-top: 1px solid var(--line-bg-strong);
+}
+.cream .principles { border-color: var(--line-cream-strong); }
+.princ {
+  padding: 36px 32px 0 0;
+  border-right: 1px solid var(--line-bg);
+}
+.cream .princ { border-color: var(--line-cream); }
+.princ:last-child { border-right: none; padding-right: 0; }
+.princ-affirm {
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: clamp(28px, 3vw, 40px);
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  color: var(--on-bg);
+  margin-bottom: 8px;
+}
+.cream .princ-affirm { color: var(--on-cream); }
+.princ-deny {
+  font-family: var(--display);
+  font-weight: 400;
+  font-size: clamp(20px, 2.2vw, 28px);
+  line-height: 1.2;
+  letter-spacing: -0.015em;
+  color: var(--on-bg-dim);
+}
+.cream .princ-deny { color: var(--on-cream-dim); }
+
+@media (max-width: 980px) {
+  .principles { grid-template-columns: 1fr; }
+  .princ { border-right: none; border-bottom: 1px solid var(--line-bg); padding: 24px 0; }
+}
+
+/* ── PRODUCTS SHOWCASE ───────────────────────────────────────── */
+.products {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  background: var(--line-bg-strong);
+  border: 1px solid var(--line-bg-strong);
+  margin-top: 60px;
+}
+.product {
+  background: var(--bg);
+  padding: 56px 48px;
+  display: flex; flex-direction: column;
+  position: relative;
+  min-height: 540px;
+  overflow: hidden;
+  transition: background 250ms var(--ease);
+  text-decoration: none;
+  color: var(--on-bg);
+}
+.product:hover { background: var(--bg-soft); }
+.product .p-tag {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  font-weight: 600;
+  margin-bottom: 22px;
+}
+.product.xero .p-tag { color: var(--xero); }
+.product.rf .p-tag { color: var(--rf); }
+.product .p-name {
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 56px;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  margin-bottom: 16px;
+}
+.product .p-name .ai { color: var(--accent); font-size: 0.5em; letter-spacing: 0.15em; margin-left: 8px; vertical-align: 18px; font-weight: 500; }
+.product .p-claim {
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: 24px;
+  line-height: 1.2;
+  letter-spacing: -0.018em;
+  color: var(--on-bg);
+  margin-bottom: 22px;
+  max-width: 460px;
+}
+.product.xero .p-claim .h { color: var(--xero); }
+.product.rf .p-claim .h { color: var(--rf); }
+.product .p-desc {
+  font-size: 15.5px;
+  line-height: 1.6;
+  color: var(--on-bg-mute);
+  margin-bottom: 32px;
+  max-width: 480px;
+}
+.product .p-meta {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  border-top: 1px solid var(--line-bg);
+  padding-top: 24px;
+  margin-top: auto;
+}
+.product .p-meta-cell {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--on-bg-dim);
+}
+.product .p-meta-cell strong {
+  display: block;
+  color: var(--on-bg);
+  font-weight: 500;
+  letter-spacing: -0.005em;
+  font-family: var(--body);
+  font-size: 13.5px;
+  text-transform: none;
+  margin-top: 4px;
+}
+.product .p-arrow {
+  position: absolute;
+  top: 56px; right: 48px;
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  border: 1px solid var(--line-bg-strong);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+  color: var(--on-bg-mute);
+  transition: all 250ms var(--ease);
+}
+.product:hover .p-arrow {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--cream);
+  transform: rotate(-45deg);
+}
+.product.xero:hover .p-arrow { border-color: var(--xero); background: var(--xero); }
+
+@media (max-width: 760px) {
+  .products { grid-template-columns: 1fr; }
+  .product { padding: 40px 28px; min-height: 460px; }
+  .product .p-name { font-size: 44px; }
+  .product .p-arrow { top: 32px; right: 28px; }
+}
+
+/* ── DNA CROSS ────────────────────────────────────────────────── */
+.dna-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1px;
+  background: var(--line-cream-strong);
+  border: 1px solid var(--line-cream-strong);
+  margin-top: 40px;
+}
+.dna-cell {
+  background: var(--cream);
+  padding: 36px 32px;
+  display: grid;
+  grid-template-columns: 80px 1fr;
+  gap: 24px;
+  align-items: start;
+  transition: background 200ms var(--ease);
+}
+.dna-cell:hover { background: var(--cream-warm); }
+.dna-num {
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.22em;
+  color: var(--accent);
+  font-weight: 600;
+  padding-top: 4px;
+}
+.dna-cell h4 {
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: 22px;
+  letter-spacing: -0.02em;
+  color: var(--on-cream);
+  margin-bottom: 8px;
+}
+.dna-cell p {
+  font-size: 14.5px;
+  line-height: 1.6;
+  color: var(--on-cream-mute);
+  max-width: 520px;
+}
+.dna-cell p strong { color: var(--on-cream); font-weight: 500; }
+
+@media (max-width: 760px) {
+  .dna-grid { grid-template-columns: 1fr; }
+  .dna-cell { grid-template-columns: 1fr; gap: 8px; padding: 24px 20px; }
+}
+
+/* ── PATHWAY ──────────────────────────────────────────────────── */
+.pathway {
+  background: var(--bg-soft);
+  border: 1px solid var(--line-bg);
+  border-radius: 16px;
+  padding: 48px 44px;
+  margin-top: 60px;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 44px;
+  align-items: center;
+}
+.path-side {
+  display: flex; flex-direction: column;
+  gap: 14px;
+}
+.path-side .name {
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 32px;
+  letter-spacing: -0.025em;
+  color: var(--on-bg);
+}
+.path-side .name .ai { color: var(--accent); font-size: 0.55em; letter-spacing: 0.15em; margin-left: 6px; vertical-align: 8px; font-weight: 500; }
+.path-side.xero .name .h { color: var(--xero); }
+.path-side .meta {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--on-bg-dim);
+}
+.path-side .why {
+  font-size: 15px;
+  color: var(--on-bg-mute);
+  line-height: 1.55;
+  max-width: 280px;
+}
+.path-arrow {
+  display: flex; align-items: center; justify-content: center;
+  flex-direction: column;
+  gap: 12px;
+}
+.path-arrow .line {
+  width: 80px; height: 1px;
+  background: var(--accent);
+  position: relative;
+}
+.path-arrow .line::after {
+  content: '→';
+  position: absolute;
+  right: -10px; top: -10px;
+  color: var(--accent);
+  font-size: 18px;
+}
+.path-arrow .label {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+@media (max-width: 760px) {
+  .pathway { grid-template-columns: 1fr; gap: 24px; }
+  .path-arrow { transform: rotate(90deg); }
+}
+
+/* ── HOW WE BUILD ─────────────────────────────────────────────── */
+.how-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1px;
+  background: var(--line-bg-strong);
+  border: 1px solid var(--line-bg-strong);
+  margin-top: 60px;
+}
+.how-cell {
+  background: var(--bg);
+  padding: 40px 36px;
+  position: relative;
+  min-height: 240px;
+}
+.how-cell:hover { background: var(--bg-soft); }
+.how-tag {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--accent);
+  font-weight: 600;
+  margin-bottom: 14px;
+}
+.how-cell h3 {
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: 24px;
+  letter-spacing: -0.02em;
+  color: var(--on-bg);
+  margin-bottom: 12px;
+}
+.how-cell p {
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--on-bg-mute);
+  max-width: 480px;
+}
+
+@media (max-width: 760px) { .how-grid { grid-template-columns: 1fr; } }
+
+/* ── FOUNDER NOTE ─────────────────────────────────────────────── */
+.founder {
+  padding: 140px var(--pad-x);
+  background: var(--cream);
+  color: var(--on-cream);
+}
+.founder-grid {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr;
+  gap: 80px;
+}
+.founder-text {
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: clamp(24px, 2.8vw, 36px);
+  line-height: 1.32;
+  letter-spacing: -0.02em;
+  color: var(--on-cream);
+  max-width: 800px;
+}
+.founder-text .accent { color: var(--accent); }
+.founder-text .mute { color: var(--on-cream-dim); }
+.founder-side {
+  display: flex; flex-direction: column;
+  gap: 14px;
+  align-self: end;
+}
+.founder-name {
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 24px;
+  letter-spacing: -0.02em;
+  color: var(--on-cream);
+}
+.founder-handle {
+  font-family: var(--mono);
+  font-size: 13px;
+  letter-spacing: 0.1em;
+  color: var(--accent);
+}
+.founder-role {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--on-cream-dim);
+}
+
+@media (max-width: 980px) {
+  .founder-grid { grid-template-columns: 1fr; gap: 32px; }
+}
+
+/* ── ROADMAP ──────────────────────────────────────────────────── */
+.roadmap {
+  margin-top: 60px;
+  position: relative;
+}
+.roadmap::before {
+  content: '';
+  position: absolute;
+  left: 11px; top: 6px; bottom: 6px;
+  width: 1px; background: var(--line-bg-strong);
+}
+.rm-stage { position: relative; padding: 0 0 32px 60px; }
+.rm-stage::before {
+  content: '';
+  position: absolute;
+  left: 6px; top: 6px;
+  width: 12px; height: 12px;
+  border-radius: 50%;
+  background: var(--bg);
+  border: 2px solid var(--line-bg-strong);
+}
+.rm-stage.done::before { background: var(--accent); border-color: var(--accent); }
+.rm-stage.live::before {
+  background: var(--bg);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 5px rgba(212,101,74,0.15);
+}
+.rm-when {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 6px;
+}
+.rm-stage.done .rm-when { color: var(--on-bg-dim); }
+.rm-what {
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: 22px;
+  letter-spacing: -0.02em;
+  color: var(--on-bg);
+  margin-bottom: 8px;
+}
+.rm-detail {
+  font-size: 14.5px;
+  color: var(--on-bg-mute);
+  line-height: 1.6;
+  max-width: 680px;
+}
+
+/* ── FOOTER ───────────────────────────────────────────────────── */
+.footer { padding: 80px var(--pad-x) 40px; border-top: 1px solid var(--line-bg); }
+.footer-wordmark {
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: clamp(80px, 18vw, 280px);
+  line-height: 0.85;
+  letter-spacing: -0.05em;
+  color: var(--on-bg);
+  margin-bottom: 80px;
+  display: flex; align-items: baseline;
+}
+.footer-wordmark .dot {
+  display: inline-block;
+  width: 0.16em; height: 0.16em;
+  border-radius: 50%;
+  background: var(--accent);
+  margin-left: 0.06em;
+  transform: translateY(-0.04em);
+}
+.footer-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  gap: 60px;
+  padding-top: 40px;
+  border-top: 1px solid var(--line-bg);
+}
+.footer-brand p { font-size: 14.5px; line-height: 1.6; color: var(--on-bg-mute); max-width: 380px; }
+.footer-col h4 {
+  font-family: var(--mono); font-size: 10.5px;
+  letter-spacing: 0.22em; text-transform: uppercase;
+  color: var(--on-bg-dim); margin-bottom: 20px; font-weight: 500;
+}
+.footer-col ul { list-style: none; }
+.footer-col li { padding: 6px 0; font-size: 14px; }
+.footer-col a { color: var(--on-bg); text-decoration: none; opacity: 0.78; transition: opacity 200ms; }
+.footer-col a:hover { opacity: 1; }
+.footer-bottom {
+  display: flex; justify-content: space-between;
+  margin-top: 80px; padding-top: 28px;
+  border-top: 1px solid var(--line-bg);
+  font-family: var(--mono); font-size: 11px;
+  letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--on-bg-dim);
+}
+@media (max-width: 980px) {
+  .footer-grid { grid-template-columns: 1fr 1fr; }
+  .footer-bottom { flex-direction: column; gap: 12px; }
+}
+
+/* ── REVEAL ───────────────────────────────────────────────────── */
+.reveal {
+  opacity: 0;
+  transform: translateY(40px);
+  transition: opacity 1s var(--ease), transform 1s var(--ease);
+}
+.reveal.in { opacity: 1; transform: translateY(0); }
+.reveal-stagger > * {
+  opacity: 0; transform: translateY(30px);
+  transition: opacity 0.8s var(--ease), transform 0.8s var(--ease);
+}
+.reveal-stagger.in > *:nth-child(1) { transition-delay: 0ms; }
+.reveal-stagger.in > *:nth-child(2) { transition-delay: 80ms; }
+.reveal-stagger.in > *:nth-child(3) { transition-delay: 160ms; }
+.reveal-stagger.in > *:nth-child(4) { transition-delay: 240ms; }
+.reveal-stagger.in > * { opacity: 1; transform: translateY(0); }
+</style>
+</head>
+<body>
+
+<!-- ── NAV ────────────────────────────────────────────────────── -->
+<nav class="nav" id="nav">
+  <a href="#" class="nav-brand">SYLAR<span class="dot"></span></a>
+  <div class="nav-menu">
+    <a href="#products">Продукты</a>
+    <a href="#dna">DNA</a>
+    <a href="#how">Как мы строим</a>
+    <a href="#roadmap">Путь</a>
+  </div>
+  <a href="#products" class="nav-cta">Посмотреть продукты</a>
+</nav>
+
+<!-- ── HERO ───────────────────────────────────────────────────── -->
+<section class="hero" id="hero">
+  <div class="hero-sticky">
+    <div>
+      <p class="hero-eyebrow">Tech studio · operating layers</p>
+      <h1 class="hero-text" id="hero-text">
+        <span class="line"><span class="w">SYLAR</span> <span class="w">—</span> <span class="w">студия,</span> <span class="w">которая</span> <span class="w">строит</span></span>
+        <span class="line"><span class="w accent">operating</span> <span class="w accent">layers</span> <span class="w">для</span> <span class="w">современной</span> <span class="w">работы.</span></span>
+        <span class="line"><span class="w">Не</span> <span class="w">очередной</span> <span class="w">AI-стартап.</span></span>
+        <span class="line"><span class="w">Тулы</span> <span class="w">для</span> <span class="w">людей,</span> <span class="w">которые</span> <span class="w accent">реально</span> <span class="w accent">делают</span> <span class="w accent">дело.</span></span>
+      </h1>
+    </div>
+
+    <div class="hero-bottom">
+      <p class="hero-sub">Два продукта под одним зонтиком. <strong>XeroCode</strong> — для людей и команд. <strong>RoleFlow</strong> — для крупных организаций. Один tech-стек. Одна философия. Одна команда.</p>
+
+      <div class="hero-meta">
+        <span><strong>Жанр</strong></span>
+        <span>Tech studio</span>
+        <span style="margin-top: 10px;"><strong>Продукты</strong></span>
+        <span>XeroCode · RoleFlow</span>
+        <span style="margin-top: 10px;"><strong>Рынок</strong></span>
+        <span>РФ · СНГ</span>
+      </div>
+
+      <div class="hero-actions">
+        <a href="#products" class="btn-primary">Посмотреть продукты</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── 01 · MANIFESTO ──────────────────────────────────────────── -->
+<section class="section reveal">
+  <div class="manifesto">
+    <p class="manifesto-meta">01<br>—<br>Манифест</p>
+    <p class="manifesto-text">
+      <span class="mute">Мир инструментов сломан.</span> Двадцать SaaS-сервисов вместо одного офиса. Пять каналов коммуникации вместо одной. Десяток AI-моделей вместо одного диспетчера. <span class="accent">Мы строим слои, которые возвращают всему этому смысл.</span> Не заменяя людей. Не ломая стек. Не продавая магию.
+    </p>
+  </div>
+
+  <div class="principles">
+    <div class="princ">
+      <p class="princ-affirm">Ускоряем людей.</p>
+      <p class="princ-deny">Не заменяем роли.</p>
+    </div>
+    <div class="princ">
+      <p class="princ-affirm">Ясная функция.</p>
+      <p class="princ-deny">Не маркетинговый шум.</p>
+    </div>
+    <div class="princ">
+      <p class="princ-affirm">Безопасно по умолчанию.</p>
+      <p class="princ-deny">Не как премиум-опция.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ── 02 · TWO PRODUCTS ──────────────────────────────────────── -->
+<section class="section" id="products">
+  <div class="reveal">
+    <p class="section-num">02 — Продукты</p>
+    <div class="section-head">
+      <h2 class="section-title">Два продукта.<br>Один <span class="accent">tech-стек.</span></h2>
+      <p class="section-sub">Каждый продукт — самостоятельный operating layer для своей аудитории. Между ними — общая философия, общие архитектурные решения, и pathway для роста клиента из одного в другой.</p>
+    </div>
+  </div>
+
+  <div class="products reveal-stagger">
+    <a href="#" class="product xero">
+      <span class="p-arrow">↗</span>
+      <p class="p-tag">▸ B2C · SMB · 1—50 seats</p>
+      <p class="p-name">XeroCode<span class="ai">AI</span></p>
+      <p class="p-claim">AI-офис для людей, которые <span class="h">делают всё&nbsp;сами.</span></p>
+      <p class="p-desc">Восемь воркспейсов в одном продукте: чат, документы, картинки, код, видео, звук, оркестрация. BYOK на всех тарифах. Telegram-бот. Единый интерфейс. Российские модели и провайдеры.</p>
+      <div class="p-meta">
+        <div class="p-meta-cell">Аудитория<strong>Solo · Teams</strong></div>
+        <div class="p-meta-cell">Деплой<strong>SaaS · Self-host</strong></div>
+        <div class="p-meta-cell">Workspace<strong>8 модулей</strong></div>
+        <div class="p-meta-cell">Запуск<strong>Live · 2026</strong></div>
+      </div>
+    </a>
+
+    <a href="#" class="product rf">
+      <span class="p-arrow">↗</span>
+      <p class="p-tag">▸ B2B · ENTERPRISE · 200+ seats</p>
+      <p class="p-name">RoleFlow</p>
+      <p class="p-claim">Operating Layer для&nbsp;<span class="h">крупного бизнеса.</span></p>
+      <p class="p-desc">Двойной слой: ретроспективный аудит работы команды за 3-6 месяцев + контролируемый AI-проход для всех сотрудников. Возвращает человеко-часы, закрывает Shadow AI. ФЗ-152, 44-ФЗ, on-prem.</p>
+      <div class="p-meta">
+        <div class="p-meta-cell">Аудитория<strong>CISO · COO · Owner</strong></div>
+        <div class="p-meta-cell">Деплой<strong>SaaS · On-prem</strong></div>
+        <div class="p-meta-cell">Wedge<strong>Audit-first</strong></div>
+        <div class="p-meta-cell">Запуск<strong>Pilot · Q2 2026</strong></div>
+      </div>
+    </a>
+  </div>
+
+  <!-- Pathway -->
+  <div class="pathway reveal" style="margin-top: 80px;">
+    <div class="path-side xero">
+      <p class="meta">Solo · 1 seat</p>
+      <p class="name">Xero<span class="h">Code</span><span class="ai">AI</span></p>
+      <p class="why">Начинаешь как фрилансер или маленькая команда. Получаешь все восемь воркспейсов сразу, BYOK без обязательств.</p>
+    </div>
+    <div class="path-arrow">
+      <span class="line"></span>
+      <p class="label">Растёшь</p>
+    </div>
+    <div class="path-side">
+      <p class="meta">Enterprise · 200+ seats</p>
+      <p class="name">RoleFlow</p>
+      <p class="why">Когда команда выросла до уровня где нужны RBAC, audit, compliance, on-prem — переходишь в RoleFlow. Данные мигрируют.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ── 03 · DNA CROSS ─────────────────────────────────────────── -->
+<section class="section cream" id="dna">
+  <div class="reveal">
+    <p class="section-num">03 — Common DNA</p>
+    <div class="section-head">
+      <h2 class="section-title">Что связывает<br>оба продукта.</h2>
+      <p class="section-sub">Несмотря на разные аудитории, продукты разделяют одно ядро: технологические выборы, дизайн-язык, принципы внедрения. Это и есть SYLAR-DNA.</p>
+    </div>
+  </div>
+
+  <div class="dna-grid reveal-stagger">
+    <div class="dna-cell">
+      <span class="dna-num">01</span>
+      <div>
+        <h4>Custom fine-tuned LLMs</h4>
+        <p>Обучаем собственные модели на базе открытых архитектур (Llama, Qwen, GigaChat-base). Специализированные под задачи продуктов. Развёртываются on-prem. Никаких внешних API там, где это критично.</p>
+      </div>
+    </div>
+    <div class="dna-cell">
+      <span class="dna-num">02</span>
+      <div>
+        <h4>5-слойная Privacy Architecture</h4>
+        <p>Pre-egress filter <strong>·</strong> on-prem engine <strong>·</strong> tiered access <strong>·</strong> customer audit log <strong>·</strong> differential privacy. Любые данные клиента проходят через эти 5 слоёв. <strong>Архитектура одна — для XeroCode и RoleFlow.</strong></p>
+      </div>
+    </div>
+    <div class="dna-cell">
+      <span class="dna-num">03</span>
+      <div>
+        <h4>Российский tech-стек</h4>
+        <p>Yandex Cloud · 1С · Битрикс24 · Диадок · СБИС · GigaChat · YandexGPT · КЭП. Реестр российского ПО. ФЗ-152 уровень 1. 44-ФЗ / 223-ФЗ ready. Не «адаптировано после», а <strong>спроектировано для РФ изначально.</strong></p>
+      </div>
+    </div>
+    <div class="dna-cell">
+      <span class="dna-num">04</span>
+      <div>
+        <h4>Privacy-by-design аналитика</h4>
+        <p>Все продуктовые метрики на уровне ролей и команд (минимум 5 человек). Никогда не строим «рейтинг сотрудника по AI-производительности». Per-user данные доступны только самому пользователю.</p>
+      </div>
+    </div>
+    <div class="dna-cell">
+      <span class="dna-num">05</span>
+      <div>
+        <h4>Один дизайн-язык</h4>
+        <p>Space Grotesk display <strong>·</strong> Inter body <strong>·</strong> JetBrains Mono technical. Carbon + Cream surfaces. Sienna как основной акцент. Браузер-frame для мокапов. Без italic. Без cyberpunk. Tech-studio эстетика.</p>
+      </div>
+    </div>
+    <div class="dna-cell">
+      <span class="dna-num">06</span>
+      <div>
+        <h4>Audit-first onboarding</h4>
+        <p>Любой клиент начинает с <strong>измерения</strong>, а не с фичи. Express-аудит в обоих продуктах. Сначала — где теряете время / куда утекают данные. Потом — что внедряем для исправления.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── 04 · HOW WE BUILD ──────────────────────────────────────── -->
+<section class="section" id="how">
+  <div class="reveal">
+    <p class="section-num">04 — Как мы строим</p>
+    <div class="section-head">
+      <h2 class="section-title">Принципы инженерии<br>и продукта.</h2>
+      <p class="section-sub">SYLAR — это не «AI стартап с двумя продуктами». Это инженерная студия с зафиксированной методологией. Шесть принципов, по которым мы делаем все решения.</p>
+    </div>
+  </div>
+
+  <div class="how-grid reveal-stagger">
+    <div class="how-cell">
+      <p class="how-tag">▸ 01 · BORING TECH</p>
+      <h3>Скучные технологии</h3>
+      <p>FastAPI, PostgreSQL, Redis, React, Vite. Никаких экзотических frameworks ради хайпа. Стек, на котором работают тысячи компаний, и где есть найм.</p>
+    </div>
+    <div class="how-cell">
+      <p class="how-tag">▸ 02 · DESCRIPTIVE</p>
+      <h3>Показываем, не предписываем</h3>
+      <p>Не «вы должны изменить процесс». А «вот что у вас сейчас происходит — решайте». Бренд Bloomberg, не McKinsey. Аудит — измерение, не консалтинг.</p>
+    </div>
+    <div class="how-cell">
+      <p class="how-tag">▸ 03 · OPEN SOURCE BASE</p>
+      <h3>На открытых моделях</h3>
+      <p>Llama, Qwen, Mistral как фундамент. Свои fine-tunes сверху. Не зависим от ценовой политики OpenAI/Anthropic. Можем гарантировать on-prem.</p>
+    </div>
+    <div class="how-cell">
+      <p class="how-tag">▸ 04 · RUSSIAN-FIRST</p>
+      <h3>Русский рынок первым</h3>
+      <p>Compliance, оплата, документы, юр. форма — спроектированы под РФ-реалии. Не клон западного продукта с переведёнными формулировками.</p>
+    </div>
+    <div class="how-cell">
+      <p class="how-tag">▸ 05 · MEASURE OR DON&rsquo;T BUILD</p>
+      <h3>Измеряем эффект</h3>
+      <p>Каждая фича в продукте — с привязкой к метрике (часы, доллары, риск). Если эффект не измеряется — фичи нет. Это закрывает «AI-вашoo» наглухо.</p>
+    </div>
+    <div class="how-cell">
+      <p class="how-tag">▸ 06 · SHIP NARROW</p>
+      <h3>Узкий MVP, потом масштаб</h3>
+      <p>RoleFlow стартует с одной индустрии (мебель). XeroCode — с одной аудитории (соло-проф). Только после этого — adaptive engine и расширение.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ── 05 · ROADMAP ───────────────────────────────────────────── -->
+<section class="section cream" id="roadmap">
+  <div class="reveal">
+    <p class="section-num">05 — Путь</p>
+    <div class="section-head">
+      <h2 class="section-title">Где мы и&nbsp;куда идём.</h2>
+      <p class="section-sub">SYLAR-roadmap покрывает оба продукта. Сначала каждый закрепляется в своей аудитории. Затем — общая платформа: shared identity, billing, custom-LLM hub, partner network.</p>
+    </div>
+  </div>
+
+  <div class="roadmap reveal" style="background: var(--cream);">
+    <div class="rm-stage done">
+      <p class="rm-when">Q1 2026 · DONE</p>
+      <h3 class="rm-what" style="color: var(--on-cream);">Brand · research · pre-product</h3>
+      <p class="rm-detail" style="color: var(--on-cream-mute);">Зонтичный бренд, оба продукта спроектированы, audit-first методология сформирована. XeroCode v3 деплой на xerocode.ru. RoleFlow — pre-product brand foundation.</p>
+    </div>
+    <div class="rm-stage live">
+      <p class="rm-when">Q2 2026 · LIVE</p>
+      <h3 class="rm-what" style="color: var(--on-cream);">XeroCode growth · RoleFlow pilot</h3>
+      <p class="rm-detail" style="color: var(--on-cream-mute);">XeroCode — рост до 1000 paying seats, 8 workspace в полную силу. RoleFlow — 3 пилотных мебельных клиента по success-fee. Shared infra: auth, billing.</p>
+    </div>
+    <div class="rm-stage">
+      <p class="rm-when">Q3—Q4 2026</p>
+      <h3 class="rm-what" style="color: var(--on-cream);">Custom LLM hub · vertical packs</h3>
+      <p class="rm-detail" style="color: var(--on-cream-mute);">Собственный fine-tune layer для обоих продуктов. RoleFlow расширяется на 4 индустрии. XeroCode — telegram-bot для соло-проф.</p>
+    </div>
+    <div class="rm-stage">
+      <p class="rm-when">2027</p>
+      <h3 class="rm-what" style="color: var(--on-cream);">SYLAR Cloud · partner network</h3>
+      <p class="rm-detail" style="color: var(--on-cream-mute);">Единая платформа: один SSO для XeroCode + RoleFlow. Партнёрская сеть интеграторов для enterprise. SOC 2 Type II. Реестр российского ПО.</p>
+    </div>
+    <div class="rm-stage">
+      <p class="rm-when">2028+</p>
+      <h3 class="rm-what" style="color: var(--on-cream);">СНГ → MENA → APAC</h3>
+      <p class="rm-detail" style="color: var(--on-cream-mute);">Международная экспансия с готовой product-led моделью. Adaptive Engine у RoleFlow работает на любую индустрию без ручного template'а.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ── 06 · FOUNDER NOTE ──────────────────────────────────────── -->
+<section class="founder">
+  <div class="reveal">
+    <p class="section-num">06 — Founder note</p>
+    <div class="founder-grid">
+      <p class="founder-text">
+        <span class="mute">«Я строю SYLAR потому что устал смотреть на компании, которые покупают AI-инструменты пакетами и&nbsp;через полгода не&nbsp;понимают что с&nbsp;ними делать.</span>
+        <br><br>
+        Мы делаем <span class="accent">operating layers</span> — слои, которые работают <em>между</em> людьми и&nbsp;инструментами. Незаметно. Без замены того, что уже работает. С&nbsp;понятным эффектом, который можно измерить.
+        <br><br>
+        Если этот подход откликается — давайте знакомиться.»
+      </p>
+      <div class="founder-side">
+        <p class="founder-role">Founder</p>
+        <p class="founder-name">Vladimir Tirskikh</p>
+        <p class="founder-handle">@SYL4R</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── FOOTER ─────────────────────────────────────────────────── -->
+<footer class="footer">
+  <div class="footer-wordmark">SYLAR<span class="dot"></span></div>
+
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <p>Tech studio, building operating layers for people who actually do the work. Two products under one umbrella: XeroCode for individuals and small teams, RoleFlow for large organizations.</p>
+    </div>
+
+    <div class="footer-col">
+      <h4>Продукты</h4>
+      <ul>
+        <li><a href="#">XeroCode AI</a></li>
+        <li><a href="#">RoleFlow</a></li>
+        <li><a href="#">Custom LLM</a></li>
+        <li><a href="#">SYLAR Cloud (2027)</a></li>
+      </ul>
+    </div>
+
+    <div class="footer-col">
+      <h4>Компания</h4>
+      <ul>
+        <li><a href="#">О студии</a></li>
+        <li><a href="#">Карьера</a></li>
+        <li><a href="#">Manifesto</a></li>
+        <li><a href="#">Контакты</a></li>
+      </ul>
+    </div>
+
+    <div class="footer-col">
+      <h4>Документы</h4>
+      <ul>
+        <li><a href="#">Trust Center</a></li>
+        <li><a href="#">ФЗ-152</a></li>
+        <li><a href="#">DPA · GDPR</a></li>
+        <li><a href="#">Реестр ПО</a></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="footer-bottom">
+    <span>© SYLAR · MMXXVI · ALL RIGHTS RESERVED</span>
+    <span>ООО «Сайлар Групп» · РФ</span>
+    <span>Forged by SYL4R</span>
+  </div>
+</footer>
+
+<script>
+const nav = document.getElementById('nav');
+window.addEventListener('scroll', () => {
+  if (window.scrollY > 40) nav.classList.add('scrolled');
+  else nav.classList.remove('scrolled');
+}, { passive: true });
+
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('in'); });
+}, { threshold: 0.12, rootMargin: '0px 0px -80px 0px' });
+document.querySelectorAll('.reveal, .reveal-stagger').forEach(el => observer.observe(el));
+
+document.querySelectorAll('.btn-primary, .nav-cta').forEach(btn => {
+  btn.addEventListener('mousemove', (e) => {
+    const rect = btn.getBoundingClientRect();
+    const x = e.clientX - rect.left - rect.width / 2;
+    const y = e.clientY - rect.top - rect.height / 2;
+    btn.style.transform = `translate(${x * 0.18}px, ${y * 0.25}px)`;
+  });
+  btn.addEventListener('mouseleave', () => { btn.style.transform = ''; });
+});
+
+// Karaoke scroll-reveal
+(function initKaraoke() {
+  const heroSection = document.getElementById('hero');
+  const words = document.querySelectorAll('#hero-text .w');
+  if (!heroSection || !words.length) return;
+  const total = words.length;
+  const onScroll = () => {
+    const rect = heroSection.getBoundingClientRect();
+    const sectionHeight = heroSection.offsetHeight;
+    const viewportH = window.innerHeight;
+    const scrolled = -rect.top;
+    const totalScroll = sectionHeight - viewportH;
+    let progress = Math.max(0, Math.min(1, scrolled / totalScroll));
+    const adjusted = Math.min(1, progress * 1.4);
+    const litCount = Math.floor(adjusted * total);
+    words.forEach((w, i) => {
+      if (i < litCount) w.classList.add('lit'); else w.classList.remove('lit');
+    });
+  };
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+})();
+</script>
+</body>
+</html>

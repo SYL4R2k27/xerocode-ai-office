@@ -21,7 +21,6 @@ export interface Plan {
   priceUsd: number;
   yearlyDiscount: number;
   isNegotiable: boolean;
-  marginPercent: number;
   accent: string;
   highlight?: boolean;
   tag: string;
@@ -39,7 +38,6 @@ export const PLANS: Plan[] = [
     priceUsd: 0,
     yearlyDiscount: 0,
     isNegotiable: false,
-    marginPercent: 0,
     accent: "#A0A0CC",
     tag: "▸ B2C · Trial",
     features: [
@@ -62,7 +60,6 @@ export const PLANS: Plan[] = [
     priceUsd: 5,
     yearlyDiscount: 15,
     isNegotiable: false,
-    marginPercent: 39,
     accent: "#00D4FF",
     tag: "▸ B2C · Entry",
     features: [
@@ -86,7 +83,6 @@ export const PLANS: Plan[] = [
     priceUsd: 19,
     yearlyDiscount: 20,
     isNegotiable: false,
-    marginPercent: 37,
     accent: "#7C5CFF",
     tag: "▸ B2C · Main",
     features: [
@@ -111,7 +107,6 @@ export const PLANS: Plan[] = [
     priceUsd: 99,
     yearlyDiscount: 25,
     isNegotiable: false,
-    marginPercent: 36,
     accent: "#FFB547",
     highlight: true,
     tag: "▸ B2C · TOP",
@@ -139,7 +134,6 @@ export const PLANS: Plan[] = [
     priceUsd: 249,
     yearlyDiscount: 25,
     isNegotiable: false,
-    marginPercent: 38,
     accent: "#22C55E",
     tag: "▸ B2B · Team",
     features: [
@@ -165,7 +159,6 @@ export const PLANS: Plan[] = [
     priceUsd: 799,
     yearlyDiscount: 25,
     isNegotiable: true,
-    marginPercent: 38,
     accent: "#FF3B5C",
     tag: "▸ B2B · TOP",
     features: [

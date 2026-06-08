@@ -3,7 +3,7 @@
  */
 import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { ChevronDown, MessageCircleQuestion } from "lucide-react";
+import { MessageCircleQuestion } from "lucide-react";
 import { SubPageHero } from "../shared/SubPageHero";
 import { FinalCTA } from "../shared/FinalCTA";
 
@@ -64,7 +64,6 @@ export function FAQSubPage({ onBack, onCTA }: Props) {
         num="07"
         title={<>Вопросы. <em style={{ color: "var(--amber-500)", fontStyle: "italic", fontWeight: 400 }}>И ответы.</em></>}
         subtitle="Если не нашли свой — пишите в поддержку. Отвечаем в течение 24 часов на тарифах Pro+ и сразу для Enterprise."
-        tag={{ icon: <MessageCircleQuestion size={12} />, label: "FAQ · 10 вопросов", accent: "var(--violet-500)" }}
         onBack={onBack}
       />
 

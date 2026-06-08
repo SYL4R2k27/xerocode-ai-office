@@ -1,0 +1,1693 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>RoleFlow AI — Secure AI Operations Layer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ╔══════════════════════════════════════════════════════════════╗
+   ║   ROLEFLOW AI · Clean Modernist · humaan-inspired            ║
+   ╚══════════════════════════════════════════════════════════════╝ */
+
+:root {
+  /* Surfaces */
+  --bg:        #0A0A0B;
+  --bg-soft:   #131316;
+  --cream:     #F4EFE3;
+  --cream-warm:#EDE5D2;
+
+  /* Text */
+  --on-bg:     #F4EFE3;
+  --on-bg-mute:#A8A8AC;
+  --on-bg-dim: #6E6E72;
+  --on-cream:  #0A0A0B;
+  --on-cream-mute: #5C5C62;
+  --on-cream-dim:  #8C8C92;
+
+  /* Lines */
+  --line-bg:    rgba(244,239,227,0.10);
+  --line-bg-strong: rgba(244,239,227,0.20);
+  --line-cream: rgba(10,10,11,0.10);
+  --line-cream-strong: rgba(10,10,11,0.20);
+
+  /* Accent — single warm sienna */
+  --accent:     #D4654A;
+  --accent-soft:#E08368;
+  --alert:      #C84830;
+
+  /* Type */
+  --display: 'Space Grotesk', system-ui, sans-serif;
+  --body:    'Inter', system-ui, sans-serif;
+  --mono:    'JetBrains Mono', ui-monospace, monospace;
+
+  --ease:      cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-soft: cubic-bezier(0.4, 0, 0.2, 1);
+
+  --pad-x: clamp(20px, 4vw, 64px);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+body {
+  background: var(--bg);
+  color: var(--on-bg);
+  font-family: var(--body);
+  font-size: 16px;
+  line-height: 1.55;
+  font-feature-settings: 'ss01', 'ss02', 'cv11';
+  font-variant-numeric: tabular-nums;
+  overflow-x: hidden;
+}
+::selection { background: var(--accent); color: var(--cream); }
+
+/* ╔══════════════════════════════════════════════════════════════╗
+   ║   NAV                                                        ║
+   ╚══════════════════════════════════════════════════════════════╝ */
+.nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  padding: 22px var(--pad-x);
+  display: flex; align-items: center; justify-content: space-between;
+  background: transparent;
+  transition: background 300ms var(--ease), backdrop-filter 300ms var(--ease);
+}
+.nav.scrolled {
+  background: rgba(10,10,11,0.78);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border-bottom: 1px solid var(--line-bg);
+}
+.nav-brand {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 21px;
+  letter-spacing: -0.02em;
+  color: var(--on-bg);
+  text-decoration: none;
+  display: flex; align-items: baseline; gap: 4px;
+}
+.nav-brand .ai {
+  font-size: 0.62em;
+  letter-spacing: 0.18em;
+  color: var(--accent);
+  font-weight: 500;
+  margin-left: 4px;
+  position: relative;
+  top: -0.18em;
+}
+.nav-menu {
+  display: flex; gap: 36px;
+  font-size: 14px;
+  font-weight: 500;
+}
+.nav-menu a {
+  color: var(--on-bg);
+  text-decoration: none;
+  position: relative;
+  opacity: 0.85;
+  transition: opacity 200ms var(--ease);
+}
+.nav-menu a:hover { opacity: 1; }
+.nav-cta {
+  display: inline-flex; align-items: center; gap: 10px;
+  padding: 11px 20px;
+  background: var(--cream);
+  color: var(--on-cream);
+  font-family: var(--body);
+  font-size: 13px;
+  font-weight: 500;
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: transform 200ms var(--ease), background 200ms var(--ease);
+  text-decoration: none;
+}
+.nav-cta:hover { background: var(--accent); color: var(--cream); transform: translateY(-1px); }
+.nav-cta::after {
+  content: '↗';
+  font-size: 14px;
+  transition: transform 200ms var(--ease);
+}
+.nav-cta:hover::after { transform: translate(2px, -2px); }
+
+@media (max-width: 760px) {
+  .nav-menu { display: none; }
+}
+
+/* ╔══════════════════════════════════════════════════════════════╗
+   ║   HERO                                                       ║
+   ╚══════════════════════════════════════════════════════════════╝ */
+.hero {
+  min-height: 100vh;
+  padding: 160px var(--pad-x) 80px;
+  display: flex; flex-direction: column; justify-content: space-between;
+  position: relative;
+}
+
+.hero-eyebrow {
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 32px;
+  display: flex; align-items: center; gap: 12px;
+}
+.hero-eyebrow::before {
+  content: '';
+  display: inline-block;
+  width: 32px; height: 1px;
+  background: var(--accent);
+}
+
+.hero-title {
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: clamp(48px, 9vw, 168px);
+  line-height: 0.92;
+  letter-spacing: -0.045em;
+  color: var(--on-bg);
+  max-width: 1500px;
+}
+.hero-title .word {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(40px);
+  animation: word-reveal 1.2s var(--ease) forwards;
+}
+@keyframes word-reveal {
+  to { opacity: 1; transform: translateY(0); }
+}
+.hero-title .accent { color: var(--accent); }
+
+.hero-bottom {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 60px;
+  align-items: end;
+  margin-top: 80px;
+}
+.hero-sub {
+  font-family: var(--body);
+  font-size: 19px;
+  line-height: 1.45;
+  color: var(--on-bg-mute);
+  max-width: 480px;
+  font-weight: 400;
+}
+.hero-sub strong { color: var(--on-bg); font-weight: 500; }
+
+.hero-meta {
+  display: flex; flex-direction: column; gap: 4px;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--on-bg-dim);
+}
+.hero-meta strong {
+  color: var(--on-bg);
+  font-weight: 500;
+}
+
+.hero-actions {
+  display: flex; gap: 14px;
+  align-self: end;
+  justify-self: end;
+}
+.hero-actions .btn-primary {
+  display: inline-flex; align-items: center; gap: 12px;
+  padding: 18px 32px;
+  background: var(--accent);
+  color: var(--cream);
+  font-family: var(--body);
+  font-size: 14px;
+  font-weight: 500;
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: transform 200ms var(--ease), background 200ms var(--ease);
+  text-decoration: none;
+}
+.hero-actions .btn-primary:hover { background: var(--accent-soft); transform: translateY(-2px); }
+.hero-actions .btn-primary::after { content: '→'; transition: transform 200ms var(--ease); }
+.hero-actions .btn-primary:hover::after { transform: translateX(4px); }
+
+@media (max-width: 980px) {
+  .hero-bottom { grid-template-columns: 1fr; gap: 32px; }
+  .hero-actions { justify-self: start; }
+}
+
+/* ╔══════════════════════════════════════════════════════════════╗
+   ║   SECTIONS                                                   ║
+   ╚══════════════════════════════════════════════════════════════╝ */
+.section {
+  padding: 140px var(--pad-x);
+  position: relative;
+}
+.section.cream {
+  background: var(--cream);
+  color: var(--on-cream);
+}
+.section-num {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 24px;
+  display: flex; align-items: center; gap: 12px;
+}
+.section-num::before {
+  content: '';
+  display: inline-block;
+  width: 24px; height: 1px;
+  background: var(--accent);
+}
+
+/* ╔══════════════════════════════════════════════════════════════╗
+   ║   MANIFESTO BLOCK                                            ║
+   ╚══════════════════════════════════════════════════════════════╝ */
+.manifesto {
+  display: grid;
+  grid-template-columns: 1fr 5fr;
+  gap: 60px;
+  align-items: start;
+}
+.manifesto-meta {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--on-bg-dim);
+  position: sticky;
+  top: 120px;
+}
+.manifesto-text {
+  font-family: var(--display);
+  font-weight: 400;
+  font-size: clamp(28px, 3.6vw, 56px);
+  line-height: 1.18;
+  letter-spacing: -0.02em;
+  color: var(--on-bg);
+  max-width: 1100px;
+}
+.manifesto-text .accent { color: var(--accent); }
+.manifesto-text .mute { color: var(--on-bg-dim); }
+.cream .manifesto-text { color: var(--on-cream); }
+.cream .manifesto-text .mute { color: var(--on-cream-dim); }
+.cream .manifesto-meta { color: var(--on-cream-dim); }
+
+@media (max-width: 980px) {
+  .manifesto { grid-template-columns: 1fr; gap: 24px; }
+  .manifesto-meta { position: static; }
+}
+
+/* ╔══════════════════════════════════════════════════════════════╗
+   ║   STAT ROW                                                   ║
+   ╚══════════════════════════════════════════════════════════════╝ */
+.stat-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0;
+  margin-top: 100px;
+  border-top: 1px solid var(--line-bg-strong);
+}
+.cream .stat-row { border-color: var(--line-cream-strong); }
+.stat-cell {
+  padding: 36px 32px 36px 0;
+  border-right: 1px solid var(--line-bg);
+}
+.cream .stat-cell { border-color: var(--line-cream); }
+.stat-cell:last-child { border-right: none; padding-right: 0; }
+.stat-num {
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: clamp(56px, 6vw, 88px);
+  line-height: 0.95;
+  letter-spacing: -0.04em;
+  color: var(--on-bg);
+}
+.stat-num .unit {
+  color: var(--accent);
+  font-weight: 500;
+}
+.cream .stat-num { color: var(--on-cream); }
+.stat-label {
+  font-family: var(--body);
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--on-bg-mute);
+  margin-top: 16px;
+  max-width: 240px;
+}
+.cream .stat-label { color: var(--on-cream-mute); }
+.stat-source {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--on-bg-dim);
+  margin-top: 12px;
+}
+.cream .stat-source { color: var(--on-cream-dim); }
+
+@media (max-width: 980px) {
+  .stat-row { grid-template-columns: repeat(2, 1fr); }
+  .stat-cell { border-right: none; border-bottom: 1px solid var(--line-bg); padding: 28px 0; }
+  .cream .stat-cell { border-color: var(--line-cream); }
+}
+
+/* ╔══════════════════════════════════════════════════════════════╗
+   ║   PILLAR TILES (humaan-style featured)                       ║
+   ╚══════════════════════════════════════════════════════════════╝ */
+.pillars-head {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 60px;
+  align-items: end;
+  margin-bottom: 80px;
+}
+.pillars-title {
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: clamp(40px, 5vw, 80px);
+  line-height: 1.0;
+  letter-spacing: -0.03em;
+  color: var(--on-cream);
+}
+.pillars-sub {
+  font-family: var(--body);
+  font-size: 17px;
+  line-height: 1.55;
+  color: var(--on-cream-mute);
+  max-width: 460px;
+  justify-self: end;
+}
+
+.pillars-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1px;
+  background: var(--line-cream-strong);
+  border: 1px solid var(--line-cream-strong);
+}
+.pillar {
+  background: var(--cream);
+  padding: 56px 48px 56px 48px;
+  display: flex; flex-direction: column;
+  position: relative;
+  cursor: pointer;
+  transition: background 250ms var(--ease);
+  min-height: 380px;
+  overflow: hidden;
+}
+.pillar:hover { background: var(--cream-warm); }
+.pillar-num {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 18px;
+}
+.pillar-title {
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: 38px;
+  line-height: 1.05;
+  letter-spacing: -0.025em;
+  color: var(--on-cream);
+  margin-bottom: 20px;
+}
+.pillar-desc {
+  font-family: var(--body);
+  font-size: 15.5px;
+  line-height: 1.6;
+  color: var(--on-cream-mute);
+  margin-bottom: 32px;
+  max-width: 440px;
+}
+.pillar-modules {
+  display: flex; flex-wrap: wrap; gap: 6px;
+  margin-top: auto;
+}
+.pillar-modules span {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.12em;
+  padding: 6px 12px;
+  border: 1px solid var(--line-cream-strong);
+  color: var(--on-cream-mute);
+  border-radius: 999px;
+}
+.pillar-arrow {
+  position: absolute;
+  top: 56px; right: 48px;
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  background: var(--on-cream);
+  color: var(--cream);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+  transition: transform 250ms var(--ease), background 250ms var(--ease);
+}
+.pillar:hover .pillar-arrow {
+  background: var(--accent);
+  transform: rotate(-45deg);
+}
+
+@media (max-width: 760px) {
+  .pillars-head { grid-template-columns: 1fr; gap: 24px; }
+  .pillars-sub { justify-self: start; }
+  .pillars-grid { grid-template-columns: 1fr; }
+  .pillar { padding: 40px 28px; min-height: 320px; }
+  .pillar-arrow { top: 32px; right: 28px; }
+}
+
+/* ╔══════════════════════════════════════════════════════════════╗
+   ║   FEATURE DEEP DIVE (sticky)                                 ║
+   ╚══════════════════════════════════════════════════════════════╝ */
+.feature {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 80px;
+  align-items: start;
+}
+.feature-text {
+  position: sticky;
+  top: 120px;
+}
+.feature-title {
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: clamp(40px, 5vw, 76px);
+  line-height: 1.02;
+  letter-spacing: -0.03em;
+  color: var(--on-bg);
+  margin-bottom: 32px;
+}
+.feature-title .accent { color: var(--accent); }
+.feature-text p {
+  font-family: var(--body);
+  font-size: 17px;
+  line-height: 1.65;
+  color: var(--on-bg-mute);
+  max-width: 480px;
+  margin-bottom: 20px;
+}
+.feature-text p strong { color: var(--on-bg); font-weight: 500; }
+
+.feature-list {
+  list-style: none;
+  margin-top: 40px;
+  border-top: 1px solid var(--line-bg);
+}
+.feature-list li {
+  padding: 24px 0;
+  border-bottom: 1px solid var(--line-bg);
+  display: grid;
+  grid-template-columns: 56px 1fr;
+  gap: 20px;
+  align-items: start;
+}
+.feature-list li .num {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  color: var(--accent);
+  padding-top: 4px;
+}
+.feature-list li h4 {
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: 22px;
+  letter-spacing: -0.015em;
+  color: var(--on-bg);
+  margin-bottom: 8px;
+}
+.feature-list li p {
+  margin: 0;
+  font-size: 14.5px;
+}
+
+/* Visual frame for feature (replaces image) */
+.feature-visual {
+  background: var(--bg-soft);
+  border: 1px solid var(--line-bg);
+  border-radius: 8px;
+  padding: 40px;
+  min-height: 600px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Quality Gate diagram */
+.qg-flow {
+  display: flex; flex-direction: column; gap: 0;
+  font-family: var(--mono);
+}
+.qg-step {
+  background: var(--bg);
+  border: 1px solid var(--line-bg-strong);
+  padding: 18px 22px;
+  display: flex; justify-content: space-between; align-items: center;
+  transition: border-color 200ms var(--ease);
+}
+.qg-step:hover { border-color: var(--accent); }
+.qg-step .label {
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  color: var(--on-bg);
+  font-weight: 500;
+}
+.qg-step .verdict {
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--on-bg-dim);
+}
+.qg-step .verdict.ok { color: var(--accent); }
+.qg-step .verdict.fail { color: var(--alert); }
+.qg-arrow {
+  text-align: center;
+  font-family: var(--mono);
+  font-size: 14px;
+  color: var(--on-bg-dim);
+  padding: 4px 0;
+}
+
+/* DLP layered diagram */
+.dlp-stack {
+  display: flex; flex-direction: column; gap: 8px;
+}
+.dlp-layer {
+  background: var(--bg);
+  border: 1px solid var(--line-bg-strong);
+  padding: 22px 24px;
+  display: flex; justify-content: space-between; align-items: center;
+  transition: border-color 200ms var(--ease);
+}
+.dlp-layer:hover { border-color: var(--accent); }
+.dlp-layer .l-name {
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: 19px;
+  letter-spacing: -0.01em;
+  color: var(--on-bg);
+}
+.dlp-layer .l-tech {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: var(--on-bg-dim);
+}
+.dlp-layer.primary { border-color: var(--accent); background: rgba(212,101,74,0.06); }
+.dlp-layer.primary .l-tech { color: var(--accent); }
+.dlp-arrow {
+  text-align: center;
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--on-bg-dim);
+  padding: 4px 0;
+}
+
+@media (max-width: 980px) {
+  .feature { grid-template-columns: 1fr; gap: 40px; }
+  .feature-text { position: static; }
+  .feature-visual { min-height: 480px; padding: 24px; }
+}
+
+/* ╔══════════════════════════════════════════════════════════════╗
+   ║   MARQUEE                                                    ║
+   ╚══════════════════════════════════════════════════════════════╝ */
+.marquee {
+  padding: 56px 0;
+  border-top: 1px solid var(--line-bg-strong);
+  border-bottom: 1px solid var(--line-bg-strong);
+  overflow: hidden;
+  white-space: nowrap;
+  display: flex;
+  gap: 0;
+}
+.cream .marquee { border-color: var(--line-cream-strong); }
+.marquee-track {
+  display: inline-flex;
+  align-items: center;
+  gap: 80px;
+  animation: marquee 50s linear infinite;
+  padding-right: 80px;
+}
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+.marquee-item {
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: clamp(40px, 6vw, 80px);
+  line-height: 1;
+  letter-spacing: -0.03em;
+  color: var(--on-bg);
+  display: inline-flex; align-items: center; gap: 32px;
+}
+.cream .marquee-item { color: var(--on-cream); }
+.marquee-item .accent { color: var(--accent); }
+.marquee-item::after {
+  content: '◆';
+  font-size: 0.4em;
+  color: var(--accent);
+  margin-left: 32px;
+}
+
+/* ╔══════════════════════════════════════════════════════════════╗
+   ║   AUDIT CTA BLOCK                                            ║
+   ╚══════════════════════════════════════════════════════════════╝ */
+.audit-cta {
+  padding: 140px var(--pad-x);
+  background: var(--cream);
+  color: var(--on-cream);
+  position: relative;
+  overflow: hidden;
+}
+.audit-cta-grid {
+  display: grid;
+  grid-template-columns: 7fr 5fr;
+  gap: 80px;
+  align-items: end;
+}
+.audit-headline {
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: clamp(48px, 7vw, 124px);
+  line-height: 0.95;
+  letter-spacing: -0.04em;
+  color: var(--on-cream);
+  max-width: 900px;
+}
+.audit-headline .accent { color: var(--accent); }
+
+.audit-side {
+  display: flex; flex-direction: column; gap: 28px;
+}
+.audit-side p {
+  font-family: var(--body);
+  font-size: 17px;
+  line-height: 1.6;
+  color: var(--on-cream-mute);
+  max-width: 380px;
+}
+.audit-cta-btn {
+  display: inline-flex; align-items: center; justify-content: space-between;
+  padding: 24px 32px;
+  background: var(--on-cream);
+  color: var(--cream);
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: 22px;
+  letter-spacing: -0.02em;
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 200ms var(--ease), transform 200ms var(--ease);
+  text-decoration: none;
+  width: 100%; max-width: 380px;
+}
+.audit-cta-btn:hover { background: var(--accent); transform: translateY(-2px); }
+.audit-cta-btn::after {
+  content: '→';
+  font-size: 26px;
+  transition: transform 200ms var(--ease);
+}
+.audit-cta-btn:hover::after { transform: translateX(6px); }
+
+.audit-meta {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0;
+  margin-top: 100px;
+  border-top: 1px solid var(--line-cream-strong);
+}
+.audit-meta-cell {
+  padding: 32px 32px 0 0;
+  border-right: 1px solid var(--line-cream);
+}
+.audit-meta-cell:last-child { border-right: none; }
+.audit-meta-cell .lbl {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--on-cream-dim);
+  margin-bottom: 10px;
+}
+.audit-meta-cell .val {
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: 24px;
+  letter-spacing: -0.015em;
+  color: var(--on-cream);
+}
+
+@media (max-width: 980px) {
+  .audit-cta-grid { grid-template-columns: 1fr; gap: 40px; }
+  .audit-meta { grid-template-columns: 1fr; }
+  .audit-meta-cell { border-right: none; border-bottom: 1px solid var(--line-cream); padding: 24px 0; }
+  .audit-meta-cell:last-child { border-bottom: none; }
+}
+
+/* ╔══════════════════════════════════════════════════════════════╗
+   ║   TRUST GRID                                                 ║
+   ╚══════════════════════════════════════════════════════════════╝ */
+.trust-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 1px;
+  background: var(--line-bg-strong);
+  border: 1px solid var(--line-bg-strong);
+  margin-top: 48px;
+}
+.trust-cell {
+  background: var(--bg);
+  padding: 36px 24px;
+  text-align: center;
+  display: flex; flex-direction: column; gap: 10px;
+  transition: background 200ms var(--ease);
+}
+.trust-cell:hover { background: var(--bg-soft); }
+.trust-cell .icon {
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: 24px;
+  letter-spacing: -0.02em;
+  color: var(--accent);
+}
+.trust-cell .name {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  color: var(--on-bg);
+  font-weight: 500;
+}
+.trust-cell .stat {
+  font-family: var(--mono);
+  font-size: 9.5px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--on-bg-dim);
+}
+
+@media (max-width: 980px) {
+  .trust-grid { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 540px) {
+  .trust-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* ╔══════════════════════════════════════════════════════════════╗
+   ║   PRICING                                                    ║
+   ╚══════════════════════════════════════════════════════════════╝ */
+.pricing-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: var(--line-bg-strong);
+  border: 1px solid var(--line-bg-strong);
+  margin-top: 60px;
+}
+.tier {
+  background: var(--bg);
+  padding: 56px 40px;
+  display: flex; flex-direction: column;
+  position: relative;
+}
+.tier.featured { background: var(--cream); color: var(--on-cream); }
+.tier-num {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 14px;
+}
+.tier.featured .tier-num { color: var(--accent); }
+.tier-name {
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: 40px;
+  letter-spacing: -0.03em;
+  margin-bottom: 8px;
+  color: var(--on-bg);
+}
+.tier.featured .tier-name { color: var(--on-cream); }
+.tier-aud {
+  font-family: var(--body);
+  font-size: 14.5px;
+  color: var(--on-bg-mute);
+  margin-bottom: 36px;
+}
+.tier.featured .tier-aud { color: var(--on-cream-mute); }
+.tier-price {
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: 48px;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  color: var(--on-bg);
+}
+.tier.featured .tier-price { color: var(--on-cream); }
+.tier-price small {
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 400;
+  letter-spacing: 0.1em;
+  color: var(--on-bg-mute);
+  text-transform: uppercase;
+  margin-left: 10px;
+}
+.tier.featured .tier-price small { color: var(--on-cream-mute); }
+.tier-cycle {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--on-bg-dim);
+  margin-top: 12px;
+  padding-bottom: 32px;
+  margin-bottom: 32px;
+  border-bottom: 1px solid var(--line-bg);
+}
+.tier.featured .tier-cycle { color: var(--on-cream-dim); border-color: var(--line-cream); }
+.tier ul {
+  list-style: none;
+  flex: 1;
+  margin-bottom: 32px;
+}
+.tier ul li {
+  padding: 8px 0 8px 22px;
+  position: relative;
+  font-size: 14.5px;
+  color: var(--on-bg-mute);
+  line-height: 1.55;
+}
+.tier.featured ul li { color: var(--on-cream-mute); }
+.tier ul li::before {
+  content: '+';
+  position: absolute; left: 0; top: 8px;
+  color: var(--accent);
+  font-weight: 500;
+  font-size: 16px;
+}
+.tier-cta {
+  display: inline-flex; align-items: center; gap: 10px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--on-bg);
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: 18px;
+  letter-spacing: -0.015em;
+  color: var(--on-bg);
+  text-decoration: none;
+  align-self: flex-start;
+  transition: gap 200ms var(--ease);
+}
+.tier.featured .tier-cta { color: var(--on-cream); border-color: var(--on-cream); }
+.tier-cta:hover { gap: 18px; }
+.tier-cta::after { content: '→'; }
+
+@media (max-width: 980px) {
+  .pricing-grid { grid-template-columns: 1fr; }
+}
+
+/* ╔══════════════════════════════════════════════════════════════╗
+   ║   FAQ                                                        ║
+   ╚══════════════════════════════════════════════════════════════╝ */
+.faq {
+  margin-top: 60px;
+  border-top: 1px solid var(--line-bg);
+}
+.faq details {
+  border-bottom: 1px solid var(--line-bg);
+  padding: 0;
+}
+.faq summary {
+  list-style: none;
+  cursor: pointer;
+  padding: 32px 0;
+  display: flex; justify-content: space-between; align-items: center;
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: 24px;
+  letter-spacing: -0.02em;
+  color: var(--on-bg);
+  transition: color 200ms var(--ease);
+}
+.faq summary::-webkit-details-marker { display: none; }
+.faq summary:hover { color: var(--accent); }
+.faq summary::after {
+  content: '+';
+  font-size: 28px;
+  font-weight: 400;
+  color: var(--accent);
+  transition: transform 250ms var(--ease);
+}
+.faq details[open] summary::after { transform: rotate(45deg); }
+.faq details > p {
+  padding: 0 60px 36px 0;
+  font-size: 16.5px;
+  line-height: 1.65;
+  color: var(--on-bg-mute);
+  max-width: 880px;
+}
+.faq details > p strong { color: var(--on-bg); font-weight: 500; }
+
+/* ╔══════════════════════════════════════════════════════════════╗
+   ║   FINAL CTA                                                  ║
+   ╚══════════════════════════════════════════════════════════════╝ */
+.final-cta {
+  padding: 160px var(--pad-x);
+  text-align: left;
+  border-top: 1px solid var(--line-bg-strong);
+}
+.final-cta h2 {
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: clamp(56px, 9vw, 200px);
+  line-height: 0.92;
+  letter-spacing: -0.045em;
+  color: var(--on-bg);
+  margin-bottom: 60px;
+  max-width: 1400px;
+}
+.final-cta h2 .accent { color: var(--accent); }
+.final-cta-actions {
+  display: flex; gap: 16px;
+  margin-top: 60px;
+  flex-wrap: wrap;
+}
+.final-btn {
+  display: inline-flex; align-items: center; gap: 12px;
+  padding: 22px 36px;
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: 19px;
+  letter-spacing: -0.015em;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 200ms var(--ease);
+  text-decoration: none;
+}
+.final-btn.primary { background: var(--accent); color: var(--cream); }
+.final-btn.primary:hover { background: var(--accent-soft); transform: translateY(-2px); }
+.final-btn.ghost { background: transparent; color: var(--on-bg); border: 1px solid var(--line-bg-strong); }
+.final-btn.ghost:hover { border-color: var(--on-bg); }
+.final-btn::after { content: '→'; transition: transform 200ms var(--ease); }
+.final-btn:hover::after { transform: translateX(4px); }
+
+/* ╔══════════════════════════════════════════════════════════════╗
+   ║   FOOTER                                                     ║
+   ╚══════════════════════════════════════════════════════════════╝ */
+.footer {
+  padding: 80px var(--pad-x) 40px;
+  border-top: 1px solid var(--line-bg);
+}
+.footer-wordmark {
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: clamp(80px, 18vw, 280px);
+  line-height: 0.85;
+  letter-spacing: -0.05em;
+  color: var(--on-bg);
+  margin-bottom: 80px;
+  display: flex; align-items: baseline; gap: 0.05em;
+}
+.footer-wordmark .ai {
+  color: var(--accent);
+  font-size: 0.5em;
+  letter-spacing: 0.08em;
+}
+.footer-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  gap: 60px;
+  padding-top: 40px;
+  border-top: 1px solid var(--line-bg);
+}
+.footer-brand p {
+  font-size: 14.5px;
+  line-height: 1.6;
+  color: var(--on-bg-mute);
+  max-width: 360px;
+}
+.footer-col h4 {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--on-bg-dim);
+  margin-bottom: 20px;
+  font-weight: 500;
+}
+.footer-col ul { list-style: none; }
+.footer-col li {
+  padding: 6px 0;
+  font-size: 14px;
+}
+.footer-col a {
+  color: var(--on-bg);
+  text-decoration: none;
+  opacity: 0.78;
+  transition: opacity 200ms var(--ease);
+}
+.footer-col a:hover { opacity: 1; }
+.footer-bottom {
+  display: flex; justify-content: space-between;
+  margin-top: 80px;
+  padding-top: 28px;
+  border-top: 1px solid var(--line-bg);
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--on-bg-dim);
+}
+
+@media (max-width: 980px) {
+  .footer-grid { grid-template-columns: 1fr 1fr; }
+  .footer-bottom { flex-direction: column; gap: 12px; }
+}
+
+/* ╔══════════════════════════════════════════════════════════════╗
+   ║   REVEAL                                                     ║
+   ╚══════════════════════════════════════════════════════════════╝ */
+.reveal {
+  opacity: 0;
+  transform: translateY(40px);
+  transition: opacity 1s var(--ease), transform 1s var(--ease);
+}
+.reveal.in {
+  opacity: 1;
+  transform: translateY(0);
+}
+.reveal-stagger > * {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.8s var(--ease), transform 0.8s var(--ease);
+}
+.reveal-stagger.in > *:nth-child(1) { transition-delay: 0ms; }
+.reveal-stagger.in > *:nth-child(2) { transition-delay: 80ms; }
+.reveal-stagger.in > *:nth-child(3) { transition-delay: 160ms; }
+.reveal-stagger.in > *:nth-child(4) { transition-delay: 240ms; }
+.reveal-stagger.in > * { opacity: 1; transform: translateY(0); }
+</style>
+</head>
+<body>
+
+<!-- ╔══════════════════════════════════════════════════════════════╗
+     ║  NAV                                                         ║
+     ╚══════════════════════════════════════════════════════════════╝ -->
+<nav class="nav" id="nav">
+  <a href="#" class="nav-brand">RoleFlow<span class="ai">AI</span></a>
+  <div class="nav-menu">
+    <a href="#what">Платформа</a>
+    <a href="#quality">Quality Gate</a>
+    <a href="#audit">Аудит</a>
+    <a href="#pricing">Цены</a>
+  </div>
+  <a href="#audit" class="nav-cta">Заказать аудит</a>
+</nav>
+
+<!-- ╔══════════════════════════════════════════════════════════════╗
+     ║  HERO                                                        ║
+     ╚══════════════════════════════════════════════════════════════╝ -->
+<section class="hero">
+  <div>
+    <p class="hero-eyebrow">Secure AI Operations Layer</p>
+    <h1 class="hero-title">
+      <span class="word" style="animation-delay: 100ms">Защищённый</span>
+      <span class="word" style="animation-delay: 200ms"><span class="accent">AI-контур</span></span>
+      <span class="word" style="animation-delay: 300ms">для</span>
+      <span class="word" style="animation-delay: 400ms">бизнес-операций.</span>
+    </h1>
+  </div>
+
+  <div class="hero-bottom">
+    <p class="hero-sub">RoleFlow перехватывает все исходящие AI-запросы сотрудников. <strong>Маскирует утечки. Ловит микробаги. Логирует каждый шаг.</strong> Не замещает существующий стек — становится контролируемым проходом между людьми и моделями.</p>
+
+    <div class="hero-meta">
+      <span><strong>Категория</strong></span>
+      <span>Secure AI Layer</span>
+      <span style="margin-top: 12px;"><strong>Покупатель</strong></span>
+      <span>CISO · COO · CFO</span>
+      <span style="margin-top: 12px;"><strong>Рынок</strong></span>
+      <span>РФ · СНГ · Enterprise</span>
+    </div>
+
+    <div class="hero-actions">
+      <a href="#audit" class="btn-primary">Заказать аудит</a>
+    </div>
+  </div>
+</section>
+
+<!-- ╔══════════════════════════════════════════════════════════════╗
+     ║  MANIFESTO                                                   ║
+     ╚══════════════════════════════════════════════════════════════╝ -->
+<section class="section reveal">
+  <div class="manifesto">
+    <p class="manifesto-meta">01<br>—<br>Контекст</p>
+    <p class="manifesto-text">
+      <span class="mute">Сотрудники уже используют AI.</span> Через личные аккаунты, через VPN, через мобильные. Запреты не работают — они только толкают AI в&nbsp;тень. Корпоративные данные утекают в&nbsp;публичные модели. <span class="accent">Микробаги уходят клиентам.</span> Аудитор не&nbsp;может ничего поднять, потому что нет журнала.
+    </p>
+  </div>
+
+  <div class="stat-row">
+    <div class="stat-cell">
+      <div class="stat-num">78<span class="unit">%</span></div>
+      <p class="stat-label">сотрудников используют LLM минимум раз в неделю</p>
+      <p class="stat-source">McKinsey 2025</p>
+    </div>
+    <div class="stat-cell">
+      <div class="stat-num">66<span class="unit">%</span></div>
+      <p class="stat-label">делают это через Shadow AI без согласования IT</p>
+      <p class="stat-source">McKinsey 2025</p>
+    </div>
+    <div class="stat-cell">
+      <div class="stat-num">87<span class="unit">%</span></div>
+      <p class="stat-label">документов содержат микробаги: галлюцинации, выдуманные цитаты</p>
+      <p class="stat-source">RoleFlow Pilot Q1 2026</p>
+    </div>
+    <div class="stat-cell">
+      <div class="stat-num">$4.2<span class="unit">M</span></div>
+      <p class="stat-label">средний ущерб от утечки данных в LLM</p>
+      <p class="stat-source">Gartner 2025</p>
+    </div>
+  </div>
+</section>
+
+<!-- ╔══════════════════════════════════════════════════════════════╗
+     ║  PILLARS — humaan-style featured tiles                       ║
+     ╚══════════════════════════════════════════════════════════════╝ -->
+<section class="section cream" id="what">
+  <div class="reveal">
+    <p class="section-num">02 — Платформа</p>
+    <div class="pillars-head">
+      <h2 class="pillars-title">Один контур.<br>Четыре функции.</h2>
+      <p class="pillars-sub">RoleFlow заменяет дюжину разрозненных инструментов одним слоем — между сотрудниками и любой AI-моделью. Каждый запрос проходит через четыре проверки.</p>
+    </div>
+  </div>
+
+  <div class="pillars-grid reveal-stagger">
+    <div class="pillar">
+      <span class="pillar-arrow">↗</span>
+      <p class="pillar-num">01 — Govern</p>
+      <h3 class="pillar-title">Контроль доступа<br>и&nbsp;данных.</h3>
+      <p class="pillar-desc">AI-DLP Gateway маскирует PII, секреты и финансовую отчётность до отправки в модель. RBAC синхронизируется с AD/Okta. Audit Trail неизменяем.</p>
+      <div class="pillar-modules">
+        <span>Discovery</span><span>Gateway</span><span>Policy</span><span>Audit</span>
+      </div>
+    </div>
+
+    <div class="pillar">
+      <span class="pillar-arrow">↗</span>
+      <p class="pillar-num">02 — Accelerate</p>
+      <h3 class="pillar-title">Готовые сценарии<br>под&nbsp;каждую роль.</h3>
+      <p class="pillar-desc">120+ playbooks под HR, FIN, SALES, LEGAL, SUPPORT. Workflow Studio drag-drop. Coach Mode учит писать промпты. Knowledge RAG с привязкой к роли.</p>
+      <div class="pillar-modules">
+        <span>Workflows</span><span>Templates</span><span>Coach</span><span>Knowledge</span>
+      </div>
+    </div>
+
+    <div class="pillar">
+      <span class="pillar-arrow">↗</span>
+      <p class="pillar-num">03 — Review</p>
+      <h3 class="pillar-title">Микробаги ловятся<br>до&nbsp;клиента.</h3>
+      <p class="pillar-desc">Quality Gate проверяет каждый ответ AI на галлюцинации, выдуманные цитаты, нарушение tone и кастомные правила. Cross-model review.</p>
+      <div class="pillar-modules">
+        <span>Hallucination</span><span>Citation</span><span>Tone</span><span>Rules</span>
+      </div>
+    </div>
+
+    <div class="pillar">
+      <span class="pillar-arrow">↗</span>
+      <p class="pillar-num">04 — Measure</p>
+      <h3 class="pillar-title">Эффект — в&nbsp;часах<br>и&nbsp;деньгах.</h3>
+      <p class="pillar-desc">Productivity Analytics измеряет реальный ROI: сэкономленные часы, снижение микробагов, окупаемость подписок. Privacy-by-design на уровне ролей.</p>
+      <div class="pillar-modules">
+        <span>ROI</span><span>Heatmap</span><span>Reports</span><span>Connect</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ╔══════════════════════════════════════════════════════════════╗
+     ║  QUALITY GATE — deep dive                                    ║
+     ╚══════════════════════════════════════════════════════════════╝ -->
+<section class="section" id="quality">
+  <p class="section-num reveal">03 — Quality Gate</p>
+
+  <div class="feature">
+    <div class="feature-text reveal">
+      <h2 class="feature-title">Микробаги — главная скрытая стоимость <span class="accent">AI-внедрения.</span></h2>
+      <p>На пилоте в юр. фирме (180&nbsp;seats) Quality Gate поймал ошибки в&nbsp;<strong>87 из&nbsp;100 проверенных AI-выходов</strong>. Выдуманные ссылки на статьи ГК&nbsp;РФ. Двойной НДС в&nbsp;коммерческих предложениях. Несуществующие имена сотрудников в&nbsp;письмах клиентам.</p>
+      <p>Без Quality Gate эти ошибки уходят наружу. С Quality Gate — ловятся за&nbsp;<strong>200 миллисекунд</strong> до отправки.</p>
+
+      <ul class="feature-list">
+        <li>
+          <span class="num">01</span>
+          <div>
+            <h4>Hallucination check</h4>
+            <p>Cross-model review: если основной ответ дал Claude — проверяет GPT. И наоборот. Ищет факты, которых нет в источнике.</p>
+          </div>
+        </li>
+        <li>
+          <span class="num">02</span>
+          <div>
+            <h4>Citation check</h4>
+            <p>Все цифры, ссылки, цитаты сверяются с приложенным контекстом. Выдуманные URL и фабрикованные источники ловятся автоматически.</p>
+          </div>
+        </li>
+        <li>
+          <span class="num">03</span>
+          <div>
+            <h4>Tone check</h4>
+            <p>Embedding-similarity к корпоративным образцам tone-of-voice. Загружается один раз — 50 эталонных писем. Дальше работает на лету.</p>
+          </div>
+        </li>
+        <li>
+          <span class="num">04</span>
+          <div>
+            <h4>Factual rules</h4>
+            <p>Кастомные правила компании: «не обещай скидку больше 15%», «не упоминай конкурентов», «всегда указывай 152-ФЗ оговорку».</p>
+          </div>
+        </li>
+      </ul>
+    </div>
+
+    <div class="feature-visual reveal">
+      <p style="font-family: var(--mono); font-size: 11px; letter-spacing: 0.22em; color: var(--on-bg-dim); text-transform: uppercase; margin-bottom: 24px;">Pipeline · 200ms</p>
+
+      <div class="qg-flow">
+        <div class="qg-step">
+          <span class="label">AI Response</span>
+          <span class="verdict">Input</span>
+        </div>
+        <div class="qg-arrow">↓</div>
+        <div class="qg-step">
+          <span class="label">Hallucination Check</span>
+          <span class="verdict ok">Pass · 0.91</span>
+        </div>
+        <div class="qg-arrow">↓</div>
+        <div class="qg-step">
+          <span class="label">Citation Check</span>
+          <span class="verdict fail">Fail · URL</span>
+        </div>
+        <div class="qg-arrow">↓</div>
+        <div class="qg-step">
+          <span class="label">Tone Check</span>
+          <span class="verdict ok">Pass · 0.84</span>
+        </div>
+        <div class="qg-arrow">↓</div>
+        <div class="qg-step">
+          <span class="label">Factual Rules</span>
+          <span class="verdict ok">Pass</span>
+        </div>
+        <div class="qg-arrow">↓</div>
+        <div class="qg-step" style="border-color: var(--alert); background: rgba(200,72,48,0.06);">
+          <span class="label" style="color: var(--alert);">Verdict — Revise</span>
+          <span class="verdict fail">0.74 conf</span>
+        </div>
+      </div>
+
+      <p style="font-family: var(--mono); font-size: 11px; letter-spacing: 0.18em; color: var(--on-bg-dim); margin-top: 24px; line-height: 1.7;">
+        <span style="color: var(--accent);">▸</span> 87% реальных багов поймано<br>
+        <span style="color: var(--accent);">▸</span> 4% false positives<br>
+        <span style="color: var(--accent);">▸</span> Confidence &lt; 0.85 → эскалация
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ╔══════════════════════════════════════════════════════════════╗
+     ║  AI-DLP GATEWAY — deep dive                                  ║
+     ╚══════════════════════════════════════════════════════════════╝ -->
+<section class="section">
+  <p class="section-num reveal">04 — AI-DLP Gateway</p>
+
+  <div class="feature">
+    <div class="feature-text reveal">
+      <h2 class="feature-title">Один endpoint. <span class="accent">14&nbsp;моделей.</span> Ноль утечек.</h2>
+      <p>Sotrudник работает с&nbsp;ChatGPT, Claude, Yandex GPT, GigaChat — RoleFlow перехватывает запрос на уровне корп-сети, маскирует ИНН, СНИЛС, реквизиты карт, банковские счета. <strong>Модель видит обезличенный контекст.</strong> Сотрудник получает ответ с обратной подстановкой.</p>
+      <p>OpenAI-compatible API. SDK на Python, Node, Go, Java. Один корпоративный ключ вместо четырнадцати. Latency overhead p99 меньше <strong>30 миллисекунд</strong>.</p>
+    </div>
+
+    <div class="feature-visual reveal">
+      <p style="font-family: var(--mono); font-size: 11px; letter-spacing: 0.22em; color: var(--on-bg-dim); text-transform: uppercase; margin-bottom: 24px;">Routing · 5 layers</p>
+
+      <div class="dlp-stack">
+        <div class="dlp-layer">
+          <span class="l-name">Employees · Slack · 1С · Email</span>
+          <span class="l-tech">Source</span>
+        </div>
+        <div class="dlp-arrow">↓</div>
+        <div class="dlp-layer primary">
+          <span class="l-name">AI-DLP Gateway</span>
+          <span class="l-tech">intercept · classify · redact</span>
+        </div>
+        <div class="dlp-arrow">↓</div>
+        <div class="dlp-layer">
+          <span class="l-name">Model Router</span>
+          <span class="l-tech">14 providers</span>
+        </div>
+        <div class="dlp-arrow">↓</div>
+        <div class="dlp-layer primary">
+          <span class="l-name">Quality Gate</span>
+          <span class="l-tech">4 checks · 200ms</span>
+        </div>
+        <div class="dlp-arrow">↓</div>
+        <div class="dlp-layer">
+          <span class="l-name">Audit Trail</span>
+          <span class="l-tech">hash-chain · 5y</span>
+        </div>
+        <div class="dlp-arrow">↓</div>
+        <div class="dlp-layer">
+          <span class="l-name">ERP · CRM · Out</span>
+          <span class="l-tech">Destination</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ╔══════════════════════════════════════════════════════════════╗
+     ║  MARQUEE                                                     ║
+     ╚══════════════════════════════════════════════════════════════╝ -->
+<div class="marquee">
+  <div class="marquee-track">
+    <span class="marquee-item">14&nbsp;моделей</span>
+    <span class="marquee-item">5&nbsp;слоёв</span>
+    <span class="marquee-item">87% багов <span class="accent">поймано</span></span>
+    <span class="marquee-item">200ms latency</span>
+    <span class="marquee-item">5&nbsp;лет retention</span>
+    <span class="marquee-item">SOC 2 · ФЗ-152</span>
+    <!-- duplicate for seamless -->
+    <span class="marquee-item">14&nbsp;моделей</span>
+    <span class="marquee-item">5&nbsp;слоёв</span>
+    <span class="marquee-item">87% багов <span class="accent">поймано</span></span>
+    <span class="marquee-item">200ms latency</span>
+    <span class="marquee-item">5&nbsp;лет retention</span>
+    <span class="marquee-item">SOC 2 · ФЗ-152</span>
+  </div>
+</div>
+
+<!-- ╔══════════════════════════════════════════════════════════════╗
+     ║  AUDIT CTA                                                   ║
+     ╚══════════════════════════════════════════════════════════════╝ -->
+<section class="audit-cta" id="audit">
+  <p class="section-num reveal" style="color: var(--accent);">05 — Wedge</p>
+
+  <div class="audit-cta-grid reveal">
+    <h2 class="audit-headline">Не «попробуй бесплатно».<br>Платный аудит за&nbsp;<span class="accent">две недели.</span></h2>
+
+    <div class="audit-side">
+      <p>AI Operations Audit — двухнедельное исследование с&nbsp;passive Shadow AI discovery, интервью топов, тестом Quality Gate на&nbsp;100 семплах. На&nbsp;выходе&nbsp;— 30-страничный отчёт. Конверсия в&nbsp;платформу — 60–70%.</p>
+      <a href="#" class="audit-cta-btn">Заказать аудит</a>
+    </div>
+  </div>
+
+  <div class="audit-meta reveal">
+    <div class="audit-meta-cell">
+      <p class="lbl">Длительность</p>
+      <p class="val">2 недели</p>
+    </div>
+    <div class="audit-meta-cell">
+      <p class="lbl">Стоимость</p>
+      <p class="val">от&nbsp;1.2&nbsp;М&nbsp;₽</p>
+    </div>
+    <div class="audit-meta-cell">
+      <p class="lbl">Засчитывается</p>
+      <p class="val">в&nbsp;первый год</p>
+    </div>
+  </div>
+</section>
+
+<!-- ╔══════════════════════════════════════════════════════════════╗
+     ║  TRUST                                                       ║
+     ╚══════════════════════════════════════════════════════════════╝ -->
+<section class="section">
+  <div class="reveal">
+    <p class="section-num">06 — Compliance</p>
+    <div class="pillars-head" style="margin-bottom: 0;">
+      <h2 class="pillars-title" style="color: var(--on-bg);">Готовы<br>к&nbsp;любому аудитору.</h2>
+      <p class="pillars-sub" style="color: var(--on-bg-mute);">Pre-mapped controls для семи стандартов. One-click отчёты для регулятора. Реестр российского ПО. Поставка через 44-ФЗ / 223-ФЗ.</p>
+    </div>
+  </div>
+
+  <div class="trust-grid reveal">
+    <div class="trust-cell">
+      <div class="icon">SOC&nbsp;2</div>
+      <div class="name">Type II</div>
+      <div class="stat">Audited</div>
+    </div>
+    <div class="trust-cell">
+      <div class="icon">ISO</div>
+      <div class="name">27001</div>
+      <div class="stat">Certified</div>
+    </div>
+    <div class="trust-cell">
+      <div class="icon">ISO</div>
+      <div class="name">27701</div>
+      <div class="stat">Certified</div>
+    </div>
+    <div class="trust-cell">
+      <div class="icon">ФЗ-152</div>
+      <div class="name">Уровень 1</div>
+      <div class="stat">Ready</div>
+    </div>
+    <div class="trust-cell">
+      <div class="icon">GDPR</div>
+      <div class="name">DPA</div>
+      <div class="stat">Ready</div>
+    </div>
+    <div class="trust-cell">
+      <div class="icon">PCI</div>
+      <div class="name">DSS L1</div>
+      <div class="stat">Attested</div>
+    </div>
+  </div>
+</section>
+
+<!-- ╔══════════════════════════════════════════════════════════════╗
+     ║  PRICING                                                     ║
+     ╚══════════════════════════════════════════════════════════════╝ -->
+<section class="section" id="pricing">
+  <div class="reveal">
+    <p class="section-num">07 — Цены</p>
+    <div class="pillars-head" style="margin-bottom: 0;">
+      <h2 class="pillars-title" style="color: var(--on-bg);">Три уровня.<br>Без бесплатного пилота.</h2>
+      <p class="pillars-sub" style="color: var(--on-bg-mute);">Pilot убивает premium-позиционирование. Заменяем на платный Audit — это и&nbsp;quasi-pilot, и&nbsp;отдельный SKU, и&nbsp;sales-актив одновременно.</p>
+    </div>
+  </div>
+
+  <div class="pricing-grid reveal-stagger">
+    <div class="tier">
+      <p class="tier-num">01 — Entry</p>
+      <p class="tier-name">Audit</p>
+      <p class="tier-aud">Двухнедельный engagement</p>
+      <p class="tier-price">от&nbsp;1.2 <small>М&nbsp;₽</small></p>
+      <p class="tier-cycle">Разовая · 14 дней</p>
+      <ul>
+        <li>Passive Shadow AI Discovery</li>
+        <li>5–7 интервью с топами</li>
+        <li>100-sample Quality Gate test</li>
+        <li>Risk surface map</li>
+        <li>30-страничный отчёт</li>
+      </ul>
+      <a href="#" class="tier-cta">Заказать</a>
+    </div>
+
+    <div class="tier featured">
+      <p class="tier-num">02 — Core</p>
+      <p class="tier-name">RoleFlow</p>
+      <p class="tier-aud">До 500 seats · CISO budget</p>
+      <p class="tier-price">от&nbsp;4.9 <small>М&nbsp;₽ / год</small></p>
+      <p class="tier-cycle">Annual · auto-renew</p>
+      <ul>
+        <li>AI-DLP Gateway · 14&nbsp;моделей</li>
+        <li>Quality Gate · 4&nbsp;проверки</li>
+        <li>Audit Trail · 5&nbsp;лет retention</li>
+        <li>RBAC через AD/Okta</li>
+        <li>SOC 2 / ФЗ-152 reports</li>
+        <li>SLA 99.9% · saport 4ч</li>
+      </ul>
+      <a href="#" class="tier-cta">Связаться</a>
+    </div>
+
+    <div class="tier">
+      <p class="tier-num">03 — Enterprise</p>
+      <p class="tier-name">Enterprise+</p>
+      <p class="tier-aud">200+ seats · банки · телеком · гос</p>
+      <p class="tier-price">от&nbsp;19.9 <small>М&nbsp;₽ / год</small></p>
+      <p class="tier-cycle">Annual · договорная</p>
+      <ul>
+        <li>Всё из Core</li>
+        <li>On-prem · Helm · air-gapped</li>
+        <li>Custom rules · YARA / Rego</li>
+        <li>Dedicated CSE · phone 24/7</li>
+        <li>White-label console</li>
+        <li>1С · Битрикс · Диадок · СБИС</li>
+      </ul>
+      <a href="#" class="tier-cta">Договорная</a>
+    </div>
+  </div>
+</section>
+
+<!-- ╔══════════════════════════════════════════════════════════════╗
+     ║  FAQ                                                         ║
+     ╚══════════════════════════════════════════════════════════════╝ -->
+<section class="section">
+  <div class="reveal">
+    <p class="section-num">08 — Часто спрашивают</p>
+    <h2 class="pillars-title" style="color: var(--on-bg); max-width: 900px;">Вопросы. И&nbsp;ответы.</h2>
+  </div>
+
+  <div class="faq reveal">
+    <details>
+      <summary>RoleFlow видит содержимое промпта? Это конфиденциальные данные.</summary>
+      <p>Да, проверка содержимого — основа DLP и Quality Gate. Три режима: <strong>Hash-only</strong> (только метаданные); <strong>Encrypted-classify</strong> (содержимое расшифровывается только в HSM-зоне, удаляется сразу после classification); <strong>Full retention</strong> (для регулируемых индустрий, 5 лет в S3-WORM). По умолчанию — Encrypted-classify.</p>
+    </details>
+    <details>
+      <summary>Что произойдёт, если RoleFlow упадёт? AI перестанет работать у всех?</summary>
+      <p>Нет. Gateway работает в режиме <strong>fail-open</strong> для разрешённых ролей: если control plane недоступен больше 30 секунд, запросы идут напрямую в провайдер с пометкой «degraded mode». Audit-лог пишется локально и синхронизируется при восстановлении. Configurable: для критических ролей (FIN, CRIT) можно включить fail-closed.</p>
+    </details>
+    <details>
+      <summary>Это on-premise или SaaS? Мы в банке — данные не должны покидать РФ.</summary>
+      <p>Оба. SaaS-инстанс — Yandex Cloud (Москва, ФЗ-152 уровень 1). On-prem — Helm-chart для Kubernetes 1.28+, собранный для air-gapped установок. Минимум: 4 vCPU, 8GB RAM, PostgreSQL 14, S3-compatible storage. Air-gapped поддерживается полностью.</p>
+    </details>
+    <details>
+      <summary>Сколько занимает внедрение? У нас 5000 сотрудников.</summary>
+      <p>Поэтапно. <strong>14 дней</strong> — Discovery (Shadow AI map). <strong>3–4 недели</strong> — Gateway active по отделам + первые playbooks. <strong>6–8 недель</strong> — полный roll-out, первые ROI-цифры. <strong>12 недель</strong> — SOC 2 audit-ready. На enterprise-тарифе ведёт customer success engineer.</p>
+    </details>
+    <details>
+      <summary>Quality Gate реально ловит галлюцинации? Как это работает?</summary>
+      <p>Четыре проверки на каждый ответ AI: <strong>Hallucination check</strong> (cross-model review), <strong>Citation check</strong> (все цифры/ссылки сверяются с приложенным контекстом), <strong>Tone check</strong> (embedding-similarity к корпоративному tone-of-voice), <strong>Factual rules</strong> (кастомные YARA-правила). При confidence ниже 0.85 — эскалация старшему. Точность на пилотах: 87% багов поймано, 4% false positives.</p>
+    </details>
+    <details>
+      <summary>Productivity Analytics — это слежка за сотрудниками? Как с GDPR?</summary>
+      <p>Нет, это <strong>не</strong> per-employee монитор. Все метрики работают на уровне ролей и команд (минимум 5 человек). Privacy-by-design: per-user данные доступны только сотруднику и его супер-админу. Соответствует GDPR Article 22 (no automated decision making about individuals) и ФЗ-152 (минимизация ПДн).</p>
+    </details>
+    <details>
+      <summary>Можно купить через тендер / 44-ФЗ?</summary>
+      <p>Да. RoleFlow зарегистрирован в Едином реестре российского ПО. Поставка через 44-ФЗ / 223-ФЗ. Оплата по счёту, КС-2/КС-3, акт + документы с НДС. Юр. лицо — ООО «Сайлар Групп», ИНН по запросу.</p>
+    </details>
+  </div>
+</section>
+
+<!-- ╔══════════════════════════════════════════════════════════════╗
+     ║  FINAL CTA                                                   ║
+     ╚══════════════════════════════════════════════════════════════╝ -->
+<section class="final-cta">
+  <h2 class="reveal">Готовы увидеть<br>как ваша команда<br>работает с&nbsp;<span class="accent">AI?</span></h2>
+
+  <div class="final-cta-actions reveal">
+    <a href="#" class="final-btn primary">Заказать аудит</a>
+    <a href="#" class="final-btn ghost">Связаться с продажами</a>
+  </div>
+</section>
+
+<!-- ╔══════════════════════════════════════════════════════════════╗
+     ║  FOOTER                                                      ║
+     ╚══════════════════════════════════════════════════════════════╝ -->
+<footer class="footer">
+  <div class="footer-wordmark">RoleFlow<span class="ai">AI</span></div>
+
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <p>Secure AI Operations Layer для крупного бизнеса. Защищённый AI-контур, который останавливает утечки, ловит микробаги и&nbsp;ускоряет процессы. Часть SYLAR Group.</p>
+    </div>
+
+    <div class="footer-col">
+      <h4>Платформа</h4>
+      <ul>
+        <li><a href="#">AI-DLP Gateway</a></li>
+        <li><a href="#">Quality Gate</a></li>
+        <li><a href="#">Audit Trail</a></li>
+        <li><a href="#">RBAC &amp; Compliance</a></li>
+        <li><a href="#">Integrations</a></li>
+      </ul>
+    </div>
+
+    <div class="footer-col">
+      <h4>Документы</h4>
+      <ul>
+        <li><a href="#">Trust Center</a></li>
+        <li><a href="#">SOC 2 Report</a></li>
+        <li><a href="#">ФЗ-152 Справка</a></li>
+        <li><a href="#">DPA · GDPR</a></li>
+        <li><a href="#">Status / Uptime</a></li>
+      </ul>
+    </div>
+
+    <div class="footer-col">
+      <h4>Компания</h4>
+      <ul>
+        <li><a href="#">О SYLAR Group</a></li>
+        <li><a href="#">Customer Stories</a></li>
+        <li><a href="#">Карьера</a></li>
+        <li><a href="#">Press</a></li>
+        <li><a href="#">Контакты</a></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="footer-bottom">
+    <span>© RoleFlow AI · SYLAR · MMXXVI</span>
+    <span>Реестр российского ПО · ФЗ-152</span>
+    <span>Forged by SYL4R</span>
+  </div>
+</footer>
+
+<script>
+// Nav scroll state
+const nav = document.getElementById('nav');
+let lastY = 0;
+window.addEventListener('scroll', () => {
+  const y = window.scrollY;
+  if (y > 40) nav.classList.add('scrolled');
+  else nav.classList.remove('scrolled');
+  lastY = y;
+}, { passive: true });
+
+// Reveal on scroll
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('in');
+    }
+  });
+}, { threshold: 0.12, rootMargin: '0px 0px -80px 0px' });
+
+document.querySelectorAll('.reveal, .reveal-stagger').forEach(el => observer.observe(el));
+
+// Magnetic CTA buttons
+document.querySelectorAll('.btn-primary, .audit-cta-btn, .final-btn.primary, .nav-cta').forEach(btn => {
+  btn.addEventListener('mousemove', (e) => {
+    const rect = btn.getBoundingClientRect();
+    const x = e.clientX - rect.left - rect.width / 2;
+    const y = e.clientY - rect.top - rect.height / 2;
+    btn.style.transform = `translate(${x * 0.18}px, ${y * 0.25}px)`;
+  });
+  btn.addEventListener('mouseleave', () => {
+    btn.style.transform = '';
+  });
+});
+
+// Smooth reveal of pillar arrows on hover (already CSS-driven)
+</script>
+</body>
+</html>

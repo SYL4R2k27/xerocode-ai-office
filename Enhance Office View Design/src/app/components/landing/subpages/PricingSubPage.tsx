@@ -48,8 +48,7 @@ export function PricingSubPage({ onBack, onCTA, onSelectPlan }: Props) {
       <SubPageHero
         num="01"
         title={<>Тари<em style={{ color: "var(--amber-500)", fontStyle: "italic", fontWeight: 400 }}>фы.</em></>}
-        subtitle="Free + BYOK = ∞ всегда. Платные тарифы — токены платных моделей по cost-tier. Маржа 35-39%, прозрачно."
-        tag={{ icon: <Sparkles size={12} />, label: "6 тарифов · 35-39% маржа", accent: "var(--violet-500)" }}
+        subtitle="Free + BYOK = ∞ всегда. Платные тарифы — токены платных моделей по cost-tier. Прозрачно и без скрытых лимитов."
         onBack={onBack}
       />
 

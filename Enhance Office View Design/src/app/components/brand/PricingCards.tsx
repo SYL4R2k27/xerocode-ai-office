@@ -157,26 +157,6 @@ export function PricingCards({ currentPlan, onSelect, yearly = false }: PricingC
               {plan.yearlyDiscount > 0 && ` · −${plan.yearlyDiscount}% год`}
             </p>
 
-            {/* Margin badge */}
-            {plan.marginPercent > 0 && (
-              <span
-                style={{
-                  fontFamily: "var(--font-mono)",
-                  fontSize: 9,
-                  letterSpacing: "0.15em",
-                  color: "var(--aurora)",
-                  background: "rgba(34,197,94,0.1)",
-                  padding: "4px 8px",
-                  borderRadius: "var(--radius-full)",
-                  textTransform: "uppercase",
-                  alignSelf: "flex-start",
-                  marginBottom: 16,
-                }}
-              >
-                ✓ Margin {plan.marginPercent}%
-              </span>
-            )}
-
             {/* Features */}
             <ul
               style={{

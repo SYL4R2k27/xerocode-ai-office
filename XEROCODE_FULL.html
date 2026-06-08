@@ -1,0 +1,2908 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>XeroCode — Full Design System · Brand · Landing · Application</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ╔══════════════════════════════════════════════════════════════╗
+   ║   XEROCODE · Full Design System · v 3.0                      ║
+   ║   Part I: Brand · Part II: Landing · Part III: App Screens   ║
+   ║   Common DNA with SYLAR · RoleFlow                           ║
+   ╚══════════════════════════════════════════════════════════════╝ */
+
+:root {
+  /* Surfaces */
+  --bg:        #0A0A0B;
+  --bg-soft:   #131316;
+  --bg-tile:   #151519;
+  --cream:     #F4EFE3;
+  --cream-warm:#EDE5D2;
+
+  /* Text */
+  --on-bg:     #F4EFE3;
+  --on-bg-mute:#A8A8AC;
+  --on-bg-dim: #6E6E72;
+  --on-cream:  #0A0A0B;
+  --on-cream-mute: #5C5C62;
+  --on-cream-dim:  #8C8C92;
+
+  --line-bg:    rgba(244,239,227,0.10);
+  --line-bg-strong: rgba(244,239,227,0.20);
+  --line-cream: rgba(10,10,11,0.10);
+  --line-cream-strong: rgba(10,10,11,0.20);
+
+  /* XeroCode unique accent — Violet (отличает от RoleFlow Sienna) */
+  --xero:       #7C5CFF;
+  --xero-soft:  #9B82FF;
+  --xero-mute:  rgba(124,92,255,0.15);
+
+  /* Shared SYLAR-DNA accent */
+  --sylar:      #D4654A;
+
+  /* Workspace colors (8 modules) */
+  --ws-chat:    #7C5CFF;  /* violet */
+  --ws-text:    #06B6D4;  /* cyan */
+  --ws-images:  #EC4899;  /* pink */
+  --ws-code:    #10B981;  /* green */
+  --ws-video:   #F59E0B;  /* amber */
+  --ws-sound:   #8B5CF6;  /* purple */
+  --ws-corp:    #4F46E5;  /* indigo */
+  --ws-orchestr:#D4654A;  /* sienna */
+
+  --display: 'Space Grotesk', system-ui, sans-serif;
+  --body:    'Inter', system-ui, sans-serif;
+  --mono:    'JetBrains Mono', ui-monospace, monospace;
+
+  --ease:      cubic-bezier(0.22, 1, 0.36, 1);
+  --pad-x: clamp(20px, 4vw, 64px);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; }
+body {
+  background: var(--bg);
+  color: var(--on-bg);
+  font-family: var(--body);
+  font-size: 16px;
+  line-height: 1.55;
+  font-feature-settings: 'ss01', 'ss02', 'cv11';
+  font-variant-numeric: tabular-nums;
+  overflow-x: hidden;
+}
+::selection { background: var(--xero); color: var(--cream); }
+
+/* ── NAV ──────────────────────────────────────────────────────── */
+.nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  padding: 22px var(--pad-x);
+  display: flex; align-items: center; justify-content: space-between;
+  background: transparent;
+  transition: background 300ms var(--ease);
+}
+.nav.scrolled {
+  background: rgba(10,10,11,0.78);
+  backdrop-filter: blur(18px);
+  border-bottom: 1px solid var(--line-bg);
+}
+.nav-brand {
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 22px;
+  letter-spacing: -0.04em;
+  color: var(--on-bg);
+  text-decoration: none;
+  display: flex; align-items: center; gap: 10px;
+}
+.nav-brand .dot {
+  display: inline-block;
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--xero);
+}
+.nav-menu { display: flex; gap: 36px; font-size: 14px; font-weight: 500; }
+.nav-menu a { color: var(--on-bg); text-decoration: none; opacity: 0.78; transition: opacity 200ms; }
+.nav-menu a:hover { opacity: 1; }
+.nav-cta {
+  display: inline-flex; align-items: center; gap: 10px;
+  padding: 11px 20px;
+  background: var(--cream);
+  color: var(--on-cream);
+  font-size: 13px; font-weight: 500;
+  border: none; border-radius: 999px;
+  cursor: pointer;
+  transition: all 200ms var(--ease);
+  text-decoration: none;
+}
+.nav-cta:hover { background: var(--xero); color: var(--cream); transform: translateY(-1px); }
+.nav-cta::after { content: '↗'; font-size: 14px; transition: transform 200ms; }
+.nav-cta:hover::after { transform: translate(2px, -2px); }
+
+@media (max-width: 760px) { .nav-menu { display: none; } }
+
+/* ── HERO with karaoke reveal ────────────────────────────────── */
+.hero {
+  min-height: 230vh;
+  padding: 160px var(--pad-x) 0;
+  position: relative;
+}
+.hero-sticky {
+  position: sticky; top: 0;
+  height: 100vh;
+  display: flex; flex-direction: column;
+  justify-content: space-between;
+  padding: 60px 0 80px;
+}
+.hero-eyebrow {
+  font-family: var(--mono);
+  font-size: 11.5px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--xero);
+  display: flex; align-items: center; gap: 12px;
+}
+.hero-eyebrow::before {
+  content: '';
+  display: inline-block;
+  width: 32px; height: 1px;
+  background: var(--xero);
+}
+.hero-text {
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: clamp(28px, 4.4vw, 72px);
+  line-height: 1.16;
+  letter-spacing: -0.025em;
+  max-width: 1240px;
+  margin-top: 56px;
+}
+.hero-text .line { display: block; margin-bottom: 0.16em; }
+.hero-text .w {
+  display: inline-block;
+  color: var(--on-bg-dim);
+  opacity: 0.22;
+  transition: color 240ms var(--ease), opacity 240ms var(--ease);
+  margin-right: 0.28em;
+}
+.hero-text .w.lit { color: var(--on-bg); opacity: 1; }
+.hero-text .w.accent.lit { color: var(--xero); }
+
+.hero-bottom {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr 1fr;
+  gap: 56px;
+  align-items: end;
+}
+.hero-sub {
+  font-size: 16.5px;
+  line-height: 1.55;
+  color: var(--on-bg-mute);
+  max-width: 500px;
+}
+.hero-sub strong { color: var(--on-bg); font-weight: 500; }
+.hero-meta {
+  display: flex; flex-direction: column; gap: 3px;
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--on-bg-dim);
+}
+.hero-meta strong { color: var(--on-bg); font-weight: 500; }
+.hero-actions { align-self: end; justify-self: end; }
+.btn-primary {
+  display: inline-flex; align-items: center; gap: 12px;
+  padding: 18px 32px;
+  background: var(--xero);
+  color: var(--cream);
+  font-size: 14px; font-weight: 500;
+  border: none; border-radius: 999px;
+  cursor: pointer;
+  transition: all 200ms var(--ease);
+  text-decoration: none;
+}
+.btn-primary:hover { background: var(--xero-soft); transform: translateY(-2px); }
+.btn-primary::after { content: '→'; transition: transform 200ms; }
+.btn-primary:hover::after { transform: translateX(4px); }
+
+@media (max-width: 980px) {
+  .hero-bottom { grid-template-columns: 1fr; gap: 32px; }
+  .hero-actions { justify-self: start; }
+}
+
+/* ── SECTIONS ─────────────────────────────────────────────────── */
+.section { padding: 140px var(--pad-x); position: relative; }
+.section.cream { background: var(--cream); color: var(--on-cream); }
+.section-num {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--xero);
+  margin-bottom: 24px;
+  display: flex; align-items: center; gap: 12px;
+}
+.section-num::before {
+  content: '';
+  display: inline-block;
+  width: 24px; height: 1px;
+  background: var(--xero);
+}
+.section-head {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 60px;
+  align-items: end;
+  margin-bottom: 60px;
+}
+.section-title {
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: clamp(40px, 5vw, 80px);
+  line-height: 1.0;
+  letter-spacing: -0.03em;
+  color: var(--on-bg);
+}
+.cream .section-title { color: var(--on-cream); }
+.section-title .accent { color: var(--xero); }
+.section-sub {
+  font-size: 17px; line-height: 1.55;
+  color: var(--on-bg-mute);
+  max-width: 460px;
+  justify-self: end;
+}
+.cream .section-sub { color: var(--on-cream-mute); }
+
+@media (max-width: 980px) {
+  .section-head { grid-template-columns: 1fr; gap: 24px; }
+  .section-sub { justify-self: start; }
+}
+
+/* ── PART HEADER (large divider) ──────────────────────────────── */
+.part {
+  padding: 100px var(--pad-x) 80px;
+  border-top: 1px solid var(--line-bg-strong);
+  border-bottom: 1px solid var(--line-bg-strong);
+  background: var(--bg-soft);
+}
+.part-num {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--xero);
+  margin-bottom: 18px;
+}
+.part-name {
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: clamp(48px, 7vw, 116px);
+  line-height: 0.95;
+  letter-spacing: -0.04em;
+  color: var(--on-bg);
+  max-width: 1100px;
+}
+.part-name .accent { color: var(--xero); }
+.part-desc {
+  font-size: 17px;
+  color: var(--on-bg-mute);
+  max-width: 720px;
+  margin-top: 24px;
+  line-height: 1.6;
+}
+
+/* ── 8 WORKSPACES grid ───────────────────────────────────────── */
+.ws-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+  background: var(--line-cream-strong);
+  border: 1px solid var(--line-cream-strong);
+  margin-top: 40px;
+}
+.ws {
+  background: var(--cream);
+  padding: 28px 24px;
+  display: flex; flex-direction: column; gap: 14px;
+  position: relative;
+  min-height: 220px;
+  transition: background 200ms var(--ease);
+  cursor: pointer;
+}
+.ws:hover { background: var(--cream-warm); }
+.ws-icon {
+  width: 40px; height: 40px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--cream);
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 18px;
+  letter-spacing: -0.02em;
+}
+.ws.chat   .ws-icon { background: var(--ws-chat); }
+.ws.text   .ws-icon { background: var(--ws-text); }
+.ws.images .ws-icon { background: var(--ws-images); }
+.ws.code   .ws-icon { background: var(--ws-code); }
+.ws.video  .ws-icon { background: var(--ws-video); }
+.ws.sound  .ws-icon { background: var(--ws-sound); }
+.ws.corp   .ws-icon { background: var(--ws-corp); }
+.ws.orch   .ws-icon { background: var(--ws-orchestr); }
+.ws-name {
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: 22px;
+  letter-spacing: -0.02em;
+  color: var(--on-cream);
+}
+.ws-desc {
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--on-cream-mute);
+  margin-top: auto;
+}
+.ws-tag {
+  font-family: var(--mono);
+  font-size: 9.5px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--on-cream-dim);
+}
+
+@media (max-width: 980px) {
+  .ws-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 540px) {
+  .ws-grid { grid-template-columns: 1fr; }
+}
+
+/* ── COLOR PALETTE ────────────────────────────────────────────── */
+.palette {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 1px;
+  background: var(--line-bg);
+  border: 1px solid var(--line-bg);
+  margin-top: 32px;
+}
+.swatch {
+  padding: 28px 22px 32px;
+  min-height: 160px;
+  display: flex; flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+}
+.swatch .name {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+.swatch .hex {
+  font-family: var(--mono);
+  font-size: 11.5px;
+  font-weight: 500;
+}
+.swatch .role {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  opacity: 0.75;
+  margin-top: 4px;
+}
+.swatch.dark { background: var(--bg); color: var(--on-bg); }
+.swatch.dark .name { color: var(--xero); }
+.swatch.cream { background: var(--cream); color: var(--on-cream); }
+.swatch.cream .name { color: var(--xero); }
+.swatch.xero { background: var(--xero); color: var(--cream); }
+.swatch.xero .name, .swatch.xero .hex, .swatch.xero .role { color: var(--cream); }
+.swatch.sylar { background: var(--sylar); color: var(--cream); }
+.swatch.sylar .name, .swatch.sylar .hex, .swatch.sylar .role { color: var(--cream); }
+.swatch.steel { background: #6E6E72; color: var(--cream); }
+.swatch.steel .name, .swatch.steel .hex, .swatch.steel .role { color: var(--cream); }
+.swatch.line { background: rgba(244,239,227,0.06); color: var(--on-bg); }
+
+@media (max-width: 980px) {
+  .palette { grid-template-columns: repeat(3, 1fr); }
+}
+
+/* ── TYPE SPECIMEN ────────────────────────────────────────────── */
+.type-row {
+  display: grid;
+  grid-template-columns: 120px 1fr 200px;
+  gap: 32px;
+  align-items: baseline;
+  padding: 28px 0;
+  border-bottom: 1px solid var(--line-bg);
+}
+.type-row .role-tag {
+  font-family: var(--mono); font-size: 10px;
+  letter-spacing: 0.22em; color: var(--xero);
+  text-transform: uppercase; font-weight: 500;
+}
+.type-row .sample { color: var(--on-bg); }
+.type-row .meta {
+  font-family: var(--mono); font-size: 10.5px;
+  color: var(--on-bg-mute); line-height: 1.7;
+}
+.type-row .meta b { color: var(--on-bg); font-weight: 500; }
+
+@media (max-width: 760px) { .type-row { grid-template-columns: 1fr; gap: 12px; } }
+
+/* ╔══════════════════════════════════════════════════════════════╗
+   ║   APP SCREEN — browser-frame mockups                         ║
+   ╚══════════════════════════════════════════════════════════════╝ */
+
+.screen-wrap {
+  margin-top: 60px;
+}
+.screen-meta {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 28px;
+  align-items: end;
+  padding-bottom: 22px;
+  margin-bottom: 22px;
+  border-bottom: 1px solid var(--line-bg);
+}
+.screen-num {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  color: var(--xero);
+  font-weight: 600;
+}
+.screen-title {
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: clamp(24px, 3vw, 36px);
+  letter-spacing: -0.025em;
+  color: var(--on-bg);
+}
+.screen-tag {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--on-bg-dim);
+  text-align: right;
+}
+
+.browser {
+  background: var(--bg-soft);
+  border: 1px solid var(--line-bg-strong);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 30px 80px rgba(0,0,0,0.4);
+  transition: transform 400ms var(--ease);
+  margin-bottom: 80px;
+}
+.browser:hover { transform: translateY(-4px); }
+.browser-bar {
+  padding: 14px 18px;
+  display: flex; align-items: center; gap: 14px;
+  background: var(--bg-tile);
+  border-bottom: 1px solid var(--line-bg);
+}
+.browser-bar .dots { display: flex; gap: 6px; }
+.browser-bar .dots span {
+  width: 11px; height: 11px; border-radius: 50%;
+}
+.browser-bar .dots span:nth-child(1) { background: #FF5F57; }
+.browser-bar .dots span:nth-child(2) { background: #FEBC2E; }
+.browser-bar .dots span:nth-child(3) { background: #28C840; }
+.browser-bar .url {
+  flex: 1; padding: 6px 14px;
+  background: var(--bg);
+  border: 1px solid var(--line-bg);
+  border-radius: 6px;
+  font-family: var(--mono); font-size: 12px;
+  color: var(--on-bg-mute);
+  text-align: center;
+}
+.browser-body {
+  background: var(--bg);
+  min-height: 600px;
+  position: relative;
+}
+.browser-body.cream-screen { background: var(--cream); color: var(--on-cream); }
+
+/* ── App layout: sidebar + main ───────────────────────────────── */
+.app-layout {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  min-height: 600px;
+}
+.app-side {
+  background: var(--bg-soft);
+  padding: 24px 14px;
+  border-right: 1px solid var(--line-bg);
+  font-size: 13.5px;
+  display: flex; flex-direction: column;
+}
+.app-side-brand {
+  display: flex; align-items: center; gap: 10px;
+  font-family: var(--display); font-weight: 600;
+  font-size: 18px; letter-spacing: -0.02em;
+  margin-bottom: 26px;
+  padding: 0 8px;
+}
+.app-side-brand .dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--xero);
+}
+.app-side-section {
+  font-family: var(--mono); font-size: 9.5px;
+  letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--on-bg-dim);
+  margin: 18px 8px 8px;
+}
+.app-side ul { list-style: none; }
+.app-side li {
+  padding: 8px 12px;
+  color: var(--on-bg-mute);
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: space-between;
+  transition: all 180ms var(--ease);
+  margin-bottom: 1px;
+}
+.app-side li .ico {
+  width: 16px; height: 16px;
+  border-radius: 4px;
+  background: currentColor;
+  opacity: 0.5;
+  margin-right: 10px;
+  flex-shrink: 0;
+  display: inline-block;
+}
+.app-side li:hover { background: rgba(244,239,227,0.05); color: var(--on-bg); }
+.app-side li.active {
+  background: var(--xero-mute);
+  color: var(--xero);
+}
+.app-side li.active .ico { background: var(--xero); opacity: 1; }
+.app-side li .num {
+  font-family: var(--mono); font-size: 9.5px;
+  background: var(--xero); color: var(--cream);
+  padding: 1px 6px; border-radius: 999px;
+}
+.app-side-footer {
+  margin-top: auto;
+  padding-top: 18px;
+  border-top: 1px solid var(--line-bg);
+  display: flex; align-items: center; gap: 10px;
+  padding: 14px 8px 0;
+}
+.app-side-footer .av {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--xero), var(--xero-soft));
+  color: var(--cream);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--display); font-weight: 600;
+  font-size: 12px;
+}
+.app-side-footer .who {
+  font-size: 12.5px; color: var(--on-bg);
+}
+.app-side-footer .who .role {
+  font-family: var(--mono); font-size: 9.5px;
+  color: var(--on-bg-dim); letter-spacing: 0.15em;
+  text-transform: uppercase;
+  margin-top: 1px;
+}
+
+.app-main {
+  padding: 28px 36px;
+  overflow: hidden;
+}
+
+/* App headers */
+.app-toolbar {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 22px;
+}
+.app-toolbar h2 {
+  font-family: var(--display); font-weight: 500;
+  font-size: 24px; letter-spacing: -0.02em;
+  color: var(--on-bg);
+}
+.app-toolbar-right {
+  display: flex; gap: 8px;
+}
+.btn-mini {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 12px;
+  font-family: var(--mono); font-size: 10.5px;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  border: 1px solid var(--line-bg);
+  background: transparent;
+  color: var(--on-bg-mute);
+  border-radius: 6px;
+  cursor: pointer;
+}
+.btn-mini.primary { background: var(--xero); border-color: var(--xero); color: var(--cream); }
+.btn-mini:hover { border-color: var(--xero); color: var(--on-bg); }
+
+/* ── SCREEN 01: AUTH ──────────────────────────────────────────── */
+.auth-frame {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  min-height: 600px;
+}
+.auth-left {
+  padding: 60px 56px;
+  background: var(--bg);
+  display: flex; flex-direction: column; justify-content: space-between;
+}
+.auth-brand {
+  display: flex; align-items: center; gap: 10px;
+  font-family: var(--display); font-weight: 600;
+  font-size: 22px; letter-spacing: -0.04em;
+}
+.auth-brand .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--xero); }
+.auth-quote {
+  font-family: var(--display);
+  font-style: normal;
+  font-weight: 500;
+  font-size: 30px;
+  line-height: 1.25;
+  letter-spacing: -0.025em;
+  color: var(--on-bg);
+  max-width: 420px;
+}
+.auth-quote .accent { color: var(--xero); }
+.auth-meta {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--on-bg-dim);
+  display: flex; gap: 18px;
+}
+.auth-right {
+  padding: 60px 56px;
+  background: var(--bg-soft);
+  display: flex; flex-direction: column; justify-content: center;
+}
+.auth-form {
+  max-width: 360px;
+  width: 100%;
+  margin: 0 auto;
+}
+.auth-form .lab {
+  font-family: var(--mono); font-size: 10px;
+  letter-spacing: 0.22em; color: var(--xero);
+  text-transform: uppercase; font-weight: 600;
+  margin-bottom: 8px;
+}
+.auth-form h2 {
+  font-family: var(--display); font-weight: 500;
+  font-size: 32px; letter-spacing: -0.025em;
+  color: var(--on-bg); margin-bottom: 32px;
+}
+.auth-input {
+  display: block; width: 100%;
+  padding: 14px 16px;
+  background: var(--bg);
+  border: 1px solid var(--line-bg-strong);
+  border-radius: 8px;
+  color: var(--on-bg);
+  font-family: var(--body); font-size: 14px;
+  margin-bottom: 12px;
+  font-variant-numeric: tabular-nums;
+}
+.auth-input::placeholder { color: var(--on-bg-dim); }
+.auth-btn {
+  display: block; width: 100%;
+  padding: 14px;
+  background: var(--xero);
+  color: var(--cream);
+  border: none; border-radius: 8px;
+  font-family: var(--body); font-size: 14px; font-weight: 500;
+  cursor: pointer;
+  margin-top: 8px;
+}
+.auth-divider {
+  display: flex; align-items: center; gap: 12px;
+  margin: 24px 0;
+  font-family: var(--mono); font-size: 10px;
+  letter-spacing: 0.22em; text-transform: uppercase;
+  color: var(--on-bg-dim);
+}
+.auth-divider::before, .auth-divider::after {
+  content: ''; flex: 1; height: 1px; background: var(--line-bg);
+}
+.auth-oauth {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+}
+.auth-oauth button {
+  padding: 12px;
+  background: var(--bg);
+  border: 1px solid var(--line-bg-strong);
+  border-radius: 8px;
+  color: var(--on-bg);
+  font-family: var(--body); font-size: 13px;
+  cursor: pointer;
+}
+.auth-bottom {
+  text-align: center;
+  margin-top: 28px;
+  font-size: 13px;
+  color: var(--on-bg-mute);
+}
+.auth-bottom a { color: var(--xero); text-decoration: none; }
+
+@media (max-width: 760px) {
+  .auth-frame { grid-template-columns: 1fr; }
+  .auth-left, .auth-right { padding: 40px 28px; }
+}
+
+/* ── SCREEN: Dashboard ────────────────────────────────────────── */
+.dash-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 24px;
+}
+.metric {
+  background: var(--bg-soft);
+  border: 1px solid var(--line-bg);
+  border-radius: 10px;
+  padding: 18px 20px;
+}
+.metric .lab {
+  font-family: var(--mono); font-size: 9.5px;
+  letter-spacing: 0.22em; text-transform: uppercase;
+  color: var(--on-bg-dim);
+  margin-bottom: 8px;
+}
+.metric .val {
+  font-family: var(--display); font-weight: 500;
+  font-size: 28px; letter-spacing: -0.025em;
+  color: var(--on-bg); line-height: 1;
+}
+.metric .val .accent { color: var(--xero); }
+.metric .delta {
+  font-family: var(--mono); font-size: 10.5px;
+  margin-top: 6px; color: var(--on-bg-mute);
+}
+.metric .delta.up { color: #10B981; }
+
+.dash-row {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 12px;
+}
+.dash-block {
+  background: var(--bg-soft);
+  border: 1px solid var(--line-bg);
+  border-radius: 10px;
+  padding: 20px 22px;
+}
+.dash-block-head {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 14px;
+}
+.dash-block h3 {
+  font-family: var(--display); font-weight: 500;
+  font-size: 16px; color: var(--on-bg);
+  letter-spacing: -0.015em;
+}
+.dash-block-head .more {
+  font-family: var(--mono); font-size: 10px;
+  letter-spacing: 0.22em; color: var(--on-bg-mute);
+  text-transform: uppercase; cursor: pointer;
+}
+.activity {
+  list-style: none;
+}
+.activity li {
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line-bg);
+  display: grid;
+  grid-template-columns: 70px 1fr auto;
+  gap: 12px; align-items: center;
+}
+.activity li:last-child { border-bottom: none; }
+.activity .ts {
+  font-family: var(--mono); font-size: 10.5px;
+  letter-spacing: 0.05em; color: var(--on-bg-dim);
+}
+.activity .what {
+  font-size: 13px; color: var(--on-bg);
+}
+.activity .what b { color: var(--xero); font-weight: 500; }
+.activity .meta {
+  font-family: var(--mono); font-size: 9.5px;
+  letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--on-bg-mute);
+}
+
+.quick-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+.quick {
+  background: var(--bg);
+  border: 1px solid var(--line-bg);
+  border-radius: 8px;
+  padding: 14px;
+  cursor: pointer;
+  transition: border-color 200ms;
+}
+.quick:hover { border-color: var(--xero); }
+.quick .ico {
+  width: 28px; height: 28px;
+  border-radius: 6px;
+  margin-bottom: 10px;
+}
+.quick .nm {
+  font-family: var(--display); font-weight: 500;
+  font-size: 14px; letter-spacing: -0.01em;
+  color: var(--on-bg);
+}
+.quick .desc {
+  font-family: var(--mono); font-size: 9.5px;
+  letter-spacing: 0.15em; color: var(--on-bg-dim);
+  margin-top: 4px; text-transform: uppercase;
+}
+
+/* ── SCREEN: Chat (V2) ────────────────────────────────────────── */
+.chat-grid {
+  display: grid;
+  grid-template-columns: 280px 1fr 280px;
+  height: 600px;
+}
+.chat-list {
+  background: var(--bg-soft);
+  border-right: 1px solid var(--line-bg);
+  padding: 20px 14px;
+  overflow-y: hidden;
+}
+.chat-list .search {
+  background: var(--bg);
+  border: 1px solid var(--line-bg);
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-family: var(--mono); font-size: 11.5px;
+  color: var(--on-bg-dim);
+  margin-bottom: 14px;
+}
+.chat-list ul { list-style: none; }
+.chat-list li {
+  padding: 12px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 180ms;
+  display: flex; flex-direction: column; gap: 4px;
+  margin-bottom: 2px;
+}
+.chat-list li:hover { background: rgba(244,239,227,0.04); }
+.chat-list li.active { background: var(--xero-mute); }
+.chat-list li .nm {
+  font-size: 13.5px; color: var(--on-bg);
+  font-weight: 500;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.chat-list li .pre {
+  font-size: 12px; color: var(--on-bg-mute);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.chat-list li .ts {
+  font-family: var(--mono); font-size: 9.5px;
+  color: var(--on-bg-dim); letter-spacing: 0.05em;
+}
+
+.chat-area {
+  background: var(--bg);
+  display: flex; flex-direction: column;
+}
+.chat-head {
+  padding: 18px 28px;
+  border-bottom: 1px solid var(--line-bg);
+  display: flex; justify-content: space-between; align-items: center;
+}
+.chat-head .title {
+  font-family: var(--display); font-weight: 500;
+  font-size: 17px; letter-spacing: -0.015em;
+  color: var(--on-bg);
+}
+.chat-head .meta {
+  font-family: var(--mono); font-size: 10.5px;
+  letter-spacing: 0.18em; color: var(--on-bg-dim);
+  text-transform: uppercase;
+  display: flex; gap: 14px;
+}
+.chat-messages {
+  flex: 1; padding: 24px 28px;
+  overflow-y: hidden;
+  display: flex; flex-direction: column; gap: 18px;
+}
+.msg {
+  display: flex; gap: 12px; max-width: 80%;
+}
+.msg.me { align-self: flex-end; flex-direction: row-reverse; }
+.msg .av {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--display); font-weight: 600;
+  font-size: 11px; color: var(--cream);
+}
+.msg .av.ai { background: var(--xero); }
+.msg .av.me { background: linear-gradient(135deg, var(--ws-text), var(--ws-images)); }
+.msg .body {
+  background: var(--bg-soft);
+  border: 1px solid var(--line-bg);
+  border-radius: 12px;
+  padding: 12px 16px;
+  font-size: 14px; line-height: 1.55;
+  color: var(--on-bg);
+}
+.msg.me .body {
+  background: var(--xero);
+  color: var(--cream);
+  border-color: var(--xero);
+}
+.msg .body code {
+  font-family: var(--mono); font-size: 12.5px;
+  background: var(--bg);
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid var(--line-bg);
+}
+.msg .body .src {
+  font-family: var(--mono); font-size: 10px;
+  letter-spacing: 0.18em; color: var(--xero);
+  text-transform: uppercase; margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--line-bg);
+}
+.chat-input {
+  padding: 16px 28px 20px;
+  border-top: 1px solid var(--line-bg);
+}
+.chat-input-box {
+  background: var(--bg-soft);
+  border: 1px solid var(--line-bg-strong);
+  border-radius: 12px;
+  padding: 14px 16px;
+  display: flex; align-items: center; gap: 12px;
+  font-family: var(--body); font-size: 13.5px;
+  color: var(--on-bg-dim);
+}
+.chat-input-box .send {
+  width: 32px; height: 32px;
+  border-radius: 8px;
+  background: var(--xero);
+  color: var(--cream);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px;
+  margin-left: auto;
+}
+
+.chat-side {
+  background: var(--bg-soft);
+  border-left: 1px solid var(--line-bg);
+  padding: 20px 18px;
+  overflow-y: hidden;
+}
+.chat-side h4 {
+  font-family: var(--mono); font-size: 10px;
+  letter-spacing: 0.22em; text-transform: uppercase;
+  color: var(--on-bg-dim); font-weight: 500;
+  margin-bottom: 12px;
+}
+.model-pick {
+  background: var(--bg);
+  border: 1px solid var(--line-bg);
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin-bottom: 6px;
+  cursor: pointer;
+  transition: border-color 180ms;
+}
+.model-pick:hover { border-color: var(--xero); }
+.model-pick.active { border-color: var(--xero); background: var(--xero-mute); }
+.model-pick .nm {
+  font-family: var(--display); font-weight: 500;
+  font-size: 13px; color: var(--on-bg);
+  letter-spacing: -0.01em;
+}
+.model-pick .meta {
+  font-family: var(--mono); font-size: 9.5px;
+  letter-spacing: 0.15em; color: var(--on-bg-dim);
+  text-transform: uppercase; margin-top: 3px;
+}
+.model-pick .meta .tier {
+  color: var(--xero); font-weight: 500;
+}
+
+/* ── SCREEN: Image Workspace ──────────────────────────────────── */
+.img-ws {
+  padding: 20px 28px;
+}
+.img-prompt {
+  background: var(--bg-soft);
+  border: 1px solid var(--line-bg-strong);
+  border-radius: 12px;
+  padding: 16px 18px;
+  margin-bottom: 18px;
+  display: flex; gap: 14px; align-items: center;
+  font-family: var(--body); font-size: 13.5px;
+  color: var(--on-bg);
+}
+.img-prompt .placeholder { color: var(--on-bg-dim); flex: 1; }
+.img-prompt .gen-btn {
+  padding: 8px 18px;
+  background: var(--xero);
+  color: var(--cream);
+  border: none; border-radius: 8px;
+  font-family: var(--body); font-size: 13px; font-weight: 500;
+  cursor: pointer;
+}
+.img-controls {
+  display: flex; gap: 8px;
+  margin-bottom: 22px;
+  flex-wrap: wrap;
+}
+.img-pill {
+  padding: 8px 14px;
+  border: 1px solid var(--line-bg);
+  border-radius: 999px;
+  font-family: var(--mono); font-size: 10.5px;
+  letter-spacing: 0.15em; text-transform: uppercase;
+  color: var(--on-bg-mute);
+  cursor: pointer;
+}
+.img-pill.active { border-color: var(--xero); color: var(--xero); background: var(--xero-mute); }
+
+.img-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+.img-card {
+  aspect-ratio: 1;
+  border-radius: 10px;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--line-bg);
+}
+.img-card .placeholder {
+  width: 100%; height: 100%;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--cream);
+  font-family: var(--display); font-weight: 500;
+  font-size: 28px; letter-spacing: -0.025em;
+}
+.img-card.c1 { background: linear-gradient(135deg, #7C5CFF, #EC4899); }
+.img-card.c2 { background: linear-gradient(135deg, #06B6D4, #10B981); }
+.img-card.c3 { background: linear-gradient(135deg, #F59E0B, #D4654A); }
+.img-card.c4 { background: linear-gradient(135deg, #8B5CF6, #4F46E5); }
+.img-card.c5 { background: linear-gradient(135deg, #EC4899, #F59E0B); }
+.img-card.c6 { background: linear-gradient(135deg, #4F46E5, #7C5CFF); }
+.img-card.c7 { background: linear-gradient(135deg, #10B981, #06B6D4); }
+.img-card.c8 { background: linear-gradient(135deg, #D4654A, #8B5CF6); }
+.img-card .meta {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  padding: 10px 14px;
+  background: rgba(10,10,11,0.6);
+  backdrop-filter: blur(8px);
+  font-family: var(--mono); font-size: 9.5px;
+  letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--cream);
+}
+
+/* ── SCREEN: Code Workspace ───────────────────────────────────── */
+.code-frame {
+  font-family: var(--mono);
+  font-size: 13px;
+  line-height: 1.7;
+  background: var(--bg);
+  border-radius: 10px;
+  border: 1px solid var(--line-bg);
+  margin-top: 16px;
+}
+.code-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--line-bg);
+  background: var(--bg-soft);
+}
+.code-tab {
+  padding: 10px 18px;
+  font-family: var(--mono); font-size: 11px;
+  color: var(--on-bg-mute);
+  border-right: 1px solid var(--line-bg);
+  cursor: pointer;
+}
+.code-tab.active { background: var(--bg); color: var(--on-bg); }
+.code-body {
+  padding: 18px 22px;
+  display: grid;
+  grid-template-columns: 30px 1fr;
+  gap: 16px;
+}
+.code-lines {
+  font-family: var(--mono); font-size: 12px;
+  color: var(--on-bg-dim);
+  text-align: right;
+  line-height: 1.7;
+}
+.code-content {
+  white-space: pre-wrap;
+  color: var(--on-bg);
+  font-family: var(--mono); font-size: 12.5px;
+  line-height: 1.7;
+}
+.code-content .k { color: var(--xero); }
+.code-content .s { color: #10B981; }
+.code-content .n { color: #F59E0B; }
+.code-content .c { color: var(--on-bg-dim); }
+.code-content .f { color: var(--ws-text); }
+
+/* ── SCREEN: Documents ────────────────────────────────────────── */
+.docs-grid {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  height: 600px;
+}
+.docs-list {
+  background: var(--bg-soft);
+  border-right: 1px solid var(--line-bg);
+  padding: 20px 14px;
+}
+.docs-list .head {
+  font-family: var(--mono); font-size: 10px;
+  letter-spacing: 0.22em; color: var(--on-bg-dim);
+  text-transform: uppercase; margin-bottom: 14px;
+  padding: 0 6px;
+}
+.doc-row {
+  padding: 12px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: grid;
+  grid-template-columns: 28px 1fr;
+  gap: 10px; align-items: start;
+  transition: background 180ms;
+  margin-bottom: 2px;
+}
+.doc-row:hover { background: rgba(244,239,227,0.04); }
+.doc-row.active { background: var(--xero-mute); }
+.doc-row .ico {
+  width: 22px; height: 28px;
+  background: var(--on-bg-mute);
+  border-radius: 3px;
+  position: relative;
+}
+.doc-row .ico::after {
+  content: '';
+  position: absolute; top: 0; right: 0;
+  width: 8px; height: 8px;
+  background: var(--bg-soft);
+  border-bottom-left-radius: 2px;
+}
+.doc-row.pdf .ico { background: #EF4444; }
+.doc-row.docx .ico { background: var(--ws-corp); }
+.doc-row.xlsx .ico { background: #10B981; }
+.doc-row.pptx .ico { background: #F59E0B; }
+.doc-row .nm {
+  font-size: 13px; color: var(--on-bg);
+  font-weight: 500;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.doc-row .meta {
+  font-family: var(--mono); font-size: 9.5px;
+  color: var(--on-bg-dim); letter-spacing: 0.05em;
+  margin-top: 2px;
+}
+.docs-view {
+  padding: 32px 40px;
+  background: var(--bg);
+  overflow-y: hidden;
+}
+.docs-view h1 {
+  font-family: var(--display); font-weight: 500;
+  font-size: 32px; letter-spacing: -0.025em;
+  color: var(--on-bg); margin-bottom: 8px;
+}
+.docs-view .sub {
+  font-family: var(--mono); font-size: 11px;
+  letter-spacing: 0.15em; color: var(--on-bg-dim);
+  text-transform: uppercase; margin-bottom: 28px;
+  padding-bottom: 18px; border-bottom: 1px solid var(--line-bg);
+}
+.docs-view h2 {
+  font-family: var(--display); font-weight: 500;
+  font-size: 18px; color: var(--on-bg);
+  margin: 22px 0 10px;
+  letter-spacing: -0.015em;
+}
+.docs-view p {
+  font-size: 14px; line-height: 1.65;
+  color: var(--on-bg-mute);
+  margin-bottom: 14px;
+  max-width: 600px;
+}
+.docs-view ul {
+  margin-left: 18px; margin-bottom: 16px;
+  font-size: 14px; color: var(--on-bg-mute); line-height: 1.7;
+}
+
+/* ── SCREEN: Settings ─────────────────────────────────────────── */
+.settings-grid {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  height: 600px;
+}
+.settings-side {
+  background: var(--bg-soft);
+  padding: 20px 14px;
+  border-right: 1px solid var(--line-bg);
+}
+.settings-side ul { list-style: none; }
+.settings-side li {
+  padding: 9px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px; color: var(--on-bg-mute);
+  transition: all 180ms;
+  margin-bottom: 1px;
+}
+.settings-side li:hover { background: rgba(244,239,227,0.04); color: var(--on-bg); }
+.settings-side li.active {
+  background: var(--xero-mute); color: var(--xero);
+}
+.settings-main {
+  padding: 32px 40px;
+  overflow-y: hidden;
+}
+.settings-main h1 {
+  font-family: var(--display); font-weight: 500;
+  font-size: 26px; letter-spacing: -0.02em;
+  color: var(--on-bg); margin-bottom: 6px;
+}
+.settings-main .sub {
+  font-size: 14px; color: var(--on-bg-mute);
+  margin-bottom: 32px;
+  padding-bottom: 18px; border-bottom: 1px solid var(--line-bg);
+}
+.settings-row {
+  padding: 18px 0;
+  border-bottom: 1px solid var(--line-bg);
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 24px; align-items: start;
+}
+.settings-row .info h3 {
+  font-family: var(--display); font-weight: 500;
+  font-size: 16px; letter-spacing: -0.015em;
+  color: var(--on-bg); margin-bottom: 4px;
+}
+.settings-row .info p {
+  font-size: 13.5px; color: var(--on-bg-mute);
+  max-width: 520px; line-height: 1.55;
+}
+.settings-row .info .meta {
+  font-family: var(--mono); font-size: 10px;
+  letter-spacing: 0.18em; color: var(--on-bg-dim);
+  text-transform: uppercase;
+  margin-top: 6px;
+}
+
+.toggle {
+  width: 40px; height: 22px;
+  background: var(--xero);
+  border-radius: 999px;
+  position: relative;
+  cursor: pointer;
+}
+.toggle::after {
+  content: '';
+  position: absolute; top: 3px; right: 3px;
+  width: 16px; height: 16px;
+  background: var(--cream);
+  border-radius: 50%;
+}
+.toggle.off { background: var(--line-bg-strong); }
+.toggle.off::after { right: auto; left: 3px; }
+
+.api-key {
+  background: var(--bg);
+  border: 1px solid var(--line-bg);
+  border-radius: 6px;
+  padding: 8px 14px;
+  font-family: var(--mono); font-size: 11.5px;
+  color: var(--on-bg-mute);
+  display: flex; gap: 12px; align-items: center;
+}
+.api-key .nm {
+  color: var(--on-bg); font-weight: 500;
+  letter-spacing: 0.05em;
+}
+.api-key .stat {
+  font-family: var(--mono); font-size: 9.5px;
+  letter-spacing: 0.18em; color: #10B981;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  background: rgba(16,185,129,0.1);
+  border: 1px solid rgba(16,185,129,0.3);
+  border-radius: 999px;
+}
+
+/* ── SCREEN: Knowledge ────────────────────────────────────────── */
+.kb-search {
+  background: var(--bg-soft);
+  border: 1px solid var(--line-bg-strong);
+  border-radius: 14px;
+  padding: 18px 22px;
+  display: flex; gap: 16px; align-items: center;
+  font-family: var(--body); font-size: 15px;
+  color: var(--on-bg-dim);
+  margin-bottom: 24px;
+}
+.kb-search .ico {
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  background: var(--xero);
+  flex-shrink: 0;
+}
+.kb-results {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+.kb-card {
+  background: var(--bg-soft);
+  border: 1px solid var(--line-bg);
+  border-radius: 10px;
+  padding: 18px 20px;
+  cursor: pointer;
+  transition: border-color 200ms;
+  display: flex; flex-direction: column; gap: 10px;
+  min-height: 160px;
+}
+.kb-card:hover { border-color: var(--xero); }
+.kb-card .src {
+  font-family: var(--mono); font-size: 9.5px;
+  letter-spacing: 0.22em; text-transform: uppercase;
+  color: var(--xero); font-weight: 600;
+}
+.kb-card h4 {
+  font-family: var(--display); font-weight: 500;
+  font-size: 16px; letter-spacing: -0.015em;
+  color: var(--on-bg);
+}
+.kb-card p {
+  font-size: 13px; line-height: 1.55;
+  color: var(--on-bg-mute);
+  flex: 1;
+}
+.kb-card .meta {
+  font-family: var(--mono); font-size: 9.5px;
+  letter-spacing: 0.15em; color: var(--on-bg-dim);
+  text-transform: uppercase;
+  margin-top: auto;
+  padding-top: 10px;
+  border-top: 1px solid var(--line-bg);
+}
+
+/* ── SCREEN: Orchestration (DAG) ──────────────────────────────── */
+.dag {
+  background: var(--bg);
+  border-radius: 12px;
+  border: 1px solid var(--line-bg);
+  padding: 32px;
+  position: relative;
+  min-height: 520px;
+  background-image:
+    linear-gradient(rgba(124,92,255,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(124,92,255,0.04) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+.node {
+  position: absolute;
+  background: var(--bg-soft);
+  border: 1px solid var(--line-bg-strong);
+  border-radius: 10px;
+  padding: 14px 18px;
+  min-width: 180px;
+  font-family: var(--mono); font-size: 11.5px;
+  z-index: 2;
+}
+.node.primary { border-color: var(--xero); background: var(--xero-mute); }
+.node .lab {
+  font-family: var(--mono); font-size: 9px;
+  letter-spacing: 0.22em; color: var(--xero);
+  text-transform: uppercase; font-weight: 600;
+  margin-bottom: 6px;
+}
+.node .nm {
+  font-family: var(--display); font-weight: 500;
+  font-size: 14px; letter-spacing: -0.01em;
+  color: var(--on-bg);
+}
+.node .meta {
+  font-family: var(--mono); font-size: 9.5px;
+  color: var(--on-bg-dim); letter-spacing: 0.05em;
+  margin-top: 4px;
+}
+.edge {
+  position: absolute;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--xero), transparent);
+  z-index: 1;
+}
+.edge::after {
+  content: '→';
+  position: absolute;
+  right: -2px; top: -10px;
+  color: var(--xero);
+  font-size: 14px;
+}
+
+/* ── SCREEN: Mobile Telegram ──────────────────────────────────── */
+.tg-frame {
+  width: 320px;
+  margin: 0 auto;
+  background: var(--bg);
+  border: 1px solid var(--line-bg-strong);
+  border-radius: 28px;
+  overflow: hidden;
+  box-shadow: 0 30px 80px rgba(0,0,0,0.4);
+}
+.tg-bar {
+  padding: 14px 18px;
+  background: var(--bg-soft);
+  border-bottom: 1px solid var(--line-bg);
+  display: flex; align-items: center; gap: 10px;
+}
+.tg-bar .av {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: var(--xero);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--display); font-weight: 600;
+  font-size: 14px; color: var(--cream);
+}
+.tg-bar .nm {
+  font-family: var(--display); font-weight: 500;
+  font-size: 15px; color: var(--on-bg); letter-spacing: -0.01em;
+}
+.tg-bar .stat {
+  font-family: var(--mono); font-size: 9.5px;
+  color: var(--xero); letter-spacing: 0.15em;
+}
+.tg-msgs {
+  padding: 16px;
+  display: flex; flex-direction: column; gap: 12px;
+  min-height: 360px;
+  background: linear-gradient(135deg, rgba(124,92,255,0.04), transparent);
+}
+.tg-msg {
+  max-width: 80%;
+  padding: 10px 14px;
+  border-radius: 14px;
+  font-size: 13px; line-height: 1.45;
+}
+.tg-msg.bot {
+  background: var(--bg-soft);
+  color: var(--on-bg);
+  align-self: flex-start;
+  border-bottom-left-radius: 4px;
+}
+.tg-msg.me {
+  background: var(--xero);
+  color: var(--cream);
+  align-self: flex-end;
+  border-bottom-right-radius: 4px;
+}
+.tg-input {
+  padding: 10px 14px;
+  background: var(--bg-soft);
+  border-top: 1px solid var(--line-bg);
+  display: flex; gap: 10px; align-items: center;
+}
+.tg-input .field {
+  flex: 1;
+  padding: 8px 14px;
+  background: var(--bg);
+  border: 1px solid var(--line-bg);
+  border-radius: 999px;
+  font-family: var(--body); font-size: 13px;
+  color: var(--on-bg-dim);
+}
+.tg-input .send {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: var(--xero);
+  color: var(--cream);
+  display: flex; align-items: center; justify-content: center;
+}
+
+/* ── REVEAL ───────────────────────────────────────────────────── */
+.reveal { opacity: 0; transform: translateY(40px); transition: opacity 1s var(--ease), transform 1s var(--ease); }
+.reveal.in { opacity: 1; transform: translateY(0); }
+
+/* ── FOOTER ───────────────────────────────────────────────────── */
+.footer { padding: 80px var(--pad-x) 40px; border-top: 1px solid var(--line-bg); }
+.footer-wordmark {
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: clamp(80px, 18vw, 280px);
+  line-height: 0.85;
+  letter-spacing: -0.05em;
+  color: var(--on-bg);
+  margin-bottom: 80px;
+  display: flex; align-items: baseline;
+}
+.footer-wordmark .dot {
+  width: 0.16em; height: 0.16em;
+  border-radius: 50%;
+  background: var(--xero);
+  margin-left: 0.06em;
+  transform: translateY(-0.04em);
+}
+.footer-bottom {
+  display: flex; justify-content: space-between;
+  font-family: var(--mono); font-size: 11px;
+  letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--on-bg-dim);
+  padding-top: 28px;
+  border-top: 1px solid var(--line-bg);
+}
+</style>
+</head>
+<body>
+
+<!-- ╔══════════════════════════════════════════════════════════════╗
+     ║  NAV                                                         ║
+     ╚══════════════════════════════════════════════════════════════╝ -->
+<nav class="nav" id="nav">
+  <a href="#" class="nav-brand">XeroCode<span class="dot"></span></a>
+  <div class="nav-menu">
+    <a href="#brand">Бренд</a>
+    <a href="#landing">Лендинг</a>
+    <a href="#screens">Экраны</a>
+    <a href="#system">Дизайн-система</a>
+  </div>
+  <a href="#" class="nav-cta">Полная документация</a>
+</nav>
+
+<!-- ╔══════════════════════════════════════════════════════════════╗
+     ║  HERO with karaoke                                           ║
+     ╚══════════════════════════════════════════════════════════════╝ -->
+<section class="hero" id="hero">
+  <div class="hero-sticky">
+    <div>
+      <p class="hero-eyebrow">XeroCode · Full design system v 3.0</p>
+      <h1 class="hero-text" id="hero-text">
+        <span class="line"><span class="w">XeroCode</span> <span class="w">—</span> <span class="w accent">AI-офис</span> <span class="w">для</span> <span class="w">людей,</span></span>
+        <span class="line"><span class="w">которые</span> <span class="w">делают</span> <span class="w">всё</span> <span class="w">сами.</span></span>
+        <span class="line"><span class="w">Один</span> <span class="w">продукт.</span> <span class="w accent">Восемь</span> <span class="w accent">воркспейсов.</span></span>
+        <span class="line"><span class="w">BYOK</span> <span class="w">на</span> <span class="w">всех</span> <span class="w">тарифах.</span></span>
+      </h1>
+    </div>
+
+    <div class="hero-bottom">
+      <p class="hero-sub">Чат с 14 моделями. Документы PPTX/DOCX/XLSX. Картинки, видео, звук. Код. Оркестрация. <strong>Один интерфейс. Российский стек.</strong></p>
+
+      <div class="hero-meta">
+        <span><strong>Часть SYLAR</strong></span>
+        <span>B2C · SMB</span>
+        <span style="margin-top: 10px;"><strong>Аудитория</strong></span>
+        <span>Solo · 1—50 seats</span>
+        <span style="margin-top: 10px;"><strong>Запуск</strong></span>
+        <span>Live · v 3.0</span>
+      </div>
+
+      <div class="hero-actions">
+        <a href="#screens" class="btn-primary">Все экраны</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ╔══════════════════════════════════════════════════════════════╗
+     ║  PART I — BRAND                                              ║
+     ╚══════════════════════════════════════════════════════════════╝ -->
+<section class="part" id="brand">
+  <p class="part-num">PART I — Brand</p>
+  <h2 class="part-name">Бренд.<br><span class="accent">Что такое XeroCode.</span></h2>
+  <p class="part-desc">Один из двух продуктов SYLAR. Целит в индивидуальных пользователей и SMB-команды до 50 seats. Главная задача — чтобы один человек мог сделать работу пятерых, не теряя времени и качества.</p>
+</section>
+
+<!-- 8 Workspaces ───────────────────────────────────────────────── -->
+<section class="section cream" id="workspaces">
+  <div class="reveal">
+    <p class="section-num" style="color: var(--on-cream-mute);">01 — Воркспейсы</p>
+    <div class="section-head">
+      <h2 class="section-title">Восемь модулей.<br>Один интерфейс.</h2>
+      <p class="section-sub">Каждый воркспейс — это полноценное рабочее пространство со своими моделями, шаблонами и набором инструментов. Переключаются за один клик. Контекст переносится.</p>
+    </div>
+  </div>
+
+  <div class="ws-grid">
+    <div class="ws chat">
+      <div class="ws-icon">CH</div>
+      <div>
+        <p class="ws-tag">▸ 01 · CHAT</p>
+        <p class="ws-name">Чат</p>
+      </div>
+      <p class="ws-desc">14 моделей через единый чат. История, ветки, branching. Поиск по диалогам.</p>
+    </div>
+    <div class="ws text">
+      <div class="ws-icon">TX</div>
+      <div>
+        <p class="ws-tag">▸ 02 · TEXT</p>
+        <p class="ws-name">Текст</p>
+      </div>
+      <p class="ws-desc">Длинные документы, статьи, посты. Прямой редактор, AI-помощник на лету.</p>
+    </div>
+    <div class="ws images">
+      <div class="ws-icon">IM</div>
+      <div>
+        <p class="ws-tag">▸ 03 · IMAGES</p>
+        <p class="ws-name">Картинки</p>
+      </div>
+      <p class="ws-desc">Pollinations free + gpt-image-2 для премиум. Стили, эталоны, batch.</p>
+    </div>
+    <div class="ws code">
+      <div class="ws-icon">CD</div>
+      <div>
+        <p class="ws-tag">▸ 04 · CODE</p>
+        <p class="ws-name">Код</p>
+      </div>
+      <p class="ws-desc">Multi-language. CLI с прямой авторизацией. PR/MR-helper. Code review.</p>
+    </div>
+    <div class="ws video">
+      <div class="ws-icon">VD</div>
+      <div>
+        <p class="ws-tag">▸ 05 · VIDEO</p>
+        <p class="ws-name">Видео</p>
+      </div>
+      <p class="ws-desc">Sora, Runway, Veo. Сценарии, монтаж, цветокор по brief'у.</p>
+    </div>
+    <div class="ws sound">
+      <div class="ws-icon">SD</div>
+      <div>
+        <p class="ws-tag">▸ 06 · SOUND</p>
+        <p class="ws-name">Звук</p>
+      </div>
+      <p class="ws-desc">Suno music, ElevenLabs voice, шумодав, mastering. До 3 минут.</p>
+    </div>
+    <div class="ws corp">
+      <div class="ws-icon">CR</div>
+      <div>
+        <p class="ws-tag">▸ 07 · CORP</p>
+        <p class="ws-name">Корпорат.</p>
+      </div>
+      <p class="ws-desc">CRM, Kanban, документооборот, HR-модуль. Только на Enterprise тарифе.</p>
+    </div>
+    <div class="ws orch">
+      <div class="ws-icon">OR</div>
+      <div>
+        <p class="ws-tag">▸ 08 · ORCHESTR.</p>
+        <p class="ws-name">Оркестрация</p>
+      </div>
+      <p class="ws-desc">DAG-сценарии, агенты, MCP server, parallel chains. Без кода.</p>
+    </div>
+  </div>
+</section>
+
+<!-- COLOR PALETTE ──────────────────────────────────────────────── -->
+<section class="section">
+  <div class="reveal">
+    <p class="section-num">02 — Палитра</p>
+    <div class="section-head">
+      <h2 class="section-title">Carbon, Cream,<br>Violet, восемь&nbsp;цветов&nbsp;воркспейсов.</h2>
+      <p class="section-sub">Базовая палитра общая с RoleFlow и SYLAR. Уникальный акцент XeroCode — Violet #7C5CFF. Sienna остаётся как DNA-маркер связи с зонтом.</p>
+    </div>
+  </div>
+
+  <div class="palette">
+    <div class="swatch dark">
+      <div><p class="name">Carbon</p><p class="hex">#0A0A0B</p></div>
+      <p class="role">основной фон</p>
+    </div>
+    <div class="swatch cream">
+      <div><p class="name">Cream</p><p class="hex">#F4EFE3</p></div>
+      <p class="role">контрастная поверхность</p>
+    </div>
+    <div class="swatch xero">
+      <div><p class="name">Violet · primary</p><p class="hex">#7C5CFF</p></div>
+      <p class="role">XeroCode accent</p>
+    </div>
+    <div class="swatch sylar">
+      <div><p class="name">Sienna · DNA</p><p class="hex">#D4654A</p></div>
+      <p class="role">SYLAR connection</p>
+    </div>
+    <div class="swatch steel">
+      <div><p class="name">Steel</p><p class="hex">#6E6E72</p></div>
+      <p class="role">labels · meta</p>
+    </div>
+    <div class="swatch line">
+      <div><p class="name">Line bg</p><p class="hex">rgba(.10)</p></div>
+      <p class="role">hairlines · borders</p>
+    </div>
+  </div>
+
+  <p style="font-family: var(--mono); font-size: 11px; letter-spacing: 0.22em; color: var(--xero); text-transform: uppercase; margin: 60px 0 20px;">▸ 8 цветов воркспейсов</p>
+  <div class="palette" style="grid-template-columns: repeat(8, 1fr);">
+    <div class="swatch" style="background: var(--ws-chat);"><div><p class="name" style="color: var(--cream);">Chat</p><p class="hex" style="color: var(--cream);">#7C5CFF</p></div></div>
+    <div class="swatch" style="background: var(--ws-text);"><div><p class="name" style="color: var(--cream);">Text</p><p class="hex" style="color: var(--cream);">#06B6D4</p></div></div>
+    <div class="swatch" style="background: var(--ws-images);"><div><p class="name" style="color: var(--cream);">Images</p><p class="hex" style="color: var(--cream);">#EC4899</p></div></div>
+    <div class="swatch" style="background: var(--ws-code);"><div><p class="name" style="color: var(--cream);">Code</p><p class="hex" style="color: var(--cream);">#10B981</p></div></div>
+    <div class="swatch" style="background: var(--ws-video);"><div><p class="name" style="color: var(--cream);">Video</p><p class="hex" style="color: var(--cream);">#F59E0B</p></div></div>
+    <div class="swatch" style="background: var(--ws-sound);"><div><p class="name" style="color: var(--cream);">Sound</p><p class="hex" style="color: var(--cream);">#8B5CF6</p></div></div>
+    <div class="swatch" style="background: var(--ws-corp);"><div><p class="name" style="color: var(--cream);">Corp</p><p class="hex" style="color: var(--cream);">#4F46E5</p></div></div>
+    <div class="swatch" style="background: var(--ws-orchestr);"><div><p class="name" style="color: var(--cream);">Orch.</p><p class="hex" style="color: var(--cream);">#D4654A</p></div></div>
+  </div>
+</section>
+
+<!-- TYPOGRAPHY ─────────────────────────────────────────────────── -->
+<section class="section">
+  <div class="reveal">
+    <p class="section-num">03 — Типографика</p>
+    <div class="section-head">
+      <h2 class="section-title">Space Grotesk.<br>Inter. JetBrains&nbsp;Mono.</h2>
+      <p class="section-sub">Та же типография что у SYLAR и RoleFlow. Принцип «одна семья — три размерности». Без serif, без italic, без эстетических украшений.</p>
+    </div>
+  </div>
+
+  <div class="reveal">
+    <div class="type-row">
+      <span class="role-tag">Hero</span>
+      <span class="sample" style="font-family: var(--display); font-weight: 500; font-size: 64px; letter-spacing: -0.04em; line-height: 0.95;">AI-офис<br>для&nbsp;<span style="color: var(--xero);">solo&nbsp;и&nbsp;команд</span></span>
+      <span class="meta">Space Grotesk 500<br>−4% tracking<br><b>Hero · headlines</b></span>
+    </div>
+    <div class="type-row">
+      <span class="role-tag">H2</span>
+      <span class="sample" style="font-family: var(--display); font-weight: 500; font-size: 40px; letter-spacing: -0.025em;">Восемь&nbsp;воркспейсов</span>
+      <span class="meta">Space Grotesk 500<br>40px / 1.05<br><b>Section opener</b></span>
+    </div>
+    <div class="type-row">
+      <span class="role-tag">Body</span>
+      <span class="sample" style="font-family: var(--body); font-size: 17px; line-height: 1.65; color: var(--on-bg-mute);">Чат с 14 моделями. Документы PPTX/DOCX/XLSX. Картинки, видео, звук, код. Один интерфейс.</span>
+      <span class="meta">Inter 400<br>17px / 1.65<br><b>Paragraphs</b></span>
+    </div>
+    <div class="type-row">
+      <span class="role-tag">Mono</span>
+      <span class="sample" style="font-family: var(--mono); font-size: 12px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--xero);">▸ WORKSPACE · CHAT · CLAUDE OPUS</span>
+      <span class="meta">JetBrains Mono 500<br>+22% tracking<br><b>Labels · technical</b></span>
+    </div>
+  </div>
+</section>
+
+<!-- ╔══════════════════════════════════════════════════════════════╗
+     ║  PART II — LANDING                                           ║
+     ╚══════════════════════════════════════════════════════════════╝ -->
+<section class="part" id="landing">
+  <p class="part-num">PART II — Landing</p>
+  <h2 class="part-name">Лендинг.<br><span class="accent">xerocode.ru</span></h2>
+  <p class="part-desc">Маркетинговый сайт продукта. Та же стилистика что у RoleFlow и SYLAR — Space Grotesk display, Carbon + Cream surfaces, karaoke scroll-reveal, browser-frame mockups. Уникальный акцент — Violet.</p>
+</section>
+
+<!-- LANDING — Hero mockup ──────────────────────────────────────── -->
+<section class="section">
+  <div class="reveal screen-wrap">
+    <div class="screen-meta">
+      <span class="screen-num">▸ L01</span>
+      <span class="screen-title">Главный экран лендинга</span>
+      <span class="screen-tag">/ · public</span>
+    </div>
+    <div class="browser">
+      <div class="browser-bar">
+        <div class="dots"><span></span><span></span><span></span></div>
+        <div class="url">xerocode.ru</div>
+      </div>
+      <div class="browser-body" style="padding: 60px 56px; min-height: 560px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 80px;">
+          <span style="font-family: var(--display); font-weight: 600; font-size: 18px; letter-spacing: -0.03em; color: var(--on-bg); display: flex; align-items: center; gap: 8px;">XeroCode<span style="width: 6px; height: 6px; background: var(--xero); border-radius: 50%;"></span></span>
+          <div style="display: flex; gap: 24px; font-size: 12.5px; color: var(--on-bg-mute);">
+            <span>Возможности</span><span>Тарифы</span><span>Документы</span><span>Войти</span>
+          </div>
+          <button style="padding: 8px 16px; background: var(--xero); color: var(--cream); border: none; border-radius: 999px; font-size: 12px; font-weight: 500;">Начать бесплатно</button>
+        </div>
+
+        <p style="font-family: var(--mono); font-size: 10px; letter-spacing: 0.22em; color: var(--xero); text-transform: uppercase; margin-bottom: 24px;">▸ AI-офис для одного человека</p>
+        <h1 style="font-family: var(--display); font-weight: 500; font-size: clamp(40px, 5vw, 80px); line-height: 0.95; letter-spacing: -0.04em; color: var(--on-bg); margin-bottom: 22px; max-width: 920px;">
+          Один человек. <span style="color: var(--xero);">Восемь&nbsp;воркспейсов.</span><br>Любая&nbsp;задача&nbsp;за&nbsp;минуты.
+        </h1>
+        <p style="font-size: 17px; color: var(--on-bg-mute); max-width: 560px; line-height: 1.55; margin-bottom: 32px;">Чат, документы, картинки, видео, код, звук — в одном интерфейсе. 14 моделей. BYOK на всех тарифах. Российский стек: Yandex GPT, GigaChat, Pollinations.</p>
+        <div style="display: flex; gap: 12px;">
+          <button style="padding: 14px 28px; background: var(--xero); color: var(--cream); border: none; border-radius: 999px; font-size: 13px; font-weight: 500;">Начать бесплатно →</button>
+          <button style="padding: 14px 28px; background: transparent; color: var(--on-bg); border: 1px solid var(--line-bg-strong); border-radius: 999px; font-size: 13px; font-weight: 500;">Посмотреть демо</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ╔══════════════════════════════════════════════════════════════╗
+     ║  PART III — APP SCREENS                                      ║
+     ╚══════════════════════════════════════════════════════════════╝ -->
+<section class="part" id="screens">
+  <p class="part-num">PART III — Application screens</p>
+  <h2 class="part-name">Двенадцать <span class="accent">экранов.</span><br>Внутри&nbsp;приложения.</h2>
+  <p class="part-desc">Полный обзор интерфейса XeroCode v3. Auth, dashboard, чат с AI, восемь воркспейсов, knowledge base, settings, mobile. Все в одной дизайн-системе.</p>
+</section>
+
+<!-- SCREEN 01: AUTH ────────────────────────────────────────────── -->
+<section class="section">
+  <div class="reveal screen-wrap">
+    <div class="screen-meta">
+      <span class="screen-num">▸ A01</span>
+      <span class="screen-title">Авторизация · Sign in</span>
+      <span class="screen-tag">/auth · public</span>
+    </div>
+    <div class="browser">
+      <div class="browser-bar">
+        <div class="dots"><span></span><span></span><span></span></div>
+        <div class="url">app.xerocode.ru / auth</div>
+      </div>
+      <div class="browser-body">
+        <div class="auth-frame">
+          <div class="auth-left">
+            <div class="auth-brand">XeroCode<span class="dot"></span></div>
+            <p class="auth-quote">Один продукт.<br><span class="accent">Восемь воркспейсов.</span><br>Бесконечно возможностей.</p>
+            <div class="auth-meta">
+              <span>v 3.0</span>
+              <span>·</span>
+              <span>SOC 2</span>
+              <span>·</span>
+              <span>ФЗ-152</span>
+            </div>
+          </div>
+          <div class="auth-right">
+            <div class="auth-form">
+              <p class="lab">▸ Вход</p>
+              <h2>Добро<br>пожаловать.</h2>
+              <input class="auth-input" placeholder="email@company.ru">
+              <input class="auth-input" type="password" placeholder="••••••••••">
+              <button class="auth-btn">Войти →</button>
+              <div class="auth-divider">или</div>
+              <div class="auth-oauth">
+                <button>Google</button>
+                <button>Telegram</button>
+              </div>
+              <p class="auth-bottom">Нет аккаунта? <a>Регистрация</a></p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SCREEN 02: Main Dashboard ──────────────────────────────────── -->
+<section class="section">
+  <div class="reveal screen-wrap">
+    <div class="screen-meta">
+      <span class="screen-num">▸ A02</span>
+      <span class="screen-title">Главная · Overview</span>
+      <span class="screen-tag">/dashboard · authenticated</span>
+    </div>
+    <div class="browser">
+      <div class="browser-bar">
+        <div class="dots"><span></span><span></span><span></span></div>
+        <div class="url">app.xerocode.ru / dashboard</div>
+      </div>
+      <div class="browser-body">
+        <div class="app-layout">
+          <aside class="app-side">
+            <div class="app-side-brand">XeroCode<span class="dot"></span></div>
+            <p class="app-side-section">Воркспейсы</p>
+            <ul>
+              <li class="active"><span><span class="ico"></span>Чат</span></li>
+              <li><span><span class="ico"></span>Текст</span></li>
+              <li><span><span class="ico"></span>Картинки</span><span class="num">12</span></li>
+              <li><span><span class="ico"></span>Код</span></li>
+              <li><span><span class="ico"></span>Видео</span></li>
+              <li><span><span class="ico"></span>Звук</span></li>
+              <li><span><span class="ico"></span>Оркестрация</span></li>
+            </ul>
+            <p class="app-side-section">Инструменты</p>
+            <ul>
+              <li><span><span class="ico"></span>База знаний</span></li>
+              <li><span><span class="ico"></span>Документы</span></li>
+              <li><span><span class="ico"></span>API ключи</span></li>
+              <li><span><span class="ico"></span>Настройки</span></li>
+            </ul>
+            <div class="app-side-footer">
+              <div class="av">V</div>
+              <div class="who">Vladimir T.<div class="role">Pro · ⭐</div></div>
+            </div>
+          </aside>
+          <main class="app-main">
+            <div class="app-toolbar">
+              <h2>Главная</h2>
+              <div class="app-toolbar-right">
+                <button class="btn-mini">Экспорт</button>
+                <button class="btn-mini primary">+ Новая задача</button>
+              </div>
+            </div>
+
+            <div class="dash-grid">
+              <div class="metric">
+                <p class="lab">Запросов · 7&nbsp;дней</p>
+                <p class="val">1&nbsp;<span class="accent">428</span></p>
+                <p class="delta up">↑ 12.4%</p>
+              </div>
+              <div class="metric">
+                <p class="lab">Токенов · сегодня</p>
+                <p class="val">38&nbsp;<span class="accent">К</span></p>
+                <p class="delta up">↑ 4 модели</p>
+              </div>
+              <div class="metric">
+                <p class="lab">Картинок · мес</p>
+                <p class="val">12 / 30</p>
+                <p class="delta">осталось 18</p>
+              </div>
+            </div>
+
+            <div class="dash-row">
+              <div class="dash-block">
+                <div class="dash-block-head">
+                  <h3>Последняя активность</h3>
+                  <span class="more">Все →</span>
+                </div>
+                <ul class="activity">
+                  <li><span class="ts">14:32</span><span class="what"><b>Chat</b> · Уточнение по техзаданию</span><span class="meta">Claude Opus</span></li>
+                  <li><span class="ts">13:18</span><span class="what"><b>Images</b> · Сгенерирован баннер</span><span class="meta">gpt-image-2</span></li>
+                  <li><span class="ts">12:04</span><span class="what"><b>Code</b> · Refactor JWT auth</span><span class="meta">Sonnet 4.6</span></li>
+                  <li><span class="ts">11:30</span><span class="what"><b>Text</b> · Презентация инвесторам</span><span class="meta">GPT-5.4</span></li>
+                  <li><span class="ts">10:45</span><span class="what"><b>Orchestration</b> · DAG #4 запущен</span><span class="meta">3 шага</span></li>
+                </ul>
+              </div>
+
+              <div class="dash-block">
+                <div class="dash-block-head">
+                  <h3>Быстрый старт</h3>
+                </div>
+                <div class="quick-grid">
+                  <div class="quick"><div class="ico" style="background: var(--ws-chat);"></div><p class="nm">Новый чат</p><p class="desc">Claude · GPT · Yandex</p></div>
+                  <div class="quick"><div class="ico" style="background: var(--ws-images);"></div><p class="nm">Картинка</p><p class="desc">12 / 30 в месяце</p></div>
+                  <div class="quick"><div class="ico" style="background: var(--ws-code);"></div><p class="nm">Код</p><p class="desc">CLI · MCP · IDE</p></div>
+                  <div class="quick"><div class="ico" style="background: var(--ws-orchestr);"></div><p class="nm">DAG</p><p class="desc">5 шаблонов</p></div>
+                </div>
+              </div>
+            </div>
+          </main>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SCREEN 03: Chat ────────────────────────────────────────────── -->
+<section class="section">
+  <div class="reveal screen-wrap">
+    <div class="screen-meta">
+      <span class="screen-num">▸ A03</span>
+      <span class="screen-title">Чат с AI · Workspace 01</span>
+      <span class="screen-tag">/chat · V2 components</span>
+    </div>
+    <div class="browser">
+      <div class="browser-bar">
+        <div class="dots"><span></span><span></span><span></span></div>
+        <div class="url">app.xerocode.ru / chat</div>
+      </div>
+      <div class="browser-body">
+        <div class="chat-grid">
+          <aside class="chat-list">
+            <div class="search">🔍 Поиск по диалогам…</div>
+            <ul>
+              <li class="active">
+                <span class="nm">Презентация инвесторам</span>
+                <span class="pre">Сегодня тебе нужно подготовить…</span>
+                <span class="ts">14:32</span>
+              </li>
+              <li>
+                <span class="nm">Refactor authentication</span>
+                <span class="pre">JWT + refresh tokens, нужна ли…</span>
+                <span class="ts">12:04</span>
+              </li>
+              <li>
+                <span class="nm">Идеи для лендинга</span>
+                <span class="pre">Посмотрел humaan, parthean…</span>
+                <span class="ts">Вчера</span>
+              </li>
+              <li>
+                <span class="nm">Обзор рынка AI 2026</span>
+                <span class="pre">Сделай research по компаниям…</span>
+                <span class="ts">Вчера</span>
+              </li>
+              <li>
+                <span class="nm">Email-копия для CRM</span>
+                <span class="pre">Напиши follow-up клиенту…</span>
+                <span class="ts">2 дня</span>
+              </li>
+            </ul>
+          </aside>
+
+          <main class="chat-area">
+            <div class="chat-head">
+              <span class="title">Презентация инвесторам</span>
+              <span class="meta">
+                <span>Claude Opus 4.7</span>
+                <span>·</span>
+                <span>4 580 токенов</span>
+              </span>
+            </div>
+            <div class="chat-messages">
+              <div class="msg me">
+                <div class="av me">V</div>
+                <div class="body">Сделай 10-страничную презентацию для инвесторов SYLAR. Главные тезисы: два продукта, SaaS-метрики, roadmap. Тон — серьёзный, не маркетинговый.</div>
+              </div>
+              <div class="msg">
+                <div class="av ai">AI</div>
+                <div class="body">
+                  Понял. Соберу структуру 10 слайдов:
+                  <br><br>
+                  1. Cover — SYLAR Group<br>
+                  2. Problem — Shadow AI и микропотери времени<br>
+                  3. Two products — XeroCode + RoleFlow<br>
+                  4. Wedge — Audit-first для обоих<br>
+                  5. Architecture — общий tech стек<br>
+                  6. Traction — метрики XeroCode v3<br>
+                  7. Pilot results — 3 мебельных клиента<br>
+                  8. Roadmap — 2026—2028<br>
+                  9. Team — Vladimir + 2 инженера + advisor'ы<br>
+                  10. Ask — что нужно
+                  <br><br>
+                  Запускаю в воркспейс <code>Documents</code>. Готова через 2 минуты.
+                  <div class="src">▸ Source · Шаблон Y-Combinator deck · Q1 2026 SYLAR data</div>
+                </div>
+              </div>
+            </div>
+            <div class="chat-input">
+              <div class="chat-input-box">
+                <span>Опишите задачу или прикрепите файл…</span>
+                <span class="send">→</span>
+              </div>
+            </div>
+          </main>
+
+          <aside class="chat-side">
+            <h4>Модель</h4>
+            <div class="model-pick active">
+              <p class="nm">Claude Opus 4.7</p>
+              <p class="meta"><span class="tier">Premium</span> · 200k</p>
+            </div>
+            <div class="model-pick">
+              <p class="nm">GPT-5.4</p>
+              <p class="meta"><span class="tier">Premium</span> · 1M</p>
+            </div>
+            <div class="model-pick">
+              <p class="nm">Sonnet 4.6</p>
+              <p class="meta">Standard · 200k</p>
+            </div>
+            <div class="model-pick">
+              <p class="nm">Yandex GPT</p>
+              <p class="meta">РФ · 32k</p>
+            </div>
+            <div class="model-pick">
+              <p class="nm">GigaChat Lite</p>
+              <p class="meta">РФ · Free</p>
+            </div>
+
+            <h4 style="margin-top: 22px;">Контекст</h4>
+            <div class="model-pick">
+              <p class="nm">+ Документ из Knowledge</p>
+              <p class="meta">Прикрепить</p>
+            </div>
+          </aside>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SCREEN 04: Images ──────────────────────────────────────────── -->
+<section class="section">
+  <div class="reveal screen-wrap">
+    <div class="screen-meta">
+      <span class="screen-num">▸ A04</span>
+      <span class="screen-title">Картинки · Workspace 03</span>
+      <span class="screen-tag">/images · gpt-image-2 · pollinations</span>
+    </div>
+    <div class="browser">
+      <div class="browser-bar">
+        <div class="dots"><span></span><span></span><span></span></div>
+        <div class="url">app.xerocode.ru / images</div>
+      </div>
+      <div class="browser-body">
+        <div class="app-layout">
+          <aside class="app-side">
+            <div class="app-side-brand">XeroCode<span class="dot"></span></div>
+            <p class="app-side-section">Воркспейсы</p>
+            <ul>
+              <li><span><span class="ico"></span>Чат</span></li>
+              <li><span><span class="ico"></span>Текст</span></li>
+              <li class="active"><span><span class="ico"></span>Картинки</span><span class="num">12</span></li>
+              <li><span><span class="ico"></span>Код</span></li>
+              <li><span><span class="ico"></span>Видео</span></li>
+              <li><span><span class="ico"></span>Звук</span></li>
+              <li><span><span class="ico"></span>Оркестрация</span></li>
+            </ul>
+          </aside>
+          <main class="app-main img-ws">
+            <div class="app-toolbar">
+              <h2>Картинки</h2>
+              <span style="font-family: var(--mono); font-size: 11px; letter-spacing: 0.18em; color: var(--on-bg-dim);">12 / 30 в этом месяце</span>
+            </div>
+
+            <div class="img-prompt">
+              <span class="placeholder">Опиши что хочешь нарисовать…</span>
+              <button class="gen-btn">Сгенерировать</button>
+            </div>
+
+            <div class="img-controls">
+              <span class="img-pill active">▸ Style: editorial</span>
+              <span class="img-pill">Photo</span>
+              <span class="img-pill">Illustration</span>
+              <span class="img-pill">3D</span>
+              <span class="img-pill">▸ Size: 1024×1024</span>
+              <span class="img-pill">▸ Model: gpt-image-2</span>
+            </div>
+
+            <div class="img-grid">
+              <div class="img-card c1"><div class="placeholder">01</div><div class="meta">Editorial · 1024px</div></div>
+              <div class="img-card c2"><div class="placeholder">02</div><div class="meta">Photo · 2K</div></div>
+              <div class="img-card c3"><div class="placeholder">03</div><div class="meta">Illustration</div></div>
+              <div class="img-card c4"><div class="placeholder">04</div><div class="meta">3D · Cinema</div></div>
+              <div class="img-card c5"><div class="placeholder">05</div><div class="meta">Editorial</div></div>
+              <div class="img-card c6"><div class="placeholder">06</div><div class="meta">Photo · 4K</div></div>
+              <div class="img-card c7"><div class="placeholder">07</div><div class="meta">3D · iso</div></div>
+              <div class="img-card c8"><div class="placeholder">08</div><div class="meta">Illustration</div></div>
+            </div>
+          </main>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SCREEN 05: Code ────────────────────────────────────────────── -->
+<section class="section">
+  <div class="reveal screen-wrap">
+    <div class="screen-meta">
+      <span class="screen-num">▸ A05</span>
+      <span class="screen-title">Код · Workspace 04</span>
+      <span class="screen-tag">/code · CLI · MCP · IDE</span>
+    </div>
+    <div class="browser">
+      <div class="browser-bar">
+        <div class="dots"><span></span><span></span><span></span></div>
+        <div class="url">app.xerocode.ru / code</div>
+      </div>
+      <div class="browser-body">
+        <div class="app-layout">
+          <aside class="app-side">
+            <div class="app-side-brand">XeroCode<span class="dot"></span></div>
+            <p class="app-side-section">Воркспейсы</p>
+            <ul>
+              <li><span><span class="ico"></span>Чат</span></li>
+              <li><span><span class="ico"></span>Текст</span></li>
+              <li><span><span class="ico"></span>Картинки</span></li>
+              <li class="active"><span><span class="ico"></span>Код</span></li>
+              <li><span><span class="ico"></span>Видео</span></li>
+            </ul>
+          </aside>
+          <main class="app-main">
+            <div class="app-toolbar">
+              <h2>refactor-jwt-auth.py</h2>
+              <div class="app-toolbar-right">
+                <button class="btn-mini">▸ Run</button>
+                <button class="btn-mini">Diff</button>
+                <button class="btn-mini primary">+ Apply changes</button>
+              </div>
+            </div>
+
+            <div class="code-frame">
+              <div class="code-tabs">
+                <span class="code-tab active">main.py</span>
+                <span class="code-tab">auth.py</span>
+                <span class="code-tab">config.py</span>
+              </div>
+              <div class="code-body">
+                <div class="code-lines">
+                  1<br>2<br>3<br>4<br>5<br>6<br>7<br>8<br>9<br>10<br>11<br>12<br>13<br>14
+                </div>
+                <pre class="code-content"><span class="c"># JWT authentication with refresh rotation</span>
+<span class="k">from</span> <span class="f">jose</span> <span class="k">import</span> <span class="f">jwt</span>
+<span class="k">from</span> <span class="f">datetime</span> <span class="k">import</span> <span class="f">datetime</span>, <span class="f">timedelta</span>
+
+<span class="k">async def</span> <span class="f">create_token</span>(<span class="n">user_id</span>: <span class="k">str</span>):
+    <span class="n">payload</span> = {
+        <span class="s">"sub"</span>: <span class="n">user_id</span>,
+        <span class="s">"exp"</span>: <span class="f">datetime</span>.<span class="f">utcnow</span>() + <span class="f">timedelta</span>(<span class="n">hours</span>=<span class="n">1</span>),
+        <span class="s">"iat"</span>: <span class="f">datetime</span>.<span class="f">utcnow</span>(),
+    }
+    <span class="k">return</span> <span class="f">jwt</span>.<span class="f">encode</span>(<span class="n">payload</span>, <span class="n">SECRET_KEY</span>, <span class="n">algorithm</span>=<span class="s">"HS256"</span>)
+
+<span class="c"># AI suggested: add token rotation on refresh</span>
+<span class="c"># Click "Apply" to commit</span></pre>
+              </div>
+            </div>
+
+            <div style="margin-top: 18px; padding: 14px 18px; background: var(--xero-mute); border: 1px solid var(--xero); border-radius: 10px; display: flex; gap: 14px; align-items: start;">
+              <span style="width: 28px; height: 28px; border-radius: 50%; background: var(--xero); color: var(--cream); display: flex; align-items: center; justify-content: center; font-family: var(--display); font-weight: 600; font-size: 12px; flex-shrink: 0;">AI</span>
+              <div>
+                <p style="font-family: var(--display); font-weight: 500; font-size: 14px; color: var(--on-bg); letter-spacing: -0.01em;">Suggestion: добавь rotation токенов</p>
+                <p style="font-size: 12.5px; color: var(--on-bg-mute); margin-top: 4px;">При каждом refresh — генерировать новый pair access+refresh, инвалидировать старые. Снизит attack surface.</p>
+              </div>
+            </div>
+          </main>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SCREEN 06: Documents ───────────────────────────────────────── -->
+<section class="section">
+  <div class="reveal screen-wrap">
+    <div class="screen-meta">
+      <span class="screen-num">▸ A06</span>
+      <span class="screen-title">Документы · Generate &amp; preview</span>
+      <span class="screen-tag">/documents · PPTX · DOCX · XLSX</span>
+    </div>
+    <div class="browser">
+      <div class="browser-bar">
+        <div class="dots"><span></span><span></span><span></span></div>
+        <div class="url">app.xerocode.ru / documents</div>
+      </div>
+      <div class="browser-body cream-screen">
+        <div class="docs-grid" style="height: 600px; background: var(--cream); color: var(--on-cream);">
+          <aside class="docs-list" style="background: rgba(10,10,11,0.04); border-right-color: var(--line-cream);">
+            <p class="head" style="color: var(--on-cream-dim);">Все документы</p>
+            <div class="doc-row pdf">
+              <span class="ico"></span>
+              <div>
+                <p class="nm" style="color: var(--on-cream);">SYLAR Pitch v2.pdf</p>
+                <p class="meta" style="color: var(--on-cream-dim);">Сегодня · 14:32</p>
+              </div>
+            </div>
+            <div class="doc-row pptx active" style="background: rgba(124,92,255,0.1);">
+              <span class="ico"></span>
+              <div>
+                <p class="nm" style="color: var(--xero);">Investor Deck.pptx</p>
+                <p class="meta" style="color: var(--on-cream-dim);">2 минуты назад</p>
+              </div>
+            </div>
+            <div class="doc-row docx">
+              <span class="ico"></span>
+              <div>
+                <p class="nm" style="color: var(--on-cream);">Roadmap 2026.docx</p>
+                <p class="meta" style="color: var(--on-cream-dim);">Вчера · 18:04</p>
+              </div>
+            </div>
+            <div class="doc-row xlsx">
+              <span class="ico"></span>
+              <div>
+                <p class="nm" style="color: var(--on-cream);">Pricing Model.xlsx</p>
+                <p class="meta" style="color: var(--on-cream-dim);">Вчера · 12:18</p>
+              </div>
+            </div>
+            <div class="doc-row docx">
+              <span class="ico"></span>
+              <div>
+                <p class="nm" style="color: var(--on-cream);">Customer Stories.docx</p>
+                <p class="meta" style="color: var(--on-cream-dim);">3 дня · 10:32</p>
+              </div>
+            </div>
+          </aside>
+          <main class="docs-view" style="background: var(--cream); color: var(--on-cream);">
+            <h1 style="color: var(--on-cream);">Investor Deck — SYLAR Group</h1>
+            <p class="sub" style="color: var(--on-cream-dim); border-bottom-color: var(--line-cream);">PPTX · 10 слайдов · сгенерирован через Claude Opus 4.7 · 2 минуты назад</p>
+
+            <h2 style="color: var(--on-cream);">Слайд 1 · Cover</h2>
+            <p style="color: var(--on-cream-mute);"><strong style="color: var(--on-cream);">SYLAR Group</strong> — tech studio, building operating layers for the modern work. Two products under one umbrella.</p>
+
+            <h2 style="color: var(--on-cream);">Слайд 2 · Problem</h2>
+            <p style="color: var(--on-cream-mute);">К 2026 году у каждой крупной компании одна и та же проблема: сотрудники уже используют AI без ведома IT. Корпоративные данные утекают в публичные модели. Параллельно — каждый человек теряет 3—15 минут в день на мелкие действия.</p>
+
+            <h2 style="color: var(--on-cream);">Слайд 3 · Two Products</h2>
+            <ul style="color: var(--on-cream-mute);">
+              <li><strong style="color: var(--xero);">XeroCode</strong> — AI-офис для людей и команд (1—50 seats). 8 воркспейсов, BYOK, российский стек.</li>
+              <li><strong style="color: var(--sylar);">RoleFlow</strong> — Operating Layer для крупных организаций (200+ seats). Ретро-аудит + Safe AI.</li>
+            </ul>
+
+            <h2 style="color: var(--on-cream);">Слайд 4 · The Wedge</h2>
+            <p style="color: var(--on-cream-mute);">Audit-first onboarding. Любой клиент начинает с измерения, не с фичи. Express Audit — бесплатный, Role Audit 100 — премиум-engagement.</p>
+          </main>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SCREEN 07: Knowledge Base ──────────────────────────────────── -->
+<section class="section">
+  <div class="reveal screen-wrap">
+    <div class="screen-meta">
+      <span class="screen-num">▸ A07</span>
+      <span class="screen-title">База знаний · RAG-поиск</span>
+      <span class="screen-tag">/knowledge · 1С · Bitrix · Confluence</span>
+    </div>
+    <div class="browser">
+      <div class="browser-bar">
+        <div class="dots"><span></span><span></span><span></span></div>
+        <div class="url">app.xerocode.ru / knowledge</div>
+      </div>
+      <div class="browser-body">
+        <div class="app-layout">
+          <aside class="app-side">
+            <div class="app-side-brand">XeroCode<span class="dot"></span></div>
+            <p class="app-side-section">Воркспейсы</p>
+            <ul>
+              <li><span><span class="ico"></span>Чат</span></li>
+              <li><span><span class="ico"></span>Картинки</span></li>
+              <li><span><span class="ico"></span>Код</span></li>
+            </ul>
+            <p class="app-side-section">Инструменты</p>
+            <ul>
+              <li class="active"><span><span class="ico"></span>База знаний</span></li>
+              <li><span><span class="ico"></span>Документы</span></li>
+              <li><span><span class="ico"></span>API ключи</span></li>
+            </ul>
+          </aside>
+          <main class="app-main">
+            <div class="app-toolbar">
+              <h2>База знаний</h2>
+              <div class="app-toolbar-right">
+                <button class="btn-mini">+ Загрузить</button>
+                <button class="btn-mini">Connectors</button>
+              </div>
+            </div>
+
+            <div class="kb-search">
+              <span class="ico"></span>
+              <span>Спроси базу знаний — что хочешь узнать?</span>
+            </div>
+
+            <p style="font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.22em; color: var(--xero); text-transform: uppercase; margin-bottom: 14px;">▸ Найдено 6 источников</p>
+
+            <div class="kb-results">
+              <div class="kb-card">
+                <p class="src">▸ 1С DocFlow</p>
+                <h4>Регламент онбординга 2025</h4>
+                <p>Полный процесс: документы → доступы → обучение. 11 шагов, ответственные, сроки.</p>
+                <p class="meta">PDF · 2.4 МБ · 14 стр</p>
+              </div>
+              <div class="kb-card">
+                <p class="src">▸ Confluence</p>
+                <h4>Архитектура SYLAR Cloud</h4>
+                <p>Backend (FastAPI), data (Postgres + Redis), edge (Envoy gateway). Spec для команды.</p>
+                <p class="meta">Wiki · обновлён 2 дня</p>
+              </div>
+              <div class="kb-card">
+                <p class="src">▸ Bitrix24</p>
+                <h4>Customer Story · X-Bank</h4>
+                <p>Pilot Q1 2026. 540 seats. Discovery → DLP. Найдено 847 PII-инцидентов за 14 дней.</p>
+                <p class="meta">Doc · 8 МБ · NDA</p>
+              </div>
+              <div class="kb-card">
+                <p class="src">▸ Notion</p>
+                <h4>Дизайн-система v3</h4>
+                <p>Space Grotesk + Inter + JetBrains Mono. Sienna accent. 8 цветов воркспейсов.</p>
+                <p class="meta">Page · 28 sub-pages</p>
+              </div>
+              <div class="kb-card">
+                <p class="src">▸ SharePoint</p>
+                <h4>Юр. шаблоны 2026</h4>
+                <p>NDA, MSA, DPA, SLA. Под РФ-юрисдикцию. Шаблоны прошли юр-ревью.</p>
+                <p class="meta">Folder · 12 файлов</p>
+              </div>
+              <div class="kb-card">
+                <p class="src">▸ Диадок</p>
+                <h4>Договор · ITM-024</h4>
+                <p>Поставка RoleFlow для тестового пилота. КЭП обеих сторон. Подписан 14.04.2026.</p>
+                <p class="meta">EDI · подписан</p>
+              </div>
+            </div>
+          </main>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SCREEN 08: Orchestration (DAG) ─────────────────────────────── -->
+<section class="section">
+  <div class="reveal screen-wrap">
+    <div class="screen-meta">
+      <span class="screen-num">▸ A08</span>
+      <span class="screen-title">Оркестрация · Workspace 08</span>
+      <span class="screen-tag">/orchestration · DAG · agents · MCP</span>
+    </div>
+    <div class="browser">
+      <div class="browser-bar">
+        <div class="dots"><span></span><span></span><span></span></div>
+        <div class="url">app.xerocode.ru / orchestration</div>
+      </div>
+      <div class="browser-body">
+        <div class="app-layout">
+          <aside class="app-side">
+            <div class="app-side-brand">XeroCode<span class="dot"></span></div>
+            <p class="app-side-section">Воркспейсы</p>
+            <ul>
+              <li><span><span class="ico"></span>Чат</span></li>
+              <li><span><span class="ico"></span>Код</span></li>
+              <li class="active"><span><span class="ico"></span>Оркестрация</span></li>
+            </ul>
+          </aside>
+          <main class="app-main">
+            <div class="app-toolbar">
+              <h2>DAG · «Daily research → Email digest»</h2>
+              <div class="app-toolbar-right">
+                <button class="btn-mini">Logs</button>
+                <button class="btn-mini">Версии</button>
+                <button class="btn-mini primary">▸ Run</button>
+              </div>
+            </div>
+
+            <div class="dag">
+              <!-- Nodes -->
+              <div class="node" style="top: 24px; left: 24px;">
+                <p class="lab">▸ TRIGGER</p>
+                <p class="nm">Cron · 09:00 MSK</p>
+                <p class="meta">каждый рабочий день</p>
+              </div>
+              <div class="node" style="top: 24px; left: 280px;">
+                <p class="lab">▸ STEP 01</p>
+                <p class="nm">Web Search</p>
+                <p class="meta">Perplexity · top 10</p>
+              </div>
+              <div class="node primary" style="top: 24px; left: 540px;">
+                <p class="lab">▸ STEP 02 · AI</p>
+                <p class="nm">Анализ источников</p>
+                <p class="meta">Claude Opus · 4500 tok</p>
+              </div>
+              <div class="node" style="top: 180px; left: 280px;">
+                <p class="lab">▸ STEP 03</p>
+                <p class="nm">Branching</p>
+                <p class="meta">if relevance ≥ 0.7</p>
+              </div>
+              <div class="node primary" style="top: 180px; left: 540px;">
+                <p class="lab">▸ STEP 04 · AI</p>
+                <p class="nm">Краткий summary</p>
+                <p class="meta">GPT-5.4 · 2000 tok</p>
+              </div>
+              <div class="node" style="top: 320px; left: 540px;">
+                <p class="lab">▸ STEP 05</p>
+                <p class="nm">Email digest</p>
+                <p class="meta">v.tirskikh@sylar.ru</p>
+              </div>
+              <div class="node" style="top: 460px; left: 280px;">
+                <p class="lab">▸ STEP 06</p>
+                <p class="nm">Save to Notion</p>
+                <p class="meta">DB · «Daily AI digest»</p>
+              </div>
+
+              <!-- Edges -->
+              <div class="edge" style="top: 50px; left: 204px; width: 76px;"></div>
+              <div class="edge" style="top: 50px; left: 460px; width: 80px;"></div>
+              <div class="edge" style="top: 110px; left: 380px; width: 1px; height: 70px; background: linear-gradient(180deg, transparent, var(--xero), transparent);"></div>
+              <div class="edge" style="top: 206px; left: 460px; width: 80px;"></div>
+              <div class="edge" style="top: 266px; left: 640px; width: 1px; height: 60px; background: linear-gradient(180deg, transparent, var(--xero), transparent);"></div>
+              <div class="edge" style="top: 350px; left: 380px; width: 1px; height: 110px; background: linear-gradient(180deg, transparent, var(--xero), transparent);"></div>
+            </div>
+          </main>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SCREEN 09: Settings ────────────────────────────────────────── -->
+<section class="section">
+  <div class="reveal screen-wrap">
+    <div class="screen-meta">
+      <span class="screen-num">▸ A09</span>
+      <span class="screen-title">Настройки · BYOK ключи</span>
+      <span class="screen-tag">/settings · API keys</span>
+    </div>
+    <div class="browser">
+      <div class="browser-bar">
+        <div class="dots"><span></span><span></span><span></span></div>
+        <div class="url">app.xerocode.ru / settings / api-keys</div>
+      </div>
+      <div class="browser-body">
+        <div class="settings-grid">
+          <aside class="settings-side">
+            <p style="font-family: var(--mono); font-size: 10px; letter-spacing: 0.22em; color: var(--on-bg-dim); text-transform: uppercase; margin: 0 8px 12px;">Профиль</p>
+            <ul>
+              <li>Аккаунт</li>
+              <li>Безопасность</li>
+              <li>Уведомления</li>
+              <li>Интеграции</li>
+            </ul>
+            <p style="font-family: var(--mono); font-size: 10px; letter-spacing: 0.22em; color: var(--on-bg-dim); text-transform: uppercase; margin: 18px 8px 12px;">AI</p>
+            <ul>
+              <li class="active">API ключи (BYOK)</li>
+              <li>Модели по умолчанию</li>
+              <li>Лимиты</li>
+              <li>История запросов</li>
+            </ul>
+            <p style="font-family: var(--mono); font-size: 10px; letter-spacing: 0.22em; color: var(--on-bg-dim); text-transform: uppercase; margin: 18px 8px 12px;">Биллинг</p>
+            <ul>
+              <li>Тариф</li>
+              <li>Платежи</li>
+              <li>Документы</li>
+            </ul>
+          </aside>
+          <main class="settings-main">
+            <h1>API ключи · BYOK</h1>
+            <p class="sub">Подключите свои ключи AI-провайдеров — XeroCode будет использовать их вместо платформенного баланса. На любом тарифе BYOK = ∞ запросов.</p>
+
+            <div class="settings-row">
+              <div class="info">
+                <h3>OpenAI</h3>
+                <p>API ключ для GPT-5.4, o1, gpt-image-2. Используется на запросах к OpenAI-моделям.</p>
+                <p class="meta">▸ ИСПОЛЬЗОВАНИЕ · 4 280 запросов / 30 дней</p>
+              </div>
+              <div class="api-key">
+                <span class="nm">sk-proj-••••••••••••••••8cZ4</span>
+                <span class="stat">● Активен</span>
+              </div>
+            </div>
+
+            <div class="settings-row">
+              <div class="info">
+                <h3>Anthropic</h3>
+                <p>API ключ для Claude Opus 4.7, Sonnet 4.6, Haiku. Лучшие модели для длинных задач.</p>
+                <p class="meta">▸ ИСПОЛЬЗОВАНИЕ · 1 894 запроса / 30 дней</p>
+              </div>
+              <div class="api-key">
+                <span class="nm">sk-ant-••••••••••••••••K1pQ</span>
+                <span class="stat">● Активен</span>
+              </div>
+            </div>
+
+            <div class="settings-row">
+              <div class="info">
+                <h3>Yandex GPT</h3>
+                <p>Российский AI-провайдер. Подходит для контента на русском, аналитики, работы с РФ-данными.</p>
+                <p class="meta">▸ Не настроен</p>
+              </div>
+              <button class="btn-mini">+ Подключить</button>
+            </div>
+
+            <div class="settings-row">
+              <div class="info">
+                <h3>GigaChat (Сбер)</h3>
+                <p>Российский AI-провайдер. Бесплатный tier для разработки. ФЗ-152 уровень 1.</p>
+                <p class="meta">▸ Не настроен</p>
+              </div>
+              <button class="btn-mini">+ Подключить</button>
+            </div>
+
+            <div class="settings-row">
+              <div class="info">
+                <h3>OpenRouter</h3>
+                <p>Универсальный шлюз к 200+ моделям через один ключ. Удобно для тестирования новых моделей.</p>
+                <p class="meta">▸ ИСПОЛЬЗОВАНИЕ · 38 запросов / 30 дней</p>
+              </div>
+              <div class="api-key">
+                <span class="nm">sk-or-••••••••••••••••mP2x</span>
+                <span class="stat">● Активен</span>
+              </div>
+            </div>
+          </main>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SCREEN 10: Mobile Telegram bot ─────────────────────────────── -->
+<section class="section">
+  <div class="reveal screen-wrap">
+    <div class="screen-meta">
+      <span class="screen-num">▸ A10</span>
+      <span class="screen-title">Telegram-бот · Mobile-first</span>
+      <span class="screen-tag">@xerocode_bot · iOS · Android</span>
+    </div>
+    <div class="browser">
+      <div class="browser-bar">
+        <div class="dots"><span></span><span></span><span></span></div>
+        <div class="url">t.me / xerocode_bot</div>
+      </div>
+      <div class="browser-body" style="padding: 60px 20px; display: flex; justify-content: center;">
+        <div class="tg-frame">
+          <div class="tg-bar">
+            <div class="av">XC</div>
+            <div>
+              <div class="nm">XeroCode AI</div>
+              <div class="stat">● online · печатает</div>
+            </div>
+          </div>
+          <div class="tg-msgs">
+            <div class="tg-msg bot">Привет! Что генерируем сегодня? 💬</div>
+            <div class="tg-msg me">Напиши follow-up клиенту, который не ответил на КП 5 дней</div>
+            <div class="tg-msg bot">
+              Готово. Тон — вежливо-настойчивый, без давления:
+              <br><br>
+              «Здравствуйте, [Имя]! Хотел уточнить — было ли время посмотреть наше предложение от 6 мая? Готов ответить на любые вопросы или назначить созвон в удобное время. С уважением.»
+            </div>
+            <div class="tg-msg me">Сделай посерьёзнее</div>
+            <div class="tg-msg bot">Понял, более деловой тон:</div>
+            <div class="tg-msg bot">
+              «Здравствуйте, [Имя]. Возвращаюсь к нашему коммерческому предложению от 6 мая. Решение принимается в&nbsp;ближайшие дни? Если есть вопросы или нужны корректировки по составу — готов обсудить...»
+            </div>
+          </div>
+          <div class="tg-input">
+            <div class="field">Сообщение…</div>
+            <div class="send">→</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SCREEN 11: Onboarding ──────────────────────────────────────── -->
+<section class="section">
+  <div class="reveal screen-wrap">
+    <div class="screen-meta">
+      <span class="screen-num">▸ A11</span>
+      <span class="screen-title">Onboarding · Step 02 of 04</span>
+      <span class="screen-tag">/onboarding · first time user</span>
+    </div>
+    <div class="browser">
+      <div class="browser-bar">
+        <div class="dots"><span></span><span></span><span></span></div>
+        <div class="url">app.xerocode.ru / onboarding</div>
+      </div>
+      <div class="browser-body" style="padding: 60px 56px;">
+        <!-- Progress -->
+        <div style="display: flex; gap: 8px; margin-bottom: 60px;">
+          <span style="flex: 1; height: 3px; background: var(--xero); border-radius: 2px;"></span>
+          <span style="flex: 1; height: 3px; background: var(--xero); border-radius: 2px;"></span>
+          <span style="flex: 1; height: 3px; background: var(--line-bg-strong); border-radius: 2px;"></span>
+          <span style="flex: 1; height: 3px; background: var(--line-bg-strong); border-radius: 2px;"></span>
+        </div>
+
+        <p style="font-family: var(--mono); font-size: 11px; letter-spacing: 0.22em; color: var(--xero); text-transform: uppercase; margin-bottom: 18px;">▸ Шаг 2 из 4 · 30 секунд</p>
+        <h1 style="font-family: var(--display); font-weight: 500; font-size: clamp(36px, 4.5vw, 64px); line-height: 1; letter-spacing: -0.03em; color: var(--on-bg); margin-bottom: 18px; max-width: 800px;">
+          Какие воркспейсы<br>тебе нужны?
+        </h1>
+        <p style="font-size: 16.5px; color: var(--on-bg-mute); max-width: 540px; margin-bottom: 48px;">Выбери 2—3 главных. Остальные доступны в любой момент. Это поможет настроить интерфейс под твой workflow.</p>
+
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; max-width: 1100px;">
+          <div style="background: var(--xero-mute); border: 1px solid var(--xero); border-radius: 12px; padding: 22px 18px; cursor: pointer;">
+            <div style="width: 32px; height: 32px; background: var(--ws-chat); border-radius: 8px; margin-bottom: 14px;"></div>
+            <p style="font-family: var(--display); font-weight: 500; font-size: 17px; color: var(--on-bg); margin-bottom: 4px;">Чат</p>
+            <p style="font-family: var(--mono); font-size: 9.5px; color: var(--xero); letter-spacing: 0.18em;">▸ ВЫБРАНО</p>
+          </div>
+          <div style="background: var(--bg-soft); border: 1px solid var(--line-bg); border-radius: 12px; padding: 22px 18px; cursor: pointer;">
+            <div style="width: 32px; height: 32px; background: var(--ws-text); border-radius: 8px; margin-bottom: 14px;"></div>
+            <p style="font-family: var(--display); font-weight: 500; font-size: 17px; color: var(--on-bg); margin-bottom: 4px;">Текст</p>
+            <p style="font-size: 12px; color: var(--on-bg-mute);">Длинные документы</p>
+          </div>
+          <div style="background: var(--xero-mute); border: 1px solid var(--xero); border-radius: 12px; padding: 22px 18px; cursor: pointer;">
+            <div style="width: 32px; height: 32px; background: var(--ws-images); border-radius: 8px; margin-bottom: 14px;"></div>
+            <p style="font-family: var(--display); font-weight: 500; font-size: 17px; color: var(--on-bg); margin-bottom: 4px;">Картинки</p>
+            <p style="font-family: var(--mono); font-size: 9.5px; color: var(--xero); letter-spacing: 0.18em;">▸ ВЫБРАНО</p>
+          </div>
+          <div style="background: var(--bg-soft); border: 1px solid var(--line-bg); border-radius: 12px; padding: 22px 18px; cursor: pointer;">
+            <div style="width: 32px; height: 32px; background: var(--ws-code); border-radius: 8px; margin-bottom: 14px;"></div>
+            <p style="font-family: var(--display); font-weight: 500; font-size: 17px; color: var(--on-bg); margin-bottom: 4px;">Код</p>
+            <p style="font-size: 12px; color: var(--on-bg-mute);">CLI · MCP · IDE</p>
+          </div>
+          <div style="background: var(--bg-soft); border: 1px solid var(--line-bg); border-radius: 12px; padding: 22px 18px; cursor: pointer;">
+            <div style="width: 32px; height: 32px; background: var(--ws-video); border-radius: 8px; margin-bottom: 14px;"></div>
+            <p style="font-family: var(--display); font-weight: 500; font-size: 17px; color: var(--on-bg); margin-bottom: 4px;">Видео</p>
+            <p style="font-size: 12px; color: var(--on-bg-mute);">Sora · Runway · Veo</p>
+          </div>
+          <div style="background: var(--bg-soft); border: 1px solid var(--line-bg); border-radius: 12px; padding: 22px 18px; cursor: pointer;">
+            <div style="width: 32px; height: 32px; background: var(--ws-sound); border-radius: 8px; margin-bottom: 14px;"></div>
+            <p style="font-family: var(--display); font-weight: 500; font-size: 17px; color: var(--on-bg); margin-bottom: 4px;">Звук</p>
+            <p style="font-size: 12px; color: var(--on-bg-mute);">Suno · ElevenLabs</p>
+          </div>
+          <div style="background: var(--bg-soft); border: 1px solid var(--line-bg); border-radius: 12px; padding: 22px 18px; cursor: pointer;">
+            <div style="width: 32px; height: 32px; background: var(--ws-corp); border-radius: 8px; margin-bottom: 14px;"></div>
+            <p style="font-family: var(--display); font-weight: 500; font-size: 17px; color: var(--on-bg); margin-bottom: 4px;">Корпоратив</p>
+            <p style="font-size: 12px; color: var(--on-bg-mute);">CRM · HR · Kanban</p>
+          </div>
+          <div style="background: var(--xero-mute); border: 1px solid var(--xero); border-radius: 12px; padding: 22px 18px; cursor: pointer;">
+            <div style="width: 32px; height: 32px; background: var(--ws-orchestr); border-radius: 8px; margin-bottom: 14px;"></div>
+            <p style="font-family: var(--display); font-weight: 500; font-size: 17px; color: var(--on-bg); margin-bottom: 4px;">Оркестрация</p>
+            <p style="font-family: var(--mono); font-size: 9.5px; color: var(--xero); letter-spacing: 0.18em;">▸ ВЫБРАНО</p>
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 56px;">
+          <button style="padding: 14px 28px; background: transparent; color: var(--on-bg); border: 1px solid var(--line-bg-strong); border-radius: 999px; font-size: 13px; font-weight: 500;">← Назад</button>
+          <p style="font-family: var(--mono); font-size: 11px; letter-spacing: 0.18em; color: var(--on-bg-dim); text-transform: uppercase;">Выбрано 3 из 8</p>
+          <button style="padding: 14px 28px; background: var(--xero); color: var(--cream); border: none; border-radius: 999px; font-size: 13px; font-weight: 500;">Дальше →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SCREEN 12: Empty state ─────────────────────────────────────── -->
+<section class="section">
+  <div class="reveal screen-wrap">
+    <div class="screen-meta">
+      <span class="screen-num">▸ A12</span>
+      <span class="screen-title">Empty state · Шаблоны для старта</span>
+      <span class="screen-tag">/templates · first task</span>
+    </div>
+    <div class="browser">
+      <div class="browser-bar">
+        <div class="dots"><span></span><span></span><span></span></div>
+        <div class="url">app.xerocode.ru / new</div>
+      </div>
+      <div class="browser-body">
+        <div class="app-layout">
+          <aside class="app-side">
+            <div class="app-side-brand">XeroCode<span class="dot"></span></div>
+            <p class="app-side-section">Воркспейсы</p>
+            <ul>
+              <li><span><span class="ico"></span>Чат</span></li>
+              <li><span><span class="ico"></span>Текст</span></li>
+              <li><span><span class="ico"></span>Картинки</span></li>
+              <li><span><span class="ico"></span>Код</span></li>
+            </ul>
+          </aside>
+          <main class="app-main" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 80px;">
+            <p style="font-family: var(--mono); font-size: 11px; letter-spacing: 0.22em; color: var(--xero); text-transform: uppercase; margin-bottom: 18px;">▸ С чего начать</p>
+            <h1 style="font-family: var(--display); font-weight: 500; font-size: 44px; line-height: 1; letter-spacing: -0.03em; color: var(--on-bg); margin-bottom: 14px; text-align: center;">Что сегодня делаем?</h1>
+            <p style="font-size: 16px; color: var(--on-bg-mute); max-width: 460px; text-align: center; margin-bottom: 48px;">Опиши задачу или выбери шаблон. AI подберёт правильный воркспейс и&nbsp;модель.</p>
+
+            <div style="background: var(--bg-soft); border: 1px solid var(--line-bg-strong); border-radius: 14px; padding: 18px 22px; display: flex; gap: 14px; align-items: center; width: 100%; max-width: 720px; margin-bottom: 32px;">
+              <span style="flex: 1; font-size: 14px; color: var(--on-bg-dim);">Что-то типа: «Сделай follow-up клиенту, который не ответил 5 дней»</span>
+              <button style="padding: 10px 20px; background: var(--xero); color: var(--cream); border: none; border-radius: 999px; font-size: 13px; font-weight: 500;">→</button>
+            </div>
+
+            <p style="font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.22em; color: var(--on-bg-dim); text-transform: uppercase; margin-bottom: 18px;">▸ ИЛИ ШАБЛОН</p>
+
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; width: 100%; max-width: 720px;">
+              <div style="background: var(--bg-soft); border: 1px solid var(--line-bg); border-radius: 10px; padding: 16px; cursor: pointer;">
+                <div style="width: 24px; height: 24px; background: var(--ws-text); border-radius: 6px; margin-bottom: 10px;"></div>
+                <p style="font-family: var(--display); font-weight: 500; font-size: 14px; color: var(--on-bg); margin-bottom: 4px;">Email клиенту</p>
+                <p style="font-family: var(--mono); font-size: 9.5px; color: var(--on-bg-dim); letter-spacing: 0.15em;">5 секунд</p>
+              </div>
+              <div style="background: var(--bg-soft); border: 1px solid var(--line-bg); border-radius: 10px; padding: 16px; cursor: pointer;">
+                <div style="width: 24px; height: 24px; background: var(--ws-images); border-radius: 6px; margin-bottom: 10px;"></div>
+                <p style="font-family: var(--display); font-weight: 500; font-size: 14px; color: var(--on-bg); margin-bottom: 4px;">Баннер для соц. сетей</p>
+                <p style="font-family: var(--mono); font-size: 9.5px; color: var(--on-bg-dim); letter-spacing: 0.15em;">30 секунд</p>
+              </div>
+              <div style="background: var(--bg-soft); border: 1px solid var(--line-bg); border-radius: 10px; padding: 16px; cursor: pointer;">
+                <div style="width: 24px; height: 24px; background: var(--ws-corp); border-radius: 6px; margin-bottom: 10px;"></div>
+                <p style="font-family: var(--display); font-weight: 500; font-size: 14px; color: var(--on-bg); margin-bottom: 4px;">Отчёт за неделю</p>
+                <p style="font-family: var(--mono); font-size: 9.5px; color: var(--on-bg-dim); letter-spacing: 0.15em;">2 минуты</p>
+              </div>
+            </div>
+          </main>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ╔══════════════════════════════════════════════════════════════╗
+     ║  PART IV — DESIGN SYSTEM                                     ║
+     ╚══════════════════════════════════════════════════════════════╝ -->
+<section class="part" id="system">
+  <p class="part-num">PART IV — Design system</p>
+  <h2 class="part-name">Дизайн-система.<br><span class="accent">Tokens · принципы.</span></h2>
+  <p class="part-desc">Те же токены и принципы что у RoleFlow и SYLAR. Различия — только в основном акценте (Violet против Sienna) и цветовой кодировке воркспейсов. Технический стек идентичен.</p>
+</section>
+
+<!-- Principles ─────────────────────────────────────────────────── -->
+<section class="section cream">
+  <div class="reveal">
+    <p class="section-num" style="color: var(--xero);">04 — Принципы</p>
+    <div class="section-head">
+      <h2 class="section-title">Что разрешено.<br>Что запрещено.</h2>
+      <p class="section-sub">Дизайн-система XeroCode унаследует все принципы SYLAR-DNA. Здесь зафиксировано что мы делаем и&nbsp;что нет — чтобы продукт оставался узнаваемым на любом экране.</p>
+    </div>
+  </div>
+
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 32px;">
+    <div style="background: var(--cream-warm); border: 1px solid var(--line-cream-strong); border-left: 3px solid #10B981; border-radius: 10px; padding: 32px;">
+      <p style="font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.22em; color: #10B981; text-transform: uppercase; font-weight: 600; margin-bottom: 18px;">▸ Разрешено</p>
+      <ul style="list-style: none; font-size: 14.5px; color: var(--on-cream); line-height: 1.8;">
+        <li style="padding: 6px 0;">+ Space Grotesk display, Inter body, JetBrains Mono technical</li>
+        <li style="padding: 6px 0;">+ Carbon #0A0A0B и Cream #F4EFE3 как surfaces</li>
+        <li style="padding: 6px 0;">+ Violet #7C5CFF как primary accent (CTAs, links)</li>
+        <li style="padding: 6px 0;">+ Sienna #D4654A как DNA-маркер связи с SYLAR</li>
+        <li style="padding: 6px 0;">+ 8 цветов воркспейсов — только в badge, ico, dots</li>
+        <li style="padding: 6px 0;">+ Browser-frame для product screenshots</li>
+        <li style="padding: 6px 0;">+ Karaoke scroll-reveal в hero-секциях</li>
+        <li style="padding: 6px 0;">+ Magnetic CTA на hover</li>
+        <li style="padding: 6px 0;">+ Hairlines 1px, минимум shadow</li>
+        <li style="padding: 6px 0;">+ Inline-icons в потоке текста</li>
+      </ul>
+    </div>
+
+    <div style="background: rgba(166,59,50,0.04); border: 1px solid rgba(166,59,50,0.25); border-left: 3px solid #C84830; border-radius: 10px; padding: 32px;">
+      <p style="font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.22em; color: #C84830; text-transform: uppercase; font-weight: 600; margin-bottom: 18px;">⊘ Запрещено</p>
+      <ul style="list-style: none; font-size: 14.5px; color: var(--on-cream); line-height: 1.8;">
+        <li style="padding: 6px 0;">✕ Italic emphasis (никаких курсивов в основном тексте)</li>
+        <li style="padding: 6px 0;">✕ Serif шрифты (нет Newsreader, Tiempos, Söhne)</li>
+        <li style="padding: 6px 0;">✕ Editorial chrome (page numbers, ⌘ символы, римские цифры)</li>
+        <li style="padding: 6px 0;">✕ Gradient backgrounds на больших площадях</li>
+        <li style="padding: 6px 0;">✕ Glassmorphism, neon, glow effects</li>
+        <li style="padding: 6px 0;">✕ 3D blobs, particles, AI-meshes</li>
+        <li style="padding: 6px 0;">✕ Cyberpunk эстетика</li>
+        <li style="padding: 6px 0;">✕ «AI-powered», «next-gen», «революционно» в копии</li>
+        <li style="padding: 6px 0;">✕ Smiling team photos, AI robots, holograms</li>
+        <li style="padding: 6px 0;">✕ Loading spinners больше 200ms</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ╔══════════════════════════════════════════════════════════════╗
+     ║  FOOTER                                                      ║
+     ╚══════════════════════════════════════════════════════════════╝ -->
+<footer class="footer">
+  <div class="footer-wordmark">XeroCode<span class="dot"></span></div>
+  <div class="footer-bottom">
+    <span>© XeroCode · SYLAR · MMXXVI</span>
+    <span>v 3.0 · Full Design System</span>
+    <span>Forged by SYL4R</span>
+  </div>
+</footer>
+
+<script>
+const nav = document.getElementById('nav');
+window.addEventListener('scroll', () => {
+  if (window.scrollY > 40) nav.classList.add('scrolled');
+  else nav.classList.remove('scrolled');
+}, { passive: true });
+
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('in'); });
+}, { threshold: 0.08, rootMargin: '0px 0px -60px 0px' });
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+document.querySelectorAll('.btn-primary, .nav-cta').forEach(btn => {
+  btn.addEventListener('mousemove', (e) => {
+    const rect = btn.getBoundingClientRect();
+    const x = e.clientX - rect.left - rect.width / 2;
+    const y = e.clientY - rect.top - rect.height / 2;
+    btn.style.transform = `translate(${x * 0.18}px, ${y * 0.25}px)`;
+  });
+  btn.addEventListener('mouseleave', () => { btn.style.transform = ''; });
+});
+
+(function initKaraoke() {
+  const heroSection = document.getElementById('hero');
+  const words = document.querySelectorAll('#hero-text .w');
+  if (!heroSection || !words.length) return;
+  const total = words.length;
+  const onScroll = () => {
+    const rect = heroSection.getBoundingClientRect();
+    const sectionHeight = heroSection.offsetHeight;
+    const viewportH = window.innerHeight;
+    const scrolled = -rect.top;
+    const totalScroll = sectionHeight - viewportH;
+    let progress = Math.max(0, Math.min(1, scrolled / totalScroll));
+    const litCount = Math.floor(Math.min(1, progress * 1.4) * total);
+    words.forEach((w, i) => {
+      if (i < litCount) w.classList.add('lit'); else w.classList.remove('lit');
+    });
+  };
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+})();
+</script>
+</body>
+</html>

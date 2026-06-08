@@ -1,0 +1,26 @@
+<svg width="2048" height="512" viewBox="0 0 2048 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="2048" height="512" fill="#0A0A0F"/>
+  <defs>
+    <linearGradient id="grad" x1="64" y1="64" x2="448" y2="448" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#7C3AED"/>
+      <stop offset="100%" stop-color="#4F7CFF"/>
+    </linearGradient>
+  </defs>
+  <!-- Icon -->
+  <rect x="100" y="128" width="256" height="256" rx="48" fill="url(#grad)"/>
+  <circle cx="172" cy="192" r="20" fill="white" opacity="0.9"/>
+  <circle cx="284" cy="192" r="20" fill="white" opacity="0.9"/>
+  <circle cx="228" cy="256" r="24" fill="white"/>
+  <circle cx="172" cy="320" r="20" fill="white" opacity="0.9"/>
+  <circle cx="284" cy="320" r="20" fill="white" opacity="0.9"/>
+  <line x1="172" y1="192" x2="228" y2="256" stroke="white" stroke-width="8" opacity="0.5"/>
+  <line x1="284" y1="192" x2="228" y2="256" stroke="white" stroke-width="8" opacity="0.5"/>
+  <line x1="228" y1="256" x2="172" y2="320" stroke="white" stroke-width="8" opacity="0.5"/>
+  <line x1="228" y1="256" x2="284" y2="320" stroke="white" stroke-width="8" opacity="0.5"/>
+  <!-- XeroCode text -->
+  <text x="420" y="290" font-family="Inter, -apple-system, system-ui, sans-serif" font-size="120" font-weight="700" fill="white" letter-spacing="-2">XeroCode</text>
+  <!-- Beta badge - matching Logo.tsx style: background rgba(124,58,237,0.15), border rgba(124,58,237,0.3), color #a78bfa -->
+  <rect x="1330" y="222" width="72" height="56" rx="12" fill="rgba(124,58,237,0.15)"/>
+  <rect x="1330" y="222" width="72" height="56" rx="12" fill="none" stroke="#7C3AED" stroke-width="2" opacity="0.3"/>
+  <text x="1345" y="261" font-family="Inter, system-ui, sans-serif" font-size="40" font-weight="600" fill="#a78bfa">β</text>
+</svg>

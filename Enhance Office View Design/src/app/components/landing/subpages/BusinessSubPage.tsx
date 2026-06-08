@@ -71,7 +71,6 @@ export function BusinessSubPage({ onBack, onCTA }: Props) {
         num="03"
         title={<>Биз<em style={{ color: "var(--amber-500)", fontStyle: "italic", fontWeight: 400 }}>несу.</em></>}
         subtitle="Битрикс24 + 1С + 430 AI-моделей. CRM, задачи, документооборот, HR, календарь — всё в одном. Plus AI-команда для автоматизации рутины."
-        tag={{ icon: <Building2 size={12} />, label: "Корпоративная платформа", accent: "#00D4FF" }}
         onBack={onBack}
       />
 

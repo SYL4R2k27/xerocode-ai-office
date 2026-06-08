@@ -1,0 +1,19 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1024" height="1024" fill="#0A0A0F"/>
+  <defs>
+    <linearGradient id="grad" x1="256" y1="256" x2="768" y2="768" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#7C3AED"/>
+      <stop offset="100%" stop-color="#4F7CFF"/>
+    </linearGradient>
+  </defs>
+  <rect x="256" y="256" width="512" height="512" rx="96" fill="url(#grad)"/>
+  <circle cx="352" cy="384" r="40" fill="white" opacity="0.9"/>
+  <circle cx="672" cy="384" r="40" fill="white" opacity="0.9"/>
+  <circle cx="512" cy="512" r="48" fill="white"/>
+  <circle cx="352" cy="640" r="40" fill="white" opacity="0.9"/>
+  <circle cx="672" cy="640" r="40" fill="white" opacity="0.9"/>
+  <line x1="352" y1="384" x2="512" y2="512" stroke="white" stroke-width="16" opacity="0.5"/>
+  <line x1="672" y1="384" x2="512" y2="512" stroke="white" stroke-width="16" opacity="0.5"/>
+  <line x1="512" y1="512" x2="352" y2="640" stroke="white" stroke-width="16" opacity="0.5"/>
+  <line x1="512" y1="512" x2="672" y2="640" stroke="white" stroke-width="16" opacity="0.5"/>
+</svg>

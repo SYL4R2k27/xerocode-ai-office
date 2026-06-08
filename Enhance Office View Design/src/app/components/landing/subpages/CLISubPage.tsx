@@ -495,7 +495,6 @@ export function CLISubPage({ onBack, onCTA }: Props) {
         num="02"
         title={<>Терми<em style={{ color: "var(--amber-500)", fontStyle: "italic", fontWeight: 400 }}>нал.</em></>}
         subtitle="XeroCode для разработчиков. Командная строка. Sandbox. Git native. Pipe-friendly. JWT в OS keychain."
-        tag={{ icon: <Terminal size={12} />, label: "CLI · DESKTOP AGENT", accent: "var(--violet-500)" }}
         onBack={onBack}
       />
 

@@ -101,3 +101,5 @@ scripts/update-xray-config.py
 ai-space-package/
 Enhance Office View Design/package-lock.json
 ai-office-agent/package-lock.json
+ai-office-agent/release/
+ai-office-agent/dist/

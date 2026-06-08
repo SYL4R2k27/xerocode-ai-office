@@ -73,7 +73,6 @@ export function ArenaSubPage({ onBack, onCTA }: Props) {
         num="04"
         title={<>Аре<em style={{ color: "var(--amber-500)", fontStyle: "italic", fontWeight: 400 }}>на.</em></>}
         subtitle="Пусть модели соревнуются. Узнайте какая AI-модель лучше справляется с вашими задачами. Честный Elo-рейтинг на основе ваших оценок."
-        tag={{ icon: <Swords size={12} />, label: "4 режима · Elo рейтинг", accent: "#FF3B5C" }}
         onBack={onBack}
       />
 
