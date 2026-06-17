@@ -151,7 +151,7 @@ export function BusinessPage({ onBack, onToast }: { onBack: () => void; onToast:
                   <li key={i}><span className="price-check"><AppIcon name="check" size={15} /></span><span dangerouslySetInnerHTML={{ __html: f }} /></li>
                 ))}
               </ul>
-              <button className="price-btn" onClick={() => onToast(p.tier)}>Связаться</button>
+              <button className="price-btn" onClick={() => { window.location.href = "mailto:sales@xerocode.ru?subject=" + encodeURIComponent(p.tier); }}>Связаться</button>
             </div>
           ))}
         </div>
@@ -162,8 +162,8 @@ export function BusinessPage({ onBack, onToast }: { onBack: () => void; onToast:
           <h2 className="cta-title">Весь офис.<br /><span className="accent">Один AI-слой.</span></h2>
           <p className="cta-sub">Покажем CORP на ваших данных и настроим оргструктуру под ваши роли.</p>
           <div className="cta-actions">
-            <button className="btn-primary" onClick={() => onToast("sales@xerocode.ru")}>Написать в продажи</button>
-            <button className="btn-ghost" onClick={() => onToast("Демо CORP")}>Демо корп-режима</button>
+            <button className="btn-primary" onClick={() => { window.location.href = "mailto:sales@xerocode.ru?subject=XeroCode%20CORP"; }}>Написать в продажи</button>
+            <button className="btn-ghost" onClick={() => { window.location.href = "mailto:sales@xerocode.ru?subject=Demo%20CORP"; }}>Демо корп-режима</button>
           </div>
           <p className="cta-trust">Enterprise · Enterprise+ · 152-ФЗ · счёт + НДС · onboarding</p>
         </div>

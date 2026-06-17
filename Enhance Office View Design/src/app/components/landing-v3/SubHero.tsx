@@ -21,13 +21,15 @@ export function SubHero({
 }) {
   return (
     <section className="subhero">
-      <button className="subhero-back" onClick={onBack}>← На главную</button>
-      <div className="section-num">{eyebrow}</div>
-      <h1 className="subhero-title">
-        {title}
-        {accent && <> <span className="accent">{accent}</span></>}
-      </h1>
-      {sub && <p className="subhero-sub">{sub}</p>}
+      <div className="subhero-inner">
+        <button className="subhero-back" onClick={onBack}>← На главную</button>
+        <div className="section-num">{eyebrow}</div>
+        <h1 className="subhero-title">
+          {title}
+          {accent && <> <span className="accent">{accent}</span></>}
+        </h1>
+        {sub && <p className="subhero-sub">{sub}</p>}
+      </div>
     </section>
   );
 }

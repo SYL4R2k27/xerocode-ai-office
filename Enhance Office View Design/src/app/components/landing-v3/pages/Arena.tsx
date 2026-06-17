@@ -46,7 +46,7 @@ export function ArenaPage({ onBack, onToast }: { onBack: () => void; onToast: To
         sub="Какая AI лучше справляется именно с твоими задачами? Честный Elo-рейтинг на основе твоих оценок — четыре режима битвы моделей."
         onBack={onBack}
       />
-      <div className="pg-wrap" style={{ maxWidth: 900 }}>
+      <div className="pg-wrap">
         <p className="pg-cap">▸ Четыре режима</p>
         <div className="arena-tabs">
           {MODES.map((x) => (
@@ -113,7 +113,7 @@ export function ArenaPage({ onBack, onToast }: { onBack: () => void; onToast: To
           <h2 className="cta-title">Запусти<br /><span className="accent">первую дуэль.</span></h2>
           <p className="cta-sub">Дай моделям задачу и выбери победителя — рейтинг начнёт собираться сразу.</p>
           <div className="cta-actions">
-            <button className="btn-primary" onClick={() => onToast("Арена")}>Открыть Арену</button>
+            <button className="btn-primary" onClick={() => { window.location.href = "/"; }}>Открыть Арену</button>
           </div>
           <p className="cta-trust">Дуэль · Эволюция · Турнир · Слепой тест · Elo</p>
         </div>

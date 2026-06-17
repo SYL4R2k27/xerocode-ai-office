@@ -11,7 +11,8 @@
 
   /* ── Sub-page scaffold ── */
   .subpage { padding-top: 68px; min-height: 100vh; }
-  .subhero { padding: 72px var(--pad-x) 40px; border-bottom: 1px solid var(--line-bg); }
+  .subhero { padding: 72px 0 40px; border-bottom: 1px solid var(--line-bg); }
+  .subhero-inner { max-width: 1200px; margin: 0 auto; padding: 0 var(--pad-x); }
   .subhero-back { display: inline-flex; align-items: center; gap: 8px; background: transparent; border: none; color: var(--on-bg-dim); font-family: var(--body); font-size: 13px; font-weight: 500; cursor: pointer; margin-bottom: 26px; padding: 0; transition: color 200ms var(--ease); }
   .subhero-back:hover { color: var(--on-bg); }
   .subhero-title { font-family: var(--display); font-weight: 500; font-size: clamp(40px, 6vw, 76px); line-height: 1.0; letter-spacing: -0.035em; color: var(--on-bg); }
@@ -26,7 +27,7 @@
   .soon-p { font-size: 14px; line-height: 1.55; color: var(--on-bg-mute); }
 
   /* ── Pricing page ── */
-  .pricing-wrap { padding: 50px var(--pad-x) 110px; }
+  .pricing-wrap { max-width: 1200px; margin: 0 auto; padding: 50px var(--pad-x) 110px; }
   .pricing-wrap .price-grid { grid-template-columns: repeat(3, 1fr); }
   @media (max-width: 1100px) { .pricing-wrap .price-grid { grid-template-columns: repeat(2, 1fr); } }
   @media (max-width: 720px) { .pricing-wrap .price-grid { grid-template-columns: 1fr; } }

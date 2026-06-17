@@ -21,6 +21,9 @@ import "../../../styles/xerocode-v3-landing-pages.css";
 import "../../../styles/xerocode-v3-page-content.css";
 import "../../../styles/xerocode-v3-pages2.css";
 
+// Единый навигатор лендинга: переход на страницу · «Возможности» с авто-раскрытием категории · скролл к секции главной.
+type Nav = { go: (p: SubPage) => void; feature: (c: string) => void; scroll: (id: string) => void };
+
 /* ── Hero (karaoke scroll-reveal) ────────────────────────────────── */
 const HERO_LINES: { t: string; a?: boolean }[][] = [
   [{ t: "Один" }, { t: "человек." }],
@@ -74,8 +77,8 @@ function Hero({ onToast }: { onToast: Toast }) {
             <span>Сделано в России</span>
           </div>
           <div className="hero-actions">
-            <button className="btn-primary" onClick={() => onToast("Регистрация")}>Начать бесплатно</button>
-            <button className="btn-ghost" onClick={() => onToast("Демо")}>Посмотреть демо</button>
+            <button className="btn-primary" onClick={() => { window.location.href = "/"; }}>Начать бесплатно</button>
+            <button className="btn-ghost" onClick={() => { window.location.href = "mailto:sales@xerocode.ru?subject=Demo%20XeroCode"; }}>Посмотреть демо</button>
           </div>
         </div>
       </div>
@@ -298,6 +301,7 @@ function ProductShot({ onToast }: { onToast: Toast }) {
         </div>
       </div>
       <p className="ps-caption"><span className="ps-cdot" style={{ background: active.c }}></span> {PS_CAPTION[tab]}</p>
+      <div className="ps-cta-row"><button className="ps-cta" onClick={() => { window.location.href = "/"; }}>Открыть в приложении <AppIcon name="arrow-right" size={15} color="var(--xero)" /></button></div>
     </section>
   );
 }
@@ -332,7 +336,7 @@ const WS = [
   { n: "07", name: "Корпорат.", tag: "Enterprise", c: "var(--ws-corp)", icon: "building-2" },
   { n: "08", name: "Оркестрация", tag: "no-code DAG", c: "var(--ws-orchestr)", icon: "network" },
 ];
-function Workspaces({ onToast }: { onToast: Toast }) {
+function Workspaces({ nav }: { nav: Nav }) {
   return (
     <section className="section cream" id="ws">
       <div className="section-num">Восемь воркспейсов</div>
@@ -342,7 +346,7 @@ function Workspaces({ onToast }: { onToast: Toast }) {
       </div>
       <div className="ws-grid">
         {WS.map((w) => (
-          <div className="ws" key={w.n} onClick={() => onToast(w.name)}>
+          <div className="ws" key={w.n} onClick={() => nav.feature("ws")}>
             <div className="ws-icon" style={{ background: w.c }}><AppIcon name={w.icon} size={20} color="var(--cream)" /></div>
             <span className="ws-num">{w.n}</span>
             <span className="ws-name">{w.name}</span>
@@ -388,7 +392,24 @@ const MODELS_L: Record<string, string[]> = {
   "Российские": ["YandexGPT 5 Pro", "GigaChat Max", "T-Pro"],
   Free: ["GigaChat Lite", "Qwen 3 8B"],
 };
-function Models({ onToast }: { onToast: Toast }) {
+const MODEL_FACTS: Record<string, string> = {
+  "Claude Opus 4.7": "Anthropic · флагман для сложных рассуждений, кода и длинных документов.",
+  "GPT-5.4": "OpenAI · сильный универсал, мультимодальный,tool-calling.",
+  "Gemini 2.5 Ultra": "Google · гигантский контекст и мультимодальность для аналитики.",
+  "Grok 4": "xAI · быстрый, со свежими данными и рассуждением.",
+  "Sonnet 4.6": "Anthropic · баланс цена/качество — рабочая лошадка под большинство задач.",
+  "GPT-5.4 mini": "OpenAI · быстрый и недорогой, для массовых операций.",
+  "Gemini 2.5 Flash": "Google · сверхбыстрый, большой контекст, дёшево.",
+  "DeepSeek V4": "DeepSeek · сильные код и математика, открытые веса.",
+  "Llama 4 Maverick": "Meta · открытая и гибкая, для self-host и кастома.",
+  "YandexGPT 5 Pro": "Яндекс · русский язык, данные в РФ, 152-ФЗ.",
+  "GigaChat Max": "Сбер · русскоязычная, на инфраструктуре РФ.",
+  "T-Pro": "Т-Технологии · русская модель под бизнес-домен.",
+  "GigaChat Lite": "Сбер · бесплатная быстрая русскоязычная.",
+  "Qwen 3 8B": "Alibaba · бесплатная открытая, многоязычная.",
+};
+function Models({ nav }: { nav: Nav }) {
+  const [sel, setSel] = useState<string | null>(null);
   return (
     <section className="section" id="models">
       <div className="section-num">Модели и ключи</div>
@@ -400,14 +421,21 @@ function Models({ onToast }: { onToast: Toast }) {
         {Object.entries(MODELS_L).map(([grp, list]) => (
           <div className="models-col" key={grp}>
             <div className="models-grp">{grp}</div>
-            {list.map((m) => <span className="model-chip" key={m} onClick={() => onToast(m)}>{m}</span>)}
+            {list.map((m) => <span className={"model-chip" + (sel === m ? " on" : "")} key={m} onClick={() => setSel(sel === m ? null : m)}>{m}</span>)}
           </div>
         ))}
       </div>
+      {sel && (
+        <div className="model-detail">
+          <span className="md-name">{sel}</span>
+          <span className="md-fact">{MODEL_FACTS[sel] ?? "Доступна в каталоге XeroCode — добавь свой ключ и пользуйся."}</span>
+          <button className="md-more" onClick={() => nav.feature("models")}>Все 283 модели в каталоге <AppIcon name="arrow-right" size={13} color="var(--xero)" /></button>
+        </div>
+      )}
       <div className="byok-callout">
         <AppIcon name="key-round" size={22} color="var(--xero)" />
         <div className="byok-text"><strong>BYOK = ∞ запросов.</strong> Свой ключ OpenAI, Anthropic, Yandex или GigaChat — лимиты снимаются на любом тарифе, даже на Free.</div>
-        <button className="byok-btn" onClick={() => onToast("Подключить ключ")}>Подключить ключ</button>
+        <button className="byok-btn" onClick={() => { window.location.href = "/"; }}>Подключить ключ</button>
       </div>
     </section>
   );
@@ -422,7 +450,7 @@ const CONNECTORS = [
   { nm: "Confluence", icon: "file-stack", note: "проектная документация" },
   { nm: "SharePoint", icon: "server", note: "корпоративные файлы" },
 ];
-function Knowledge({ onToast }: { onToast: Toast }) {
+function Knowledge({ nav }: { nav: Nav }) {
   return (
     <section className="section" id="knowledge">
       <div className="section-num">База знаний</div>
@@ -432,7 +460,7 @@ function Knowledge({ onToast }: { onToast: Toast }) {
       </div>
       <div className="conn-grid">
         {CONNECTORS.map((c) => (
-          <div className="conn-card" key={c.nm} onClick={() => onToast(c.nm)}>
+          <div className="conn-card" key={c.nm} onClick={() => nav.feature("corp")}>
             <span className="conn-ico"><AppIcon name={c.icon} size={18} color="var(--xero)" /></span>
             <div className="conn-body"><span className="conn-nm">{c.nm}</span><span className="conn-note">{c.note}</span></div>
             <span className="conn-status"><span className="cs-dot"></span>RAG</span>
@@ -450,7 +478,7 @@ const DAG_NODES = [
   { icon: "zap", lab: "AI-анализ · Opus", kind: "ai" },
   { icon: "mail", lab: "Email digest", kind: "action" },
 ];
-function Orchestration({ onToast }: { onToast: Toast }) {
+function Orchestration({ nav }: { nav: Nav }) {
   return (
     <section className="section" id="orchestration">
       <div className="section-num">Оркестрация</div>
@@ -461,7 +489,7 @@ function Orchestration({ onToast }: { onToast: Toast }) {
       <div className="dag-strip">
         {DAG_NODES.map((n, i) => (
           <Fragment key={i}>
-            <div className={"dag-node " + n.kind} onClick={() => onToast(n.lab)}>
+            <div className={"dag-node " + n.kind}>
               <span className="dn-ico"><AppIcon name={n.icon} size={17} color={n.kind === "ai" ? "var(--cream)" : "var(--xero)"} /></span>
               <span className="dn-lab">{n.lab}</span>
             </div>
@@ -470,6 +498,7 @@ function Orchestration({ onToast }: { onToast: Toast }) {
         ))}
       </div>
       <p className="dag-note">Эталонный шаблон «Daily research → Email digest» · 5 шаблонов в комплекте · человек-в-цикле и бюджет токенов</p>
+      <div className="dag-cta-row"><button className="dag-cta" onClick={() => nav.feature("orch")}>Как собрать свой сценарий <AppIcon name="arrow-right" size={15} color="var(--xero)" /></button></div>
     </section>
   );
 }
@@ -508,7 +537,7 @@ const PLANS = [
   { tier: "Pro", amt: "1 990", per: "₽ / мес", desc: "Все воркспейсы и премиум-модели для solo.", feats: ["<b>Картинки · Оркестрация</b>", "Claude · GPT · Gemini · Grok", "30 картинок · DAG ×5", "<b>BYOK = ∞ запросов</b>"], cta: "Попробовать Pro", featured: true },
   { tier: "Enterprise", amt: "24 990", per: "₽ / мес", desc: "Команда до 10: корп-воркспейс, роли, изоляция.", feats: ["Всё из Pro", "Корп: CRM · Kanban · HR", "RBAC · 1С · Битрикс24", "10 seats · SOC 2 · ФЗ-152"], cta: "Связаться" },
 ];
-function Pricing({ onToast }: { onToast: Toast }) {
+function Pricing({ onNavigate }: { onNavigate: (p: SubPage) => void }) {
   return (
     <section className="section" id="pricing">
       <div className="section-num">Тарифы</div>
@@ -527,11 +556,11 @@ function Pricing({ onToast }: { onToast: Toast }) {
                 <li key={i}><span className="price-check"><AppIcon name="check" size={15} /></span><span dangerouslySetInnerHTML={{ __html: f }} /></li>
               ))}
             </ul>
-            <button className="price-btn" onClick={() => onToast(p.tier)}>{p.cta}</button>
+            <button className="price-btn" onClick={() => { if (p.tier === "Enterprise") { window.location.href = "mailto:sales@xerocode.ru?subject=Enterprise"; } else { window.location.href = "/"; } }}>{p.cta}</button>
           </div>
         ))}
       </div>
-      <p className="price-more" onClick={() => onToast("Все тарифы")}>
+      <p className="price-more" onClick={() => onNavigate("pricing")}>
         Ещё уровни: <b>Go · 490 ₽</b> · <b>Prime · 9 990 ₽</b> · <b>Enterprise+ · договор</b> — 6 тарифов под любой масштаб →
       </p>
     </section>
@@ -552,7 +581,7 @@ function Telegram({ onToast }: { onToast: Toast }) {
             <li><code>/deals</code> срез по сделкам из CRM</li>
             <li><code>/status</code> что сейчас в работе</li>
           </ul>
-          <button className="btn-primary" onClick={() => onToast("@xerocode_bot")}>Открыть @xerocode_bot</button>
+          <button className="btn-primary" onClick={() => window.open("https://t.me/xerocode_bot", "_blank", "noopener")}>Открыть @xerocode_bot</button>
         </div>
         <div className="tg-phone">
           <div className="tg-screen">
@@ -613,8 +642,8 @@ function FinalCta({ onToast }: { onToast: Toast }) {
         <h2 className="cta-title">Один человек.<br /><span className="accent">Весь AI-офис.</span></h2>
         <p className="cta-sub">Запусти первый воркспейс за минуту. Без карты, с российскими моделями и своими ключами.</p>
         <div className="cta-actions">
-          <button className="btn-primary" onClick={() => onToast("Регистрация")}>Начать бесплатно</button>
-          <button className="btn-ghost" onClick={() => onToast("Демо")}>Посмотреть демо</button>
+          <button className="btn-primary" onClick={() => { window.location.href = "/"; }}>Начать бесплатно</button>
+          <button className="btn-ghost" onClick={() => { window.location.href = "mailto:sales@xerocode.ru?subject=Demo%20XeroCode"; }}>Посмотреть демо</button>
         </div>
         <p className="cta-trust">V3.0 · SOC 2 · 152-ФЗ · BYOK = ∞ · часть SYLAR</p>
       </div>
@@ -623,52 +652,67 @@ function FinalCta({ onToast }: { onToast: Toast }) {
 }
 
 /* ── Footer ──────────────────────────────────────────────────────── */
-function Footer() {
-  const cols = [
-    { h: "Продукт", links: ["Возможности", "Тарифы", "Бизнесу", "Документы"] },
-    { h: "Стек", links: ["14 моделей", "BYOK", "CLI · MCP", "Telegram-бот"] },
-    { h: "SYLAR", links: ["О компании", "RoleFlow", "Безопасность", "ФЗ-152"] },
+function Footer({ nav }: { nav: Nav }) {
+  const cols: { h: string; links: { l: string; act: () => void }[] }[] = [
+    { h: "Продукт", links: [
+      { l: "Возможности", act: () => nav.go("features") },
+      { l: "Тарифы", act: () => nav.go("pricing") },
+      { l: "Бизнесу", act: () => nav.go("business") },
+      { l: "Документы", act: () => nav.feature("tools") },
+    ] },
+    { h: "Стек", links: [
+      { l: "14 моделей", act: () => nav.scroll("models") },
+      { l: "BYOK", act: () => nav.scroll("models") },
+      { l: "CLI · MCP", act: () => nav.go("terminal") },
+      { l: "Telegram-бот", act: () => nav.scroll("telegram") },
+    ] },
+    { h: "SYLAR", links: [
+      { l: "О компании", act: () => nav.go("about") },
+      { l: "Арена моделей", act: () => nav.go("arena") },
+      { l: "Безопасность", act: () => nav.scroll("security") },
+      { l: "ФЗ-152", act: () => nav.scroll("security") },
+    ] },
   ];
   return (
     <footer className="foot">
       <div className="foot-top">
         <div>
-          <div className="foot-brand">XeroCode<span className="dot"></span></div>
+          <div className="foot-brand" onClick={() => nav.go(null)}>XeroCode<span className="dot"></span></div>
           <p className="foot-tag">Один человек может сделать работу пятерых — не теряя времени и качества.</p>
         </div>
         {cols.map((c) => (
           <div className="foot-col" key={c.h}>
             <h5>{c.h}</h5>
-            {c.links.map((l) => <a key={l}>{l}</a>)}
+            {c.links.map((x) => <a key={x.l} onClick={x.act}>{x.l}</a>)}
           </div>
         ))}
       </div>
       <div className="foot-bottom">
         <span>© XeroCode 2026 · Часть SYLAR</span>
-        <span>app.xerocode.ru</span>
+        <span className="foot-app" onClick={() => { window.location.href = "/"; }}>app.xerocode.ru</span>
       </div>
     </footer>
   );
 }
 
 /* ── Home (long-scroll sections) ─────────────────────────────────── */
-function LandingHome({ onToast }: { onToast: Toast }) {
+function LandingHome({ onToast, nav }: { onToast: Toast; nav: Nav }) {
   return (
     <Fragment>
       <Hero onToast={onToast} />
       <ProductShot onToast={onToast} />
       <Stack />
-      <Workspaces onToast={onToast} />
+      <Workspaces nav={nav} />
       <Steps />
-      <Models onToast={onToast} />
-      <Knowledge onToast={onToast} />
-      <Orchestration onToast={onToast} />
+      <Models nav={nav} />
+      <Knowledge nav={nav} />
+      <Orchestration nav={nav} />
       <Security />
-      <Pricing onToast={onToast} />
+      <Pricing onNavigate={nav.go} />
       <Telegram onToast={onToast} />
       <Faq />
       <FinalCta onToast={onToast} />
-      <Footer />
+      <Footer nav={nav} />
     </Fragment>
   );
 }
@@ -684,13 +728,19 @@ export function LandingV3() {
   };
   const navigate = (p: SubPage) => { setPage(p); window.scrollTo({ top: 0 }); };
   const back = () => navigate(null);
+  const [featCat, setFeatCat] = useState<string | null>(null);
+  const nav: Nav = {
+    go: navigate,
+    feature: (c) => { setFeatCat(c); navigate("features"); },
+    scroll: (id) => { setPage(null); window.setTimeout(() => document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" }), 60); },
+  };
 
   return (
     <div className="x3l">
       <Header page={page} onNavigate={navigate} onToast={flash} />
-      {page === null && <LandingHome onToast={flash} />}
+      {page === null && <LandingHome onToast={flash} nav={nav} />}
       {page === "pricing" && <PricingPage onBack={back} onToast={flash} />}
-      {page === "features" && <FeaturesPage onBack={back} onNavigate={navigate} />}
+      {page === "features" && <FeaturesPage onBack={back} onNavigate={navigate} openCat={featCat ?? undefined} />}
       {page === "business" && <BusinessPage onBack={back} onToast={flash} />}
       {page === "arena" && <ArenaPage onBack={back} onToast={flash} />}
       {page === "terminal" && <TerminalPage onBack={back} />}

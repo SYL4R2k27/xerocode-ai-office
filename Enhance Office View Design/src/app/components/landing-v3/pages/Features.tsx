@@ -90,8 +90,8 @@ const STATS = [
   { num: "4", lab: "режима арены" },
 ];
 
-export function FeaturesPage({ onBack, onNavigate }: { onBack: () => void; onNavigate: (p: SubPage) => void }) {
-  const [open, setOpen] = useState("orch");
+export function FeaturesPage({ onBack, onNavigate, openCat }: { onBack: () => void; onNavigate: (p: SubPage) => void; openCat?: string }) {
+  const [open, setOpen] = useState(openCat ?? "orch");
   return (
     <div className="subpage">
       <SubHero

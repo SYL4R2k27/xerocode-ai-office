@@ -1,7 +1,7 @@
 /* XeroCode v3 — content sub-pages (About/Contacts, Features). Scoped under .x3l. */
 .x3l {
   /* ── About / Contacts ── */
-  .about-wrap { padding: 48px var(--pad-x) 110px; max-width: 880px; }
+  .about-wrap { padding: 48px var(--pad-x) 110px; max-width: 880px; margin: 0 auto; }
   .about-mission { background: var(--bg-soft); border: 1px solid var(--line-bg); border-left: 3px solid var(--xero); border-radius: 14px; padding: 28px 32px; margin-bottom: 40px; }
   .about-mission p { font-size: 16px; line-height: 1.7; color: var(--on-bg-mute); }
   .about-mission p + p { margin-top: 14px; }
@@ -23,7 +23,7 @@
   @media (max-width: 720px) { .about-vals { grid-template-columns: 1fr; } }
 
   /* ── Features (category accordion) ── */
-  .feat-wrap { padding: 40px var(--pad-x) 110px; max-width: 1000px; }
+  .feat-wrap { padding: 40px var(--pad-x) 110px; max-width: 1200px; margin: 0 auto; }
   .feat-stats { margin: 0 0 56px; }
   .feat-list { display: flex; flex-direction: column; gap: 10px; }
   .feat-cat { border: 1px solid var(--line-bg); border-radius: 14px; background: var(--bg-soft); overflow: hidden; transition: border-color 200ms var(--ease); }

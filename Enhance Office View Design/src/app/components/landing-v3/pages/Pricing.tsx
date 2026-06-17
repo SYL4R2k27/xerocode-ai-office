@@ -79,7 +79,7 @@ export function PricingPage({ onBack, onToast }: { onBack: () => void; onToast: 
                   <li key={i}><span className="price-check"><AppIcon name="check" size={15} /></span><span dangerouslySetInnerHTML={{ __html: f }} /></li>
                 ))}
               </ul>
-              <button className="price-btn" onClick={() => onToast(p.tier)}>{p.cta}</button>
+              <button className="price-btn" onClick={() => { if (p.cta === "Связаться") { window.location.href = "mailto:sales@xerocode.ru?subject=" + encodeURIComponent(p.tier); } else { window.location.href = "/"; } }}>{p.cta}</button>
             </div>
           ))}
         </div>

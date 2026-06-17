@@ -54,7 +54,7 @@ export function Header({
           <a key={n.page} className={page === n.page ? "on" : ""} onClick={() => onNavigate(n.page)}>{n.label}</a>
         ))}
       </div>
-      <button className="nav-cta" onClick={() => onToast("Регистрация")}>Начать бесплатно</button>
+      <button className="nav-cta" onClick={() => { window.location.href = "/"; }}>Начать бесплатно</button>
     </nav>
   );
 }

@@ -5,64 +5,93 @@ import { useEffect, useState } from "react";
 import { AppIcon } from "../Icon";
 import { SubHero } from "../SubHero";
 
-const WELCOME = `╭─ XeroCode CLI · v0.1.0-beta ─────────────────╮
-│
-│  Welcome back, user!
-│  free · BYOK · ~/Desktop/project
-│
-│  xerocode chat      интерактивный REPL
-│  xerocode run "…"   one-shot
-│  xerocode models    каталог моделей
-│
-╰──────────────────────────────────────────────╯`;
-
-const CHAT = `╭─ ✕ XeroCode Chat ────────────────────────────╮
-│  Target: xerocode_ai   ·   Mode: team
-│  /help — команды   ·   /exit — выход
-╰──────────────────────────────────────────────╯`;
-
-function TerminalMock() {
+/* Modern CLI session — «команда моделей в терминале» (v3, без glow/italic/serif).
+   Phases: 0 печать команды · 1 роутер собирает команду + прогресс · 2 готово · 3 reset. */
+function CliSession() {
   const [phase, setPhase] = useState(0);
   const [typed, setTyped] = useState("");
+  const [pct, setPct] = useState(0);
+  const CMD = 'xerocode run "питч-дек Q2 рост"';
   useEffect(() => {
     let t: ReturnType<typeof setTimeout> | undefined;
     if (phase === 0) {
-      t = setTimeout(() => setPhase(1), 2400);
-    } else if (phase === 1) {
-      const cmd = "xerocode chat";
       let i = 0;
       const iv = setInterval(() => {
-        i++; setTyped(cmd.slice(0, i));
-        if (i >= cmd.length) { clearInterval(iv); t = setTimeout(() => { setTyped(""); setPhase(2); }, 600); }
-      }, 80);
+        i++; setTyped(CMD.slice(0, i));
+        if (i >= CMD.length) { clearInterval(iv); t = setTimeout(() => setPhase(1), 650); }
+      }, 55);
+      return () => { clearInterval(iv); if (t) clearTimeout(t); };
+    } else if (phase === 1) {
+      let p = 0;
+      const iv = setInterval(() => {
+        p = Math.min(100, p + 4); setPct(p);
+        if (p >= 100) { clearInterval(iv); t = setTimeout(() => setPhase(2), 520); }
+      }, 58);
       return () => { clearInterval(iv); if (t) clearTimeout(t); };
     } else if (phase === 2) {
-      t = setTimeout(() => setPhase(3), 1900);
+      t = setTimeout(() => setPhase(3), 2600);
     } else {
-      const msg = "Помоги написать README для стартапа";
-      let i = 0;
-      const iv = setInterval(() => {
-        i++; setTyped(msg.slice(0, i));
-        if (i >= msg.length) { clearInterval(iv); t = setTimeout(() => { setTyped(""); setPhase(0); }, 2400); }
-      }, 50);
-      return () => { clearInterval(iv); if (t) clearTimeout(t); };
+      t = setTimeout(() => { setTyped(""); setPct(0); setPhase(0); }, 420);
     }
     return () => { if (t) clearTimeout(t); };
   }, [phase]);
 
+  const AGENTS = [
+    { c: "var(--ws-chat)", m: "Sonnet 4.6", r: "структура · план" },
+    { c: "var(--ws-images)", m: "GPT-5.4", r: "слайды · текст" },
+    { c: "var(--ws-code)", m: "Opus 4.7", r: "ревью · сборка" },
+  ];
+  const running = phase >= 1;
+  const done = phase >= 2;
+
   return (
-    <div className="term-win">
-      <div className="term-bar">
-        <span className="term-dot" style={{ background: "var(--sylar)" }} />
-        <span className="term-dot" style={{ background: "var(--ws-images)" }} />
-        <span className="term-dot" style={{ background: "var(--ws-code)" }} />
-        <span className="title">user@xerocode ~</span>
+    <div className="cli">
+      <div className="cli-bar">
+        <span className="cli-dots"><i /><i /><i /></span>
+        <span className="cli-path">xerocode · ~/project</span>
+        <span className="cli-mode"><i className="on" /> team</span>
       </div>
-      <div className="term-body">
-        <pre className="term-pre">{phase < 2 ? WELCOME : CHAT}</pre>
-        <div className="term-prompt">
-          <span className="arrow">›</span> <span className="typed">{typed}</span><span className="term-caret" />
+      <div className="cli-body">
+        <div className="cli-cmd">
+          <span className="pr">❯</span>
+          <span className="ct">{phase === 0 ? typed : CMD}</span>
+          {phase === 0 && <span className="cli-caret" />}
         </div>
+
+        {running && (
+          <div className="cli-card">
+            <div className="cli-card-h">router · команда из 3 моделей</div>
+            {AGENTS.map((a, i) => (
+              <div className="cli-agent" key={a.m}>
+                <i className="ag-dot" style={{ background: a.c }} />
+                <span className="ag-m">{a.m}</span>
+                <span className="ag-r">{a.r}</span>
+                <span className={"ag-st" + (done || i < 2 ? " ok" : " run")}>{done || i < 2 ? "✓" : "⚙"}</span>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {running && !done && (
+          <div className="cli-prog">
+            <span className="pg-ico">⚙</span>
+            <span className="pg-lab">3 агента работают</span>
+            <span className="pg-bar"><i style={{ width: pct + "%" }} /></span>
+            <span className="pg-pct">{pct}%</span>
+          </div>
+        )}
+
+        {done && (
+          <div className="cli-done">
+            <span className="dn-ok">✓</span>
+            <span className="dn-lab">готово · 14 c</span>
+            <span className="dn-art"><AppIcon name="file-text" size={12} color="var(--xero)" /> draft.pptx · 8 слайдов</span>
+          </div>
+        )}
+
+        {running && (
+          <div className="cli-cmd next"><span className="pr">❯</span><span className="cli-caret" /></div>
+        )}
       </div>
     </div>
   );
@@ -139,7 +168,7 @@ export function TerminalPage({ onBack }: { onBack: () => void }) {
       />
       <div className="pg-wrap">
         <div className="term-split">
-          <TerminalMock />
+          <CliSession />
           <div className="install-col">
             <InstallCard icon="box" title="Homebrew" sub="macOS / Linux · самый быстрый способ" cmd={"brew tap SYL4R2k27/tap\nbrew install xerocode"} rec />
             <InstallCard icon="package" title="npm" sub="любая платформа · Node.js 18+" cmd="npm install -g xerocode-cli@beta" />
